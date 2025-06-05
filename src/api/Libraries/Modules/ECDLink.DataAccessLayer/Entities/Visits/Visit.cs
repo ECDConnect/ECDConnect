@@ -22,17 +22,11 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         public TKey VisitTypeId { get; set; }
         [ForeignKey(nameof(VisitTypeId))]
         public virtual VisitType VisitType { get; set; }
-        public Guid? MotherId { get; set; }
-        public virtual Mother Mother { get; set; }
-        public Guid? InfantId { get; set; }
-        public virtual Infant Infant { get; set; }
         public string Risk { get; set; }
         public string Comment { get; set; }
         public Guid? LinkedVisitId { get; set; }
         public Guid? PractitionerId { get; set; }
         public virtual Practitioner Practitioner { get; set; }
-        public Guid? TraineeId { get; set; }
-        public virtual Trainee Trainee { get; set; }
         public Guid? CoachId { get; set; }
         public virtual Coach Coach { get; set; }
         [NotMapped]
@@ -51,7 +45,6 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         public bool HasAnswerData { get; set; }
         public string Rating { get; set; }
         public virtual PQARating PQARating { get; set; }
-        public DateTime? IntegrationSubmitDate {  get; set; }
         public virtual ICollection<VisitData> VisitData { get; set; }
     }
 

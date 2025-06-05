@@ -109,7 +109,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 return default;
             }
 
-            //if user is in a higher admin role (Principal, Practitioner, Coach, Franchisor, then skip the check as they need to be able to see anyone anywhere due to the shift in roles of Milestone 1.
+            //if user is in a higher admin role (Principal, Practitioner, Coach, then skip the check as they need to be able to see anyone anywhere due to the shift in roles of Milestone 1.
             var user = _userManager.FindByIdAsync(_userId.ToString()).Result;
             var roles = _userManager.GetRolesAsync(user).Result;
             var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
@@ -147,7 +147,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 return default;
             }
 
-            //if user is in a higher admin role (Principal, Practitioner, Coach, Franchisor, then skip the check as they need to be able to see anyone anywhere due to the shift in roles of Milestone 1.
+            //if user is in a higher admin role (Principal, Practitioner, Coach, then skip the check as they need to be able to see anyone anywhere due to the shift in roles of Milestone 1.
             var user = await _userManager.FindByIdAsync(_userId.ToString());
             var roles = await _userManager.GetRolesAsync(user);
             var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
@@ -306,11 +306,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 context.Entry(dbEntity).Property(e => e.TenantId).IsModified = false;
 
                 _domainEventService.NotifyUpdate<T>(_userId.ToString(), entity);
-                                
-                if (typeof(ITrackableType).IsAssignableFrom(typeof(T)))
-                {
-                    DoAudit(entity, "Update", dbEntity);
-                }
                 
                 entity.UpdatedDate = DateTime.Now;
             }

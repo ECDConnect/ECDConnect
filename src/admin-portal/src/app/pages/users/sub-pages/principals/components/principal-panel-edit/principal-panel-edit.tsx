@@ -75,9 +75,6 @@ export default function PractitionerPanelEdit({
           shouldValidate: true,
         }
       );
-      practitionerSetValue('maxChildren', practitioner.maxChildren ?? 0, {
-        shouldValidate: true,
-      });
       practitionerSetValue(
         'consentForPhoto',
         practitioner.consentForPhoto ?? false,
@@ -98,13 +95,6 @@ export default function PractitionerPanelEdit({
       practitionerSetValue(
         'startDate',
         practitioner.startDate ? new Date(practitioner.startDate) : undefined,
-        {
-          shouldValidate: true,
-        }
-      );
-      practitionerSetValue(
-        'monthSinceFranchisee',
-        practitioner.monthSinceFranchisee ?? 0,
         {
           shouldValidate: true,
         }
@@ -169,15 +159,10 @@ export default function PractitionerPanelEdit({
       UserId: practitioner.userId,
       SiteAddressId: siteAddressId,
       AttendanceRegisterLink: practitionerForm.attendanceRegisterLink,
-      MaxChildren:
-        practitionerForm.maxChildren && +practitionerForm.maxChildren,
       ConsentForPhoto: practitionerForm.consentForPhoto,
       ParentFees: practitionerForm.parentFees && +practitionerForm.parentFees,
       LanguageUsedInGroups: practitionerForm.languageUsedInGroups,
       StartDate: practitionerForm.startDate,
-      MonthSinceFranchisee:
-        practitionerForm.monthSinceFranchisee &&
-        +practitionerForm.monthSinceFranchisee,
       IsActive: true,
       Progress: 0,
       ProgressWalkthroughComplete: false,

@@ -1,10 +1,4 @@
-import {
-  Typography,
-  Card,
-  Button,
-  BannerWrapper,
-  DialogPosition,
-} from '@ecdlink/ui';
+import { BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useTenant } from '@/hooks/useTenant';
 import { Step1 } from './components/step1/step1';
 import { useCallback, useState } from 'react';
@@ -16,7 +10,7 @@ import {
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Step2 } from './components/step2/step2';
-import { useDialog, useTheme } from '@ecdlink/core';
+import { useDialog } from '@ecdlink/core';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
@@ -25,12 +19,14 @@ import {
   practitionerSelectors,
   practitionerThunkActions,
 } from '@/store/practitioner';
-import { communitySelectors, communityThunkActions } from '@/store/community';
+import { communityThunkActions } from '@/store/community';
 import { CommunityProfileInputModelInput } from '@ecdlink/graphql';
 import { useAppDispatch } from '@/store';
 import { AddPhotoDialog } from './components/add-photo-dialog';
 import { userSelectors } from '@/store/user';
 import TransparentLayer from '../../../assets/TransparentLayer.png';
+import { notificationsSelectors } from '@/store/notifications';
+import { disableBackendNotification } from '@/store/notifications/notifications.actions';
 
 export const NewCommunityWelcome = ({
   setJoinCommunity,
@@ -39,16 +35,11 @@ export const NewCommunityWelcome = ({
   setJoinCommunity: (item: boolean) => void;
   seNotJoining: (item: boolean) => void;
 }) => {
-  const { theme } = useTheme();
   const { isOnline } = useOnlineStatus();
   const dispatch = useAppDispatch();
   const history = useHistory();
   const dialog = useDialog();
-  const tenant = useTenant();
-  const appName = tenant?.tenant?.applicationName;
   const user = useSelector(userSelectors.getUser);
-  const communityProfile = useSelector(communitySelectors.getCommunityProfile);
-  const profilePhoto = communityProfile?.communityUser?.profilePhoto;
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -58,6 +49,12 @@ export const NewCommunityWelcome = ({
     mode: 'onChange',
     defaultValues: initialWelcomeMessageModel,
   });
+
+  const removalNotifications = useSelector(
+    notificationsSelectors.getAllNotifications
+  ).filter((item) =>
+    item?.message?.reference?.includes('practitioner-no-community-profile')
+  );
 
   const { errors } = formState;
   const {
@@ -102,6 +99,15 @@ export const NewCommunityWelcome = ({
       })
     );
 
+    if (removalNotifications && removalNotifications?.length > 0) {
+      removalNotifications.map((notification) => {
+        return dispatch(
+          disableBackendNotification({
+            notificationId: notification.message.reference ?? '',
+          })
+        );
+      });
+    }
     setIsLoading(false);
 
     if (!user?.profileImageUrl && shareProfilePhoto) {

@@ -88,14 +88,12 @@ export const getPointsSummaryWithLibraryForPractitioner = (
             subActivity: pointsLibrary.subActivity || '',
             description: pointsLibrary.description || '',
             todoDescription: pointsLibrary.todoDescription || '',
-            maxMonthlyPoints:
-              practitioner?.isPrincipal || practitioner?.isFundaAppAdmin
-                ? pointsLibrary.maxPointsPrincipalMonthly
-                : pointsLibrary.maxPointsNonPrincipalMonthly,
-            maxYearlyPoints:
-              practitioner?.isPrincipal || practitioner?.isFundaAppAdmin
-                ? pointsLibrary.maxPointsPrincipalYearly
-                : pointsLibrary.maxPointsNonPrincipalYearly,
+            maxMonthlyPoints: practitioner?.isPrincipal
+              ? pointsLibrary.maxPointsPrincipalMonthly
+              : pointsLibrary.maxPointsNonPrincipalMonthly,
+            maxYearlyPoints: practitioner?.isPrincipal
+              ? pointsLibrary.maxPointsPrincipalYearly
+              : pointsLibrary.maxPointsNonPrincipalYearly,
             pointsPerAward: pointsLibrary.points,
           };
         }

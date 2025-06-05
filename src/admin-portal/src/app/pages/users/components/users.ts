@@ -43,7 +43,6 @@ export interface UserPanelTabsProps {
 }
 
 export enum UserTypeViewEnum {
-  Franchisor = 'Franchisor',
   Coach = 'Coach',
   Principal = 'Principal',
   Practitioner = 'Practitioner',

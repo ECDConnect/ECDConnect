@@ -1,9 +1,4 @@
-import {
-  Config,
-  NotificationsProvider,
-  ThemeProvider,
-  useConfig,
-} from '@ecdlink/core';
+import { Config, NotificationsProvider, useConfig } from '@ecdlink/core';
 import { createBrowserHistory } from 'history';
 import React from 'react';
 import { Router } from 'react-router-dom';

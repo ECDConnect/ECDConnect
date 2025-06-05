@@ -805,7 +805,7 @@ namespace ECDLink.ContentManagement.Repositories
             using MemoryStream fileStream = new MemoryStream(bytes);
 
             var fileName = DateTime.Now.Ticks + "_" + fieldName + getFileType(fileStr.Substring(0, fileStr.LastIndexOf(',')));
-            var fileUrl = Task.Run(() => _fileService.UploadFileStream(fileStream, fileName, FileTypeEnum.ContentImage)).Result;
+            var fileUrl = Task.Run(() => _fileService.UploadFileStreamAsync(fileStream, fileName, FileTypeEnum.ContentImage)).Result;
             fileStream.Dispose();
 
             return fileUrl.ToString();

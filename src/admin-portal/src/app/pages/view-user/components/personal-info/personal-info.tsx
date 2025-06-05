@@ -81,8 +81,6 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
   const tenant = useTenant();
   const isWhiteLabel = tenant?.isWhiteLabel;
 
-  const { isTeamLead: isTeamLeadRole } = useUserRole();
-
   const chwSchemaIdNr = yup.object().shape({
     idNumber: yup
       .string()
@@ -643,7 +641,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
       </div>
 
       <div className="flex justify-end p-4">
-        {userData?.isActive && !isTeamLeadRole && isAdministrator && (
+        {userData?.isActive && isAdministrator && (
           <button
             onClick={() => {
               setEditActive(!editActive);

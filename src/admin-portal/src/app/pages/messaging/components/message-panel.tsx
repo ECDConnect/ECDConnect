@@ -30,7 +30,7 @@ import { format } from 'date-fns';
 import { XIcon } from '@heroicons/react/solid';
 import MessageForm from './message-form';
 import { useHistory } from 'react-router';
-import { MessageRoleDto, ggRoles, ssRoles } from './message';
+import { MessageRoleDto, ssRoles } from './message';
 import { useTenant } from '../../../hooks/useTenant';
 
 export default function MessagePanel() {
@@ -98,7 +98,7 @@ export default function MessagePanel() {
   const [isLoading, setIsLoading] = useState(false);
   const [messageStatus, setMessageStatus] = useState('');
   const [userCount, setUserCount] = useState(0);
-  const [selectedRoles, setSelectedRoles] = useState<MessageRoleDto[]>([]);
+  const [selectedRoles, setSelectedRoles] = useState<MessageRoleDto[]>(ssRoles);
   const [authenticatedUser, setAuthenticatedUser] = useState<AuthUser>();
   const [currentMessage, setCurrentMessage] = useState<MessageLogDto>();
   const [wardData, setWardData] = useState<WardDto[]>([]);
@@ -117,13 +117,13 @@ export default function MessagePanel() {
     }
   }, [user]);
 
-  useEffect(() => {
-    if (tenant.isCHWConnect) {
-      setRoleData(ggRoles);
-    } else {
-      setRoleData(ssRoles);
-    }
-  }, [tenant]);
+  // useEffect(() => {
+  //   if (tenant.isCHWConnect) {
+  //     setRoleData(ggRoles);
+  //   } else {
+  //     setRoleData(ssRoles);
+  //   }
+  // }, [tenant]);
 
   useEffect(() => {
     if (wards) {

@@ -10,7 +10,7 @@ namespace ECDLink.PDFGenerator
     public static class PdfGeneratorStartup
     {
 
-        public static void ConfigureAzureStorageServices(IServiceCollection services, IConfiguration Configuration)
+        public static void ConfigurePdfGeneratorServices(IServiceCollection services, IConfiguration Configuration)
         {
             services.AddTransient<IFieldFactory, FieldFactory>();
             services.AddTransient<IFillableFieldService, FillableFieldService>();

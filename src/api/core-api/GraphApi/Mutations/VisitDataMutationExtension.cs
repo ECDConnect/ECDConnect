@@ -1,4 +1,4 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models.Visits;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
@@ -19,15 +19,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public bool AddVisitData([Service] VisitDataManager visitDataManager, [Service] VisitManager visitManager, HierarchyEngine hierarchyEngine, [Service] INotificationService notificationService, CMSVisitDataInputModel input)
         {
-            if (input.MotherId != null)
-            {
-                visitDataManager.AddAntenatalVisitData(input);
-            }
-            else if (input.InfantId != null)
-            {
-                visitDataManager.AddChildVisitData(input);
-            }
-            else if (input.PractitionerId != null)
+            if (input.PractitionerId != null)
             {
                 var visit = visitDataManager.AddPractitionerVisitData(input, true);
                 // PQA Rating
@@ -41,11 +33,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     var pqaRating = visitDataManager.CalculateAndSaveReAccreditationRating(visit);
                     visitManager.AddNextReAccreditationOrFollowUpVisit(pqaRating.OverallRatingColor, visit.PractitionerId.Value, visit);
                 }
-            }
-            else if (input.TraineeId != null)
-            {
-                visitDataManager.AddTraineeVisitData(input);
-            }           
+            }     
 
             return true;
         }
@@ -63,7 +51,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public bool AddCoachVisitData([Service] IIntegrationService integrationService, [Service] VisitDataManager visitDataManager, CMSVisitDataInputModel input)
+        public bool AddCoachVisitData([Service] VisitDataManager visitDataManager, CMSVisitDataInputModel input)
         {
             Visit visit = visitDataManager.AddCoachData(input);
             return true;

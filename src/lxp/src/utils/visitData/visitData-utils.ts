@@ -1,4 +1,4 @@
-import { SmartSpaceVisitData } from '@/store/trainee/trainee.types';
+import { SmartSpaceVisitData } from '@/store/pqa/pqa.types';
 import { CmsVisitSectionInput } from '@ecdlink/graphql';
 
 export const mapVisitDataToVisitSections = (

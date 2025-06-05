@@ -1,4 +1,4 @@
-using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.GraphApi.Models.ChildProgress;
 using EcdLink.Api.CoreApi.GraphApi.Models.Input;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
@@ -89,8 +89,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                     var newClassRoomGroup = classRepo.Insert(classRoomCreate);
                     UpdateClassProgrammeForPractitioner(contextAccessor, repoFactory, input.ClassroomId, hierarchy);
-                    // add points for adding a new class
-                    pointsService.CalculateAddNewClassToPreschool(uId);
+                    
                     // EC-3508 - as soon as a class is created, we set the progress to 2
                     var practitionerToUpdate = pracRepo.GetByUserId(uId);
                     if (practitionerToUpdate.Progress != 2) {
@@ -122,6 +121,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         };
                         notificationService.SendNotificationAsync(null, TemplateTypeConstants.ReassignedToNewClass, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null, new List<RelatedEntity> { new RelatedEntity(newClassRoomGroup.Id, "ClassRoomGroup") });
                     }
+
+                    // add points for adding a new class
+                    pointsService.CalculateAddNewClassToPreschool((Guid)(input.UserId.HasValue ? input.UserId : uId));
+                    
                     return newClassRoomGroup;
 
                 }

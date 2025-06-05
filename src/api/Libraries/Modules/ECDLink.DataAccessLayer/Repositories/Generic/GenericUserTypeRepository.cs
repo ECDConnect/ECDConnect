@@ -57,11 +57,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             context.SaveChanges();
 
             _hierarchyEngine.RemoveHierarchy(((IUserType)entity).UserId);
-
-
-            //Populate Audit records
-            if (typeof(ITrackableType).IsAssignableFrom(typeof(T)))
-                DoAudit(entity, "Delete");
         }
 
 
@@ -299,10 +294,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
 
             _domainEventService.NotifyCreate(_userId.ToString(), entity);
 
-            //Populate Audit records
-            if (typeof(ITrackableType).IsAssignableFrom(typeof(T)))
-                DoAudit(entity, "Insert");
-
             return entity;
         }
 
@@ -327,12 +318,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 entity.InsertedDate = dbEntity.InsertedDate;
 
                 ((IUserType)entity).Hierarchy = ((IUserType)dbEntity).Hierarchy;
-
-                //Populate Audit records
-                if (typeof(ITrackableType).IsAssignableFrom(typeof(T)))
-                {
-                    DoAudit(entity, "Update", dbEntity);
-                }
 
                 entity.UpdatedDate = DateTime.Now;
 

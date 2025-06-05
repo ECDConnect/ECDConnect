@@ -1,9 +1,8 @@
-import { Button, Typography } from '@ecdlink/ui';
+import { Typography } from '@ecdlink/ui';
 import logo from '../../../../assets/Logo-ECDConnect.svg';
 import thumbs_up from '../../../../assets/icon_thumbsup.svg';
-import ROUTES from '../../../routes/app.routes-constants';
 import { useCallback, useEffect } from 'react';
-import { RouteComponentProps, useHistory } from 'react-router';
+import { RouteComponentProps } from 'react-router';
 import {
   AuthCodeModel,
   Config,
@@ -20,7 +19,6 @@ interface RouteParams {
 export default function VerifyPhoneNumber(
   props: RouteComponentProps<RouteParams>
 ) {
-  const history = useHistory();
   const { setNotification } = useNotifications();
   const urlParams = new URLSearchParams(window.location.search);
   const username = urlParams.get('username');
@@ -68,7 +66,7 @@ export default function VerifyPhoneNumber(
             align="center"
           />
         </div>
-        <div className="mt-4 w-full">
+        {/* <div className="mt-4 w-full">
           <Button
             className={'mt-3 w-full rounded-xl'}
             type="outlined"
@@ -83,7 +81,7 @@ export default function VerifyPhoneNumber(
               text={'Go to login'}
             ></Typography>
           </Button>
-        </div>
+        </div> */}
       </div>
     </div>
   );

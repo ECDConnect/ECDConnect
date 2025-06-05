@@ -1,12 +1,12 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.GraphApi.Models.Points;
 using EcdLink.Api.CoreApi.Services.Interfaces;
+using ECDLink.Api.CoreApi.Services;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Community;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
-using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using ECDLink.DataAccessLayer.Entities.Reports;
 using ECDLink.DataAccessLayer.Entities.Training;
@@ -15,7 +15,6 @@ using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
-using ECDLink.SmartStart.Reports;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
@@ -42,16 +41,13 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly IGenericRepository<UserTrainingCourse, Guid> _userTrainingCourseRepo;
         private readonly IGenericRepository<Classroom, Guid> _classRepo;
         private readonly IGenericRepository<ClassroomGroup, Guid> _classroomGroupRepo;
-        private readonly IGenericRepository<IntegrationAudit, Guid> _integrationAuditRepo;
         private readonly IGenericRepository<ChildProgressReport, Guid> _childProgressReportRepo;
-        private readonly IGenericRepository<UserPermission, Guid> _userPermissionRepo;
         private readonly IGenericRepository<StatementsIncomeStatement, Guid> _statementsRepo;
         private readonly IGenericRepository<StatementsIncome, Guid> _statementsIncomeRepo;
         private readonly IGenericRepository<Programme, Guid> _programmeRepo;
         
         private MonthlyAttendanceReport _monthlyAttendanceReportService;
         private HierarchyEngine _hierarchyEngine;
-        private INotificationService _notificationService;
         private IClassroomService _classroomService;
 
         private readonly Guid _uId;
@@ -61,7 +57,6 @@ namespace EcdLink.Api.CoreApi.Services
             IGenericRepositoryFactory repositoryFactory,
             HierarchyEngine hierarchyEngine,
             [Service] MonthlyAttendanceReport monthlyAttendanceReportService,
-            [Service] INotificationService notificationService,
             [Service] IClassroomService classroomService)
         {
             _contextAccessor = contextAccessor;
@@ -85,12 +80,9 @@ namespace EcdLink.Api.CoreApi.Services
             _communityProfileConnectionRepo = _repositoryFactory.CreateGenericRepository<CommunityProfileConnection>(userContext: _uId);
             _communityProfileRepo = _repositoryFactory.CreateGenericRepository<CommunityProfile>(userContext: _uId);
             _userTrainingCourseRepo = _repositoryFactory.CreateGenericRepository<UserTrainingCourse>(userContext: _uId);
-            _integrationAuditRepo = _repositoryFactory.CreateGenericRepository<IntegrationAudit>(userContext: _uId);
-            _userPermissionRepo = _repositoryFactory.CreateGenericRepository<UserPermission>(userContext: _uId);
             _statementsRepo = _repositoryFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _uId);
             _statementsIncomeRepo = _repositoryFactory.CreateGenericRepository<StatementsIncome>(userContext: _uId);
 
-            _notificationService = notificationService;
             _classroomService = classroomService;
         }
 
@@ -178,9 +170,9 @@ namespace EcdLink.Api.CoreApi.Services
                 maxTotal = isPrincipal ? Constants.MaxPointsTotal.PrincipalMaxYearPoints : Constants.MaxPointsTotal.PractitionerMaxYearPoints;
             }
 
-            var takeAttendance = userPermissions.Where(x => x.PermissionId == Constants.PractitionerPermissions.TakeAttendanceId).FirstOrDefault();
-            var planClassroomActivities = userPermissions.Where(x => x.PermissionId == Constants.PractitionerPermissions.PlanClassroomActivitiesId).FirstOrDefault();
-            var createProgressReports = userPermissions.Where(x => x.PermissionId == Constants.PractitionerPermissions.CreateProgressReportsId).FirstOrDefault();
+            var takeAttendance = userPermissions.Where(x => x.Permission.Name == Constants.PractitionerPermissions.TakeAttendance && x.IsActive).FirstOrDefault();
+            var planClassroomActivities = userPermissions.Where(x => x.Permission.Name == Constants.PractitionerPermissions.PlanClassroomActivities && x.IsActive).FirstOrDefault();
+            var createProgressReports = userPermissions.Where(x => x.Permission.Name == Constants.PractitionerPermissions.CreateProgressReports && x.IsActive).FirstOrDefault();
 
             if (!isPrincipal)
             {
@@ -572,24 +564,58 @@ namespace EcdLink.Api.CoreApi.Services
                 if (practitioner != null)
                 {
                     var today = DateTime.Now;
-                    var schoolClasses = _classRepo.GetAll().Where(x => x.IsActive && x.UserId == userId).ToList();
-                    if (schoolClasses.Any())
-                    {
-                        var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.ThemePlannedId);
-                        var classroomProgrammes = schoolClasses
-                                                .SelectMany(x => x.Programmes)
-                                                .Where(x => x.IsActive && x.InsertedDate.Year == today.Year && x.InsertedDate.Month == today.Month && x.Name != "No theme")
-                                                .ToList();
+                    var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.ThemePlannedId);
 
-                        if (classroomProgrammes.Count > 0)
+                    if (practitioner?.IsPrincipal == true)
+                    {
+                        var schoolClasses = _classRepo.GetAll().Where(x => x.IsActive && x.UserId == userId).ToList();
+                        if (schoolClasses.Any())
                         {
-                            AddOrUpdatePoints(
-                                PointsActivityConstants.ThemePlannedId,
-                                userId,
-                                activity.Points * classroomProgrammes.Count,
-                                classroomProgrammes.Count,
-                                today.GetStartOfMonth()
-                            );
+                            var classroomProgrammes = schoolClasses
+                                                    .SelectMany(x => x.Programmes)
+                                                    .Where(x => x.IsActive && x.InsertedDate.Year == today.Year && x.InsertedDate.Month == today.Month && x.Name != "No theme")
+                                                    .ToList();
+
+                            if (classroomProgrammes.Count > 0)
+                            {
+                                AddOrUpdatePoints(
+                                    PointsActivityConstants.ThemePlannedId,
+                                    userId,
+                                    activity.Points * classroomProgrammes.Count,
+                                    classroomProgrammes.Count,
+                                    today.GetStartOfMonth()
+                                );
+                            }
+                        }
+                    }
+                    else
+                    {
+                        var userPermissions = practitioner.User.UserPermissions;
+                        var planClassroomActivities = userPermissions.Where(x => x.Permission.Name == Constants.PractitionerPermissions.PlanClassroomActivities && x.IsActive).FirstOrDefault();
+                        if (planClassroomActivities != null && planClassroomActivities.IsActive == true)
+                        {
+                            var classRoomGroup = _classroomGroupRepo.GetByUserId(userId);
+                            if (classRoomGroup != null)
+                            {
+                                var classroomProgrammes = _programmeRepo.GetAll()
+                                                                        .Where(x => x.IsActive
+                                                                                    && x.InsertedDate.Year == today.Year
+                                                                                    && x.InsertedDate.Month == today.Month
+                                                                                    && x.Name != "No theme"
+                                                                                    && x.ClassroomGroupId == classRoomGroup.Id)
+                                                                        .ToList();
+
+                                if (classroomProgrammes.Count > 0)
+                                {
+                                    AddOrUpdatePoints(
+                                        PointsActivityConstants.ThemePlannedId,
+                                        userId,
+                                        activity.Points * classroomProgrammes.Count,
+                                        classroomProgrammes.Count,
+                                        today.GetStartOfMonth()
+                                    );
+                                }
+                            }
                         }
                     }
                 }
@@ -610,28 +636,63 @@ namespace EcdLink.Api.CoreApi.Services
                 if (practitioner != null)
                 {
                     var today = DateTime.Now;
-                    var schoolClasses = _classRepo.GetAll().Where(x => x.IsActive && x.UserId == userId).ToList();
-                    if (schoolClasses.Any())
-                    {
-                        var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.NoThemePlannedId);
+                    var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.NoThemePlannedId);
 
-                        var totalCompletedDays = schoolClasses
-                                                .SelectMany(x => x.Programmes)
-                                                .Where(x => x.IsActive && x.StartDate.Year >= today.Year && x.Name == "No theme")
-                                                .ToList()
-                                                .SelectMany(x => x.DailyProgrammes)
-                                                .ToList()
-                                                .Where(x => x.IsActive && x.DateCompleted.HasValue && x.DateCompleted.Value.Year == today.Year && x.DateCompleted.Value.Month == today.Month)
-                                                .Select(x => x.Id)
-                                                .Count();
-                       if (totalCompletedDays > 0)
+                    if (practitioner?.IsPrincipal == true)
+                    {
+                        var schoolClasses = _classRepo.GetAll().Where(x => x.IsActive && x.UserId == userId).ToList();
+                        if (schoolClasses.Any())
                         {
-                            AddOrUpdatePoints(
-                                PointsActivityConstants.NoThemePlannedId,
-                                userId,
-                                activity.Points * totalCompletedDays,
-                                totalCompletedDays
-                                );
+                            var totalCompletedDays = schoolClasses
+                                                    .SelectMany(x => x.Programmes)
+                                                    .Where(x => x.IsActive && x.StartDate.Year >= today.Year && x.Name == "No theme")
+                                                    .ToList()
+                                                    .SelectMany(x => x.DailyProgrammes)
+                                                    .ToList()
+                                                    .Where(x => x.IsActive && x.DateCompleted.HasValue && x.DateCompleted.Value.Year == today.Year && x.DateCompleted.Value.Month == today.Month)
+                                                    .Select(x => x.Id)
+                                                    .Count();
+                            if (totalCompletedDays > 0)
+                            {
+                                AddOrUpdatePoints(
+                                    PointsActivityConstants.NoThemePlannedId,
+                                    userId,
+                                    activity.Points * totalCompletedDays,
+                                    totalCompletedDays
+                                    );
+                            }
+                        }
+                    }
+                    else
+                    {
+                        var userPermissions = practitioner.User.UserPermissions;
+                        var planClassroomActivities = userPermissions.Where(x => x.Permission.Name == Constants.PractitionerPermissions.PlanClassroomActivities && x.IsActive).FirstOrDefault();
+                        if (planClassroomActivities != null && planClassroomActivities.IsActive == true)
+                        {
+                            var classRoomGroup = _classroomGroupRepo.GetByUserId(userId);
+                            if (classRoomGroup != null)
+                            {
+                                var totalCompletedDays = _programmeRepo.GetAll()
+                                                    .Where(x => x.IsActive
+                                                            && x.StartDate.Year >= today.Year
+                                                            && x.Name == "No theme"
+                                                            && x.ClassroomGroupId == classRoomGroup.Id)
+                                                    .SelectMany(x => x.DailyProgrammes)
+                                                    .ToList()
+                                                    .Where(x => x.IsActive && x.DateCompleted.HasValue && x.DateCompleted.Value.Year == today.Year && x.DateCompleted.Value.Month == today.Month)
+                                                    .Select(x => x.Id)
+                                                    .Count();
+
+                                if (totalCompletedDays > 0)
+                                {
+                                    AddOrUpdatePoints(
+                                        PointsActivityConstants.NoThemePlannedId,
+                                        userId,
+                                        activity.Points * totalCompletedDays,
+                                        totalCompletedDays
+                                        );
+                                }
+                            }
                         }
                     }
                 }

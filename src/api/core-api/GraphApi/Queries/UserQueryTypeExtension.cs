@@ -188,8 +188,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
                 return usersQuery
                     .Where(u => provinceIds.Contains(u.practitionerObjectData.SiteAddress.ProvinceId ?? Guid.Empty)
-                    || provinceIds.Contains(u.coachObjectData.SiteAddress.ProvinceId ?? Guid.Empty)
-                    || provinceIds.Contains(u.franchisorObjectData.SiteAddress.ProvinceId ?? Guid.Empty));
+                    || provinceIds.Contains(u.coachObjectData.SiteAddress.ProvinceId ?? Guid.Empty));
             }
 
             return usersQuery;
@@ -238,13 +237,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             }
 
             var roles = await (new ObjectTypes.ApplicationUserExtension()).GetRolesAsync(user, roleManager, userManager);
-
-            //Franchisor
-            if (roles.Any(x => x.Name.Contains(Roles.FRANCHISOR)))
-            {
-                var franchisorRepo = repoFactory.CreateGenericRepository<Franchisor>(userContext: user.Id);
-                user.franchisorObjectData = franchisorRepo.GetByUserId(user.Id);
-            }
             //Coach
             if (roles.Any(x => x.Name.Contains(Roles.COACH)))
             {
@@ -262,14 +254,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     {
                         user.practitionerObjectData = null;
                         user.principalObjectData = userData;
-                    }
-                    else if (userData.IsTrainee.HasValue && userData.IsTrainee == true)
-                    {
-                        var traineeRepo = repoFactory.CreateGenericRepository<Trainee>(userContext: user.Id);
-                        var traineeUserData = traineeRepo.GetByUserId(user.Id);
-                        user.practitionerObjectData = null;
-                        user.principalObjectData = null;
-                        user.traineeObjectData = traineeUserData;
                     }
                     else
                     {

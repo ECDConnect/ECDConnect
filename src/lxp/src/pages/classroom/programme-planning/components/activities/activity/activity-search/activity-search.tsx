@@ -66,6 +66,11 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
     setState({ stepIndex: stepNr });
   };
 
+  // close walk through on last step
+  if (state?.run && state.stepIndex === 9) {
+    onClose();
+  }
+
   const { isOnline } = useOnlineStatus();
   const languages = useSelector(staticDataSelectors.getLanguages);
   const allThemes = useSelector(programmeThemeSelectors.getProgrammeThemes);

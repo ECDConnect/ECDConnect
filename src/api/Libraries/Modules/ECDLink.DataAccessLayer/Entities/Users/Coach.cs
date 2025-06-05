@@ -35,15 +35,9 @@ namespace ECDLink.DataAccessLayer.Entities.Users
 
         [GraphQLIgnore]
         public string Hierarchy { get; set; }
-        [ForeignKey(nameof(FranchisorId))]
-        public virtual Franchisor Franchisor { get; set; }
-        public Guid? FranchisorId { get; set; }
-        [NotMapped]
-        public virtual ICollection<Visit> TraineeVisits { get; set; }
         [NotMapped]
         public virtual ICollection<Visit> PractitionerVisits { get; set; }
         public string AboutInfo { get; set; }
-        public bool? ClickedClubTab { get; set; } = false;
         public bool? IsRegistered { get; set; } = false;
         public bool? ShareInfo { get; set; } = false;
         public bool? ClickedCommunityTab { get; set; } = false;

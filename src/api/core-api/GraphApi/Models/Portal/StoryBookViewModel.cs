@@ -74,7 +74,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
             Keywords = keywords != null ? keywords.ToString() : "";
             StoryBookParts = storyBookParts != null ? storyBookParts.ToString() : "";
             LocaleId = localeId;
-            Themes = themes != null ? themes.ToString(): "";
+            Themes = themes != null ? themes.ToString() : "";
             ShareContent = shareContent == null ? "" : shareContent.ToString();
             UpdatedDate = updatedDate != null ? DateTime.Parse(updatedDate.ToString()) : null;
             InsertedDate = insertedDate != null ? DateTime.Parse(insertedDate.ToString()) : null;

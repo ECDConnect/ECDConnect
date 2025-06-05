@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using EcdLink.Api.CoreApi.GraphApi.Models.Portal;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
 {
