@@ -181,7 +181,7 @@ export class IncompletePractitionerInformationNotificationValidator
           practitionerState?.practitioner?.progress === 0) ||
         (practitionerState?.practitioner?.progress === 1.0 &&
           !addedByPrincipal) ||
-        (!hasPractitionerRole && isTrialPeriod);
+        (!hasPractitionerRole && isTrialPeriod && !hasPrincipalRole);
 
       if (showNotificationForPrincipalFlow) {
         return [

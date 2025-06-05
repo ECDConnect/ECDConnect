@@ -40,10 +40,19 @@ const notificationsState = createSlice({
       state: NotificationsState,
       action: PayloadAction<Message[]>
     ) => {
-      const newNotifications = action.payload.map((message) => ({
-        isNew: true,
-        message,
-      }));
+      const seenReferences = new Set(state.notificationReferences); // Track existing references
+      const newNotifications = action.payload
+        .filter((message) => {
+          if (seenReferences.has(message.reference)) {
+            return false; // Skip if reference already exists in state
+          }
+          seenReferences.add(message.reference); // Add to seen references
+          return true; // Include this message
+        })
+        .map((message) => ({
+          isNew: true,
+          message,
+        }));
       state.notifications.push(...newNotifications);
       state.notificationReferences.push(
         ...newNotifications.map((n) => n.message.reference)
