@@ -43,7 +43,6 @@ import { useAppDispatch } from '@/store';
 import { ReactComponent as Kindgarden } from '@/assets/icon/kindergarten1.svg';
 import { ReactComponent as Crown } from '@/assets/icon/crown.svg';
 import { useTenant } from '@/hooks/useTenant';
-// import { pointsTodoItems } from '@/store/points/points.actions';
 import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import { PermissionsNames } from '@/pages/principal/components/add-practitioner/add-practitioner.types';
 import { BusinessTabItems } from '@/pages/business/business.types';
@@ -151,6 +150,7 @@ export const PointsSummary: React.FC = () => {
       : practitioner?.principalHierarchy && !practitioner?.dateAccepted
       ? ROUTES.PRACTITIONER.PROFILE.EDIT
       : ROUTES.PRINCIPAL.SETUP_PROFILE;
+
     // To make influencer clickable
     const canClickInfluencer = tenant.isWhiteLabel
       ? pointsToDo?.signedUpForApp &&

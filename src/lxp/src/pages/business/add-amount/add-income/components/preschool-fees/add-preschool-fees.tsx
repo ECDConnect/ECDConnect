@@ -77,7 +77,7 @@ export const AddPreschoolFees: React.FC<AddPreschoolFeesProps> = ({
               <Alert
                 type={'info'}
                 title={
-                  "You don't have any classes yet. Add calsses to get started"
+                  "You don't have any classes yet. Add classes to get started"
                 }
                 className="mt-6"
               />
