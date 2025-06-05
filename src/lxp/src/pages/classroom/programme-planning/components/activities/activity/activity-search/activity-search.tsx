@@ -66,6 +66,11 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
     setState({ stepIndex: stepNr });
   };
 
+  // close walk through on last step
+  if (state?.run && state.stepIndex === 9) {
+    onClose();
+  }
+
   const { isOnline } = useOnlineStatus();
   const languages = useSelector(staticDataSelectors.getLanguages);
   const allThemes = useSelector(programmeThemeSelectors.getProgrammeThemes);
@@ -509,7 +514,7 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
                 className="my-4 w-full"
                 type="outlined"
                 color="quatenary"
-                text="See more activities"
+                text="See more activities 1"
                 textColor="quatenary"
                 icon="EyeIcon"
                 onClick={() => setPageSize(pageSize + ACTIVITY_PAGE_SIZE)}
