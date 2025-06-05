@@ -1,11 +1,11 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
-using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Api.CoreApi.Services;
 using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
@@ -27,7 +27,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
+namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class PractitionerMutationExtension
@@ -55,14 +55,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     }
                     practitioner.IsActive = input.IsActive;
                     if (input.AttendanceRegisterLink != null) practitioner.AttendanceRegisterLink = input.AttendanceRegisterLink;
-                    if (input.MaxChildren != null) practitioner.MaxChildren = input.MaxChildren;
                     if (input.IsPrincipal != null) practitioner.IsPrincipal = input.IsPrincipal;
-                    if (input.IsFundaAppAdmin != null) practitioner.IsFundaAppAdmin = input.IsFundaAppAdmin;
                     if (input.PrincipalHierarchy != null) practitioner.PrincipalHierarchy = input.PrincipalHierarchy;                    
                     if (input.SigningSignature != null) practitioner.SigningSignature = input.SigningSignature;
                     if (input.StartDate != null) practitioner.StartDate = input.StartDate;
-                    if (input.SetupTraineeInitiated != null) practitioner.SetupTraineeInitiated = input.SetupTraineeInitiated;
-
+             
                     if (input.SiteAddress != null && input.SiteAddressId.HasValue)
                     {
                         var addressRepo = repoFactory.CreateGenericRepository<SiteAddress>(userContext: uId);
@@ -173,26 +170,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             }
 
             return status;
-        }
-
-        public bool UpdatePractitionerIsFundaAppAdmin([Service] IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory,
-            string practitionerId)
-        {
-            bool bReturn = false;
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            Practitioner practitioner = practitionerRepo.GetByUserId(practitionerId);
-            {
-                if (practitioner != null)
-                {
-                    practitioner.IsFundaAppAdmin = true;
-                    practitionerRepo.Update(practitioner);
-                    return true;
-                }
-            }
-
-            return bReturn;
         }
 
         public decimal UpdatePractitionerProgress([Service] IHttpContextAccessor contextAccessor,
@@ -310,12 +287,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         {
             return await personnelService.DeActivatePractitionerAsync(userId, leavingComment, reasonForPractitionerLeavingId, reasonDetails);
         }
-
-        public bool DelicensePractitioner([Service] UserLicenseManager userLicenseManager, LicenseModel input)
-        {
-            return userLicenseManager.DelicenseUser(input);
-        }
-
         public bool RemoveFromProgramme(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,

@@ -1,4 +1,9 @@
-import { LocalStorageKeys, RoleSystemNameEnum, useDialog } from '@ecdlink/core';
+import {
+  LocalStorageKeys,
+  RoleSystemNameEnum,
+  useDialog,
+  usePrevious,
+} from '@ecdlink/core';
 import {
   ActionModal,
   BannerWrapper,
@@ -27,7 +32,6 @@ import ROUTES from '@routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
 import walkthroughImage from '../../../assets/walktroughImage.png';
 import { childrenSelectors } from '@/store/children';
-import { getReportingPeriodDateInReportDate } from '@/utils/child/child-profile-utils';
 import { userSelectors } from '@/store/user';
 import {
   programmeThemeSelectors,
@@ -53,18 +57,16 @@ export const ClassDashboard: React.FC = () => {
   const dialog = useDialog();
   const history = useHistory();
   const isTrialPeriod = useIsTrialPeriod();
-  const { state } = useLocation<ClassDashboardRouteState>();
+  const location = useLocation<ClassDashboardRouteState>();
   const date = format(new Date(), 'EEEE, d LLLL');
   const [attendanceTutorialActive, setAttendanceTutorialActive] =
     useState<boolean>(false);
   const [attendanceTutorialComplete, setAttendanceTutorialComplete] =
     useState<boolean>(false);
-  const [selectedTabIndex, setSelectedTabIndex] = useState<number>(
-    state?.activeTabIndex !== undefined ? state?.activeTabIndex : 1
-  );
+
   const [showAttendanceWalkthrough, setShowAttendanceWalkthrough] =
     useState(false);
-  const messageReference = state?.messageReference;
+  const messageReference = location?.state?.messageReference;
   const appDispatch = useAppDispatch();
   const [previousTabIndex, setPreviousTabIndex] = useState<number>();
   const [currentTab, setCurrentTab] = useState<TabItem>();
@@ -78,24 +80,18 @@ export const ClassDashboard: React.FC = () => {
   const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
   const tenant = useTenant();
   const isWhiteLabel = tenant?.isWhiteLabel;
-  const appName = tenant?.tenant?.applicationName;
   const { attendanceEnabled, classroomActivitiesEnabled, progressEnabled } =
     useTenantModules();
   const [showProgressInfo, setShowProgressInfo] = useState(false);
 
   const { setState } = useAppContext();
-
+  const [selectedTabIndex, setSelectedTabIndex] = useState<number>(0);
   const isToShowAttendanceTutorial = useMemo(
     () =>
       selectedTabIndex === TabsItems.ATTENDANCE &&
       (practitioner?.progress! < 3 || practitioner?.progress === undefined) &&
       children?.length! > 0,
     [children?.length, practitioner?.progress, selectedTabIndex]
-  );
-
-  const reportingPeriod = useMemo(
-    () => getReportingPeriodDateInReportDate(new Date()),
-    []
   );
 
   const { practitionerIsOnLeave, currentAbsentee } = usePractitionerAbsentees(
@@ -120,6 +116,12 @@ export const ClassDashboard: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (location.state?.activeTabIndex !== undefined) {
+      setSelectedTabIndex(Number(location.state.activeTabIndex));
+    }
+  }, [location.state]);
 
   useEffect(() => {
     if (!isOnline) {
@@ -163,12 +165,6 @@ export const ClassDashboard: React.FC = () => {
     ],
     [messageReference]
   );
-
-  useEffect(() => {
-    if (selectedTabIndex !== undefined && selectedTabIndex >= 0) {
-      setCurrentTab(tabItems[selectedTabIndex]);
-    }
-  }, [selectedTabIndex, tabItems]);
 
   const setTabSelected = (tab: TabItem, tabIndex: number) => {
     setPreviousTabIndex(selectedTabIndex);
@@ -326,10 +322,14 @@ export const ClassDashboard: React.FC = () => {
                 colour: 'quatenary',
                 type: 'filled',
                 onClick: () => {
-                  history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST, {
-                    returnRoute: ROUTES.DASHBOARD,
-                    isToShowPrincipal: true,
-                  } as PractitionerListRouteState);
+                  history.push({
+                    pathname: ROUTES.PRINCIPAL.PRACTITIONER_LIST,
+                    state: {
+                      ...location.state,
+                      returnRoute: ROUTES.DASHBOARD,
+                      isToShowPrincipal: true,
+                    } as PractitionerListRouteState,
+                  });
                   onClose();
                 },
                 leadingIcon: 'ChatAltIcon',
@@ -356,6 +356,7 @@ export const ClassDashboard: React.FC = () => {
     currentAbsentee?.loggedByPerson,
     dialog,
     history,
+    location.state,
   ]);
 
   useEffect(() => {
@@ -373,9 +374,12 @@ export const ClassDashboard: React.FC = () => {
 
   useEffect(() => {
     if (isCoach) {
-      history.push(ROUTES.COACH.ROOT);
+      history.push({
+        pathname: ROUTES.COACH.ROOT,
+        state: location.state, // Preserve the state
+      });
     }
-  }, [history, isCoach]);
+  }, [history, isCoach, location.state]);
 
   // useEffect(() => {
   //   if (

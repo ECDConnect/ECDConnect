@@ -17,7 +17,7 @@ import ContentList from './sub-pages/content-list/content-list';
 import { StackedList, TitleListDataItem, classNames } from '@ecdlink/ui';
 import ContentLoader from '../../components/content-loader/content-loader';
 import ContentWorkflow from './sub-pages/content-workflow/content-workflow';
-import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/solid';
+import { ArrowRightIcon } from '@heroicons/react/solid';
 import { useLazyQuery } from '@apollo/client';
 import {
   ContentManagementTabs,
@@ -478,9 +478,7 @@ export function ContentManagement() {
                       ? 'bg-adminPortalBg text-secondary border-b-secondary border-b-2'
                       : 'text-textMid hover:text-secondary hover:border hover:border-b-indigo-500 hover:bg-white',
                     'consent-tabs text-md flex h-14 items-center justify-center font-medium',
-                    tenant.isCHWConnect
-                      ? 'w-3/12'
-                      : 'flex w-5/12 justify-center'
+                    'flex w-5/12 justify-center'
                   )}
                 >
                   {item.name}

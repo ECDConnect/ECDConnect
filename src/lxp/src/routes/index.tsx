@@ -67,52 +67,17 @@ import { WalkthroughTutorial } from '@/pages/classroom/attendance/components/att
 import { PreviousStatements } from '@/pages/business/money/previous-statements/previous-statements';
 import { MonthStatements } from '@/pages/business/money/monthly-statements/month-statements';
 import { CoachPractitionerJourney } from '@/pages/coach/coach-practitioner-journey';
-import { SetupTrainee } from '@/pages/trainee/setup-trainee/setup-trainee';
-import { TraineeOnboarding } from '@/pages/trainee/trainee-onboarding/trainee-onboarding';
 import Calendar from '@/pages/calendar/calendar-home';
 import RemovePractitionerFromProgramme from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-profile/components/remove-practitioner-from-programme/remove-practitioner-from-programme';
-import { CoachSmartSpaceChecklist } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/coach-smart-space-checklist/coach-smart-space-checklist';
-import { FranchiseeAgreement } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/franchisee-agreement/franchisee-agreement';
-import { CoachSelfAssessment } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/coach-self-assessment/coach-self-assessment-checklist';
 import SwitchPrincipal from '@/pages/practitioner/practitioner-programme-information/practitioner-list/switch-principal/switch-principal';
 import { CoachPractitionerBusiness } from '@/pages/coach/coach-practitioner-business/coach-practitioner-business';
 import { PractitionerPreviousStatements } from '@/pages/coach/coach-practitioner-business/components/statements/previous-statements';
 import { PractitionerMonthStatements } from '@/pages/coach/coach-practitioner-business/components/statements/month-statements';
 import { PointsSummary } from '@/pages/points/points-summary/points-summary';
-import { CommunityWelcome } from '@/pages/community-old/welcome';
-import { Club } from '@/pages/community-old/clubs-tab/club/individual-club-view';
-import { ClubMembers } from '@/pages/community-old/clubs-tab/club/club-members';
-import { ClubMembersEdit } from '@/pages/community-old/clubs-tab/club/club-members-edit';
-import { ClubEdit } from '@/pages/community-old/clubs-tab/club/club-edit';
 import { PointsYearView } from '@/pages/points/points-year-view/points-year-view';
-import { ClubLeaderEdit } from '@/pages/community-old/clubs-tab/club/club-leader-edit';
-import { ClubAdd } from '@/pages/community-old/clubs-tab/club/club-add';
 import { CoachContactDetails } from '@/pages/practitioner/coach-contact-details/coach-contact-details';
-import { ClubMembersAdd } from '@/pages/community-old/clubs-tab/club/club-members-add';
-import { UserProfile } from '@/pages/community-old/clubs-tab/club/user-profile';
-import { CoachTraineeOnboarding } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/trainee-onboarding';
-import { ClubPoints } from '@/pages/community-old/clubs-tab/club/club-points';
-import { MeetRegularly } from '@/pages/community-old/clubs-tab/club/club-points/activities/meet-regularly';
-import { MeetingDetails } from '@/pages/community-old/clubs-tab/club/club-points/activities/meet-regularly/meeting-details';
-import { BeCreative } from '@/pages/community-old/clubs-tab/club/club-points/activities/be-creative';
-import { HostFamilyDays } from '@/pages/community-old/clubs-tab/club/club-points/activities/host-family-days';
-import { LeaveNoOneBehind } from '@/pages/community-old/clubs-tab/club/club-points/activities/leave-no-one-behind';
-import { CaptureChildAttendance } from '@/pages/community-old/clubs-tab/club/club-points/activities/capture-child-attendance';
-import { CompleteChildProgressReports } from '@/pages/community-old/clubs-tab/club/club-points/activities/complete-child-progress';
-import { LeagueLeaderBoard } from '@/pages/community-old/leagues-tab/league-leaderboard';
-import { ActivityHelp } from '@/pages/community-old/clubs-tab/0-components/help-screen';
-import { ClubMemberAdd } from '@/pages/community-old/clubs-tab/club/club-member-add';
-import { ClubMemberView } from '@/pages/community-old/clubs-tab/club/club-member-view';
 import CoachReassignClass from '@/pages/coach/coach-reassign-class/coach-reassign-class';
-import { AcceptClubLeaderRole } from '@/pages/practitioner/practitioner-community/accept-club-leader-role';
-import { PractitionerCommunity } from '@/pages/practitioner/practitioner-community';
-import { SupportRoleEdit } from '@/pages/practitioner/practitioner-community/club-tab/club/club-support-edit';
-import { AddMeeting } from '@/pages/practitioner/practitioner-community/club-tab/club/add-a-meeting';
-import { AddAFamilyDayEvent } from '@/pages/practitioner/practitioner-community/club-tab/club/add-a-family-day-event';
-import { AddCollageEvent } from '@/pages/practitioner/practitioner-community/club-tab/club/add-collage-event';
-import { PractitionerCommunityWelcome } from '@/pages/practitioner/practitioner-community/welcome';
 import { CoachPractitionerPoints } from '@/pages/coach/coach-practitioner-points/coach-practitioner-points';
-import { MissingMeetingRegisters } from '@/pages/community-old/clubs-tab/club/club-points/activities/meet-regularly/missing-meeting-registers';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { usePrevious } from '@ecdlink/core';
 import { Location } from 'history';
@@ -275,11 +240,6 @@ const AuthRoutes: React.FC = () => {
       <Route path={ROUTES.COMMUNITY.WELCOME} component={Community} exact />
       <Route path={ROUTES.COMMUNITY.ROOT} component={Community} exact />
       <Route
-        path={ROUTES.COMMUNITY.WELCOME}
-        component={CommunityWelcome}
-        exact
-      />
-      <Route
         path={ROUTES.COMMUNITY.CONNECTION_PROFILE}
         component={ConnectionProfile}
         exact
@@ -294,155 +254,9 @@ const AuthRoutes: React.FC = () => {
         component={CommunityConnections}
         exact
       />
-      <Route path={ROUTES.COMMUNITY.CLUB.ROOT} component={Club} exact />
-      <Route path={ROUTES.COMMUNITY.CLUB.ADD} component={ClubAdd} exact />
-      <Route path={ROUTES.COMMUNITY.CLUB.EDIT} component={ClubEdit} exact />
-      <Route
-        path={ROUTES.COMMUNITY.CLUB.MEMBERS.ROOT}
-        component={ClubMembers}
-        exact
-      />
-      <Route
-        path={ROUTES.COMMUNITY.CLUB.MEMBER.ROOT}
-        component={ClubMemberView}
-        exact
-      />
-      <Route
-        path={ROUTES.COMMUNITY.CLUB.MEMBER.ADD}
-        component={ClubMemberAdd}
-        exact
-      />
-      <Route
-        path={ROUTES.COMMUNITY.CLUB.MEMBERS.ADD}
-        component={ClubMembersAdd}
-        exact
-      />
-      <Route
-        path={ROUTES.COMMUNITY.CLUB.MEMBERS.EDIT}
-        component={ClubMembersEdit}
-        exact
-      />
-      <Route
-        path={[
-          ROUTES.COMMUNITY.CLUB.LEADER.ADD,
-          ROUTES.COMMUNITY.CLUB.LEADER.EDIT,
-        ]}
-        component={ClubLeaderEdit}
-        exact
-      />
-      <Route
-        path={[
-          ROUTES.COMMUNITY.CLUB.USER_PROFILE.COACH,
-          ROUTES.COMMUNITY.CLUB.USER_PROFILE.LEADER,
-          ROUTES.COMMUNITY.CLUB.USER_PROFILE.SUPPORT_ROLE,
-          ROUTES.COMMUNITY.CLUB.USER_PROFILE.MEMBER,
-        ]}
-        component={UserProfile}
-        exact
-      />
-      <Route
-        path={ROUTES.COMMUNITY.CLUB.POINTS.ROOT}
-        component={ClubPoints}
-        exact
-      />
-      <Route
-        path={ROUTES.COMMUNITY.CLUB.POINTS.MEET_REGULARLY.ROOT}
-        component={MeetRegularly}
-        exact
-      />
-      <Route
-        path={ROUTES.COMMUNITY.CLUB.POINTS.MEET_REGULARLY.MEETING_DETAILS}
-        component={MeetingDetails}
-        exact
-      />
-      <Route
-        path={
-          ROUTES.COMMUNITY.CLUB.POINTS.MEET_REGULARLY.MISSING_MEETING_REGISTERS
-        }
-        component={MissingMeetingRegisters}
-        exact
-      />
-      <Route
-        path={ROUTES.COMMUNITY.CLUB.POINTS.BE_CREATIVE}
-        component={BeCreative}
-        exact
-      />
-      <Route
-        path={ROUTES.COMMUNITY.CLUB.POINTS.HOST_FAMILY_EVENT}
-        component={HostFamilyDays}
-        exact
-      />
-      <Route
-        path={ROUTES.COMMUNITY.CLUB.POINTS.LEAVE_NO_ONE_BEHIND}
-        component={LeaveNoOneBehind}
-        exact
-      />
-      <Route
-        path={ROUTES.COMMUNITY.CLUB.POINTS.CAPTURE_CHILD_ATTENDANCE}
-        component={CaptureChildAttendance}
-        exact
-      />
-      <Route
-        path={ROUTES.COMMUNITY.CLUB.POINTS.COMPLETE_CHILD_PROGRESS_REPORTS}
-        component={CompleteChildProgressReports}
-        exact
-      />
-      <Route
-        path={ROUTES.COMMUNITY.LEAGUE.ROOT}
-        component={LeagueLeaderBoard}
-        exact
-      />
-      <Route
-        path={[
-          ROUTES.COMMUNITY.CLUB.POINTS.HELP,
-          ROUTES.COMMUNITY.LEAGUE.HELP,
-          ROUTES.COMMUNITY.HELP,
-        ]}
-        component={ActivityHelp}
-        exact
-      />
-      <Route
-        path={ROUTES.PRACTITIONER.COMMUNITY.WELCOME}
-        component={PractitionerCommunityWelcome}
-        exact
-      />
       <Route
         path={ROUTES.COMMUNITY.PROFILE}
         component={CommunityProfile}
-        exact
-      />
-      <Route
-        path={ROUTES.PRACTITIONER.COMMUNITY.ROOT}
-        component={PractitionerCommunity}
-        exact
-      />
-      <Route
-        path={ROUTES.PRACTITIONER.COMMUNITY.ACCEPT_CLUB_LEADER_ROLE}
-        component={AcceptClubLeaderRole}
-        exact
-      />
-      <Route
-        path={ROUTES.PRACTITIONER.COMMUNITY.CLUB.SUPPORT_ROLE.EDIT}
-        component={SupportRoleEdit}
-        exact
-      />
-      <Route
-        path={[
-          ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING.ROOT,
-          ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING
-            .UPCOMING_MEETING,
-        ]}
-        component={AddMeeting}
-        exact
-      />
-      <Route
-        path={ROUTES.PRACTITIONER.COMMUNITY.CLUB.FAMILY_DAY_EVENT.ADD_EVENT}
-        component={AddAFamilyDayEvent}
-        exact
-      />
-      <Route
-        path={ROUTES.PRACTITIONER.COMMUNITY.CLUB.COLLAGE_EVENT.ADD_EVENT}
-        component={AddCollageEvent}
         exact
       />
       <Route
@@ -554,16 +368,6 @@ const AuthRoutes: React.FC = () => {
         exact
         path={ROUTES.PRINCIPAL.CONTACT_PRACTITIONER}
         component={ContactPractitioner}
-      />
-      <Route
-        exact
-        path={ROUTES.TRAINEE.SETUP_TRAINEE}
-        component={SetupTrainee}
-      />
-      <Route
-        exact
-        path={ROUTES.TRAINEE.TRAINEE_ONBOARDING}
-        component={TraineeOnboarding}
       />
       <Route exact path={ROUTES.CALENDAR} component={Calendar} />
       <Route exact path={ROUTES.CLASSROOM.ROOT} component={ClassDashboard} />
@@ -687,26 +491,6 @@ const AuthRoutes: React.FC = () => {
         component={ProgrammePlanningDailyRoutine}
       />
       <Route exact path={ROUTES.COACH.PROFILE.ROOT} component={CoachProfile} />
-      <Route
-        exact
-        path={ROUTES.COACH_SMARTSPACE_CHECK}
-        component={CoachSmartSpaceChecklist}
-      />
-      <Route
-        exact
-        path={ROUTES.COACH_TRAINEE_ONBOARDING}
-        component={CoachTraineeOnboarding}
-      />
-      <Route
-        exact
-        path={ROUTES.COACH_FRANCHISE_AGREEMENT}
-        component={FranchiseeAgreement}
-      />
-      <Route
-        exact
-        path={ROUTES.COACH_SELF_ASSESSMENT}
-        component={CoachSelfAssessment}
-      />
       <Route
         exact
         path={ROUTES.COACH.PROFILE.EDIT}

@@ -18,7 +18,6 @@ namespace ECDLink.Abstractrions.Enums
         ForgotPasswordPortal = 13,
         StatementReminder = 14,
         ProgrammeInvitation = 15,
-        TeamLeadInvitation = 16,
         VerifyCellphoneNumber = 17,
         AdminUserHelpForm = 18,
         OAWLAuthCode = 19,

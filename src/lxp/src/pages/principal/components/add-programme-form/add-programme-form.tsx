@@ -1,24 +1,14 @@
-import { ProgrammeTypeDto, generateUniqueCode } from '@ecdlink/core';
+import { generateUniqueCode } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
-import {
-  Alert,
-  Button,
-  ButtonGroup,
-  Card,
-  FormInput,
-  Typography,
-} from '@ecdlink/ui';
-import { ButtonGroupTypes } from '@ecdlink/ui';
+import { Alert, Button, Card, FormInput, Typography } from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
-import { useForm, useFormState, useWatch, Controller } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { useSelector } from 'react-redux';
-import { staticDataSelectors } from '@store/static-data';
 import * as styles from './add-programme-form.styles';
 import {
   EditProgrammeModel,
   editProgrammeSchema,
 } from '@schemas/practitioner/edit-programme';
-import { yesNoOptions } from './add-programme-form.types';
 import { userSelectors } from '@/store/user';
 import {
   classroomsActions,
@@ -32,8 +22,6 @@ import {
   PractitionerSetupSteps,
 } from '../../setup-principal/setup-principal.types';
 import { useEffect } from 'react';
-import { practitionerSelectors } from '@/store/practitioner';
-import { traineeSelectors } from '@/store/trainee';
 import { ClassroomDto } from '@/models/classroom/classroom.dto';
 import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
 
@@ -44,26 +32,11 @@ export const AddProgrammeForm: React.FC<{
   isFundaAppAdmin: any;
   setIsFundaAppAdmin: any;
   onChangeIsPrincipal: (value: boolean) => void;
-}> = ({
-  onNext,
-  setIsNotPrincipal,
-  isFundaAppAdmin,
-  setIsFundaAppAdmin,
-  onChangeIsPrincipal,
-  isNotPrincipal,
-}) => {
+}> = ({ onNext, setIsNotPrincipal, isFundaAppAdmin, setIsFundaAppAdmin }) => {
   const user = useSelector(userSelectors.getUser);
-  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const appDispatch = useAppDispatch();
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomGroups = useSelector(classroomsSelectors?.getClassroomGroups);
-
-  const traineeTimeline = useSelector(
-    traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
-  );
-  const traineeVisitData = useSelector(
-    traineeSelectors.getTraineeVisitData(traineeTimeline?.sSCoachVisitId)
-  );
 
   const {
     getValues: getProgrammeFormValues,
@@ -77,89 +50,11 @@ export const AddProgrammeForm: React.FC<{
     mode: 'onChange',
   });
 
-  const { isValid, errors } = useFormState({ control: programmeFormControl });
-
-  const {
-    isPrincipalOrLeader,
-    isPrincipleOrOwnerSmartStarter,
-    name,
-    type,
-    nonSmartStartPractitioners,
-    smartStartPractitioners,
-  } = useWatch<EditProgrammeModel>({
-    control: programmeFormControl,
-    defaultValue: {},
-  });
-
-  const programData = useSelector(staticDataSelectors.getProgrammeTypes);
-  const isSmartLinkImported = user?.isImported;
-  const isTrainee = practitioner?.isTrainee;
-
-  useEffect(() => {
-    if (isSmartLinkImported) {
-      // if (classroom?.isPrinciple) {
-      //   setProgrammeFormValue('isPrincipalOrLeader', true);
-      // }
-      if (classroom?.name) {
-        setProgrammeFormValue('name', classroom?.name);
-      }
-      // if (classroomGroups?.[0]?.programmeType?.id) {
-      //   setProgrammeFormValue('type', classroomGroups?.[0]?.programmeType?.id);
-      // }
-      if (typeof classroom?.numberPractitioners === 'number') {
-        setProgrammeFormValue(
-          'smartStartPractitioners',
-          classroom?.numberPractitioners
-        );
-      }
-      if (typeof classroom?.numberOfOtherAssistants === 'number') {
-        setProgrammeFormValue(
-          'nonSmartStartPractitioners',
-          classroom?.numberOfOtherAssistants
-        );
-      }
-    }
-  }, [
-    classroom?.name,
-    classroom?.numberOfOtherAssistants,
-    classroom?.numberPractitioners,
-    classroomGroups,
-    isSmartLinkImported,
-    setProgrammeFormValue,
-  ]);
-
-  useEffect(() => {
-    if (isTrainee) {
-      const programmeName =
-        traineeVisitData &&
-        traineeVisitData?.find(
-          (item) => item?.question === 'What is the name of your preschool?'
-        )?.questionAnswer;
-      const programmeType =
-        traineeVisitData &&
-        traineeVisitData?.find(
-          (item) =>
-            item?.question ===
-            ' What type of programme are you running or planning to run?'
-        )?.questionAnswer;
-      if (programmeName) {
-        setProgrammeFormValue('name', programmeName);
-      }
-      if (programmeType) {
-        setProgrammeFormValue('type', programmeType);
-      }
-    }
-  }, [isTrainee, setProgrammeFormValue, traineeVisitData]);
-
-  const validationForFundaAdmin =
-    name !== undefined &&
-    name !== null &&
-    type !== undefined &&
-    type !== null &&
-    nonSmartStartPractitioners !== undefined &&
-    nonSmartStartPractitioners !== null &&
-    smartStartPractitioners !== undefined &&
-    smartStartPractitioners !== null;
+  const { isPrincipalOrLeader, isPrincipleOrOwnerSmartStarter } =
+    useWatch<EditProgrammeModel>({
+      control: programmeFormControl,
+      defaultValue: {},
+    });
 
   const createClassroom = async (
     programme: EditProgrammeModel,
@@ -221,7 +116,6 @@ export const AddProgrammeForm: React.FC<{
         );
       }
     }
-    // Should this upsert the classroom ???
   };
 
   const updateClassroom = async (
@@ -377,11 +271,7 @@ export const AddProgrammeForm: React.FC<{
             color="quatenary"
             className={styles.button}
             disabled={!getProgrammeFormValues()?.name}
-            onClick={
-              isSmartLinkImported
-                ? handleSubmit(onSubmitForImportedUser)
-                : handleSubmit(onSubmit)
-            } // Navigate to a different page if it is principle
+            onClick={handleSubmit(onSubmit)} // Navigate to a different page if it is principle
           >
             {renderIcon('ArrowCircleRightIcon', styles.icon)}
             <Typography type={'help'} text={'Next'} color={'white'} />

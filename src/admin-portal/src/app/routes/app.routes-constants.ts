@@ -5,19 +5,7 @@ const ROUTES = {
   SETUP_ORG: '/setup-org',
   SETUP_ORG_FORM: '/setup-org-form',
   FORGOT_PASSWORD: '/forgot-password',
-  ROOT_TEAM_LEAD: '/team-lead',
-  TEAM_LEAD_REGISTER: '/team-lead-register/:resetToken',
-  TEAM_LEAD_RESET_PASSWORD: '/team-lead-forgot-password',
   VERIFY_PHONE_NUMBER: '/verify-cellphone-number',
-  TEAM_MEETINGS: '/team-meetings',
-  TL_MEETINGS: addPrefix('/tl-meetings', {
-    MEETINGS: 'meetings',
-    REPORTS: addPrefix('/reports', {
-      SEE_REPORTS: '/see-reports',
-      VIEW_REPORT: '/view-report',
-    }),
-    EDIT_TOPICS: '/edit-topics',
-  }),
   NOTIFICATIONS_VIEW: '/notifications-view',
   LOGIN: '/login',
   LOGOUT: '/logout',
@@ -26,33 +14,9 @@ const ROUTES = {
   PROFILE: '/profile',
   RESET: '/reset',
   CONTENT_MANAGEMENT: 'content-management',
-  TEAM_LEAD_LEAGUES: '/tl-leagues',
-  CLINICS: addPrefix('/clinics', {
-    ALL_CLINICS: '/clinics',
-    VIEW_CLINICS: '/view-clinics',
-    LEAGUES: addPrefix('/leagues', {
-      LEAGUE_MANAGEMENT: addPrefix('/league-management ', {
-        ADD_LEAGUES: '/add-leagues',
-        // LEAGUE_DETAILS: '/league-details/:leagueId',
-      }),
-      VIEW_LEAGUE_SEASON: addPrefix('/view-season', {
-        ADD_LEAGUES: '/add-leagues',
-        LEAGUE_DETAILS: '/league-details/:leagueId',
-      }),
-    }),
-    DISTRICTS: '/districts',
-    SUB_DISTRICTS: '/sub-districts',
-  }),
-  REFERRALS: addPrefix('/referrals', {
-    VIEW_REFERRAL_DETAIL: addPrefix('/view-referral-detail/:referralType', {
-      EDIT_BACK_REFERRAL: '/edit-back-referral/:visitDataStatusId',
-    }),
-  }),
   USERS: addPrefix('/users', {
     ADMINS: '/admins',
     ALL_ROLES: '/all-roles',
-    TEAM_LEADS: '/team-leads',
-    HEALTH_CARE_WORKERS: '/health-care-worker',
     PRACTITIONERS: '/practitioners',
     COACHES: '/coaches',
     CHILDREN: '/children',
@@ -60,9 +24,6 @@ const ROUTES = {
   }),
   CLASSROOM: addPrefix('/classroom', {
     UPDATE_FEE: '/preschool-fee',
-  }),
-  HEALTH_CARE_WORKER: addPrefix('/health-care-worker', {
-    OPTED_OUT: '/opted-out',
   }),
 };
 

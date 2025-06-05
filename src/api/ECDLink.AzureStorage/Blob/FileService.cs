@@ -132,7 +132,7 @@ namespace ECDLink.AzureStorage.Blob
             }
         }
 
-        public async Task<string> UploadFileStream(MemoryStream file, string fileName, FileTypeEnum fileType)
+        public async Task<string> UploadFileStreamAsync(MemoryStream file, string fileName, FileTypeEnum fileType)
         {
             // TODO: Security, js injection at least.
             // TODO: Anyone in TenantA can overwrite TenantB's file if they know the file name? (filenames get guids appended though?)
@@ -162,7 +162,7 @@ namespace ECDLink.AzureStorage.Blob
             }
         }
 
-        public async Task<byte[]> GetFile(string fileName, FileTypeEnum fileType)
+        public async Task<byte[]> GetFileAsync(string fileName, FileTypeEnum fileType)
         {
             fileName = ConvertToActual(fileName);
             var memoryStream = new MemoryStream();
@@ -192,7 +192,12 @@ namespace ECDLink.AzureStorage.Blob
             }
         }
 
-        public async Task<bool> DeleteFile(string fileName, FileTypeEnum fileType)
+        public async Task<byte[]> GetFileAsync(string fileName, string fileTypeDescription)
+        {
+            return await GetFileAsync(fileName, EnumHelper.GetEnumFromDescription<FileTypeEnum>(fileTypeDescription));
+        }
+
+        public async Task<bool> DeleteFileAsync(string fileName, FileTypeEnum fileType)
         {
             try
             {
@@ -298,16 +303,32 @@ namespace ECDLink.AzureStorage.Blob
             }
         }
 
-        public async Task<string> GetFileExtensionFromUrl(string url)
+        public string GetFileExtensionFromUrl(string url)
         {
             url = url.Split('?')[0];
             url = url.Split('/').Last();
             return url.Contains('.') ? url.Substring(url.LastIndexOf('.')) : "";
         }
 
-        public async Task<string> GetMimeType(string extension)
+        public string GetMimeType(string extension)
         {
            return MimeTypesMap.GetMimeType(extension);
         }
+        public string GetMimeTypeFromUrl(string url)
+        {
+            var extension = GetFileExtensionFromUrl(url);
+            return GetMimeType(extension);
+        }
+
+        public FileTypeEnum GetFileTypeEnumFromContainer(string container)
+        {
+            return EnumHelper.GetEnumFromDescription<FileTypeEnum>(container);
+        }
+
+        public void OverrideBaseUrl(string baseUrl)
+        {
+            // not applicable for azure storage.
+        }
+
     }
 }

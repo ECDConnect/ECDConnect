@@ -1,7 +1,6 @@
 using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Base;
-using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.DataAccessLayer.Events;
 using ECDLink.DataAccessLayer.Helpers;
@@ -153,10 +152,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
 
             _domainEventService.NotifyCreate<T>(_userId?.ToString(), entity);
 
-            //Populate Audit records
-            if (typeof(ITrackableType).IsAssignableFrom(typeof(T)))
-                DoAudit(entity, "Insert");
-
             return entity;
         }
 
@@ -164,13 +159,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
         {
             if (entityList == null || !entityList.Any())
                 return entityList;
-
-            //Populate Audit records
-            if (typeof(ITrackableType).IsAssignableFrom(typeof(T))
-                && !typeof(IntegrationAudit).IsAssignableFrom(typeof(T)))
-            {
-                DoAuditMany(entityList, "Insert");
-            }
 
             foreach (var entity in entityList)
             {
@@ -200,12 +188,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                 // Notify update would get input values without this:
                 entity.TenantId = entities.Entry(entity).Property(e => e.TenantId).OriginalValue;
                 entity.InsertedDate = entities.Entry(entity).Property(e => e.InsertedDate).OriginalValue;
-
-                //Populate Audit records
-                if (typeof(ITrackableType).IsAssignableFrom(typeof(T)))
-                {
-                    DoAudit(entity, "Update", entity);
-                }
                 
                 entity.UpdatedDate = DateTime.Now;
                 
@@ -238,188 +220,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             entity.UpdatedBy = _userId?.ToString();
             entities.Update(entity);
             context.SaveChanges(true);
-            _domainEventService.NotifyUpdate<T>(_userId?.ToString(), entity);
-
-            //Populate Audit records
-            if (typeof(ITrackableType).IsAssignableFrom(typeof(T)))
-                DoAudit(entity, "Delete");
-        }
-
-        public void DoAudit(T entity, string changeType = "Update", T entityBefore = null)
-        {            
-            var auditInsertRepo = new GenericRepositoryBase<IntegrationAudit>(context, _domainEventService);
-            Type tA = typeof(T);
-            //Populate Audit records
-            switch (changeType)
-            {
-                case "Delete":
-                    auditInsertRepo.Insert(new IntegrationAudit()
-                    {
-                        ChangeType = changeType,
-                        Entity = tA.Name,
-                        Property = "IsActive",
-                        ValueAfter = "false",
-                        ValueBefore = "true",
-                        UserId = _userId.GetValueOrDefault(),
-                        RelatedId = entity.Id.ToString(),
-                        TenantId = _tenantId
-                    });
-                    return;
-                case "Insert":
-                    auditInsertRepo.Insert(new IntegrationAudit()
-                    {
-                        ChangeType = changeType,
-                        Entity = tA.Name,
-                        UserId = _userId.GetValueOrDefault(),
-                        RelatedId = entity.Id.ToString(),
-                        TenantId = _tenantId
-                    });
-                    return;
-                default:
-                    List<IntegrationAudit> changesList = new List<IntegrationAudit>();
-                    foreach (var prop in tA.GetProperties())
-                    {
-                        bool isValidChange = false;
-                        Type propType = prop.PropertyType;
-                        if (propType.IsPrimitive || (propType == typeof(string)) || (propType == typeof(System.Guid)) || propType.IsValueType && prop.Name != "UpdatedDate") //ignore navigation types due to lazyloading And do not flag UpdatedDate as Valid change
-                        {
-                            //Determine changes and convert all to string
-                            string beforeValue = prop.GetCustomAttribute(typeof(NotMappedAttribute), true) == null && entities.Entry(entityBefore).Property(prop.Name).OriginalValue != null ? entities.Entry(entityBefore).Property(prop.Name).OriginalValue.ToString() : "";
-                            string afterValue = prop.GetCustomAttribute(typeof(NotMappedAttribute), true) == null && prop.GetValue(entity, null) != null ? prop.GetValue(entity, null).ToString() : "";
-
-                            if (beforeValue != afterValue)
-                            {
-                                //determine datatype and whether to exclude certain criteria from the change
-                                if (prop.PropertyType == typeof(DateTime?) && (beforeValue != "" || afterValue != ""))
-                                {
-                                    if (beforeValue == "" && afterValue != "") 
-                                    {
-                                        isValidChange = true;
-                                    }
-                                    else
-                                    {
-                                        if (DateTime.Parse(beforeValue).Date != (string.IsNullOrEmpty(afterValue) ? null : DateTime.Parse(afterValue).Date))
-                                        {
-                                            isValidChange = true;
-                                        }
-                                    }
-                                   
-                                } else isValidChange = true;
-                            }
-                            if (isValidChange)
-                            {                                                            
-                                changesList.Add(new IntegrationAudit()
-                                {
-                                    ChangeType = changeType,
-                                    Entity = tA.Name,
-                                    Property = prop.Name,
-                                    ValueBefore = beforeValue,
-                                    ValueAfter = afterValue,
-                                    UserId = _userId.Value,
-                                    RelatedId = entity.Id.ToString(),
-                                    TenantId = _tenantId
-                                });
-                            }
-                        }
-                    }
-
-                    if (changesList.Count > 0)
-                    {
-                        auditInsertRepo.InsertMany(changesList);
-                    }
-                    return;
-            }            
-        }
-
-        // TODO: Only ever used for inserts (we don't have an update many) so can probably remove most of the logic from here.
-        // Since its so similar to DoAudit, we should just reuse that anyway
-        public void DoAuditMany(IEnumerable<T> entityList, string changeType = "Update", IEnumerable<T> entitiesBefore = null, bool noAudit = false)
-        {
-            if (!(entityList?.Any() ?? false))
-                return;
-
-
-            GenericRepositoryBase<IntegrationAudit> auditInsertRepo = new GenericRepositoryBase<IntegrationAudit>(context, _domainEventService);
-            Type tA = typeof(T);
-
-            //Populate Audit records
-            switch (changeType)
-            {
-                case "Delete":
-                    auditInsertRepo.InsertMany(
-                        entityList.Select(e => new IntegrationAudit()
-                        {
-                            ChangeType = changeType,
-                            Entity = tA.Name,
-                            Property = "IsActive",
-                            ValueAfter = "false",
-                            ValueBefore = "true",
-                            UserId = _userId.Value,
-                            RelatedId = e.Id.ToString()
-                        }).ToList());
-                    return;
-                case "Insert":
-                    auditInsertRepo.InsertMany(
-                        entityList.Select(e => new IntegrationAudit()
-                        {
-                            ChangeType = changeType,
-                            Entity = tA.Name,
-                            UserId = _userId.Value,
-                            RelatedId = e.Id.ToString()
-                        }).ToList());
-                    return;
-                default:
-                    List<IntegrationAudit> changesList = new List<IntegrationAudit>();
-
-                    foreach (var entity in entityList)
-                    {
-                        var beforeObj = entitiesBefore?.FirstOrDefault(b => b.Id == entity.Id);
-                        if (beforeObj != null)
-                        {
-                            foreach (var prop in tA.GetProperties())
-                            {
-                                bool isValidChange = false;
-                                Type propType = prop.PropertyType;
-                                if (propType.IsPrimitive || (propType == typeof(string)) || (propType == typeof(System.Guid)) || propType.IsValueType && prop.Name != "UpdatedDate") //ignore navigation types due to lazyloading And do not flag UpdatedDate as Valid change
-                                {
-                                    //Determine changes and convert all to string
-                                    string beforeValue = entities.Entry(beforeObj).Property(prop.Name).OriginalValue != null ? entities.Entry(beforeObj).Property(prop.Name).OriginalValue.ToString() : "";
-                                    string afterValue = prop.GetValue(entityList, null) != null ? prop.GetValue(entityList, null).ToString() : "";
-
-                                    if (beforeValue != afterValue)
-                                    {
-                                        //determine datatype and whether to exclude certain criteria from the change
-                                        if (prop.PropertyType == typeof(DateTime?) && (beforeValue != "" || afterValue != ""))
-                                        {
-                                            if (DateTime.Parse(beforeValue).Date != DateTime.Parse(afterValue).Date)
-                                            {
-                                                isValidChange = true;
-                                            }
-                                        }
-                                        else isValidChange = true;
-                                    }
-                                    if (isValidChange)
-                                    {
-                                        changesList.Add(new IntegrationAudit()
-                                        {
-                                            ChangeType = changeType,
-                                            Entity = tA.Name,
-                                            Property = prop.Name,
-                                            ValueBefore = beforeValue,
-                                            ValueAfter = afterValue,
-                                            UserId = _userId.Value,
-                                            RelatedId = entity.Id.ToString()
-                                        });
-                                        isValidChange = true;
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    auditInsertRepo.InsertMany(changesList);
-                    return;
-            }
+            _domainEventService.NotifyUpdate<T>(_userId?.ToString(), entity);         
         }
 
         public virtual bool Exists(Guid id)

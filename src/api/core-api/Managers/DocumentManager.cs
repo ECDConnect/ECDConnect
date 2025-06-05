@@ -138,54 +138,6 @@ namespace EcdLink.Api.CoreApi.Managers
                     }
             };
         }
-
-        public async Task<Document> SaveActivityUploadDocument(DocumentModel input)
-        {
-            if (input != null && input.Reference != "")
-            {
-                // Workflow info
-                var wsType = _workflowStatusTypeRepo.GetAll().Where(x => x.Description == Constants.ClubSettings.workflow_upload_type).FirstOrDefault();
-                var ws = _workflowStatusRepo.GetAll().Where(x => x.WorkflowStatusTypeId == wsType.Id && x.Description == Constants.ClubSettings.workflow_status_upload_type).FirstOrDefault();
-
-                // Get the document type
-                var docType = _documentTypeRepo.GetAll().Where(x => x.Name == Constants.ClubSettings.activity_upload_type).FirstOrDefault();
-
-                // First validate if document is already in db
-                Document doc = _documentRepo.GetAll().Where(x => x.Name == input.FileName && x.UserId.ToString() == input.UserId && x.DocumentTypeId == docType.Id && x.WorkflowStatusId == ws.Id).FirstOrDefault();
-                if (doc != null)
-                {
-                    return doc;
-                }
-
-                // Upload the document
-                try
-                {
-                    var document = await _fileService.UploadBase64StringFileAsync(input.Reference, input.FileName, FileTypeEnum.ClubActivityUpload);
-                    // Save new document to the database
-                    doc = new Document
-                    {
-                        Id = Guid.NewGuid(),
-                        CreatedUserId = Guid.Parse(input.CreatedUserId),
-                        Name = input.FileName,
-                        UpdatedBy = input.CreatedUserId,
-                        InsertedDate = DateTime.Now,
-                        Reference = document.Url.TrimEnd('/'),
-                        UserId = new Guid(input.UserId),
-                        DocumentTypeId = docType.Id,
-                        WorkflowStatusId = ws.Id,
-                        TenantId = TenantExecutionContext.Tenant.Id
-                    };
-                    return _documentRepo.Insert(doc);
-                    
-                }
-                catch (Exception)
-                {
-                    return null;
-                }
-            }
-
-            return null;
-        }
     }
 }
 

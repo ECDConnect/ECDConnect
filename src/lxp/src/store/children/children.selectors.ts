@@ -1,4 +1,4 @@
-import { ChildDto, ProgressTrackingAgeGroupDto } from '@ecdlink/core';
+import { ChildDto } from '@ecdlink/core';
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../types';
 import getWeek from 'date-fns/getWeek';
@@ -7,9 +7,6 @@ import {
   CaregiverContactHistory,
   CaregiverContactReason,
 } from './children.types';
-import { ClassroomDto } from '@/models/classroom/classroom.dto';
-import { differenceInMonths } from 'date-fns';
-import { getCurrentProgressReportPeriod } from '../classroom/classroom.selectors';
 
 export const getChildren = (state: RootState): ChildDto[] | undefined =>
   state.children.childData.children;

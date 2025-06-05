@@ -19,7 +19,6 @@ import { useMutation } from '@apollo/client';
 import {
   sentInviteToMultipleUsers,
   deleteMultipleUsers,
-  bulkDeleteCoachingCircleTopics,
 } from '@ecdlink/graphql';
 import { PaperAirplaneIcon, TrashIcon } from '@heroicons/react/solid';
 import { NOTIFICATION, useDialog, useNotifications } from '@ecdlink/core';
@@ -88,16 +87,6 @@ export default function UiTable({
       fetchPolicy: 'network-only',
     }
   );
-
-  const [
-    deleteCoachingCircleTopicsMutation,
-    { loading: deletingCoachingCircleTopics },
-  ] = useMutation(bulkDeleteCoachingCircleTopics, {
-    variables: {
-      contentIds: [],
-    },
-    fetchPolicy: 'network-only',
-  });
 
   const inviteUsers = useCallback(() => {
     sendInvitations({
@@ -201,42 +190,6 @@ export default function UiTable({
       ),
     });
   }, [inviteUsers, dialog, selectedRows?.length]);
-
-  const deleteCoachingCircleTopics = useCallback(() => {
-    deleteCoachingCircleTopicsMutation({
-      variables: {
-        contentIds: selectedRows,
-      },
-    })
-      .then((res) => {
-        if (res.data?.bulkDeleteCoachingCircleTopics?.success.length > 0) {
-          setNotification({
-            title: ` Successfully deleted ${res.data?.bulkDeleteCoachingCircleTopics?.success.length} topics!`,
-            variant: NOTIFICATION.SUCCESS,
-          });
-          onBulkActionCallback?.('success');
-        }
-        if (res.data?.bulkDeleteCoachingCircleTopics?.failed.length > 0) {
-          setNotification({
-            title: ` Failed to delete ${res.data?.bulkDeleteCoachingCircleTopics?.failed.length} topics!`,
-            variant: NOTIFICATION.ERROR,
-          });
-          onBulkActionCallback?.('failed');
-        }
-      })
-      .catch((err) => {
-        setNotification({
-          title: 'Failed to delete topics',
-          variant: NOTIFICATION.ERROR,
-        });
-        onBulkActionCallback?.('failed');
-      });
-  }, [
-    deleteCoachingCircleTopicsMutation,
-    onBulkActionCallback,
-    selectedRows,
-    setNotification,
-  ]);
 
   useEffect(() => {
     fuse.current = new Fuse(rows, fuseOptions);
@@ -365,7 +318,7 @@ export default function UiTable({
         <span
           className="cursor-pointer overflow-ellipsis"
           onClick={() => {
-            component !== 'team-leads' && viewRow(row);
+            viewRow(row);
           }}
         >
           {formatDate(display_value)}
@@ -374,35 +327,33 @@ export default function UiTable({
     } else if (column.field === 'roles') {
       rowValue = (
         <div className="ml-0 flex cursor-pointer items-center">
-          {display_value
-            ?.filter((value) => value?.name !== 'Community Health Worker')
-            ?.map((item: any) => {
-              const chipColor = (role?: string) => {
-                switch (role) {
-                  case 'Administrator':
-                    return 'bg-infoMain';
-                  case 'SuperAdmin':
-                    return 'bg-infoMain';
-                  case 'ContentManager':
-                    return 'bg-tertiary';
-                  case 'DesignManager':
-                    return 'bg-secondary';
-                  default:
-                    return 'bg-primary';
+          {display_value?.map((item: any) => {
+            const chipColor = (role?: string) => {
+              switch (role) {
+                case 'Administrator':
+                  return 'bg-infoMain';
+                case 'SuperAdmin':
+                  return 'bg-infoMain';
+                case 'ContentManager':
+                  return 'bg-tertiary';
+                case 'DesignManager':
+                  return 'bg-secondary';
+                default:
+                  return 'bg-primary';
+              }
+            };
+            return (
+              <div
+                key={`role_` + item?.id}
+                className={
+                  `${chipColor(item?.name)}` +
+                  ' m-1 rounded-full py-1 px-3 text-xs text-white'
                 }
-              };
-              return (
-                <div
-                  key={`role_` + item?.id}
-                  className={
-                    `${chipColor(item?.name)}` +
-                    ' m-1 rounded-full py-1 px-3 text-xs text-white'
-                  }
-                >
-                  {item?.name}
-                </div>
-              );
-            })}
+              >
+                {item?.name}
+              </div>
+            );
+          })}
         </div>
       );
     } else if (column.type === 'workflowStatus') {
@@ -430,7 +381,7 @@ export default function UiTable({
     return (
       <div
         onClick={() => {
-          component !== 'team-leads' && viewRow(row);
+          viewRow(row);
         }}
         className={'cursor-pointer'}
       >
@@ -463,7 +414,6 @@ export default function UiTable({
           onCancel={onClose}
           btnText={[`${confirmationTrue}`, `${confirmationFalse}`]}
           onSubmit={() => {
-            deleteCoachingCircleTopics();
             onClose();
           }}
         />
@@ -474,7 +424,6 @@ export default function UiTable({
     confirmationMessage,
     confirmationTitle,
     confirmationTrue,
-    deleteCoachingCircleTopics,
     dialog,
   ]);
 
@@ -489,8 +438,6 @@ export default function UiTable({
           text="Delete"
           icon="TrashIcon"
           iconPosition="end"
-          isLoading={deletingCoachingCircleTopics}
-          disabled={deletingCoachingCircleTopics}
           onClick={deleteDialog}
         />
       );
@@ -535,7 +482,6 @@ export default function UiTable({
     handleBulkDelete,
     deactivating,
     deleteDialog,
-    deletingCoachingCircleTopics,
     invitationsLoading,
     handleBulkInvitation,
   ]);

@@ -29,7 +29,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Portal
             var fileName = TenantExecutionContext.Tenant.Id.ToString() + "_theme.json";
             using MemoryStream fileStream = new MemoryStream(Encoding.UTF8.GetBytes(theme));
             //await fileService.UploadFileStream(fileStream, fileName, FileTypeEnum.Theme);
-            var fileUrl = Task.Run(() => fileService.UploadFileStream(fileStream, fileName, FileTypeEnum.Theme)).Result;
+            var fileUrl = Task.Run(() => fileService.UploadFileStreamAsync(fileStream, fileName, FileTypeEnum.Theme)).Result;
             fileStream.Dispose();
            
             tenantService.UpdateTenantThemePath(TenantExecutionContext.Tenant.Id, fileUrl);

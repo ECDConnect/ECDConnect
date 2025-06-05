@@ -52,7 +52,7 @@ export const getAllNotificationReferences = createSelector(
 export const getMessageBoardNotifications = createSelector(
   getAllNotifications,
   (notifications: Notification[]) =>
-    notifications.filter((n) => n.isNew && n.message.viewType !== 'Hub')
+    notifications.filter((n) => n.message.viewType !== 'Hub')
 );
 
 export const getNewNotificationCount = createSelector(
@@ -66,6 +66,6 @@ export const getDashboardNotification = createSelector(
   (notifications: Notification[]) => {
     return [...notifications]
       .sort((a, b) => (a.message.priority > b.message.priority ? 1 : -1))
-      .find((n) => n.message.viewType !== 'Messages' && n.isNew);
+      .find((n) => n.message.viewType !== 'Messages');
   }
 );

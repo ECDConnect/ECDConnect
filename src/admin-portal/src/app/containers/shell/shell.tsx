@@ -1,5 +1,5 @@
 import { useQuery } from '@apollo/client';
-import { getAvatarColor, usePanel, useTheme } from '@ecdlink/core';
+import { getAvatarColor, usePanel } from '@ecdlink/core';
 import { GetAllNavigation, GetAllNotifications } from '@ecdlink/graphql';
 import { Avatar, Button, IconBadge, UserAvatar } from '@ecdlink/ui';
 import { Dialog, Menu, Transition } from '@headlessui/react';
@@ -23,7 +23,6 @@ import {
 } from './shell.types';
 import { useUserRole } from '../../hooks/useUserRole';
 import ROUTES from '../../routes/app.routes-constants';
-import { useTenant } from '../../hooks/useTenant';
 
 function classNames(...classes: any[]) {
   return classes.filter(Boolean).join(' ');
@@ -60,7 +59,6 @@ const MenuItem: React.FC<menuItemProps> = ({ item }) => {
 };
 
 export default function Shell() {
-  const { theme } = useTheme();
   const panel = usePanel();
   const { logout } = useAuth();
   const { user } = useUser();
@@ -71,8 +69,6 @@ export default function Shell() {
   const [avatarColor, setAvatarColor] = useState<string>();
   const [navigation, setNavigation] = useState<INavigation[]>();
   const [activeNavigation, setActiveNavigation] = useState<INavigation>();
-  const tenant = useTenant();
-  const isOpenAccess = tenant?.isOpenAccess;
 
   const { data: navigationData } = useQuery(GetAllNavigation, {
     fetchPolicy: 'cache-and-network',
@@ -114,10 +110,7 @@ export default function Shell() {
       const adminNavigationItems = [
         NavbarTypes.Dashboard,
         NavbarTypes.Users,
-        NavbarTypes.Clinics,
         NavbarTypes.RolesPermissions,
-        NavbarTypes.Referrals,
-        NavbarTypes.TLMeetings,
         NavbarTypes.Documents,
         NavbarTypes.CMS,
         // [NavbarTypes.Reporting],
@@ -125,7 +118,6 @@ export default function Shell() {
         NavbarTypes.SiteData,
         isSuperAdmin && [NavbarTypes.Settings],
         NavbarTypes.Notifications,
-        NavbarTypes.CHWsOptedOut,
       ];
 
       const navigationList = navigationData?.GetAllNavigation;

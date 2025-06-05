@@ -154,27 +154,6 @@ export const GetUserByToken = gql`
     }
   }
 `;
-export const GetHealthCareWorkerHighlights = gql`
-  query ($userId: String) {
-    healthCareWorkerHighlights(userId: $userId) {
-      totalThisWeekFamilyVisits
-      totalThisWeekGrowthMonitored
-      totalThisWeekNewClients
-      totalLastWeekFamilyVisits
-      totalLastWeekGrowthMonitored
-      totalLastWeekNewClients
-    }
-  }
-`;
-export const healthCareWorkerVisitStatus = gql`
-  query ($userId: String) {
-    healthCareWorkerVisitStatus(userId: $userId) {
-      motherOverDueVisits
-      motherDueVisits
-      childDueVisits
-    }
-  }
-`;
 
 export const sentInviteToMultipleUsers = gql`
   mutation SendBulkInviteToPortal($userIds: [String]) {
@@ -199,36 +178,6 @@ export const getUserCount = gql`
   }
 `;
 
-export const getHealthCareWorkerCount = gql`
-  query countHealthCareWorker(
-    $search: String
-    $clinicSearch: String
-    $provinceSearch: String
-  ) {
-    countHealthCareWorkers(
-      search: $search
-      clinicSearch: $clinicSearch
-      provinceSearch: $provinceSearch
-    )
-  }
-`;
-
-export const getTeamLeadCount = gql`
-  query countTeamLead(
-    $search: String
-    $clinicSearch: String
-    $provinceSearch: String
-    $pagingInput: PagedQueryInput
-  ) {
-    countTeamLeads(
-      search: $search
-      clinicSearch: $clinicSearch
-      provinceSearch: $provinceSearch
-      pagingInput: $pagingInput
-    )
-  }
-`;
-
 export const ReactivateMultipleUsers = gql`
   mutation bulkReactivateUsers($userIds: [UUID!]) {
     bulkReactivateUsers(userIds: $userIds)
@@ -238,5 +187,21 @@ export const ReactivateMultipleUsers = gql`
 export const GetLatestUrlInviteForUser = gql`
   query GetLatestUrlInviteForUser($userId: UUID!) {
     latestUrlInviteForUser(userId: $userId)
+  }
+`;
+
+export const SendVerifyPhoneNumberSMS = gql`
+  mutation SendVerifyPhoneNumberSMS(
+    $userId: UUID!
+    $pendingPhoneNumber: String
+  ) {
+    sendVerifyPhoneNumberSMS(
+      userId: $userId
+      pendingPhoneNumber: $pendingPhoneNumber
+    ) {
+      id
+      pendingPhoneNumber
+      phoneNumber
+    }
   }
 `;

@@ -94,7 +94,6 @@ export default function UploadBulkUser(props: any) {
           setIsLoading(false);
         });
       } else {
-        // if is not team leads, upload to chw
         setIsLoading(true);
         await importCoaches({
           variables: {

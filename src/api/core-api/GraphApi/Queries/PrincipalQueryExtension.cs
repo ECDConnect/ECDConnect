@@ -1,5 +1,5 @@
-using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Api.CoreApi.Services;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
@@ -91,23 +91,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 UpdatedDate = practitioner.UpdatedDate,
                 Hierarchy = practitioner.Hierarchy,
                 AttendanceRegisterLink = practitioner.AttendanceRegisterLink,
-                MaxChildren = practitioner.MaxChildren,
                 ConsentForPhoto = practitioner.ConsentForPhoto,
                 ParentFees = practitioner?.ParentFees,
                 LanguageUsedInGroups = practitioner?.LanguageUsedInGroups,
                 StartDate = practitioner.StartDate,
-                MonthSinceFranchisee = practitioner?.MonthSinceFranchisee,
                 UserId = practitioner.UserId,
                 SiteAddressId = practitioner?.SiteAddressId,
                 IsPrincipal = true,
                 CoachHierarchy = practitioner?.CoachHierarchy,
-                IsFundaAppAdmin = practitioner?.IsFundaAppAdmin,
-                IsTrainee = practitioner?.IsTrainee,
                 SigningSignature = practitioner?.SigningSignature,
                 ShareInfo = practitioner?.ShareInfo,
-                IsRegistered = practitioner.IsRegistered,
-                //Signature = practitioner.Signature,
-                //PrincipalHierarchy = practitioner?.PrincipalHierarchy,           
+                IsRegistered = practitioner.IsRegistered       
             };
 
             return userToMap;

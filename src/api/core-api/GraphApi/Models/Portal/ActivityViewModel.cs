@@ -84,6 +84,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
             var subCats = subCategories != null ? subCategories.ToString().Split(",").ToList() : new List<string>();
             SubCategoryItems = subCategoriesItems.Where(x => subCats.Contains(x.Id)).ToList();
             ThemeItems = themes != null ? themes.ToString().Split(",").Where(x => x != "").Select(x => Int32.Parse(x)).ToList() : new List<int>();
+
+            
         }
     }
 

@@ -263,7 +263,9 @@ class IncomeStatementsService {
     });
 
     if (response.status !== 200) {
-      throw new Error('Updating infant failed - Server connection error');
+      throw new Error(
+        'Updating User Contact Status For Statement failed - Server connection error'
+      );
     }
 
     return response.data.data.updateUserContactStatusForStatement;

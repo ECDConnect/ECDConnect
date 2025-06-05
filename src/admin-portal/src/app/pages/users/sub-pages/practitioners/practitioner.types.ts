@@ -1,8 +1,6 @@
 export type PractionerRouteState = {};
 
-export interface PractitionersRouteState {
-  //queryVariables: QueryAllHealthCareWorkersArgs;
-}
+export interface PractitionersRouteState {}
 
 export const ColumnNames = {
   IdPassport: 'ID/Passport',

@@ -1,4 +1,4 @@
-using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.GraphApi.Models.Statements;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.Security.Extensions;
 using HotChocolate;

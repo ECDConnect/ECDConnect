@@ -19,7 +19,6 @@ namespace ECDLink.EGraphQL.Resolvers
             Guid id, T input)
         {
             var repository = repositoryFactory.CreateRepository<T>();
-            //For integration, trust the FE provided updated date, otherwise set to now.
             if (input.UpdatedDate == default(DateTime)) { input.UpdatedDate = DateTime.Now; }
             input.UpdatedDate = DateTime.Now;
             input.Id = id;

@@ -93,7 +93,7 @@ export const RemovePractitionerFromProgramme: React.FC<
   //Get list of practitioners for classroom
   const practitionersForClass = useMemo(
     () =>
-      practitioner?.isPrincipal || practitioner?.isFundaAppAdmin
+      practitioner?.isPrincipal
         ? practitioners?.filter(
             (x) => x.principalHierarchy === practitionerUserId
           ) // If they are the principal, get any practitioners where their principal is this practitioner

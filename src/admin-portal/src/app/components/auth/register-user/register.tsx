@@ -1,7 +1,6 @@
 import {
   Config,
   initialRegisterValues,
-  LocalStorageKeys,
   RegisterRequestModel,
   registerSchema,
   useTheme,
@@ -14,7 +13,6 @@ import { RouteComponentProps, useHistory, useParams } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
 import FormField from '../../form-field/form-field';
 import logo from '../../../../assets/Logo-ECDConnect.svg';
-import zxcvbn from 'zxcvbn-typescript';
 import { PasswordInput } from '../../password-input/password-input';
 
 interface RouteParams {
@@ -36,19 +34,10 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
   });
 
   //check password strength
-  const password = watch('password');
   const username = watch('username');
-  const passwordStrength = zxcvbn(password);
-  const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
 
   const { errors, isValid } = formState;
   const formValues = getValues();
-
-  const [showPassword, setShowPassword] = useState(false);
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
 
   const termsState = watch('acceptedTerms');
   const acceptedTerms = termsState && isValid;
