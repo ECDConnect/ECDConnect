@@ -514,7 +514,7 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
                 className="my-4 w-full"
                 type="outlined"
                 color="quatenary"
-                text="See more activities 1"
+                text="See more activities"
                 textColor="quatenary"
                 icon="EyeIcon"
                 onClick={() => setPageSize(pageSize + ACTIVITY_PAGE_SIZE)}
