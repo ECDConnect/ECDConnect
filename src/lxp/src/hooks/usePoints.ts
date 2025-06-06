@@ -13,6 +13,14 @@ export const usePoints = () => {
   const pointsToDo = useSelector(pointsSelectors.getPointsToDo);
   const totalYearPoints = useSelector(pointsSelectors.getTotalYearPoints);
 
+  const isPartOfPreschool = useMemo(
+    () =>
+      tenant.isWhiteLabel
+        ? pointsToDo?.isPartOfPreschool
+        : pointsToDo?.isPartOfPreschool && practitioner?.progress === 2,
+    [tenant.isWhiteLabel, pointsToDo?.isPartOfPreschool, practitioner?.progress]
+  );
+
   const planActivitiesPermission = useMemo(
     () =>
       practitioner?.permissions?.find(
@@ -24,13 +32,9 @@ export const usePoints = () => {
 
   const phase1StatusText = useMemo(() => {
     // step 1 - all
-    const umtsha = isWhiteLabel
-      ? !pointsToDo?.isPartOfPreschool
-      : pointsToDo?.isPartOfPreschool && practitioner?.progress! < 2;
+    const umtsha = !isPartOfPreschool;
     // step 2 - all
-    const tichere = isWhiteLabel
-      ? pointsToDo?.isPartOfPreschool
-      : pointsToDo?.isPartOfPreschool && practitioner?.progress === 2;
+    const tichere = isPartOfPreschool;
     // step 3a - principal
     const boss = practitioner?.isPrincipal
       ? pointsToDo?.savedIncomeOrExpense
@@ -54,12 +58,12 @@ export const usePoints = () => {
     // step 1
     if (umtsha) return 'Umtsha';
   }, [
-    pointsToDo?.isPartOfPreschool,
     pointsToDo?.plannedOneDay,
     pointsToDo?.savedIncomeOrExpense,
     pointsToDo?.viewedCommunitySection,
     practitioner?.isPrincipal,
     planActivitiesPermission,
+    isPartOfPreschool,
   ]);
 
   const isPhase1Completed = useMemo(() => {
@@ -67,37 +71,42 @@ export const usePoints = () => {
       // WL
       tenant.isWhiteLabel
         ? practitioner?.isPrincipal
-          ? pointsToDo?.isPartOfPreschool &&
+          ? isPartOfPreschool &&
             pointsToDo?.savedIncomeOrExpense &&
             pointsToDo?.signedUpForApp &&
             pointsToDo?.viewedCommunitySection
           : planActivitiesPermission && planActivitiesPermission?.isActive
-          ? pointsToDo?.isPartOfPreschool &&
+          ? isPartOfPreschool &&
             pointsToDo?.plannedOneDay &&
             pointsToDo?.signedUpForApp &&
             pointsToDo?.viewedCommunitySection
-          : pointsToDo?.isPartOfPreschool &&
+          : isPartOfPreschool &&
             pointsToDo?.signedUpForApp &&
             pointsToDo?.viewedCommunitySection
         : // OA
         practitioner?.isPrincipal
-        ? pointsToDo?.isPartOfPreschool &&
+        ? isPartOfPreschool &&
           practitioner?.progress === 2 &&
           pointsToDo?.savedIncomeOrExpense &&
           pointsToDo?.signedUpForApp &&
           pointsToDo?.viewedCommunitySection
         : planActivitiesPermission && planActivitiesPermission?.isActive
-        ? pointsToDo?.isPartOfPreschool &&
+        ? isPartOfPreschool &&
           practitioner?.progress === 2 &&
           pointsToDo?.plannedOneDay &&
           pointsToDo?.signedUpForApp &&
           pointsToDo?.viewedCommunitySection
-        : pointsToDo?.isPartOfPreschool &&
+        : isPartOfPreschool &&
           practitioner?.progress === 2 &&
           pointsToDo?.signedUpForApp &&
           pointsToDo?.viewedCommunitySection;
     return isCompleted;
-  }, [practitioner?.isPrincipal, pointsToDo, planActivitiesPermission]);
+  }, [
+    practitioner?.isPrincipal,
+    pointsToDo,
+    planActivitiesPermission,
+    isPartOfPreschool,
+  ]);
 
   const showPhase2Card = isPhase1Completed && (totalYearPoints || 0) > 0;
 
@@ -165,11 +174,7 @@ export const usePoints = () => {
       return 'quatenary';
     }
 
-    if (
-      tenant.isWhiteLabel
-        ? pointsToDo?.isPartOfPreschool
-        : pointsToDo?.isPartOfPreschool && practitioner?.progress === 2
-    ) {
+    if (isPartOfPreschool) {
       return 'secondary';
     }
 
@@ -181,12 +186,12 @@ export const usePoints = () => {
   }, [
     getCurrentPointsToDo,
     planActivitiesPermission,
-    pointsToDo?.isPartOfPreschool,
     pointsToDo?.plannedOneDay,
     pointsToDo?.savedIncomeOrExpense,
     pointsToDo?.signedUpForApp,
     pointsToDo?.viewedCommunitySection,
     practitioner?.isPrincipal,
+    isPartOfPreschool,
   ]);
 
   const renderPointsToDoScoreCardBgColor: Colours = useMemo(() => {
@@ -217,11 +222,7 @@ export const usePoints = () => {
       return 'quatenaryBg';
     }
 
-    if (
-      tenant.isWhiteLabel
-        ? pointsToDo?.isPartOfPreschool
-        : pointsToDo?.isPartOfPreschool && practitioner?.progress === 2
-    ) {
+    if (isPartOfPreschool) {
       return 'secondaryAccent2';
     }
 
@@ -233,7 +234,7 @@ export const usePoints = () => {
   }, [
     getCurrentPointsToDo,
     planActivitiesPermission,
-    pointsToDo?.isPartOfPreschool,
+    isPartOfPreschool,
     pointsToDo?.plannedOneDay,
     pointsToDo?.savedIncomeOrExpense,
     pointsToDo?.signedUpForApp,
@@ -248,5 +249,6 @@ export const usePoints = () => {
     getCurrentPointsToDo,
     renderPointsToDoProgressBarColor,
     renderPointsToDoScoreCardBgColor,
+    isPartOfPreschool,
   };
 };
