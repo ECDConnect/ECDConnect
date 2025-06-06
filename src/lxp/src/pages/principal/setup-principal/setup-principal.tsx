@@ -312,6 +312,7 @@ export const SetupPrincipal: React.FC = () => {
         await appDispatch(
           practitionerThunkActions.getAllPractitioners({})
         ).unwrap();
+        await appDispatch(notificationActions.resetFrontendNotificationState());
       }
     }
     localStorage.removeItem(
