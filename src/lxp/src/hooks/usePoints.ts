@@ -24,9 +24,13 @@ export const usePoints = () => {
 
   const phase1StatusText = useMemo(() => {
     // step 1 - all
-    const umtsha = !pointsToDo?.isPartOfPreschool;
+    const umtsha = isWhiteLabel
+      ? !pointsToDo?.isPartOfPreschool
+      : pointsToDo?.isPartOfPreschool && practitioner?.progress! < 2;
     // step 2 - all
-    const tichere = pointsToDo?.isPartOfPreschool;
+    const tichere = isWhiteLabel
+      ? pointsToDo?.isPartOfPreschool
+      : pointsToDo?.isPartOfPreschool && practitioner?.progress === 2;
     // step 3a - principal
     const boss = practitioner?.isPrincipal
       ? pointsToDo?.savedIncomeOrExpense
