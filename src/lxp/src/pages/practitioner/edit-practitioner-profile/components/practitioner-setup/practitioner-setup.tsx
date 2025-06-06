@@ -109,7 +109,7 @@ export const PractitionerSetup = ({
       await appDispatch(classroomsActions.resetClassroomState());
     }
 
-    await appDispatch(notificationActions.resetNotificationState());
+    await appDispatch(notificationActions.resetFrontendNotificationState());
 
     await appDispatch(
       notificationActions.addNotifications(practitionerNotification)
