@@ -87,7 +87,7 @@ export const ShareSomeDetails = ({
             <div className="flex flex-col gap-11">
               <div className="flex w-full px-4">
                 <Card
-                  className="bg-uiBg mb-6 flex flex-col items-center gap-3 p-6"
+                  className="bg-uiBg mb-6 flex w-full flex-col items-center gap-3 p-6"
                   borderRaduis="xl"
                   shadowSize="lg"
                 >

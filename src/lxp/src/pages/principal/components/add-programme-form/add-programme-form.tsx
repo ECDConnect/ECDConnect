@@ -99,11 +99,8 @@ export const AddProgrammeForm: React.FC<{
       preschoolCode: uniquePreschoolCode,
     };
 
-    // TODO
+    // EC-3957 only add classroom to state - we save to database when we add the classes
     await appDispatch(classroomsActions.createClassroom(classroomInputModel));
-    await appDispatch(
-      classroomsThunkActions.upsertClassroom(classroomInputModel)
-    );
 
     if (classroomGroups?.length > 0) {
       for (const classroomGroup of classroomGroups) {
@@ -147,11 +144,8 @@ export const AddProgrammeForm: React.FC<{
       preschoolCode: uniquePreschoolCode,
     };
 
-    // This won't actually call the BE
+    // EC-3957 only add classroom to state - we save to database when we add the classes
     await appDispatch(classroomsActions.updateClassroom(classroomInputModel));
-    await appDispatch(
-      classroomsThunkActions.upsertClassroom(classroomInputModel)
-    );
 
     if (classroomGroups?.length > 0) {
       for (const classroomGroup of classroomGroups) {

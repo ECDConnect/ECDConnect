@@ -32,6 +32,7 @@ import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { useTenant } from '@/hooks/useTenant';
 import { userSelectors } from '@/store/user';
 import { useNotificationService } from '@/hooks/useNotificationService';
+import { ClassroomDto } from '@/models/classroom/classroom.dto';
 
 export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
   const classroom = useSelector(classroomsSelectors.getClassroom);
@@ -157,14 +158,23 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
         }),
       };
 
+      // EC-3957 - only save school information when you add a class for the principle
+      const classroomInputModel = classroom as ClassroomDto;
+      await appDispatch(
+        classroomsThunkActions.upsertClassroom(classroomInputModel)
+      );
+
+      // classes
       await appDispatch(
         classroomsActions.createClassroomGroup(classroomGroupModel)
       );
       await appDispatch(classroomsThunkActions.upsertClassroomGroups({}));
+      // programmes
       await appDispatch(
         classroomsThunkActions.upsertClassroomGroupProgrammes({})
       );
       await appDispatch(classroomsThunkActions.getClassroomGroups({}));
+
       (async () =>
         await appDispatch(
           practitionerThunkActions.getPractitionerByUserId({

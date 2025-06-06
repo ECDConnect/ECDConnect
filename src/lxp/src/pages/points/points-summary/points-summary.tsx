@@ -97,6 +97,7 @@ export const PointsSummary: React.FC = () => {
     getCurrentPointsToDo,
     renderPointsToDoProgressBarColor,
     renderPointsToDoScoreCardBgColor,
+    isPartOfPreschool,
   } = usePoints();
 
   const { renderPointsToDoEmoji } = usePointsToDoEmoji();
@@ -140,10 +141,9 @@ export const PointsSummary: React.FC = () => {
 
     // To make tichere clickable
     const canClickTichere = tenant.isWhiteLabel
-      ? pointsToDo?.signedUpForApp && !pointsToDo?.isPartOfPreschool
+      ? pointsToDo?.signedUpForApp && !isPartOfPreschool
       : // OA Principal/Practitioner will have a preschool by default, but we need to check for progress less than 2
-        (pointsToDo?.signedUpForApp && !pointsToDo?.isPartOfPreschool) ||
-        practitioner?.progress! < 2;
+        pointsToDo?.signedUpForApp && !isPartOfPreschool;
 
     const tichereUrl = practitioner?.isPrincipal
       ? ROUTES.PRINCIPAL.SETUP_PROFILE
@@ -154,11 +154,10 @@ export const PointsSummary: React.FC = () => {
     // To make influencer clickable
     const canClickInfluencer = tenant.isWhiteLabel
       ? pointsToDo?.signedUpForApp &&
-        pointsToDo?.isPartOfPreschool &&
+        isPartOfPreschool &&
         !pointsToDo?.viewedCommunitySection
       : // OA Principal/Practitioner will have a preschool by default, but we need to check for progress less than 2
-        (pointsToDo?.signedUpForApp && !pointsToDo?.isPartOfPreschool) ||
-        practitioner?.progress === 2;
+        pointsToDo?.signedUpForApp && !isPartOfPreschool;
 
     const umtsha: MenuListDataItem = {
       id: '1',
@@ -184,47 +183,25 @@ export const PointsSummary: React.FC = () => {
     const tichere: MenuListDataItem = {
       id: '2',
       title: 'Tichere',
-      titleStyle:
-        pointsToDo?.isPartOfPreschool && !isTrialPeriod
-          ? 'text-successDark'
-          : titleStyle,
+      titleStyle: isPartOfPreschool ? 'text-successDark' : titleStyle,
       subTitle: 'Set up or join your preschool',
-      subTitleStyle:
-        pointsToDo?.isPartOfPreschool && !isTrialPeriod
-          ? 'text-successDark'
-          : subTitleStyle,
-      className:
-        pointsToDo?.signedUpForApp &&
-        !pointsToDo?.isPartOfPreschool &&
-        isTrialPeriod
-          ? ''
-          : 'px-2',
-      menuIcon:
-        pointsToDo?.isPartOfPreschool && !isTrialPeriod ? 'CheckIcon' : '',
-      customIcon:
-        isTrialPeriod ||
-        (pointsToDo?.signedUpForApp && !pointsToDo?.isPartOfPreschool) ? (
-          <Kindgarden
-            className={`${
-              pointsToDo?.isPartOfPreschool && !isTrialPeriod
-                ? `bg-successMain text-white`
-                : 'text-quatenary bg-quatenary'
-            } z-50 mr-4 h-12 w-12 rounded-full p-2`}
-          />
-        ) : undefined,
-      iconBackgroundColor:
-        pointsToDo?.isPartOfPreschool && !isTrialPeriod
-          ? 'successMain'
-          : 'quatenary',
+      subTitleStyle: isPartOfPreschool ? 'text-successDark' : subTitleStyle,
+      className: !isPartOfPreschool ? '' : 'px-2',
+      menuIcon: isPartOfPreschool ? 'CheckIcon' : '',
+      customIcon: !isPartOfPreschool ? (
+        <Kindgarden
+          className={`${
+            isPartOfPreschool
+              ? `bg-successMain text-white`
+              : 'text-quatenary bg-quatenary'
+          } z-50 mr-4 h-12 w-12 rounded-full p-2`}
+        />
+      ) : undefined,
+      iconBackgroundColor: isPartOfPreschool ? 'successMain' : 'quatenary',
       showIcon: true,
       iconColor: 'white',
       hideRightIcon: true,
-      backgroundColor:
-        pointsToDo?.isPartOfPreschool && !isTrialPeriod
-          ? 'successBg'
-          : pointsToDo?.signedUpForApp
-          ? 'quatenaryBg'
-          : 'adminPortalBg',
+      backgroundColor: isPartOfPreschool ? 'successBg' : 'quatenaryBg',
       onActionClick: canClickTichere
         ? () => history.push(tichereUrl, {})
         : () => {},
@@ -245,8 +222,7 @@ export const PointsSummary: React.FC = () => {
           ? 'text-successDark'
           : subTitleStyle,
       className:
-        pointsToDo?.isPartOfPreschool &&
-        !isTrialPeriod &&
+        isPartOfPreschool &&
         !pointsToDo?.savedIncomeOrExpense &&
         !pointsToDo?.plannedOneDay
           ? ''
@@ -267,7 +243,7 @@ export const PointsSummary: React.FC = () => {
             className={`${
               pointsToDo?.savedIncomeOrExpense || pointsToDo?.plannedOneDay
                 ? 'bg-successMain'
-                : !pointsToDo?.isPartOfPreschool && isTrialPeriod
+                : !isPartOfPreschool && isTrialPeriod
                 ? `bg-uiLight text-white`
                 : 'text-quatenary bg-quatenary'
             } z-50 mr-4 h-12 w-12 rounded-full p-2`}
@@ -276,7 +252,7 @@ export const PointsSummary: React.FC = () => {
       iconBackgroundColor:
         pointsToDo?.savedIncomeOrExpense || pointsToDo?.plannedOneDay
           ? 'successMain'
-          : !pointsToDo?.isPartOfPreschool
+          : !isPartOfPreschool
           ? 'uiLight'
           : 'quatenary',
       showIcon: true,
@@ -285,22 +261,18 @@ export const PointsSummary: React.FC = () => {
       backgroundColor:
         pointsToDo?.savedIncomeOrExpense || pointsToDo?.plannedOneDay
           ? 'successBg'
-          : pointsToDo?.isPartOfPreschool && !isTrialPeriod
+          : isPartOfPreschool
           ? 'quatenaryBg'
           : 'adminPortalBg',
       onActionClick:
-        pointsToDo?.isPartOfPreschool &&
-        !isTrialPeriod &&
-        !pointsToDo?.savedIncomeOrExpense &&
+        isPartOfPreschool &&
         !pointsToDo?.savedIncomeOrExpense &&
         practitioner?.isPrincipal
           ? () =>
               history.push(ROUTES.BUSINESS, {
                 activeTabIndex: BusinessTabItems.MONEY,
               })
-          : pointsToDo?.isPartOfPreschool &&
-            !isTrialPeriod &&
-            !pointsToDo?.savedIncomeOrExpense &&
+          : isPartOfPreschool &&
             !pointsToDo?.savedIncomeOrExpense &&
             !practitioner?.isPrincipal
           ? () =>
@@ -325,8 +297,7 @@ export const PointsSummary: React.FC = () => {
           pointsToDo?.plannedOneDay ||
           (!practitioner?.isPrincipal &&
             planActivitiesPermission?.isActive === false &&
-            pointsToDo?.isPartOfPreschool &&
-            !isTrialPeriod)) &&
+            isPartOfPreschool)) &&
         !pointsToDo?.viewedCommunitySection
           ? ''
           : 'px-2',
@@ -341,8 +312,7 @@ export const PointsSummary: React.FC = () => {
             (!practitioner?.isPrincipal &&
               (planActivitiesPermission?.isActive === false ||
                 planActivitiesPermission?.isActive === undefined) &&
-              pointsToDo?.isPartOfPreschool &&
-              !isTrialPeriod)
+              isPartOfPreschool)
           ? 'quatenary'
           : 'bg-uiLight'
       } rounded-full h-12 w-12 p-2.5`,
@@ -358,8 +328,7 @@ export const PointsSummary: React.FC = () => {
           (!practitioner?.isPrincipal &&
             (planActivitiesPermission?.isActive === false ||
               planActivitiesPermission?.isActive === undefined) &&
-            pointsToDo?.isPartOfPreschool &&
-            !isTrialPeriod)
+            isPartOfPreschool)
         ? 'quatenaryBg'
         : 'adminPortalBg',
     };
@@ -367,7 +336,7 @@ export const PointsSummary: React.FC = () => {
     stackedMenuList.push(umtsha);
     stackedMenuList.push(tichere);
 
-    if (!pointsToDo?.isPartOfPreschool) {
+    if (!isPartOfPreschool) {
       stackedMenuList.push(influencer);
     } else {
       if (isPrincipal) {
