@@ -17,6 +17,7 @@ import { ClassroomDto as SimpleClassroomDto } from '@/models/classroom/classroom
 import { ClassroomGroupDto as SimpleClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { OverrideCache } from '@/models/sync/override-cache';
 import { SiteAddressService } from '@/services/SiteAddressService';
+import PermissionsService from '@/services/PermissionsService/PermissionsService';
 
 export const ClassroomActions = {
   GET_CLASSROOM: 'getClassroom',
@@ -454,6 +455,39 @@ export const addChildProgressReportPeriods = createAsyncThunk<
         return true;
       }
       return rejectWithValue('no access token, profile check required');
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const updateClassroomPractitionerPermissions = createAsyncThunk<
+  boolean[],
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  {},
+  ThunkApiType<RootState>
+>(
+  ClassroomActions.UPDATE_CLASSROOM_PRACTITIONER_PERMISSIONS,
+  // eslint-disable-next-line no-empty-pattern
+  async ({}, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      classroomData: { classroomPractitioners },
+    } = getState();
+    try {
+      let promises: Promise<any>[] = [];
+      if (!!userAuth && !!userAuth?.auth_token) {
+        console.log('hier is auth');
+
+        const service = new PermissionsService(userAuth?.auth_token);
+        promises = classroomPractitioners.map(async (e) => {
+          return await service.UpdateUserPermission(e);
+        });
+
+        return Promise.all(promises);
+      } else {
+        return rejectWithValue('No auth');
+      }
     } catch (err) {
       return rejectWithValue(err);
     }

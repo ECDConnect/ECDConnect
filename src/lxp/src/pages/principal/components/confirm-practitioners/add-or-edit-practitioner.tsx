@@ -723,9 +723,9 @@ export const AddOrEditPractitioner = ({
           className="mb-4 w-full"
           type="filled"
           color="quatenary"
-          text="Save"
+          text="Next"
           textColor="white"
-          icon="SaveIcon"
+          icon="ArrowCircleRightIcon"
           disabled={
             (!idNumber && !passport && !practitionerPhoneNumber) ||
             (isValidPractitioner === false && !practitionerPhoneNumber) ||

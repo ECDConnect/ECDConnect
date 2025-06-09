@@ -179,27 +179,9 @@ export const SetupPrincipal: React.FC = () => {
     }
   }, [classesPage, isNotPrincipal, page, previousPage]);
 
-  console.log('classroomSetupPractitioners', classroomSetupPractitioners);
-
   const onAllStepsComplete = async () => {
     if (isNotPrincipal === true && practitioner?.progress !== 1) {
       if (user) {
-        // update school
-        // EC-3957 - only save school information when you add a class for the principle
-        const classroomInputModel = classroom as ClassroomDto;
-        await appDispatch(
-          classroomsThunkActions.upsertClassroom(classroomInputModel)
-        );
-        // save practitioners and permissions
-
-        // add classes
-        await appDispatch(classroomsThunkActions.upsertClassroomGroups({}));
-        // programmes
-        await appDispatch(
-          classroomsThunkActions.upsertClassroomGroupProgrammes({})
-        );
-        await appDispatch(classroomsThunkActions.getClassroomGroups({}));
-
         await appDispatch(
           practitionerThunkActions.updatePractitionerRegistered({
             practitionerId: user.id,
@@ -218,24 +200,28 @@ export const SetupPrincipal: React.FC = () => {
       history.push(ROUTES.ROOT);
       return;
     }
+
     setIsLoading(true);
-    const playGroupProgrammeType = programmeTypes.find(
-      (x) => x.enumId === ProgrammeTypeEnum.Playgroup
+
+    // update school
+    // EC-3957 - only save school information when you add a class for the principle
+    const classroomInputModel = classroom as ClassroomDto;
+    await appDispatch(
+      classroomsThunkActions.upsertClassroom(classroomInputModel)
     );
 
-    // if (programmeType?.id === playGroupProgrammeType?.id && classroom?.id) {
-    //   const unsureClassProgrammeInputModel: ClassroomGroupDto = {
-    //     id: newGuid(),
-    //     classroomId: classroom?.id,
-    //     isActive: true,
-    //     programmeTypeId: programmeType?.id,
-    //     name: NoPlaygroupClassroomType.name,
-    //     userId: user?.id, // Unsure classroom will belong to the principal
-    //   };
-    //   appDispatch(
-    //     classroomsActions.createClassroomGroup(unsureClassProgrammeInputModel)
-    //   );
-    // }
+    // save practitioners and permissions
+    await appDispatch(
+      classroomsThunkActions.updateClassroomPractitionerPermissions({})
+    );
+
+    // add classes
+    await appDispatch(classroomsThunkActions.upsertClassroomGroups({}));
+    // programmes
+    await appDispatch(
+      classroomsThunkActions.upsertClassroomGroupProgrammes({})
+    );
+    await appDispatch(classroomsThunkActions.getClassroomGroups({}));
 
     // Update classroom number of practitioners
     appDispatch(
@@ -346,6 +332,9 @@ export const SetupPrincipal: React.FC = () => {
     localStorage.removeItem(
       LocalStorageKeys.practitionerInvitedPrincipalUserId
     );
+    // clear practitioners and permissions on state
+    await appDispatch(classroomsActions.deleteClassroomPractitioner());
+
     setIsLoading(false);
     stopService();
     history.push(ROUTES.DASHBOARD, { isFromCompleteProfile: true });

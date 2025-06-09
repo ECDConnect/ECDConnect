@@ -138,8 +138,13 @@ const classroomsSlice = createSlice({
       state,
       action: PayloadAction<UpdateUserPermissionInputModelInput>
     ) => {
-      const payloadUpdated = { ...action.payload, synced: false };
-      state.classroomPractitioners.push(payloadUpdated);
+      const userExist = state.classroomPractitioners.find(
+        (x) => x.userId == action.payload.userId
+      );
+      if (!userExist) state.classroomPractitioners.push(action.payload);
+    },
+    deleteClassroomPractitioner: (state) => {
+      state.classroomPractitioners = [];
     },
     createClassroomGroup: (
       state,
