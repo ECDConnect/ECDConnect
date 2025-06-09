@@ -322,11 +322,9 @@ export default function ConfirmPractitioners({
                 className="mb-4 w-full"
                 type="filled"
                 color="quatenary"
-                text={
-                  listItems?.length === 0 ? 'Skip' : 'Save & send invitations'
-                }
+                text={listItems?.length === 0 ? 'Skip' : 'Next'}
                 textColor="white"
-                icon={listItems?.length === 0 ? 'ClockIcon' : 'UploadIcon'}
+                icon="ArrowCircleRightIcon"
                 onClick={handleConfirmPractitionerSubmit}
               />
             </div>

@@ -43,8 +43,9 @@ import { UpdateUserPermissionInputModelInput } from '@ecdlink/graphql';
 import { StackListItems } from './confirm-practitioners';
 import { HelpForm } from '@/components/help-form/help-form';
 import { userSelectors } from '@/store/user';
-import { classroomsSelectors } from '@/store/classroom';
+import { classroomsActions, classroomsSelectors } from '@/store/classroom';
 import { useTenantModules } from '@/hooks/useTenantModules';
+import { useAppDispatch } from '@/store';
 
 export const AddOrEditPractitioner = ({
   onSubmit,
@@ -81,6 +82,8 @@ export const AddOrEditPractitioner = ({
     defaultValues: Boolean(formData) ? formData : initialAddPractitionerValues,
     mode: 'onChange',
   });
+
+  const appDispatch = useAppDispatch();
 
   const [isValidPractitioner, setIsValidPractitioner] = useState<boolean>();
   const [isPractitionerRegistered, setIsPractitionerRegistered] =
@@ -229,10 +232,14 @@ export const AddOrEditPractitioner = ({
         userId: practitionerUserDetails?.appUser?.id,
         permissionIds: permissionsAdded,
       };
-
-      await new PermissionsService(userAuth?.auth_token!).UpdateUserPermission(
-        updatePermissionInput
+      // add practitioner to state - updating the permissions on the last step
+      await appDispatch(
+        classroomsActions.createClassroomPractitioner(updatePermissionInput)
       );
+
+      // await new PermissionsService(userAuth?.auth_token!).UpdateUserPermission(
+      //   updatePermissionInput
+      // );
     }
 
     if (practitionerPhoneNumber) {
@@ -309,10 +316,14 @@ export const AddOrEditPractitioner = ({
         userId: practitionerUserDetails?.appUser?.id,
         permissionIds: permissionsAdded,
       };
-
-      await new PermissionsService(userAuth?.auth_token!).UpdateUserPermission(
-        updatePermissionInput
+      // add practitioner to state - updating the permissions on the last step
+      await appDispatch(
+        classroomsActions.createClassroomPractitioner(updatePermissionInput)
       );
+
+      // await new PermissionsService(userAuth?.auth_token!).UpdateUserPermission(
+      //   updatePermissionInput
+      // );
     }
 
     handleAddOrEditAnotherPractitionerSubmit({

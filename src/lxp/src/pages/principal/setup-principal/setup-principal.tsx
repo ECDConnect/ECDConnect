@@ -14,7 +14,11 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useAppDispatch } from '@/store';
 import { authSelectors } from '@/store/auth';
-import { classroomsActions, classroomsSelectors } from '@/store/classroom';
+import {
+  classroomsActions,
+  classroomsSelectors,
+  classroomsThunkActions,
+} from '@/store/classroom';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 import { AddProgrammeForm } from '../components/add-programme-form/add-programme-form';
@@ -60,6 +64,9 @@ export const SetupPrincipal: React.FC = () => {
   const programmeTypes = useSelector(staticDataSelectors.getProgrammeTypes);
   const user = useSelector(userSelectors.getUser);
   const classroom = useSelector(classroomsSelectors?.getClassroom);
+  const classroomSetupPractitioners = useSelector(
+    classroomsSelectors.getSetupClassroomPractitioners
+  );
   const [principalClassroom, setPrincipalClassroom] = useState<ClassroomDto>();
   const principalPractitioners = useSelector(
     practitionerSelectors.getPrincipalPractitioners
@@ -168,7 +175,7 @@ export const SetupPrincipal: React.FC = () => {
       classesPage === ConfirmClassesSteps.CONFIRM_CLASSES &&
       page === PractitionerSetupSteps.CONFIRM_CLASSES
     ) {
-      return setLabel('step 3 of 4');
+      return setLabel('Step 3 of 4');
     }
   }, [classesPage, isNotPrincipal, page, previousPage]);
 
@@ -193,24 +200,28 @@ export const SetupPrincipal: React.FC = () => {
       history.push(ROUTES.ROOT);
       return;
     }
+
     setIsLoading(true);
-    const playGroupProgrammeType = programmeTypes.find(
-      (x) => x.enumId === ProgrammeTypeEnum.Playgroup
+
+    // update school
+    // EC-3957 - only save school information when you add a class for the principle
+    const classroomInputModel = classroom as ClassroomDto;
+    await appDispatch(
+      classroomsThunkActions.upsertClassroom(classroomInputModel)
     );
 
-    // if (programmeType?.id === playGroupProgrammeType?.id && classroom?.id) {
-    //   const unsureClassProgrammeInputModel: ClassroomGroupDto = {
-    //     id: newGuid(),
-    //     classroomId: classroom?.id,
-    //     isActive: true,
-    //     programmeTypeId: programmeType?.id,
-    //     name: NoPlaygroupClassroomType.name,
-    //     userId: user?.id, // Unsure classroom will belong to the principal
-    //   };
-    //   appDispatch(
-    //     classroomsActions.createClassroomGroup(unsureClassProgrammeInputModel)
-    //   );
-    // }
+    // save practitioners and permissions
+    await appDispatch(
+      classroomsThunkActions.updateClassroomPractitionerPermissions({})
+    );
+
+    // add classes
+    await appDispatch(classroomsThunkActions.upsertClassroomGroups({}));
+    // programmes
+    await appDispatch(
+      classroomsThunkActions.upsertClassroomGroupProgrammes({})
+    );
+    await appDispatch(classroomsThunkActions.getClassroomGroups({}));
 
     // Update classroom number of practitioners
     appDispatch(
@@ -231,6 +242,7 @@ export const SetupPrincipal: React.FC = () => {
         history.push(ROUTES.DASHBOARD, { isFromCompleteProfile: true });
         return;
       }
+
       await new PractitionerService(
         userAuth?.auth_token
       ).PromotePractitionerToPrincipal(user?.id);
@@ -321,6 +333,9 @@ export const SetupPrincipal: React.FC = () => {
     localStorage.removeItem(
       LocalStorageKeys.practitionerInvitedPrincipalUserId
     );
+    // clear practitioners and permissions on state
+    await appDispatch(classroomsActions.deleteClassroomPractitioner());
+
     setIsLoading(false);
     stopService();
     history.push(ROUTES.DASHBOARD, { isFromCompleteProfile: true });
