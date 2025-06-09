@@ -15,11 +15,7 @@ import {
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
-import {
-  classroomsActions,
-  classroomsSelectors,
-  classroomsThunkActions,
-} from '@store/classroom';
+import { classroomsActions, classroomsSelectors } from '@store/classroom';
 import { newGuid } from '@/utils/common/uuid.utils';
 import { useSelector } from 'react-redux';
 import {
@@ -32,7 +28,6 @@ import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { useTenant } from '@/hooks/useTenant';
 import { userSelectors } from '@/store/user';
 import { useNotificationService } from '@/hooks/useNotificationService';
-import { ClassroomDto } from '@/models/classroom/classroom.dto';
 
 export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
   const classroom = useSelector(classroomsSelectors.getClassroom);
@@ -158,22 +153,10 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
         }),
       };
 
-      // EC-3957 - only save school information when you add a class for the principle
-      const classroomInputModel = classroom as ClassroomDto;
-      await appDispatch(
-        classroomsThunkActions.upsertClassroom(classroomInputModel)
-      );
-
-      // classes
+      // moving database calls to setup-principal final step
       await appDispatch(
         classroomsActions.createClassroomGroup(classroomGroupModel)
       );
-      await appDispatch(classroomsThunkActions.upsertClassroomGroups({}));
-      // programmes
-      await appDispatch(
-        classroomsThunkActions.upsertClassroomGroupProgrammes({})
-      );
-      await appDispatch(classroomsThunkActions.getClassroomGroups({}));
 
       (async () =>
         await appDispatch(
