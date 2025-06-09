@@ -14,7 +14,11 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useAppDispatch } from '@/store';
 import { authSelectors } from '@/store/auth';
-import { classroomsActions, classroomsSelectors } from '@/store/classroom';
+import {
+  classroomsActions,
+  classroomsSelectors,
+  classroomsThunkActions,
+} from '@/store/classroom';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 import { AddProgrammeForm } from '../components/add-programme-form/add-programme-form';
@@ -60,6 +64,9 @@ export const SetupPrincipal: React.FC = () => {
   const programmeTypes = useSelector(staticDataSelectors.getProgrammeTypes);
   const user = useSelector(userSelectors.getUser);
   const classroom = useSelector(classroomsSelectors?.getClassroom);
+  const classroomSetupPractitioners = useSelector(
+    classroomsSelectors.getSetupClassroomPractitioners
+  );
   const [principalClassroom, setPrincipalClassroom] = useState<ClassroomDto>();
   const principalPractitioners = useSelector(
     practitionerSelectors.getPrincipalPractitioners
@@ -168,13 +175,31 @@ export const SetupPrincipal: React.FC = () => {
       classesPage === ConfirmClassesSteps.CONFIRM_CLASSES &&
       page === PractitionerSetupSteps.CONFIRM_CLASSES
     ) {
-      return setLabel('step 3 of 4');
+      return setLabel('Step 3 of 4');
     }
   }, [classesPage, isNotPrincipal, page, previousPage]);
+
+  console.log('classroomSetupPractitioners', classroomSetupPractitioners);
 
   const onAllStepsComplete = async () => {
     if (isNotPrincipal === true && practitioner?.progress !== 1) {
       if (user) {
+        // update school
+        // EC-3957 - only save school information when you add a class for the principle
+        const classroomInputModel = classroom as ClassroomDto;
+        await appDispatch(
+          classroomsThunkActions.upsertClassroom(classroomInputModel)
+        );
+        // save practitioners and permissions
+
+        // add classes
+        await appDispatch(classroomsThunkActions.upsertClassroomGroups({}));
+        // programmes
+        await appDispatch(
+          classroomsThunkActions.upsertClassroomGroupProgrammes({})
+        );
+        await appDispatch(classroomsThunkActions.getClassroomGroups({}));
+
         await appDispatch(
           practitionerThunkActions.updatePractitionerRegistered({
             practitionerId: user.id,
@@ -231,6 +256,7 @@ export const SetupPrincipal: React.FC = () => {
         history.push(ROUTES.DASHBOARD, { isFromCompleteProfile: true });
         return;
       }
+
       await new PractitionerService(
         userAuth?.auth_token
       ).PromotePractitionerToPrincipal(user?.id);

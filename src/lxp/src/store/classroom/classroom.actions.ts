@@ -27,6 +27,8 @@ export const ClassroomActions = {
   UPSERT_CLASS_PROGRAMMES: 'upsertClassroomGroupProgrammes',
   GET_CLASSROOM_FOR_TRIAL_PERIOD_USER: 'getClassroomForTrialPeriodUser',
   ADD_CHILD_PROGRESS_REPORT_PERIODS: 'addChildProgressReportPeriods',
+  UPDATE_CLASSROOM_PRACTITIONER_PERMISSIONS:
+    'updateClassroomPractitionerPermissions',
 };
 
 export const getClassroom = createAsyncThunk<

@@ -10,11 +10,7 @@ import {
   editProgrammeSchema,
 } from '@schemas/practitioner/edit-programme';
 import { userSelectors } from '@/store/user';
-import {
-  classroomsActions,
-  classroomsSelectors,
-  classroomsThunkActions,
-} from '@/store/classroom';
+import { classroomsActions, classroomsSelectors } from '@/store/classroom';
 import { useAppDispatch } from '@/store';
 import { newGuid } from '@/utils/common/uuid.utils';
 import {
@@ -99,7 +95,7 @@ export const AddProgrammeForm: React.FC<{
       preschoolCode: uniquePreschoolCode,
     };
 
-    // EC-3957 only add classroom to state - we save to database when we add the classes
+    // EC-3957 only add classroom to state - we save to database on the last step (setup-principal onAllStepsComplete)
     await appDispatch(classroomsActions.createClassroom(classroomInputModel));
 
     if (classroomGroups?.length > 0) {
@@ -177,21 +173,21 @@ export const AddProgrammeForm: React.FC<{
   };
 
   // Do we still have imported users?
-  const onSubmitForImportedUser = (e: EditProgrammeModel) => {
-    if (!e.isPrincipalOrLeader && e.isPrincipleOrOwnerSmartStarter) {
-      setIsNotPrincipal(true);
-      onNext(PractitionerSetupSteps.ADD_PHOTO);
-    } else {
-      if (classroom?.id) {
-        updateClassroom(e, classroom.id);
-      } else {
-        //an imported user could have rejected the invite which would have cleared the classroom
-        const classroomId = newGuid();
-        createClassroom(e, classroomId);
-      }
-      onNext(PractitionerSetupSteps.CONFIRM_PRACTITIONERS);
-    }
-  };
+  // const onSubmitForImportedUser = (e: EditProgrammeModel) => {
+  //   if (!e.isPrincipalOrLeader && e.isPrincipleOrOwnerSmartStarter) {
+  //     setIsNotPrincipal(true);
+  //     onNext(PractitionerSetupSteps.ADD_PHOTO);
+  //   } else {
+  //     if (classroom?.id) {
+  //       updateClassroom(e, classroom.id);
+  //     } else {
+  //       //an imported user could have rejected the invite which would have cleared the classroom
+  //       const classroomId = newGuid();
+  //       createClassroom(e, classroomId);
+  //     }
+  //     onNext(PractitionerSetupSteps.CONFIRM_PRACTITIONERS);
+  //   }
+  // };
 
   useEffect(() => {
     if (

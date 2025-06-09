@@ -17,6 +17,7 @@ import { ClassroomGroupDto as SimpleClassroomGroupDto } from '@/models/classroom
 import { SiteAddressDto } from '@/models/classroom/site-address.dto';
 import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 import { formatISO } from 'date-fns';
+import { UpdateUserPermissionInputModelInput } from '@ecdlink/graphql';
 
 const initialState: ClassroomState = {
   classroom: undefined,
@@ -24,6 +25,7 @@ const initialState: ClassroomState = {
     classroomGroups: [],
     dateRefreshed: undefined,
   },
+  classroomPractitioners: [],
 };
 
 const classroomsSlice = createSlice({
@@ -131,6 +133,13 @@ const classroomsSlice = createSlice({
         dateRefreshed: undefined,
         synced: false,
       };
+    },
+    createClassroomPractitioner: (
+      state,
+      action: PayloadAction<UpdateUserPermissionInputModelInput>
+    ) => {
+      const payloadUpdated = { ...action.payload, synced: false };
+      state.classroomPractitioners.push(payloadUpdated);
     },
     createClassroomGroup: (
       state,
