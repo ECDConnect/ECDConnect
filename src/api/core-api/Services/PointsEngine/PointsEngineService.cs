@@ -1084,12 +1084,59 @@ namespace EcdLink.Api.CoreApi.Services
         /// <returns></returns>
         public void CalculateCompleteCommunityProfile(Guid userId)
         {
-            var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.CompleteCommunityProfileId);
-            AddOrUpdatePoints(
-                PointsActivityConstants.CompleteCommunityProfileId,
-                userId,
-                activity.Points,
-                1);
+            
+            var userCommunityProfile = _communityProfileRepo.GetAll()
+                                        .Include(x => x.User)
+                                        .Include(x => x.ProfileSkills)
+                                        .ThenInclude(x => x.CommunitySkill)
+                                        .Where(x => x.UserId == userId).FirstOrDefault();
+
+            // Users will always have 10% complete.
+            var totalPoints = 10;
+            // -Edit contact details -user saves form(note that they're not required to select any of the boxes) - 18 percentage points
+            if (userCommunityProfile.ShareContactInfo.HasValue && userCommunityProfile.ShareContactInfo.Value)
+            {
+                totalPoints += 18;
+            }
+            //- Edit basic info -user has filled in short description and province -18 percentage points
+            if (!string.IsNullOrEmpty(userCommunityProfile.AboutShort) && userCommunityProfile.ProvinceId != null)
+            {
+                totalPoints += 18;
+            }
+            //-About - user has filled in the field -18 percentage points
+            if (!string.IsNullOrEmpty(userCommunityProfile.AboutLong))
+            {
+                totalPoints += 18;
+            }
+            //-ECD skills - user has checked at least 1 skill - 18 percentage points
+            if (userCommunityProfile.ProfileSkills.Count > 0)
+            {
+                totalPoints += 18;
+            }
+            //-Photo - user has added a photo -18 percentage points
+            if (!string.IsNullOrEmpty(userCommunityProfile.User.ProfileImageUrl))
+            {
+                totalPoints += 18;
+            }
+
+            if (totalPoints == 100)
+            {
+                var currentPoints = _pointsUserSummaryRepo.GetListByUserId(userId)
+                                    .Where(x => x.PointsActivityId == PointsActivityConstants.CompleteCommunityProfileId)
+                                    .FirstOrDefault();
+
+                // You can only receive these points once
+                if (currentPoints == null)
+                {
+                    var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.CompleteCommunityProfileId);
+                    AddOrUpdatePoints(
+                        PointsActivityConstants.CompleteCommunityProfileId,
+                        userId,
+                        activity.Points,
+                        1,
+                        DateTime.Now);
+                } 
+            }
         }
 
         /// <summary>
