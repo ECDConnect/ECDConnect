@@ -135,8 +135,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                     notificationService.SendNotificationAsync(null, TemplateTypeConstants.MultipleProgrammeInvitation, DateTime.Now.Date, user, "", MessageStatusConstants.Amber, replacements);
                                 }
                             }
-                            // add points for adding practitioner to programme
-                            pointsService.CalculateAddNewPractitionerToPreschool(uId);
+                            
                         } else
                         {
                             // send message to principal if preschool code is available
@@ -159,6 +158,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                 notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerJoinedWithPreschoolCode, DateTime.Now.Date, principalUser.User, "", MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7));
                             }
                         }
+                        
+                        // add points for adding practitioner to programme
+                        pointsService.CalculateAddNewPractitionerToPreschool(uId);
 
                         return practitioner;
                     }
