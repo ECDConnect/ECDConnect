@@ -89,10 +89,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                     var newClassRoomGroup = classRepo.Insert(classRoomCreate);
                     UpdateClassProgrammeForPractitioner(contextAccessor, repoFactory, input.ClassroomId, hierarchy);
-                    
+
                     // EC-3508 - as soon as a class is created, we set the progress to 2
                     var practitionerToUpdate = pracRepo.GetByUserId(uId);
-                    if (practitionerToUpdate.Progress != 2) {
+                    if (practitionerToUpdate.Progress != 2)
+                    {
                         practitionerToUpdate.Progress = 2;
                         practitionerToUpdate.IsPrincipal = true;
                         pracRepo.Update(practitionerToUpdate);
@@ -124,9 +125,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                     // add points for adding a new class for the principal
                     pointsService.CalculateAddNewClassToPreschool(uId);
-                    
-                    return newClassRoomGroup;
 
+                    return newClassRoomGroup;
                 }
             }
             else
@@ -194,13 +194,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     // if the user has changed, we need to disable notification for previous user.
                     var previousUser = userManager.FindByIdAsync(previousUserId.ToString()).Result;
                     var previousReassignedMessages = notificationService.GetMessagesForUser(previousUserId.ToString(), TemplateTypeConstants.ReassignedToNewClass, classRoomGroup.Id);
-                    if (previousReassignedMessages.Count > 0) {
+                    if (previousReassignedMessages.Count > 0)
+                    {
                         foreach (var item in previousReassignedMessages)
                         {
                             notificationService.DisableNotification(item.Id.ToString());
                         }
                     }
-
                 }
 
                 //also update the userhierarchy on classroomgroup, as well as classProgramme so that a practitioner can see this
@@ -217,10 +217,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         notificationService.DisableNotification(item.Id.ToString());
                     }
                 }
-
                 return classRoomGroup;
             }
 
+            // add points for adding a new class for the principal
+            pointsService.CalculateAddNewClassToPreschool(uId);
+            
             return new ClassroomGroup();
         }
 
