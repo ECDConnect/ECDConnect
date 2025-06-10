@@ -152,12 +152,8 @@ export const PointsSummary: React.FC = () => {
       : ROUTES.PRINCIPAL.SETUP_PROFILE;
 
     // To make influencer clickable
-    const canClickInfluencer = tenant.isWhiteLabel
-      ? pointsToDo?.signedUpForApp &&
-        isPartOfPreschool &&
-        !pointsToDo?.viewedCommunitySection
-      : // OA Principal/Practitioner will have a preschool by default, but we need to check for progress less than 2
-        pointsToDo?.signedUpForApp && !isPartOfPreschool;
+    const canClickInfluencer =
+      isPartOfPreschool && !pointsToDo?.viewedCommunitySection;
 
     const umtsha: MenuListDataItem = {
       id: '1',
