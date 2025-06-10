@@ -122,8 +122,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         notificationService.SendNotificationAsync(null, TemplateTypeConstants.ReassignedToNewClass, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null, new List<RelatedEntity> { new RelatedEntity(newClassRoomGroup.Id, "ClassRoomGroup") });
                     }
 
-                    // add points for adding a new class
-                    pointsService.CalculateAddNewClassToPreschool((Guid)(input.UserId.HasValue ? input.UserId : uId));
+                    // add points for adding a new class for the principal
+                    pointsService.CalculateAddNewClassToPreschool(uId);
                     
                     return newClassRoomGroup;
 
