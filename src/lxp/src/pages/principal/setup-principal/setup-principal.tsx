@@ -73,7 +73,6 @@ export const SetupPrincipal: React.FC = () => {
   );
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const [isNotPrincipal, setIsNotPrincipal] = useState(false);
-  const [isFundaAppAdmin, setIsFundaAppAdmin] = useState(false);
   const [label, setLabel] = useState('Welcome');
   const [page, setPage] = useState<PractitionerSetupSteps>(
     PractitionerSetupSteps.WELCOME
@@ -145,13 +144,6 @@ export const SetupPrincipal: React.FC = () => {
 
     if (page === PractitionerSetupSteps.ADD_PHOTO) {
       return setLabel('step 4 of 4');
-    }
-
-    if (
-      previousPage === PractitionerSetupSteps.WELCOME &&
-      page === PractitionerSetupSteps.SETUP_PROGRAMME
-    ) {
-      setIsFundaAppAdmin(false);
     }
 
     if (page === PractitionerSetupSteps.CONFIRM_PRACTITIONERS) {
@@ -425,8 +417,6 @@ export const SetupPrincipal: React.FC = () => {
             onNext={setPage}
             setIsNotPrincipal={setIsNotPrincipal}
             isNotPrincipal={isNotPrincipal}
-            isFundaAppAdmin={isFundaAppAdmin}
-            setIsFundaAppAdmin={setIsFundaAppAdmin}
             onChangeIsPrincipal={onChangeIsPrincipal}
           />
         );
@@ -437,7 +427,6 @@ export const SetupPrincipal: React.FC = () => {
             page={confirmPractitionerPage}
             setConfirmPractitionerPage={setConfirmPractitionerPage}
             onNext={setPage}
-            isFundaAppAdmin={isFundaAppAdmin}
           />
         );
 

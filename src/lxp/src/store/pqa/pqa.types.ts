@@ -71,9 +71,3 @@ export type PQAFormType =
   | 're-accreditation'
   | 're-accreditation-follow-up-visit'
   | 'self-assessment';
-
-export type SmartSpaceVisitData = {
-  visitSection: string;
-  question: string;
-  questionAnswer: string | undefined;
-};
