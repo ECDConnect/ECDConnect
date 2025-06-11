@@ -122,6 +122,12 @@ export const PointsSummary: React.FC = () => {
 
   const todoListFiltered = practitioner?.isPrincipal
     ? principalActivitiesItems
+    : pointsShareData?.activityDetail?.length === 0
+    ? practitionerActivitiesItems?.filter((item2) =>
+        attendancePermission?.isActive !== true
+          ? item2?.activity !== 'Attendance registers saved'
+          : item2
+      )
     : practitionerActivitiesItems
         ?.filter((item2) =>
           attendancePermission?.isActive !== true
@@ -633,7 +639,10 @@ export const PointsSummary: React.FC = () => {
           ) : null}
 
           {/* Phase 2 ------------------------------------------------------ */}
-          {isPhase1Completed && showPhase2Card ? (
+          {isPhase1Completed &&
+          showPhase2Card &&
+          pointsTotalForYear &&
+          pointsTotalForYear > 0 ? (
             <ScoreCard
               className="mt-5 py-6"
               mainText={`${monthPoints} points`}
@@ -659,11 +668,7 @@ export const PointsSummary: React.FC = () => {
           ) : null}
 
           {/* celebration card with no percentage score */}
-          {!isOnline &&
-          isPhase1Completed &&
-          showPhase2Card &&
-          monthPoints &&
-          percentageScore === 0 ? (
+          {isPhase1Completed && showPhase2Card && percentageScore === 0 ? (
             <div>{celebrationCard}</div>
           ) : null}
 
@@ -671,7 +676,7 @@ export const PointsSummary: React.FC = () => {
           {isOnline &&
           isPhase1Completed &&
           showPhase2Card &&
-          monthPoints &&
+          monthPoints > 0 &&
           pointsTotalForYear &&
           pointsTotalForYear > 0 ? (
             <CelebrationCard
@@ -699,10 +704,10 @@ export const PointsSummary: React.FC = () => {
           ) : null}
 
           {/* Text heading for earning more points */}
-          {!!todoListFiltered &&
-          isPhase1Completed &&
+          {isPhase1Completed &&
           showPhase2Card &&
-          !!todoListFiltered.length ? (
+          pointsTotalForYear &&
+          pointsTotalForYear > 0 ? (
             <Typography
               className="mt-4 mb-4"
               type={'h3'}
@@ -746,7 +751,6 @@ export const PointsSummary: React.FC = () => {
           showPhase2Card &&
           pointsTotalForYear &&
           pointsTotalForYear > 0 &&
-          monthPoints &&
           monthPoints > 0 ? (
             <Button
               size="normal"
@@ -776,8 +780,8 @@ export const PointsSummary: React.FC = () => {
           showPhase2Card &&
           pointsTotalForYear &&
           pointsTotalForYear > 0 &&
-          monthPoints &&
-          monthPoints === 0 ? (
+          monthPoints === 0 &&
+          !practitioner?.coachHierarchy ? (
             <Button
               size="normal"
               className="mb-4 w-full"
@@ -795,7 +799,6 @@ export const PointsSummary: React.FC = () => {
           showPhase2Card &&
           pointsTotalForYear &&
           pointsTotalForYear > 0 &&
-          monthPoints &&
           monthPoints === 0 &&
           practitioner?.coachHierarchy ? (
             <Button
