@@ -423,6 +423,7 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 currentPoints.TimesScored = timesScored ?? currentPoints.TimesScored + 1;
                 currentPoints.PointsTotal = pointsTotal;
+                currentPoints.UpdatedDate = DateTime.Now;
 
                 _pointsUserSummaryRepo.Update(currentPoints);
             }
@@ -1133,8 +1134,7 @@ namespace EcdLink.Api.CoreApi.Services
                         PointsActivityConstants.CompleteCommunityProfileId,
                         userId,
                         activity.Points,
-                        1,
-                        DateTime.Now);
+                        1);
                 } 
             }
         }
