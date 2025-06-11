@@ -1133,8 +1133,7 @@ namespace EcdLink.Api.CoreApi.Services
                         PointsActivityConstants.CompleteCommunityProfileId,
                         userId,
                         activity.Points,
-                        1,
-                        DateTime.Now);
+                        1);
                 } 
             }
         }
