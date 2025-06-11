@@ -52,17 +52,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
             var principalUser = practitionerRepo.GetByUserId(userId);
  
-            if (principalUser != null && (principalUser.IsPrincipal == true)) //make sure the principal user exists and is a principal or a FAA
+            if (principalUser != null && (principalUser.IsPrincipal == true)) //make sure the principal user exists and is a principal
             {
                 if (practitionerUser != null)
                 {
                     Practitioner practitioner = practitionerRepo.GetByUserId(practitionerUser.Id);
-                    if (practitioner != null && principalUser.UserId != practitioner.UserId) 
+                    if (practitioner != null && principalUser.UserId != practitioner.UserId)
                     {
                         practitioner.DateLinked = DateTime.Now;
                         practitioner.PrincipalHierarchy = principalUser.UserId;
                         practitioner.IsPrincipal = false;
                         practitionerRepo.Update(practitioner);
+
+                        // add points for adding practitioner to programme
+                        pointsService.CalculateAddNewPractitionerToPreschool(principalUser.UserId.Value);
 
                         //link the practitioners classroom groups to the correct classroom
                         Classroom principalClassRoom = classroomRepo.GetAll().Where(x => x.UserId == principalUser.UserId).OrderBy(x => x.Id).FirstOrDefault();
@@ -80,13 +83,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                 {
                                     classroom = classroomRepo.GetById(group.ClassroomId);
                                     group.ClassroomId = principalClassRoom.Id;
-                                    if (programmeTypeId != null) {
+                                    if (programmeTypeId != null)
+                                    {
                                         group.ProgrammeTypeId = programmeTypeId;
-                                    }    
+                                    }
                                     classroomGroupRepo.Update(group);
-                                    if (classroom != null) {
+                                    if (classroom != null)
+                                    {
                                         classroomIds.Add(classroom.Id);
-                                    }                                    
+                                    }
                                 }
                             }
                             if (classroomIds != null && classroomIds.Count() > 0 && practitioner.Progress >= 2)
@@ -121,6 +126,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                 ReplacementValue = principalUser.User.FirstName
                             }
                         };
+
                         // send message of invitation only if principal is adding the practitioner to the programme
                         // not sending message when the practitioner has joined the preschool on their own
                         if (uId != practitionerUser.Id)
@@ -128,15 +134,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                             if (practitioner.Progress >= 0 && practitioner.Progress < 2)
                             {
                                 notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgrammeInvitation, DateTime.Now.Date, user, "", MessageStatusConstants.Amber, replacements);
-                            } else
+                            }
+                            else
                             {
                                 if (practitioner.Progress > 2)
                                 {
                                     notificationService.SendNotificationAsync(null, TemplateTypeConstants.MultipleProgrammeInvitation, DateTime.Now.Date, user, "", MessageStatusConstants.Amber, replacements);
                                 }
                             }
-                            
-                        } else
+
+                        }
+                        else
                         {
                             // send message to principal if preschool code is available
                             if (preschoolCode != "")
@@ -158,13 +166,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                 notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerJoinedWithPreschoolCode, DateTime.Now.Date, principalUser.User, "", MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7));
                             }
                         }
-                        
-                        // add points for adding practitioner to programme
-                        pointsService.CalculateAddNewPractitionerToPreschool(uId);
-
                         return practitioner;
                     }
-                    else return null;
+                    else return null; 
                 }
                 else return null;
             }
