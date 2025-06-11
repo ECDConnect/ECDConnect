@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { RoleSystemNameEnum, useDialog, useTheme } from '@ecdlink/core';
+import { UserSyncStatus } from '@ecdlink/graphql';
 import {
   ActionModal,
   Avatar,
@@ -28,7 +29,7 @@ import {
   notificationsSelectors,
 } from '@store/notifications';
 import { settingSelectors } from '@store/settings';
-import { userSelectors } from '@store/user';
+import { userSelectors, userThunkActions } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
 import TransparentLayer from '../../assets/TransparentLayer.png';
@@ -47,7 +48,6 @@ import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/
 import { ReactComponent as EmojiBlueSmile } from '../../assets/neutral_blue_emoticon.svg';
 import { ReactComponent as EmojiOrangeSmile } from '../../assets/mehFace.svg';
 import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
-import { childrenThunkActions } from '@/store/children';
 
 import {
   TabsItemForPrincipal,
@@ -67,6 +67,7 @@ import { useTenantModules } from '@/hooks/useTenantModules';
 import { PermissionsNames } from '../principal/components/add-practitioner/add-practitioner.types';
 import { usePoints } from '@/hooks/usePoints';
 import { usePointsToDoEmoji } from '@/hooks/usePointsToDoEmoji';
+import { useStoreSetup } from '@hooks/useStoreSetup';
 
 const { version } = require('../../../package.json');
 
@@ -108,7 +109,7 @@ export const Dashboard: React.FC = () => {
     notificationsSelectors.getNewNotificationCount
   );
   const { setState } = useAppContext();
-
+  const { refreshClassroom, refreshChildren } = useStoreSetup();
   const isPractitioner = !!practitioner;
   const isPrincipal = practitioner?.isPrincipal;
   const isRegistered = practitioner?.isRegistered;
@@ -129,7 +130,6 @@ export const Dashboard: React.FC = () => {
 
   const pointsSummaryData = useSelector(pointsSelectors.getPointsSummary);
   const [pointsScoreProps, setPointsScoreProps] = useState<ScoreCardProps>();
-  const pointsToDo = useSelector(pointsSelectors.getPointsToDo);
   const totalYearPoints = useSelector(pointsSelectors.getTotalYearPoints);
 
   const planActivitiesPermission = practitioner?.permissions?.find(
@@ -137,28 +137,59 @@ export const Dashboard: React.FC = () => {
       item?.permissionName === PermissionsNames.plan_classroom_actitivies
   );
 
-  const getPointsToDoItems = useCallback(async () => {
-    appDispatch(
-      pointsThunkActions.pointsTodoItems({ userId: practitioner?.userId! })
-    );
+  const getUserSyncStatus = useCallback(async () => {
+    const userSyncStatus: UserSyncStatus = await appDispatch(
+      userThunkActions.getUserSyncStatus({ userId: practitioner?.userId! })
+    ).unwrap();
 
-    appDispatch(
-      pointsThunkActions.yearPointsView({ userId: practitioner?.userId! })
-    );
+    if (userSyncStatus) {
+      if (userSyncStatus.syncChildren) {
+        await refreshChildren();
+      }
+      if (userSyncStatus.syncClassroom) {
+        await refreshClassroom();
+      }
+      if (userSyncStatus.syncReportingPeriods) {
+        appDispatch(
+          classroomsThunkActions.getClassroom({ overrideCache: true })
+        ).unwrap();
+      }
+      if (userSyncStatus.syncPoints) {
+        appDispatch(
+          pointsThunkActions.pointsTodoItems({ userId: practitioner?.userId! })
+        );
 
-    appDispatch(
-      pointsThunkActions.sharedData({
-        userId: practitioner?.userId!,
-        isMonthly: true,
-      })
-    );
+        appDispatch(
+          pointsThunkActions.yearPointsView({ userId: practitioner?.userId! })
+        );
+
+        appDispatch(
+          pointsThunkActions.sharedData({
+            userId: practitioner?.userId!,
+            isMonthly: true,
+          })
+        );
+        const currentDate = new Date();
+        const oneYearAgo = new Date();
+
+        oneYearAgo.setMonth(currentDate.getMonth() - 12);
+        (async () =>
+          await appDispatch(
+            pointsThunkActions.getPointsSummaryForUser({
+              userId: practitioner?.userId!,
+              startDate: oneYearAgo,
+              endDate: currentDate,
+            })
+          ).unwrap())();
+      }
+    }
   }, [appDispatch, practitioner?.userId]);
 
   useEffect(() => {
-    if (isOnline && practitioner) {
-      getPointsToDoItems();
+    if (isOnline && !isCoach && practitioner) {
+      getUserSyncStatus();
     }
-  }, []);
+  }, [practitioner?.userId]);
 
   const offlineCommunity = () => {
     if (!isOnline) {
@@ -369,34 +400,6 @@ export const Dashboard: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
-  /**
-   * Data loading for coaches:
-   * 1. Practitioners
-   * 2. Children of Practitioners
-   */
-  useEffect(() => {
-    if (isOnline && !!userData) {
-      if (
-        userData.roles?.some(
-          (role) =>
-            role.systemName === RoleSystemNameEnum.Practitioner ||
-            role.systemName === RoleSystemNameEnum.Principal
-        )
-      ) {
-        const currentDate = new Date();
-        const oneYearAgo = new Date();
-        oneYearAgo.setMonth(currentDate.getMonth() - 12);
-        (async () =>
-          await appDispatch(
-            pointsThunkActions.getPointsSummaryForUser({
-              userId: userData?.id!,
-              startDate: oneYearAgo,
-              endDate: currentDate,
-            })
-          ).unwrap())();
-      }
-    }
-  }, [userData]);
 
   // This dialog prevents a user to access classrooms, before completing profile/programme info
   const showCompleteProfileBlockingDialog = () => {
@@ -455,29 +458,6 @@ export const Dashboard: React.FC = () => {
       history.push(navItem.href, navItem.params);
     }
   };
-
-  useEffect(() => {
-    if (isOnline) {
-      if (!!practitioner?.userId && !classroom) {
-        (async () =>
-          await appDispatch(
-            classroomsThunkActions.getClassroom({})
-          ).unwrap())();
-      }
-      if (
-        !!practitioner?.userId &&
-        (!classroomGroups || !classroomGroups.length)
-      ) {
-        (async () =>
-          await appDispatch(
-            classroomsThunkActions.getClassroomGroups({})
-          ).unwrap())();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-      }
-      (async () =>
-        await appDispatch(childrenThunkActions.getChildren({})).unwrap())();
-    }
-  }, [practitioner?.userId]);
 
   const navigation: (NavigationRouteItem | NavigationDropdown)[] = [
     {

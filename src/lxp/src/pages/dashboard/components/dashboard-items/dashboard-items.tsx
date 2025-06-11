@@ -85,6 +85,9 @@ export const DashboardItems: React.FC<DashboardItemsProps> = ({
       ) ||
       notification.message?.cta?.includes(
         notificationTagConfig?.ProgressSummary?.cta ?? ''
+      ) ||
+      notification.message?.cta?.includes(
+        notificationTagConfig?.SeeClasses?.cta ?? ''
       )
     ) {
       appDispatch(notificationActions.removeNotification(notification!));

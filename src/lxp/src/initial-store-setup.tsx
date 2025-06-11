@@ -73,6 +73,7 @@ type IntialStoreSetupContextValues = {
   getLoadingMessage: () => string;
   syncClassroom: () => Promise<void>;
   refreshClassroom: () => Promise<void>;
+  refreshChildren: () => Promise<void>;
 };
 
 export const IntialStoreSetupContext =
@@ -300,10 +301,28 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     ).unwrap();
   };
 
+  const refreshChildren = async () => {
+    appDispatch(settingActions.setLastDataSync());
+    appDispatch(
+      childrenThunkActions.getChildren({ overrideCache: true })
+    ).unwrap();
+    appDispatch(
+      documentThunkActions.getDocuments({ overrideCache: true })
+    ).unwrap();
+    appDispatch(
+      classroomsThunkActions.getClassroomGroups({ overrideCache: true })
+    ).unwrap();
+  };
+
   const refreshClassroom = async () => {
     appDispatch(classroomsActions.resetClassroomState());
-    await appDispatch(classroomsThunkActions.getClassroom({})).unwrap();
-    await appDispatch(classroomsThunkActions.getClassroomGroups({})).unwrap();
+    appDispatch(
+      classroomsThunkActions.getClassroom({ overrideCache: true })
+    ).unwrap();
+    appDispatch(
+      classroomsThunkActions.getClassroomGroups({ overrideCache: true })
+    ).unwrap();
+    appDispatch(settingActions.setLastDataSync());
 
     if (isCoach) {
       appDispatch(classroomsForCoachActions.resetClassroomState());
@@ -340,6 +359,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     getLoadingMessage,
     syncClassroom,
     refreshClassroom,
+    refreshChildren,
   };
 
   useEffect(() => {
