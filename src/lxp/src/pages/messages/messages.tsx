@@ -100,6 +100,9 @@ export const Messages: React.FC = () => {
       ) ||
       notification.message?.cta?.includes(
         notificationTagConfig?.ProgressSummary?.cta ?? ''
+      ) ||
+      notification.message?.cta?.includes(
+        notificationTagConfig?.SeeClasses?.cta ?? ''
       )
     ) {
       appDispatch(notificationActions.removeNotification(notification!));
