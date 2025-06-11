@@ -13,6 +13,7 @@ const initialState: SettingsState = {
   notificationPollInterval: 1800000,
   applicationVersion: undefined,
   settings: undefined,
+  loginDate: formatISO(new Date()),
 };
 
 const settingSlice = createSlice({
@@ -32,6 +33,9 @@ const settingSlice = createSlice({
     },
     setApplicationVersion: (state, action: PayloadAction<string>) => {
       state.applicationVersion = action.payload;
+    },
+    setLoginDate: (state) => {
+      state.loginDate = formatISO(new Date());
     },
   },
   extraReducers: (builder) => {
