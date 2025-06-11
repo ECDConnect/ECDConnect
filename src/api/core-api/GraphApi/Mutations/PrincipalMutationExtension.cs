@@ -126,7 +126,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                 ReplacementValue = principalUser.User.FirstName
                             }
                         };
-
                         // send message of invitation only if principal is adding the practitioner to the programme
                         // not sending message when the practitioner has joined the preschool on their own
                         if (uId != practitionerUser.Id)
@@ -134,8 +133,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                             if (practitioner.Progress >= 0 && practitioner.Progress < 2)
                             {
                                 notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgrammeInvitation, DateTime.Now.Date, user, "", MessageStatusConstants.Amber, replacements);
-                            }
-                            else
+                            } else
                             {
                                 if (practitioner.Progress > 2)
                                 {
@@ -143,8 +141,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                 }
                             }
 
-                        }
-                        else
+                        } else
                         {
                             // send message to principal if preschool code is available
                             if (preschoolCode != "")
