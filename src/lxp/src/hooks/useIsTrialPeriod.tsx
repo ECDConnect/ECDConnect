@@ -6,7 +6,7 @@ import { useTenant } from './useTenant';
 import { classroomsSelectors } from '@/store/classroom';
 export const useIsTrialPeriod = () => {
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const clasroom = useSelector(classroomsSelectors.getClassroom);
+  const classroom = useSelector(classroomsSelectors.getClassroom);
   const tenant = useTenant();
   const isOpenAccess = tenant?.isOpenAccess;
 
@@ -20,14 +20,14 @@ export const useIsTrialPeriod = () => {
       if (
         differenceInDaysResult <= 30 &&
         isOpenAccess &&
-        !clasroom?.preschoolCode
+        !classroom?.preschoolCode
       ) {
         return true;
       } else {
         return false;
       }
     }
-  }, [clasroom?.preschoolCode, isOpenAccess, practitioner?.startDate]);
+  }, [classroom?.preschoolCode, isOpenAccess, practitioner?.startDate]);
 
   return trialPeriod;
 };
