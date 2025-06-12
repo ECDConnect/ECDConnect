@@ -9,4 +9,5 @@ export type SettingsState = {
   notificationPollInterval: number;
   applicationVersion?: string;
   settings?: SettingTypeDto;
+  loginDate?: string;
 };

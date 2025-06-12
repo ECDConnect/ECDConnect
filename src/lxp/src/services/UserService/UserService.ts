@@ -3,6 +3,7 @@ import {
   UserByToken,
   UserConsentInput,
   UserModelInput,
+  UserSyncStatus,
 } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 
@@ -151,6 +152,37 @@ class UserService {
     }
 
     return true;
+  }
+
+  async getUserSyncStatus(
+    userId: string,
+    lastSyncDate: Date,
+    classroomId: string
+  ): Promise<UserSyncStatus> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query getUserSyncStatus($userId: UUID!, $lastSync: DateTime!, $classroomId: UUID!) {
+        userSyncStatus(userId: $userId, lastSync: $lastSync, classroomId: $classroomId) {
+          syncChildren
+          syncClassroom
+          syncReportingPeriods
+          syncPoints
+        }
+      }
+      `,
+      variables: {
+        userId: userId,
+        lastSync: lastSyncDate,
+        classroomId: classroomId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('User Sync Status failed - Server connection error');
+    }
+
+    return response.data.data.userSyncStatus;
   }
 
   async updateUser(userId: string, user: UserModelInput): Promise<boolean> {
