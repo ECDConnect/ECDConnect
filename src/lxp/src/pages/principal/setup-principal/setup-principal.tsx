@@ -5,10 +5,7 @@ import {
   LocalStorageKeys,
 } from '@ecdlink/core';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
-import {
-  MutationAddPractitionerToPrincipalArgs,
-  ProgrammeTypeEnum,
-} from '@ecdlink/graphql';
+import { MutationAddPractitionerToPrincipalArgs } from '@ecdlink/graphql';
 import { IonContent } from '@ionic/react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
@@ -51,6 +48,7 @@ import TransparentLayer from '../../../assets/TransparentLayer.png';
 import { usePractitionerNotification } from '@/hooks/usePractitionerNotification';
 import { ClassroomDto } from '@/models/classroom/classroom.dto';
 import { ClassroomService } from '@/services/ClassroomService';
+import { ClassroomDto as SimpleClassroomDto } from '@/models/classroom/classroom.dto';
 
 export const SetupPrincipal: React.FC = () => {
   const history = useHistory();
@@ -333,6 +331,20 @@ export const SetupPrincipal: React.FC = () => {
     history.push(ROUTES.DASHBOARD, { isFromCompleteProfile: true });
   };
 
+  const updateClassroomOnCancel = async () => {
+    // need to reset values when cancelling the process
+    // School values
+    const classroomInputModel: SimpleClassroomDto = {
+      ...classroom,
+    } as SimpleClassroomDto;
+    classroomInputModel.preschoolCode = '';
+    classroomInputModel.name = '';
+    classroomInputModel.isDummySchool = true;
+    await appDispatch(classroomsActions.updateClassroom(classroomInputModel));
+    // clear linked practitioners and classes
+    await appDispatch(classroomsActions.resetClassroomObjects());
+  };
+
   const exitPrompt = () => {
     dialog({
       position: DialogPosition.Middle,
@@ -349,6 +361,7 @@ export const SetupPrincipal: React.FC = () => {
               colour: 'quatenary',
               text: 'Exit',
               onClick: () => {
+                updateClassroomOnCancel();
                 appDispatch(
                   notificationActions.addNotifications(practitionerNotification)
                 );
