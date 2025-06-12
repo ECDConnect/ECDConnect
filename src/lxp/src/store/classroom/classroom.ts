@@ -35,6 +35,11 @@ const classroomsSlice = createSlice({
     resetClassroomState: (state) => {
       state.classroom = initialState.classroom;
       state.classroomGroupData = initialState.classroomGroupData;
+      state.classroomPractitioners = initialState.classroomPractitioners;
+    },
+    resetClassroomObjects: (state) => {
+      state.classroomGroupData = initialState.classroomGroupData;
+      state.classroomPractitioners = initialState.classroomPractitioners;
     },
     updateClassroom: (state, action: PayloadAction<SimpleClassroomDto>) => {
       state.classroom = {
