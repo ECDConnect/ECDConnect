@@ -55,6 +55,8 @@ namespace EcdLink.Api.CoreApi.Services
         public async Task DailyUserOfflineNotification()
         {
             DateTime today = DateTime.Today;
+            var start14Days = today.AddDays(-14).Date;
+            var end14Days = today.AddDays(-13).Date;
             var start21Days = today.AddDays(-21).Date;
             var end21Days = today.AddDays(-20).Date;
 
@@ -73,6 +75,7 @@ namespace EcdLink.Api.CoreApi.Services
                                                     .Include(x => x.User)
                                                     .Where(x => x.IsActive == true && 
                                                     (
+                                                        (x.User.LastSeen >= start14Days && x.User.LastSeen < end14Days) || 
                                                         (x.User.LastSeen >= start21Days && x.User.LastSeen < end21Days) || 
                                                         (x.User.LastSeen >= start30Days && x.User.LastSeen < end30Days)
                                                     )
