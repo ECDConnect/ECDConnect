@@ -346,7 +346,9 @@ export const SetupPrincipal: React.FC = () => {
       ...classroom,
     } as SimpleClassroomDto;
     classroomInputModel.preschoolCode = '';
-    classroomInputModel.name = '';
+    classroomInputModel.name = `${
+      practitioner?.user?.userName + "'s testing pre-school"
+    }`;
     classroomInputModel.isDummySchool = true;
     await appDispatch(classroomsActions.updateClassroom(classroomInputModel));
     // clear linked practitioners and classes
