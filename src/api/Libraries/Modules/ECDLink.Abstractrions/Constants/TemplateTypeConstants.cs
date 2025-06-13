@@ -43,6 +43,7 @@ namespace ECDLink.Abstractrions.Constants
         public const string FourWeekNotLoggedOn = "four-week-notification"; // sms (DailyUserOfflineNotification)
         // row 12
         public const string ThreeWeekNotLoggedOn = "three-week-notification"; // sms in back-end (DailyUserOfflineNotification), hub & push in FE
+        public const string TwoWeekNotLoggedOn = "two-week-notification"; // sms in back-end (DailyUserOfflineNotification), hub & push in FE
         // row 14
         public const string PractitionerJoinedWithPreschoolCode = "practitioner-joined-with-preschool-code"; // hub, push
         // row 15
