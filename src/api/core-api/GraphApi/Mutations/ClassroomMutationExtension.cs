@@ -496,7 +496,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         new TagsReplacements()
                         {
                             FindValue = "ReportEndDate",
-                            ReplacementValue = sevenDaysBeforeEnd.ToString("dd MMM yyyy")
+                            ReplacementValue = item.EndDate.ToString("dd MMM yyyy")
                         }
                     };
                     notificationService.SendNotificationAsync(null, TemplateTypeConstants.FinishProgressReport, sevenDaysBeforeEnd, user, "", MessageStatusConstants.Amber, replacements, item.EndDate,
