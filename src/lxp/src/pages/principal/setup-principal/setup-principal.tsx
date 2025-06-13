@@ -170,6 +170,8 @@ export const SetupPrincipal: React.FC = () => {
   }, [classesPage, isNotPrincipal, page, previousPage]);
 
   const onAllStepsComplete = async () => {
+    appDispatch(notificationActions.resetNotificationState());
+
     if (isNotPrincipal === true && practitioner?.progress !== 1) {
       if (user) {
         await appDispatch(
@@ -257,9 +259,6 @@ export const SetupPrincipal: React.FC = () => {
         })
       );
     }
-
-    appDispatch(notificationActions.resetFrontendNotificationState());
-    appDispatch(notificationActions.resetNotificationState());
 
     if (principalPractitioners?.length) {
       if (userAuth?.auth_token) {
