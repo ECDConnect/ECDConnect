@@ -11,6 +11,7 @@ public class PractitionerModel
     public Guid Id { get; set; }
     public Guid UserId { get; set; }
     public bool? IsPrincipal { get; set; }
+    public bool? IsFundaAppAdmin { get; set; }
     public Guid? PrincipalHierarchy { get; set; }
     public bool IsActive { get; set; }
     public Guid? CoachHierarchy { get; set; }

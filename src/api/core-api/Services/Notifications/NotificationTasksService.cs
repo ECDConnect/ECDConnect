@@ -97,11 +97,7 @@ namespace EcdLink.Api.CoreApi.Services
                         TimeSpan timeDifference = DateTime.Now - user.LastSeen;
                         var totalDays = timeDifference.Days;
 
-                        if (totalDays >= 14 && totalDays < 21)
-                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.TwoWeekNotLoggedOn, DateTime.Now.Date, user, "", null, replacements, null, false, false, null,
-                                   relatedEntities: new List<RelatedEntity> { new RelatedEntity(user.Id, "ApplicationUser") });
-
-                        else if (totalDays >= 21 && totalDays < 30)
+                        if (totalDays >= 21 && totalDays < 30)
                         {
                             // _notificationManager.SendOfflineSmsAsync(user, TemplateTypeConstants.ThreeWeekNotLoggedOn);
                             await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ThreeWeekNotLoggedOn, DateTime.Now.Date, user, "", null, replacements, null, false, false, null,

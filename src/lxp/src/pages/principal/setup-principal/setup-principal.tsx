@@ -71,6 +71,7 @@ export const SetupPrincipal: React.FC = () => {
   );
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const [isNotPrincipal, setIsNotPrincipal] = useState(false);
+  const [isFundaAppAdmin, setIsFundaAppAdmin] = useState(false);
   const [label, setLabel] = useState('Welcome');
   const [page, setPage] = useState<PractitionerSetupSteps>(
     PractitionerSetupSteps.WELCOME
@@ -144,6 +145,13 @@ export const SetupPrincipal: React.FC = () => {
       return setLabel('step 4 of 4');
     }
 
+    if (
+      previousPage === PractitionerSetupSteps.WELCOME &&
+      page === PractitionerSetupSteps.SETUP_PROGRAMME
+    ) {
+      setIsFundaAppAdmin(false);
+    }
+
     if (page === PractitionerSetupSteps.CONFIRM_PRACTITIONERS) {
       setLabel('Step 2 of 4');
     }
@@ -170,8 +178,6 @@ export const SetupPrincipal: React.FC = () => {
   }, [classesPage, isNotPrincipal, page, previousPage]);
 
   const onAllStepsComplete = async () => {
-    appDispatch(notificationActions.resetNotificationState());
-
     if (isNotPrincipal === true && practitioner?.progress !== 1) {
       if (user) {
         await appDispatch(
@@ -260,6 +266,9 @@ export const SetupPrincipal: React.FC = () => {
       );
     }
 
+    appDispatch(notificationActions.resetFrontendNotificationState());
+    appDispatch(notificationActions.resetNotificationState());
+
     if (principalPractitioners?.length) {
       if (userAuth?.auth_token) {
         principalPractitioners.forEach(async (principalPractitioner) => {
@@ -337,9 +346,7 @@ export const SetupPrincipal: React.FC = () => {
       ...classroom,
     } as SimpleClassroomDto;
     classroomInputModel.preschoolCode = '';
-    classroomInputModel.name = `${
-      practitioner?.user?.userName + "'s testing pre-school"
-    }`;
+    classroomInputModel.name = '';
     classroomInputModel.isDummySchool = true;
     await appDispatch(classroomsActions.updateClassroom(classroomInputModel));
     // clear linked practitioners and classes
@@ -431,6 +438,8 @@ export const SetupPrincipal: React.FC = () => {
             onNext={setPage}
             setIsNotPrincipal={setIsNotPrincipal}
             isNotPrincipal={isNotPrincipal}
+            isFundaAppAdmin={isFundaAppAdmin}
+            setIsFundaAppAdmin={setIsFundaAppAdmin}
             onChangeIsPrincipal={onChangeIsPrincipal}
           />
         );
@@ -441,6 +450,7 @@ export const SetupPrincipal: React.FC = () => {
             page={confirmPractitionerPage}
             setConfirmPractitionerPage={setConfirmPractitionerPage}
             onNext={setPage}
+            isFundaAppAdmin={isFundaAppAdmin}
           />
         );
 
