@@ -466,11 +466,6 @@ namespace EcdLink.Api.CoreApi
             public const int monthly_points_max_principal_or_admin = 150;
         }
 
-        public static class PointsCategoryConstants
-        {
-            public static readonly Guid BreastFeedingClubCategoryId = new Guid("5f8fd37a-d2f5-44bc-9670-0513a47b88e5");
-        }
-
         public static class PointsActivityConstants
         {
             public static readonly Guid ChildAttendanceRegisterSavedId = new Guid("af31301f-2791-438f-8341-d605af9b4616");
@@ -520,36 +515,6 @@ namespace EcdLink.Api.CoreApi
             public static readonly string CreateProgressReports = "create_progress_reports";
             public static readonly string ManageChildren = "manage_children";
             public static readonly string PlanClassroomActivities = "plan_classroom_activities";
-        }
-
-        public static class ReferralTypes
-        {
-            public const string EarlyIdentificationOfPregnancy = "Early identification of pregnancy";
-            public const string ChildSupportGrant = "Child support grant";
-            public const string DevelopmentalDelays = "Developmental delays";
-            public const string MaternalDistress = "Maternal distress";
-            public const string SeverelyUnderweight = "Severely underweight";
-            public const string VitaminANotUpToDate = "Vitamin A not up to date";
-            public const string ClinicVisitsNotUpToDate = "Clinic visits not up to date";
-            public const string DangerSignsChildsMother = "Danger signs - child's mother";
-            public const string DangerSignsPregnantMom = "Danger signs - pregnant mom";
-            public const string MaternalMalnutrition = "Maternal malnutrition";
-            public const string SubstanceAbuse = "Substance abuse";
-            public const string DangerSignsChild = "Danger signs - child";
-            public const string CaregiverIDBook = "Caregiver ID book";
-            public const string SevereAcuteMalnutrition = "Severe acute malnutrition";
-            public const string SeverelyStunted = "Severely stunted";
-            public const string LowBirthWeight = "Low birth weight";
-            public const string GrowthFaltering = "Growth faltering";
-            public const string Underweight = "Underweight";
-            public const string Overweight = "Overweight";
-            public const string Obese = "Obese";
-            public const string LowBirthLength = "Low birth length";
-            public const string Stunted = "Stunted";
-            public const string ModerateAcuteMalnutrition = "Moderate acute malnutrition";
-            public const string DewormingNotUpToDate = "Deworming not up to date";
-            public const string ImmunisationNotUpToDate = "Immunisation not up to date";
-            public const string ChildBirthCertificate = "Child birth certificate";
         }
         
         public static class StatusColours
