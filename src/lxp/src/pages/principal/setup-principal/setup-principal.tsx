@@ -71,10 +71,13 @@ export const SetupPrincipal: React.FC = () => {
   );
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const [isNotPrincipal, setIsNotPrincipal] = useState(false);
+  const [isFundaAppAdmin, setIsFundaAppAdmin] = useState(false);
   const [label, setLabel] = useState('Welcome');
   const [page, setPage] = useState<PractitionerSetupSteps>(
     PractitionerSetupSteps.WELCOME
   );
+  const [practitionerPreschoolData, setPractitionerPreschoolData] =
+    useState<MutationAddPractitionerToPrincipalArgs>();
   const { getPractitionerProgressNotification } = usePractitionerNotification();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -144,6 +147,13 @@ export const SetupPrincipal: React.FC = () => {
       return setLabel('step 4 of 4');
     }
 
+    if (
+      previousPage === PractitionerSetupSteps.WELCOME &&
+      page === PractitionerSetupSteps.SETUP_PROGRAMME
+    ) {
+      setIsFundaAppAdmin(false);
+    }
+
     if (page === PractitionerSetupSteps.CONFIRM_PRACTITIONERS) {
       setLabel('Step 2 of 4');
     }
@@ -169,31 +179,72 @@ export const SetupPrincipal: React.FC = () => {
     }
   }, [classesPage, isNotPrincipal, page, previousPage]);
 
+  const handlePreschoolData = (
+    args: MutationAddPractitionerToPrincipalArgs
+  ) => {
+    setPractitionerPreschoolData(args);
+  };
+
   const onAllStepsComplete = async () => {
-    appDispatch(notificationActions.resetNotificationState());
+    setIsLoading(true);
 
     if (isNotPrincipal === true && practitioner?.progress !== 1) {
       if (user) {
+        if (practitionerPreschoolData && !!practitionerPreschoolData.userId) {
+          await new PractitionerService(
+            userAuth?.auth_token!
+          ).UpdatePractitionerProgress(user?.id!, 2.0);
+
+          await new PractitionerService(
+            userAuth?.auth_token!
+          ).AddPractitionerToPrincipal(practitionerPreschoolData);
+
+          const principalHierarchy = practitionerPreschoolData.userId;
+          const userId = user?.id!;
+          const accepted = true;
+
+          await appDispatch(
+            updatePrincipalInvitation({ userId, principalHierarchy, accepted })
+          );
+
+          await new PractitionerService(
+            userAuth?.auth_token!
+          ).UpdatePractitionerShareInfo(user?.id!);
+
+          await appDispatch(
+            notificationActions.resetFrontendNotificationState()
+          );
+          await appDispatch(
+            practitionerThunkActions.getPractitionerByUserId({
+              userId: user?.id!,
+            })
+          );
+          await appDispatch(practitionerThunkActions.getAllPractitioners({}));
+          await appDispatch(
+            classroomsThunkActions.getClassroom({ overrideCache: true })
+          ).unwrap();
+        }
+
         await appDispatch(
           practitionerThunkActions.updatePractitionerRegistered({
             practitionerId: user.id,
             status: true,
           })
         );
+
         await appDispatch(
           practitionerThunkActions.updatePractitionerProgress({
             practitionerId: user.id,
             progress: 2.0,
           })
         );
+
         stopService();
       }
-
+      setIsLoading(false);
       history.push(ROUTES.ROOT);
       return;
     }
-
-    setIsLoading(true);
 
     // update school
     // EC-3957 - only save school information when you add a class for the principle
@@ -259,6 +310,9 @@ export const SetupPrincipal: React.FC = () => {
         })
       );
     }
+
+    appDispatch(notificationActions.resetFrontendNotificationState());
+    appDispatch(notificationActions.resetNotificationState());
 
     if (principalPractitioners?.length) {
       if (userAuth?.auth_token) {
@@ -414,7 +468,10 @@ export const SetupPrincipal: React.FC = () => {
 
       case PractitionerSetupSteps.SELECT_PRACTITIONER_ROLE:
         return isNotPrincipal ? (
-          <PreschoolCodeCheck onNext={setPage} />
+          <PreschoolCodeCheck
+            onNext={setPage}
+            onPreschoolNext={handlePreschoolData}
+          />
         ) : (
           <SelectPractitionerRole
             onNext={() => setPage(PractitionerSetupSteps.SETUP_PROGRAMME)}
@@ -425,12 +482,17 @@ export const SetupPrincipal: React.FC = () => {
 
       case PractitionerSetupSteps.SETUP_PROGRAMME:
         return isNotPrincipal ? (
-          <PreschoolCodeCheck onNext={setPage} />
+          <PreschoolCodeCheck
+            onNext={setPage}
+            onPreschoolNext={handlePreschoolData}
+          />
         ) : (
           <AddProgrammeForm
             onNext={setPage}
             setIsNotPrincipal={setIsNotPrincipal}
             isNotPrincipal={isNotPrincipal}
+            isFundaAppAdmin={isFundaAppAdmin}
+            setIsFundaAppAdmin={setIsFundaAppAdmin}
             onChangeIsPrincipal={onChangeIsPrincipal}
           />
         );
@@ -441,6 +503,7 @@ export const SetupPrincipal: React.FC = () => {
             page={confirmPractitionerPage}
             setConfirmPractitionerPage={setConfirmPractitionerPage}
             onNext={setPage}
+            isFundaAppAdmin={isFundaAppAdmin}
           />
         );
 
