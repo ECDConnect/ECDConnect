@@ -76,6 +76,8 @@ export const SetupPrincipal: React.FC = () => {
   const [page, setPage] = useState<PractitionerSetupSteps>(
     PractitionerSetupSteps.WELCOME
   );
+  const [practitionerPreschoolData, setPractitionerPreschoolData] =
+    useState<MutationAddPractitionerToPrincipalArgs>();
   const { getPractitionerProgressNotification } = usePractitionerNotification();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -177,29 +179,72 @@ export const SetupPrincipal: React.FC = () => {
     }
   }, [classesPage, isNotPrincipal, page, previousPage]);
 
+  const handlePreschoolData = (
+    args: MutationAddPractitionerToPrincipalArgs
+  ) => {
+    setPractitionerPreschoolData(args);
+  };
+
   const onAllStepsComplete = async () => {
+    setIsLoading(true);
+
     if (isNotPrincipal === true && practitioner?.progress !== 1) {
       if (user) {
+        if (practitionerPreschoolData && !!practitionerPreschoolData.userId) {
+          await new PractitionerService(
+            userAuth?.auth_token!
+          ).UpdatePractitionerProgress(user?.id!, 2.0);
+
+          await new PractitionerService(
+            userAuth?.auth_token!
+          ).AddPractitionerToPrincipal(practitionerPreschoolData);
+
+          const principalHierarchy = practitionerPreschoolData.userId;
+          const userId = user?.id!;
+          const accepted = true;
+
+          await appDispatch(
+            updatePrincipalInvitation({ userId, principalHierarchy, accepted })
+          );
+
+          await new PractitionerService(
+            userAuth?.auth_token!
+          ).UpdatePractitionerShareInfo(user?.id!);
+
+          await appDispatch(
+            notificationActions.resetFrontendNotificationState()
+          );
+          await appDispatch(
+            practitionerThunkActions.getPractitionerByUserId({
+              userId: user?.id!,
+            })
+          );
+          await appDispatch(practitionerThunkActions.getAllPractitioners({}));
+          await appDispatch(
+            classroomsThunkActions.getClassroom({ overrideCache: true })
+          ).unwrap();
+        }
+
         await appDispatch(
           practitionerThunkActions.updatePractitionerRegistered({
             practitionerId: user.id,
             status: true,
           })
         );
+
         await appDispatch(
           practitionerThunkActions.updatePractitionerProgress({
             practitionerId: user.id,
             progress: 2.0,
           })
         );
+
         stopService();
       }
-
+      setIsLoading(false);
       history.push(ROUTES.ROOT);
       return;
     }
-
-    setIsLoading(true);
 
     // update school
     // EC-3957 - only save school information when you add a class for the principle
@@ -346,7 +391,9 @@ export const SetupPrincipal: React.FC = () => {
       ...classroom,
     } as SimpleClassroomDto;
     classroomInputModel.preschoolCode = '';
-    classroomInputModel.name = '';
+    classroomInputModel.name = `${
+      practitioner?.user?.userName + "'s testing pre-school"
+    }`;
     classroomInputModel.isDummySchool = true;
     await appDispatch(classroomsActions.updateClassroom(classroomInputModel));
     // clear linked practitioners and classes
@@ -421,7 +468,10 @@ export const SetupPrincipal: React.FC = () => {
 
       case PractitionerSetupSteps.SELECT_PRACTITIONER_ROLE:
         return isNotPrincipal ? (
-          <PreschoolCodeCheck onNext={setPage} />
+          <PreschoolCodeCheck
+            onNext={setPage}
+            onPreschoolNext={handlePreschoolData}
+          />
         ) : (
           <SelectPractitionerRole
             onNext={() => setPage(PractitionerSetupSteps.SETUP_PROGRAMME)}
@@ -432,7 +482,10 @@ export const SetupPrincipal: React.FC = () => {
 
       case PractitionerSetupSteps.SETUP_PROGRAMME:
         return isNotPrincipal ? (
-          <PreschoolCodeCheck onNext={setPage} />
+          <PreschoolCodeCheck
+            onNext={setPage}
+            onPreschoolNext={handlePreschoolData}
+          />
         ) : (
           <AddProgrammeForm
             onNext={setPage}
