@@ -24,17 +24,21 @@ import { ContentConsentTypeEnum } from '@ecdlink/core';
 import { PrincipalCheckPreschoolCode } from './components/principal-check-preschool-code';
 import { InvitePrincipal } from './components/invite-principal';
 import { useTenant } from '@/hooks/useTenant';
+import { practitionerThunkActions } from '@/store/practitioner';
 import { useAppDispatch } from '@/store';
 import { userSelectors } from '@/store/user';
+import { updatePrincipalInvitation } from '@/store/practitioner/practitioner.actions';
+import { PractitionerService } from '@/services/PractitionerService';
+import { notificationActions } from '@/store/notifications';
 import { useNotificationService } from '@/hooks/useNotificationService';
 import { ClassroomDto } from '@/models/classroom/classroom.dto';
 import { MutationAddPractitionerToPrincipalArgs } from '@ecdlink/graphql';
 import { ShareSomeDetails } from '../share-some-detail/share-some-detail';
+import { classroomsThunkActions } from '@/store/classroom';
 
 export const PreschoolCodeCheck: React.FC<{
   onNext: OnNext;
-  onPreschoolNext: any;
-}> = ({ onNext, onPreschoolNext }) => {
+}> = ({ onNext }) => {
   const userAuth = useSelector(authSelectors.getAuthUser);
   const appDispatch = useAppDispatch();
   const user = useSelector(userSelectors.getUser);
@@ -64,17 +68,51 @@ export const PreschoolCodeCheck: React.FC<{
   }, []);
 
   const getPractitionerResponse = async () => {
-    setIsLoading(true);
     setIsLoadingPractitionerInvite(true);
-
     const input: MutationAddPractitionerToPrincipalArgs = {
       userId: classroomPrincipal,
       idNumber: user?.idNumber || user?.userName,
       firstName: user?.firstName,
       preschoolCode: preschoolCode,
     };
-    onPreschoolNext(input);
+
+    await new PractitionerService(
+      userAuth?.auth_token!
+    ).UpdatePractitionerProgress(user?.id!, 2.0);
+
+    await new PractitionerService(
+      userAuth?.auth_token!
+    ).AddPractitionerToPrincipal(input);
+    await appDispatch(
+      practitionerThunkActions.getAllPractitioners({})
+    ).unwrap();
+
+    const principalHierarchy = classroomPrincipal;
+    const userId = user?.id!;
+    const accepted = true;
+
+    await appDispatch(
+      updatePrincipalInvitation({ userId, principalHierarchy, accepted })
+    );
+
+    await new PractitionerService(
+      userAuth?.auth_token!
+    ).UpdatePractitionerShareInfo(user?.id!);
+    await new PractitionerService(
+      userAuth?.auth_token!
+    ).UpdatePractitionerRegistered(user?.id!, true);
+
+    await appDispatch(notificationActions.resetFrontendNotificationState());
+    await appDispatch(
+      practitionerThunkActions.getPractitionerByUserId({ userId: user?.id! })
+    );
+    await appDispatch(practitionerThunkActions.getAllPractitioners({}));
+    await appDispatch(
+      classroomsThunkActions.getClassroom({ overrideCache: true })
+    ).unwrap();
+    stopService();
     onNext(PractitionerSetupSteps.ADD_PHOTO);
+    setIsLoading(false);
   };
 
   const handleSearchPreschool = async () => {
@@ -82,6 +120,7 @@ export const PreschoolCodeCheck: React.FC<{
     const preschoolCodeValidation: any = await new ClassroomService(
       userAuth?.auth_token!
     ).getClassroomForPreschoolCode(preschoolCode);
+    // onNext(PractitionerSetupSteps.CONFIRM_PRACTITIONERS);
     setIsLoading(false);
     if (preschoolCodeValidation) {
       setIsValidPreschool(preschoolCodeValidation);
@@ -95,18 +134,18 @@ export const PreschoolCodeCheck: React.FC<{
   };
 
   const handleSkipAddPractitionerToPrincipal = async () => {
-    // await appDispatch(
-    //   practitionerThunkActions.updatePractitionerProgress({
-    //     practitionerId: user?.id!,
-    //     progress: 1.0,
-    //   })
-    // );
-    // await new PractitionerService(
-    //   userAuth?.auth_token!
-    // ).UpdatePractitionerShareInfo(user?.id!);
-    // await new PractitionerService(
-    //   userAuth?.auth_token!
-    // ).UpdatePractitionerRegistered(user?.id!, true);
+    await appDispatch(
+      practitionerThunkActions.updatePractitionerProgress({
+        practitionerId: user?.id!,
+        progress: 1.0,
+      })
+    );
+    await new PractitionerService(
+      userAuth?.auth_token!
+    ).UpdatePractitionerShareInfo(user?.id!);
+    await new PractitionerService(
+      userAuth?.auth_token!
+    ).UpdatePractitionerRegistered(user?.id!, true);
     onNext(PractitionerSetupSteps.ADD_PHOTO);
   };
 

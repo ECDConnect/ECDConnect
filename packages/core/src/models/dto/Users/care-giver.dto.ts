@@ -25,7 +25,6 @@ export interface CaregiverDto extends EntityBase {
   joinReferencePanel?: boolean;
   contribution?: boolean;
   grants?: string[] | undefined;
-  isMother?: boolean;
   isOnline?: boolean;
   isAllowedCustody?: boolean;
 }

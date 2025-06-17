@@ -25,10 +25,8 @@ export const AddProgrammeForm: React.FC<{
   onNext: OnNext;
   setIsNotPrincipal: (item: boolean) => void;
   isNotPrincipal: boolean;
-  isFundaAppAdmin: any;
-  setIsFundaAppAdmin: any;
   onChangeIsPrincipal: (value: boolean) => void;
-}> = ({ onNext, setIsNotPrincipal, isFundaAppAdmin, setIsFundaAppAdmin }) => {
+}> = ({ onNext, setIsNotPrincipal }) => {
   const user = useSelector(userSelectors.getUser);
   const appDispatch = useAppDispatch();
   const classroom = useSelector(classroomsSelectors.getClassroom);
@@ -157,7 +155,7 @@ export const AddProgrammeForm: React.FC<{
   };
 
   const onSubmit = (e: EditProgrammeModel) => {
-    if (!isFundaAppAdmin && isPrincipleOrOwnerSmartStarter === true) {
+    if (isPrincipleOrOwnerSmartStarter === true) {
       setIsNotPrincipal(true);
       onNext(PractitionerSetupSteps.ADD_PHOTO);
       return;
@@ -171,37 +169,6 @@ export const AddProgrammeForm: React.FC<{
       onNext(PractitionerSetupSteps.CONFIRM_PRACTITIONERS);
     }
   };
-
-  // Do we still have imported users?
-  // const onSubmitForImportedUser = (e: EditProgrammeModel) => {
-  //   if (!e.isPrincipalOrLeader && e.isPrincipleOrOwnerSmartStarter) {
-  //     setIsNotPrincipal(true);
-  //     onNext(PractitionerSetupSteps.ADD_PHOTO);
-  //   } else {
-  //     if (classroom?.id) {
-  //       updateClassroom(e, classroom.id);
-  //     } else {
-  //       //an imported user could have rejected the invite which would have cleared the classroom
-  //       const classroomId = newGuid();
-  //       createClassroom(e, classroomId);
-  //     }
-  //     onNext(PractitionerSetupSteps.CONFIRM_PRACTITIONERS);
-  //   }
-  // };
-
-  useEffect(() => {
-    if (
-      isPrincipalOrLeader === false &&
-      isPrincipleOrOwnerSmartStarter === false
-    ) {
-      setIsFundaAppAdmin(true);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    isPrincipalOrLeader,
-    isPrincipleOrOwnerSmartStarter,
-    setProgrammeFormValue,
-  ]);
 
   return (
     <div className="h-full pt-7">
