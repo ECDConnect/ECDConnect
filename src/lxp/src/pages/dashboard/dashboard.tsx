@@ -34,7 +34,10 @@ import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
 import TransparentLayer from '../../assets/TransparentLayer.png';
 
-import { practitionerSelectors } from '@/store/practitioner';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
 import * as styles from './dashboard.styles';
 import ROUTES from '@routes/routes';
 import { statementsThunkActions } from '@/store/statements';
@@ -153,6 +156,13 @@ export const Dashboard: React.FC = () => {
         appDispatch(
           classroomsThunkActions.getClassroom({ overrideCache: true })
         ).unwrap();
+      }
+      if (userSyncStatus.syncPermissions) {
+        appDispatch(
+          practitionerThunkActions.getPractitionerPermissions({
+            userId: practitioner?.userId!,
+          })
+        );
       }
       if (userSyncStatus.syncPoints) {
         appDispatch(

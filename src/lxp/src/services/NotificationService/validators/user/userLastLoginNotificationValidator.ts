@@ -53,7 +53,7 @@ export class UserLastLoginNotificationValidator
       title: 'We need to sync your data',
       message: `We suggest connecting to a wifi network to complete this process
 
-                After syncing your data, the Funda app will continue to work offline.
+                After syncing your data, the app will continue to work offline.
 
                 If you choose not to sync now, you can still access the update
 

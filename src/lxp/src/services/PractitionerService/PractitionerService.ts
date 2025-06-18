@@ -380,6 +380,39 @@ class PractitionerService {
     return response.data.data.practitionerByUserId;
   }
 
+  async getPractitionerPermissions(userId: string): Promise<PractitionerDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        query GetPractitionerPermissions($userId: String) {
+          practitionerPermissions(userId: $userId) {
+            id
+            permissions {
+              id
+              userId
+              permissionId
+              isActive
+              permissionName
+              permissionNormalizedName
+              permissionGrouping
+            }
+          }
+        }
+      `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get Practitioner by user id Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.practitionerPermissions;
+  }
+
   async getAllPractitioners(): Promise<PractitionerDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {

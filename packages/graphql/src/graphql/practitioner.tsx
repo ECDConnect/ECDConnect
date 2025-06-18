@@ -305,6 +305,23 @@ export const GetPractitionerByUserId = gql`
   }
 `;
 
+export const GetPractitionerPermissions = gql`
+  query GetPractitionerPermissions($userId: String) {
+    practitionerPermissions(userId: $userId) {
+      id
+      permissions {
+        id
+        userId
+        permissionId
+        isActive
+        permissionName
+        permissionNormalizedName
+        permissionGrouping
+      }
+    }
+  }
+`;
+
 export const GetPractitionerStats = gql`
   query GetPractitionerStats(
     $userId: UUID!
