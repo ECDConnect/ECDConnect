@@ -9236,6 +9236,7 @@ export type Query = {
   practitionerInviteCount: Scalars['Int'];
   practitionerMetrics?: Maybe<PractitionerMetricReport>;
   practitionerNewSignupMetric: Scalars['Int'];
+  practitionerPermissions?: Maybe<PractitionerModel>;
   practitionerProgressReportSummary?: Maybe<PractitionerProgressReportSummaryModel>;
   practitionerRolePermissions?: Maybe<
     Array<Maybe<PractitionerPermissionModel>>
@@ -11288,6 +11289,10 @@ export type QueryPractitionerInviteCountArgs = {
 export type QueryPractitionerNewSignupMetricArgs = {
   fromDate: Scalars['DateTime'];
   toDate: Scalars['DateTime'];
+};
+
+export type QueryPractitionerPermissionsArgs = {
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryPractitionerProgressReportSummaryArgs = {
@@ -13400,6 +13405,7 @@ export type UserSyncStatus = {
   __typename?: 'UserSyncStatus';
   syncChildren: Scalars['Boolean'];
   syncClassroom: Scalars['Boolean'];
+  syncPermissions: Scalars['Boolean'];
   syncPoints: Scalars['Boolean'];
   syncReportingPeriods: Scalars['Boolean'];
 };
