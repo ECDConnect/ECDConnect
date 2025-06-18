@@ -1,5 +1,6 @@
 import { SettingTypeDto } from '@ecdlink/core';
 import { RootState } from '../types';
+import { addHours } from 'date-fns';
 
 export const getChildExpiryTime = (state: RootState): number =>
   state.settings.childExpiryTime;
@@ -22,6 +23,12 @@ export const getShouldUserSync = (state: RootState): boolean => {
     lastSynced.getDate() + 30
   );
   return lastSyncedCutOffDateEpoch < new Date().valueOf();
+};
+
+export const getShouldUserSyncOnline = (state: RootState): boolean => {
+  const lastLogin = new Date(state.settings.loginDate || new Date());
+  const lastLoginCutOff = addHours(new Date(lastLogin), 18);
+  return lastLoginCutOff.getTime() < new Date().getTime();
 };
 
 export const getNotificationPollInterval = (state: RootState): number =>
