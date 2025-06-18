@@ -339,7 +339,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             SELECT c.""Id""
             FROM ""Child"" c 
             JOIN ""Practitioner"" p ON c.""Hierarchy"" LIKE p.""Hierarchy"" || '%'
-            WHERE p.""UserId"" = {userId}::uuid 
+            WHERE (p.""UserId"" = {userId}::uuid OR p.""PrincipalHierarchy"" = {userId}::uuid)
             AND c.""IsActive"" IS TRUE 
             AND c.""UpdatedDate"" > {lastSync}
             ").Count();
@@ -365,12 +365,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             AND cprp.""InsertedDate"" > {lastSync}
             ").Count();
 
+            var permissionsCount = dbContext.PointsUserSummary.FromSql($@"
+            SELECT up.""Id""
+            FROM ""UserPermission"" up 
+            WHERE up.""UserId"" = {userId}::uuid 
+            AND up.""UpdatedDate"" > {lastSync}
+            ").Count();
+
             return new UserSyncStatus
             {
                 SyncChildren = childrenCount >= 1,
                 SyncClassroom = classroomCount >= 1,
                 SyncReportingPeriods = periodCount >= 1,
-                SyncPoints = pointsCount >= 1
+                SyncPoints = pointsCount >= 1,
+                SyncPermissions = permissionsCount >= 1
             };
         }
     }
