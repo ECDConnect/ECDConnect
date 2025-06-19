@@ -158,8 +158,6 @@ const classroomsSlice = createSlice({
       const payloadUpdated = { ...action.payload, synced: false };
       state.classroomGroupData.classroomGroups.push(payloadUpdated);
     },
-    // Only used during classroom setup it seems, is this still used? Only state gets updated, no BE sync
-    // Should deactivate instead, so we can sync later
     deleteClassroomGroup: (state, action: PayloadAction<ClassroomGroupDto>) => {
       if (!!action.payload.id) {
         const index = state.classroomGroupData.classroomGroups.findIndex(

@@ -89,38 +89,40 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
   }, [classroomGroup]);
 
   useEffect(() => {
-    const _list = practitioners
-      ?.filter((item) => item?.userId)
-      ?.map((p) => {
-        if (isOpenAccess) {
-          if (p.firstName) {
-            return { label: `${p.firstName}`, value: p.userId };
+    if (practitioners) {
+      const _list = practitioners
+        ?.filter((item) => item?.userId)
+        ?.map((p) => {
+          if (isOpenAccess) {
+            if (p.firstName) {
+              return { label: `${p.firstName}`, value: p.userId };
+            }
           }
-        }
-        if ((p.firstName && p.surname && !isOpenAccess) || p?.idNumber) {
-          return {
-            label: `${p.firstName || p?.idNumber} ${p.surname}`,
-            value: p.userId,
-          };
-        }
-        return undefined;
-      })
-      .filter(Boolean) as { label: string; value: any }[];
+          if ((p.firstName && p.surname && !isOpenAccess) || p?.idNumber) {
+            return {
+              label: `${p.firstName || p?.idNumber} ${p.surname}`,
+              value: p.userId,
+            };
+          }
+          return undefined;
+        })
+        .filter(Boolean) as { label: string; value: any }[];
 
-    _list.push({
-      label:
-        currentPractitioner?.user?.fullName ||
-        currentPractitioner?.user?.userName ||
-        '',
-      value: currentPractitioner?.userId,
-    });
+      _list.push({
+        label:
+          currentPractitioner?.user?.fullName ||
+          currentPractitioner?.user?.userName ||
+          '',
+        value: currentPractitioner?.userId,
+      });
 
-    const filteredList = _list.filter(
-      (value, index, self) =>
-        index === self.findIndex((t) => t.value === value.value)
-    );
+      const filteredList = _list.filter(
+        (value, index, self) =>
+          index === self.findIndex((t) => t.value === value.value)
+      );
 
-    setPractitionersList(filteredList);
+      setPractitionersList(filteredList);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

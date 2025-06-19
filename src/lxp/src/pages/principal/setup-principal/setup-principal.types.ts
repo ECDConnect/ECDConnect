@@ -9,25 +9,7 @@ export enum PractitionerSetupSteps {
   CONFIRM_CLASSES = 4,
   ADD_SIGNATURE = 5,
   ADD_PHOTO = 6,
-}
-
-export enum WL_PractitionerSetupSteps {
-  WELCOME = 0,
-  SELECT_PRACTITIONER_ROLE = 1,
-  SETUP_PROGRAMME = 2,
-  CONFIRM_PRACTITIONERS = 3,
-  CONFIRM_CLASSES = 4,
-  ADD_SIGNATURE = 5,
-  ADD_PHOTO = 6,
-}
-
-export enum OA_PractitionerSetupSteps {
-  WELCOME = 0,
-  SELECT_PRACTITIONER_ROLE = 1,
-  SETUP_PROGRAMME = 2,
-  CONFIRM_CLASSES = 3,
-  ADD_SIGNATURE = 4,
-  ADD_PHOTO = 5,
+  OA_CONFIRM_CLASSES = 3,
 }
 
 export enum ConfirmPractitionersSteps {
@@ -45,10 +27,6 @@ export enum ConfirmClassesSteps {
 export type OnNext = React.Dispatch<
   React.SetStateAction<PractitionerSetupSteps>
 >;
-
-// export type OnOANext = React.Dispatch<
-//   React.SetStateAction<OA_PractitionerSetupSteps>
-// >;
 
 export type RegisterPractitioner = AddPractitionerModel & {
   isRegistered?: boolean;

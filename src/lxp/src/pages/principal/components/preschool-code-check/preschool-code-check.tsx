@@ -11,7 +11,6 @@ import {
 } from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
 import {
-  OA_PractitionerSetupSteps,
   OnNext,
   PractitionerSetupSteps,
 } from '../../setup-principal/setup-principal.types';
@@ -31,6 +30,8 @@ import { useNotificationService } from '@/hooks/useNotificationService';
 import { ClassroomDto } from '@/models/classroom/classroom.dto';
 import { MutationAddPractitionerToPrincipalArgs } from '@ecdlink/graphql';
 import { ShareSomeDetails } from '../share-some-detail/share-some-detail';
+import { practitionerThunkActions } from '@/store/practitioner';
+import { PractitionerService } from '@/services/PractitionerService';
 
 export const PreschoolCodeCheck: React.FC<{
   onNext: OnNext;
@@ -96,18 +97,18 @@ export const PreschoolCodeCheck: React.FC<{
   };
 
   const handleSkipAddPractitionerToPrincipal = async () => {
-    // await appDispatch(
-    //   practitionerThunkActions.updatePractitionerProgress({
-    //     practitionerId: user?.id!,
-    //     progress: 1.0,
-    //   })
-    // );
-    // await new PractitionerService(
-    //   userAuth?.auth_token!
-    // ).UpdatePractitionerShareInfo(user?.id!);
-    // await new PractitionerService(
-    //   userAuth?.auth_token!
-    // ).UpdatePractitionerRegistered(user?.id!, true);
+    await appDispatch(
+      practitionerThunkActions.updatePractitionerProgress({
+        practitionerId: user?.id!,
+        progress: 1.0,
+      })
+    );
+    await new PractitionerService(
+      userAuth?.auth_token!
+    ).UpdatePractitionerShareInfo(user?.id!);
+    await new PractitionerService(
+      userAuth?.auth_token!
+    ).UpdatePractitionerRegistered(user?.id!, true);
     onNext(PractitionerSetupSteps.ADD_PHOTO);
   };
 
