@@ -163,8 +163,11 @@ export const SetupPrincipal: React.FC = () => {
       return;
     }
 
-    if (page === PractitionerSetupSteps.SETUP_PROGRAMME) {
-      setLabel('Step 1 of 4');
+    if (
+      page === PractitionerSetupSteps.SETUP_PROGRAMME &&
+      tenant?.isWhiteLabel
+    ) {
+      setLabel('Step 1 of 4sss');
     }
 
     if (page === PractitionerSetupSteps.WELCOME) {
@@ -186,202 +189,179 @@ export const SetupPrincipal: React.FC = () => {
   };
 
   const onAllStepsComplete = async () => {
-    setIsLoading(true);
-
-    if (isNotPrincipal === true && practitioner?.progress !== 1) {
-      if (user) {
-        if (practitionerPreschoolData && !!practitionerPreschoolData.userId) {
-          await new PractitionerService(
-            userAuth?.auth_token!
-          ).UpdatePractitionerProgress(user?.id!, 2.0);
-
-          await new PractitionerService(
-            userAuth?.auth_token!
-          ).AddPractitionerToPrincipal(practitionerPreschoolData);
-
-          const principalHierarchy = practitionerPreschoolData.userId;
-          const userId = user?.id!;
-          const accepted = true;
-
-          await appDispatch(
-            updatePrincipalInvitation({ userId, principalHierarchy, accepted })
-          );
-
-          await new PractitionerService(
-            userAuth?.auth_token!
-          ).UpdatePractitionerShareInfo(user?.id!);
-
-          await appDispatch(
-            notificationActions.resetFrontendNotificationState()
-          );
-          await appDispatch(
-            practitionerThunkActions.getPractitionerByUserId({
-              userId: user?.id!,
-            })
-          );
-          await appDispatch(practitionerThunkActions.getAllPractitioners({}));
-          await appDispatch(
-            classroomsThunkActions.getClassroom({ overrideCache: true })
-          ).unwrap();
-        }
-
-        await appDispatch(
-          practitionerThunkActions.updatePractitionerRegistered({
-            practitionerId: user.id,
-            status: true,
-          })
-        );
-
-        await appDispatch(
-          practitionerThunkActions.updatePractitionerProgress({
-            practitionerId: user.id,
-            progress: 2.0,
-          })
-        );
-
-        stopService();
-      }
-      setIsLoading(false);
-      history.push(ROUTES.ROOT);
-      return;
-    }
-
-    // update school
-    // EC-3957 - only save school information when you add a class for the principle
-    const classroomInputModel = classroom as ClassroomDto;
-    await appDispatch(
-      classroomsThunkActions.upsertClassroom(classroomInputModel)
-    );
-
-    // save practitioners and permissions
-    await appDispatch(
-      classroomsThunkActions.updateClassroomPractitionerPermissions({})
-    );
-
-    // add classes
-    await appDispatch(classroomsThunkActions.upsertClassroomGroups({}));
-    // programmes
-    await appDispatch(
-      classroomsThunkActions.upsertClassroomGroupProgrammes({})
-    );
-    await appDispatch(classroomsThunkActions.getClassroomGroups({}));
-
-    // Update classroom number of practitioners
-    appDispatch(
-      classroomsActions.updateClassroomNumberPractitioners(
-        principalPractitioners?.length ?? 0
-      )
-    );
-
-    // Update classroom data
-    await syncClassroom();
-
-    // Update the principal data
-    if (userAuth?.auth_token && user?.id) {
-      if (practitioner?.progress === 1.0 && !practitioner?.isPrincipal) {
-        await appDispatch(
-          notificationActions.addNotifications(practitionerNotification)
-        );
-        history.push(ROUTES.DASHBOARD, { isFromCompleteProfile: true });
-        return;
-      }
-
-      await new PractitionerService(
-        userAuth?.auth_token
-      ).PromotePractitionerToPrincipal(user?.id);
-
-      await appDispatch(
-        practitionerThunkActions.getPractitionerByUserId({
-          userId: user?.id || '',
-        })
-      );
-
-      await appDispatch(
-        practitionerThunkActions.updatePractitionerRegistered({
-          practitionerId: user.id,
-          status: true,
-        })
-      );
-
-      await appDispatch(
-        practitionerThunkActions.updatePractitionerProgress({
-          practitionerId: user.id,
-          progress: 2.0,
-        })
-      );
-    }
-
-    appDispatch(notificationActions.resetFrontendNotificationState());
-    appDispatch(notificationActions.resetNotificationState());
-
-    if (principalPractitioners?.length) {
-      if (userAuth?.auth_token) {
-        principalPractitioners.forEach(async (principalPractitioner) => {
-          if (
-            !principalPractitioner?.userId &&
-            principalPractitioner?.phoneNumber &&
-            principalPractitioner?.userId !== inviTePractitionerUserId
-          ) {
-            const principalInvite = await new PractitionerService(
-              userAuth?.auth_token!
-            )
-              .sendPractitionerInviteToPreschool(
-                principalPractitioner?.phoneNumber,
-                classroom?.preschoolCode!,
-                classroom?.name!,
-                user?.id!
-              )
-              .catch((error) => {
-                console.log(error);
-                return;
-              });
-          } else {
-            const input: MutationAddPractitionerToPrincipalArgs = {
-              userId: user?.id,
-              idNumber: principalPractitioner.idNumber,
-              firstName: principalPractitioner.firstName,
-              lastName: principalPractitioner.surname,
-              preschoolCode: '',
-            };
-            await new PractitionerService(
-              userAuth?.auth_token
-            ).AddPractitionerToPrincipal(input);
-          }
-        });
-        if (inviTePractitionerUserId) {
-          await appDispatch(
-            practitionerThunkActions.updatePractitionerProgress({
-              practitionerId: inviTePractitionerUserId,
-              progress: 2.0,
-            })
-          ).unwrap();
-
-          await appDispatch(
-            updatePrincipalInvitation({
-              userId: inviTePractitionerUserId,
-              principalHierarchy: user?.id!,
-              accepted: true,
-            })
-          ).unwrap();
-        }
-        await appDispatch(
-          practitionerThunkActions.getAllPractitioners({})
-        ).unwrap();
-        await appDispatch(notificationActions.resetFrontendNotificationState());
-      }
-    }
-    localStorage.removeItem(
-      LocalStorageKeys.practitionerInvitedPrincipalIdNumber
-    );
-    localStorage.removeItem(
-      LocalStorageKeys.practitionerInvitedPrincipalUserId
-    );
-    // clear practitioners and permissions on state
-    await appDispatch(classroomsActions.deleteClassroomPractitioner());
-
-    setIsLoading(false);
-    stopService();
-    history.push(ROUTES.DASHBOARD, { isFromCompleteProfile: true });
+    // setIsLoading(true);
+    // if (isNotPrincipal === true && practitioner?.progress !== 1) {
+    //   if (user) {
+    //     if (practitionerPreschoolData && !!practitionerPreschoolData.userId) {
+    //       await new PractitionerService(
+    //         userAuth?.auth_token!
+    //       ).UpdatePractitionerProgress(user?.id!, 2.0);
+    //       await new PractitionerService(
+    //         userAuth?.auth_token!
+    //       ).AddPractitionerToPrincipal(practitionerPreschoolData);
+    //       const principalHierarchy = practitionerPreschoolData.userId;
+    //       const userId = user?.id!;
+    //       const accepted = true;
+    //       await appDispatch(
+    //         updatePrincipalInvitation({ userId, principalHierarchy, accepted })
+    //       );
+    //       await new PractitionerService(
+    //         userAuth?.auth_token!
+    //       ).UpdatePractitionerShareInfo(user?.id!);
+    //       await appDispatch(
+    //         notificationActions.resetFrontendNotificationState()
+    //       );
+    //       await appDispatch(
+    //         practitionerThunkActions.getPractitionerByUserId({
+    //           userId: user?.id!,
+    //         })
+    //       );
+    //       await appDispatch(practitionerThunkActions.getAllPractitioners({}));
+    //       await appDispatch(
+    //         classroomsThunkActions.getClassroom({ overrideCache: true })
+    //       ).unwrap();
+    //     }
+    //     await appDispatch(
+    //       practitionerThunkActions.updatePractitionerRegistered({
+    //         practitionerId: user.id,
+    //         status: true,
+    //       })
+    //     );
+    //     await appDispatch(
+    //       practitionerThunkActions.updatePractitionerProgress({
+    //         practitionerId: user.id,
+    //         progress: 2.0,
+    //       })
+    //     );
+    //     stopService();
+    //   }
+    //   setIsLoading(false);
+    //   history.push(ROUTES.ROOT);
+    //   return;
+    // }
+    // // update school
+    // // EC-3957 - only save school information when you add a class for the principle
+    // const classroomInputModel = classroom as ClassroomDto;
+    // await appDispatch(
+    //   classroomsThunkActions.upsertClassroom(classroomInputModel)
+    // );
+    // // save practitioners and permissions
+    // await appDispatch(
+    //   classroomsThunkActions.updateClassroomPractitionerPermissions({})
+    // );
+    // // add classes
+    // await appDispatch(classroomsThunkActions.upsertClassroomGroups({}));
+    // // programmes
+    // await appDispatch(
+    //   classroomsThunkActions.upsertClassroomGroupProgrammes({})
+    // );
+    // await appDispatch(classroomsThunkActions.getClassroomGroups({}));
+    // // Update classroom number of practitioners
+    // appDispatch(
+    //   classroomsActions.updateClassroomNumberPractitioners(
+    //     principalPractitioners?.length ?? 0
+    //   )
+    // );
+    // // Update classroom data
+    // await syncClassroom();
+    // // Update the principal data
+    // if (userAuth?.auth_token && user?.id) {
+    //   if (practitioner?.progress === 1.0 && !practitioner?.isPrincipal) {
+    //     await appDispatch(
+    //       notificationActions.addNotifications(practitionerNotification)
+    //     );
+    //     history.push(ROUTES.DASHBOARD, { isFromCompleteProfile: true });
+    //     return;
+    //   }
+    //   await new PractitionerService(
+    //     userAuth?.auth_token
+    //   ).PromotePractitionerToPrincipal(user?.id);
+    //   await appDispatch(
+    //     practitionerThunkActions.getPractitionerByUserId({
+    //       userId: user?.id || '',
+    //     })
+    //   );
+    //   await appDispatch(
+    //     practitionerThunkActions.updatePractitionerRegistered({
+    //       practitionerId: user.id,
+    //       status: true,
+    //     })
+    //   );
+    //   await appDispatch(
+    //     practitionerThunkActions.updatePractitionerProgress({
+    //       practitionerId: user.id,
+    //       progress: 2.0,
+    //     })
+    //   );
+    // }
+    // appDispatch(notificationActions.resetFrontendNotificationState());
+    // appDispatch(notificationActions.resetNotificationState());
+    // if (principalPractitioners?.length) {
+    //   if (userAuth?.auth_token) {
+    //     principalPractitioners.forEach(async (principalPractitioner) => {
+    //       if (
+    //         !principalPractitioner?.userId &&
+    //         principalPractitioner?.phoneNumber &&
+    //         principalPractitioner?.userId !== inviTePractitionerUserId
+    //       ) {
+    //         const principalInvite = await new PractitionerService(
+    //           userAuth?.auth_token!
+    //         )
+    //           .sendPractitionerInviteToPreschool(
+    //             principalPractitioner?.phoneNumber,
+    //             classroom?.preschoolCode!,
+    //             classroom?.name!,
+    //             user?.id!
+    //           )
+    //           .catch((error) => {
+    //             console.log(error);
+    //             return;
+    //           });
+    //       } else {
+    //         const input: MutationAddPractitionerToPrincipalArgs = {
+    //           userId: user?.id,
+    //           idNumber: principalPractitioner.idNumber,
+    //           firstName: principalPractitioner.firstName,
+    //           lastName: principalPractitioner.surname,
+    //           preschoolCode: '',
+    //         };
+    //         await new PractitionerService(
+    //           userAuth?.auth_token
+    //         ).AddPractitionerToPrincipal(input);
+    //       }
+    //     });
+    //     if (inviTePractitionerUserId) {
+    //       await appDispatch(
+    //         practitionerThunkActions.updatePractitionerProgress({
+    //           practitionerId: inviTePractitionerUserId,
+    //           progress: 2.0,
+    //         })
+    //       ).unwrap();
+    //       await appDispatch(
+    //         updatePrincipalInvitation({
+    //           userId: inviTePractitionerUserId,
+    //           principalHierarchy: user?.id!,
+    //           accepted: true,
+    //         })
+    //       ).unwrap();
+    //     }
+    //     await appDispatch(
+    //       practitionerThunkActions.getAllPractitioners({})
+    //     ).unwrap();
+    //     await appDispatch(notificationActions.resetFrontendNotificationState());
+    //   }
+    // }
+    // localStorage.removeItem(
+    //   LocalStorageKeys.practitionerInvitedPrincipalIdNumber
+    // );
+    // localStorage.removeItem(
+    //   LocalStorageKeys.practitionerInvitedPrincipalUserId
+    // );
+    // // clear practitioners and permissions on state
+    // await appDispatch(classroomsActions.deleteClassroomPractitioner());
+    // setIsLoading(false);
+    // stopService();
+    // history.push(ROUTES.DASHBOARD, { isFromCompleteProfile: true });
   };
 
   const updateClassroomOnCancel = async () => {

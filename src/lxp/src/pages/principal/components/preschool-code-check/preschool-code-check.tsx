@@ -11,6 +11,7 @@ import {
 } from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
 import {
+  OA_PractitionerSetupSteps,
   OnNext,
   PractitionerSetupSteps,
 } from '../../setup-principal/setup-principal.types';
