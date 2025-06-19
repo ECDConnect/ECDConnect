@@ -302,9 +302,10 @@ export const PreschoolCodeCheck: React.FC<{
           color="quatenary"
           className={'border-quatenary bottom-12 mt-1 mb-2 w-full border'}
           onClick={() =>
-            isOpenAccess
-              ? setInvitePrincipal(true)
-              : handleSkipAddPractitionerToPrincipal()
+            // isOpenAccess
+            //   ? setInvitePrincipal(true)
+            //:
+            handleSkipAddPractitionerToPrincipal()
           } // Navigate to a different page if it is principle
         >
           {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
@@ -327,16 +328,20 @@ export const PreschoolCodeCheck: React.FC<{
           setPrincipalPreschoolCodeTutorial={setPrincipalPreschoolCodeTutorial}
         />
       </Dialog>
-      <Dialog
-        stretch={true}
-        visible={invitePrincipal}
-        position={DialogPosition.Full}
-      >
-        <InvitePrincipal
-          onNext={onNext}
-          setInvitePrincipal={setInvitePrincipal}
-        />
-      </Dialog>
+
+      {tenant?.isWhiteLabel && (
+        <Dialog
+          stretch={true}
+          visible={invitePrincipal}
+          position={DialogPosition.Full}
+        >
+          <InvitePrincipal
+            onNext={onNext}
+            setInvitePrincipal={setInvitePrincipal}
+          />
+        </Dialog>
+      )}
+
       <Dialog
         stretch={true}
         visible={shareSomeDetails}
