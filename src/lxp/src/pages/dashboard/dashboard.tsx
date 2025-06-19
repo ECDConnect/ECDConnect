@@ -898,11 +898,9 @@ export const Dashboard: React.FC = () => {
                     syncThunkActions.syncOfflineDataForPractitioner({})
                   );
                 }
-
-                appDispatch(settingActions.setLastDataSync());
                 await resetAppStore();
                 await resetAuth();
-                history.push('/');
+                return history.push(ROUTES.LOGIN);
               }}
             ></SyncTimeExceeded>
           );
