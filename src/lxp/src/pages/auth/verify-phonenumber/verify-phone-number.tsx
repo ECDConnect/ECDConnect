@@ -53,6 +53,7 @@ export const VerifyPhoneNumber = () => {
             isAuthenticated?.payload?.response?.status !== 401
           ) {
             await appDispatch(settingActions.setApplicationVersion(version));
+            appDispatch(settingActions.setLoginDate());
             history.push('/');
             setIsLoading(false);
           } else {
