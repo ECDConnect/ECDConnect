@@ -107,6 +107,7 @@ export const OaLogin: React.FC = () => {
   const login = async () => {
     appDispatch(settingActions.setApplicationVersion(version));
     appDispatch(authActions.setUserExpired());
+    appDispatch(settingActions.setLoginDate());
     const user = await appDispatch(userThunkActions.getUser({})).unwrap();
     localStorage.setItem(
       LocalStorageKeys.firstTimeOnCommunityDashboard,
