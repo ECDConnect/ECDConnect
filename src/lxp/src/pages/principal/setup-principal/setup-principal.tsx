@@ -76,6 +76,8 @@ export const SetupPrincipal: React.FC = () => {
     PractitionerSetupSteps.WELCOME
   );
   const { getPractitionerProgressNotification } = usePractitionerNotification();
+  const [practitionerPreschoolData, setPractitionerPreschoolData] =
+    useState<MutationAddPractitionerToPrincipalArgs>();
 
   const [isLoading, setIsLoading] = useState(false);
   const inviTePractitionerUserId = localStorage
@@ -114,14 +116,17 @@ export const SetupPrincipal: React.FC = () => {
     classesPage === ConfirmClassesSteps.ADD_CLASS ||
     classesPage === ConfirmClassesSteps.EDIT_CLASS;
 
-  const showBgRules =
-    confirmPractitionerPage === ConfirmPractitionersSteps.ADD_PRACTITIONER ||
-    (page === PractitionerSetupSteps.CONFIRM_CLASSES &&
-      classesPage === ConfirmClassesSteps.ADD_CLASS) ||
-    (page === PractitionerSetupSteps.CONFIRM_CLASSES &&
-      classesPage === ConfirmClassesSteps.EDIT_CLASS) ||
-    confirmPractitionerPage === ConfirmPractitionersSteps.EDIT_PRACTITIONER;
-
+  const showBgRules = tenant?.isWhiteLabel
+    ? confirmPractitionerPage === ConfirmPractitionersSteps.ADD_PRACTITIONER ||
+      (page === PractitionerSetupSteps.CONFIRM_CLASSES &&
+        classesPage === ConfirmClassesSteps.ADD_CLASS) ||
+      (page === PractitionerSetupSteps.CONFIRM_CLASSES &&
+        classesPage === ConfirmClassesSteps.EDIT_CLASS) ||
+      confirmPractitionerPage === ConfirmPractitionersSteps.EDIT_PRACTITIONER
+    : (page === PractitionerSetupSteps.OA_CONFIRM_CLASSES &&
+        classesPage === ConfirmClassesSteps.ADD_CLASS) ||
+      (page === PractitionerSetupSteps.OA_CONFIRM_CLASSES &&
+        classesPage === ConfirmClassesSteps.EDIT_CLASS);
   const notificationClassroom = classroom?.name
     ? classroom?.name
     : principalClassroom?.name;
@@ -137,15 +142,27 @@ export const SetupPrincipal: React.FC = () => {
     if (previousPage === page) return;
 
     if (page === PractitionerSetupSteps.ADD_PHOTO && isNotPrincipal) {
-      return setLabel('step 2 of 2');
+      return setLabel('Step 2 of 2');
     }
 
-    if (page === PractitionerSetupSteps.ADD_PHOTO) {
-      return setLabel('step 4 of 4');
+    if (page === PractitionerSetupSteps.ADD_PHOTO && tenant?.isWhiteLabel) {
+      return setLabel('Step 4 of 4');
+    }
+    if (page === PractitionerSetupSteps.ADD_PHOTO && tenant?.isOpenAccess) {
+      return setLabel('Step 3 of 3');
     }
 
-    if (page === PractitionerSetupSteps.CONFIRM_PRACTITIONERS) {
+    if (
+      page === PractitionerSetupSteps.CONFIRM_PRACTITIONERS &&
+      tenant?.isWhiteLabel
+    ) {
       setLabel('Step 2 of 4');
+    }
+    if (
+      page === PractitionerSetupSteps.CONFIRM_PRACTITIONERS &&
+      tenant?.isOpenAccess
+    ) {
+      setLabel('Step 2 of 3');
     }
 
     if (page === PractitionerSetupSteps.SETUP_PROGRAMME && isNotPrincipal) {
@@ -153,7 +170,10 @@ export const SetupPrincipal: React.FC = () => {
       return;
     }
 
-    if (page === PractitionerSetupSteps.SETUP_PROGRAMME) {
+    if (
+      page === PractitionerSetupSteps.SETUP_PROGRAMME &&
+      tenant?.isWhiteLabel
+    ) {
       setLabel('Step 1 of 4');
     }
 
@@ -170,10 +190,38 @@ export const SetupPrincipal: React.FC = () => {
   }, [classesPage, isNotPrincipal, page, previousPage]);
 
   const onAllStepsComplete = async () => {
+    setIsLoading(true);
     appDispatch(notificationActions.resetNotificationState());
 
     if (isNotPrincipal === true && practitioner?.progress !== 1) {
       if (user) {
+        if (practitionerPreschoolData && !!practitionerPreschoolData.userId) {
+          await new PractitionerService(
+            userAuth?.auth_token!
+          ).UpdatePractitionerProgress(user?.id!, 2.0);
+          await new PractitionerService(
+            userAuth?.auth_token!
+          ).AddPractitionerToPrincipal(practitionerPreschoolData);
+          const principalHierarchy = practitionerPreschoolData.userId;
+          const userId = user?.id!;
+          const accepted = true;
+          await appDispatch(
+            updatePrincipalInvitation({ userId, principalHierarchy, accepted })
+          );
+          await new PractitionerService(
+            userAuth?.auth_token!
+          ).UpdatePractitionerShareInfo(user?.id!);
+
+          await appDispatch(
+            practitionerThunkActions.getPractitionerByUserId({
+              userId: user?.id!,
+            })
+          );
+          await appDispatch(practitionerThunkActions.getAllPractitioners({}));
+          await appDispatch(
+            classroomsThunkActions.getClassroom({ overrideCache: true })
+          ).unwrap();
+        }
         await appDispatch(
           practitionerThunkActions.updatePractitionerRegistered({
             practitionerId: user.id,
@@ -201,12 +249,10 @@ export const SetupPrincipal: React.FC = () => {
     await appDispatch(
       classroomsThunkActions.upsertClassroom(classroomInputModel)
     );
-
     // save practitioners and permissions
     await appDispatch(
       classroomsThunkActions.updateClassroomPractitionerPermissions({})
     );
-
     // add classes
     await appDispatch(classroomsThunkActions.upsertClassroomGroups({}));
     // programmes
@@ -214,17 +260,14 @@ export const SetupPrincipal: React.FC = () => {
       classroomsThunkActions.upsertClassroomGroupProgrammes({})
     );
     await appDispatch(classroomsThunkActions.getClassroomGroups({}));
-
     // Update classroom number of practitioners
     appDispatch(
       classroomsActions.updateClassroomNumberPractitioners(
         principalPractitioners?.length ?? 0
       )
     );
-
     // Update classroom data
     await syncClassroom();
-
     // Update the principal data
     if (userAuth?.auth_token && user?.id) {
       if (practitioner?.progress === 1.0 && !practitioner?.isPrincipal) {
@@ -234,24 +277,20 @@ export const SetupPrincipal: React.FC = () => {
         history.push(ROUTES.DASHBOARD, { isFromCompleteProfile: true });
         return;
       }
-
       await new PractitionerService(
         userAuth?.auth_token
       ).PromotePractitionerToPrincipal(user?.id);
-
       await appDispatch(
         practitionerThunkActions.getPractitionerByUserId({
           userId: user?.id || '',
         })
       );
-
       await appDispatch(
         practitionerThunkActions.updatePractitionerRegistered({
           practitionerId: user.id,
           status: true,
         })
       );
-
       await appDispatch(
         practitionerThunkActions.updatePractitionerProgress({
           practitionerId: user.id,
@@ -301,7 +340,6 @@ export const SetupPrincipal: React.FC = () => {
               progress: 2.0,
             })
           ).unwrap();
-
           await appDispatch(
             updatePrincipalInvitation({
               userId: inviTePractitionerUserId,
@@ -324,7 +362,6 @@ export const SetupPrincipal: React.FC = () => {
     );
     // clear practitioners and permissions on state
     await appDispatch(classroomsActions.deleteClassroomPractitioner());
-
     setIsLoading(false);
     stopService();
     history.push(ROUTES.DASHBOARD, { isFromCompleteProfile: true });
@@ -436,10 +473,16 @@ export const SetupPrincipal: React.FC = () => {
         );
 
       case PractitionerSetupSteps.CONFIRM_PRACTITIONERS:
-        return (
+        return tenant.isWhiteLabel ? (
           <ConfirmPractitioners
             page={confirmPractitionerPage}
             setConfirmPractitionerPage={setConfirmPractitionerPage}
+            onNext={setPage}
+          />
+        ) : (
+          <SetupClasses
+            page={classesPage}
+            setClassesPage={setClassesPage}
             onNext={setPage}
           />
         );
