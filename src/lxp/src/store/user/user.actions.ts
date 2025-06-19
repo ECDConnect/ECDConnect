@@ -8,6 +8,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { UserService } from '@services/UserService';
 import { RootState, ThunkApiType } from '../types';
 import { UserResetPasswrodParams } from './user.types';
+import { newGuid } from '@/utils/common/uuid.utils';
 
 export const getUser = createAsyncThunk<
   UserDto,
@@ -227,7 +228,7 @@ export const getUserSyncStatus = createAsyncThunk<
         ).getUserSyncStatus(
           userAuth.id,
           new Date(lastDataSync) || new Date(),
-          classroom?.id || ''
+          classroom?.id || newGuid()
         );
       } else {
         return rejectWithValue('no access token, profile check required');
