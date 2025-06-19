@@ -211,9 +211,7 @@ export const SetupPrincipal: React.FC = () => {
           await new PractitionerService(
             userAuth?.auth_token!
           ).UpdatePractitionerShareInfo(user?.id!);
-          await appDispatch(
-            notificationActions.resetFrontendNotificationState()
-          );
+
           await appDispatch(
             practitionerThunkActions.getPractitionerByUserId({
               userId: user?.id!,
@@ -300,8 +298,7 @@ export const SetupPrincipal: React.FC = () => {
         })
       );
     }
-    appDispatch(notificationActions.resetFrontendNotificationState());
-    appDispatch(notificationActions.resetNotificationState());
+
     if (principalPractitioners?.length) {
       if (userAuth?.auth_token) {
         principalPractitioners.forEach(async (principalPractitioner) => {
