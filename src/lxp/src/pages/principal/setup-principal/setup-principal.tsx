@@ -71,14 +71,13 @@ export const SetupPrincipal: React.FC = () => {
   );
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const [isNotPrincipal, setIsNotPrincipal] = useState(false);
-  const [isFundaAppAdmin, setIsFundaAppAdmin] = useState(false);
   const [label, setLabel] = useState('Welcome');
   const [page, setPage] = useState<PractitionerSetupSteps>(
     PractitionerSetupSteps.WELCOME
   );
+  const { getPractitionerProgressNotification } = usePractitionerNotification();
   const [practitionerPreschoolData, setPractitionerPreschoolData] =
     useState<MutationAddPractitionerToPrincipalArgs>();
-  const { getPractitionerProgressNotification } = usePractitionerNotification();
 
   const [isLoading, setIsLoading] = useState(false);
   const inviTePractitionerUserId = localStorage
@@ -154,13 +153,6 @@ export const SetupPrincipal: React.FC = () => {
     }
 
     if (
-      previousPage === PractitionerSetupSteps.WELCOME &&
-      page === PractitionerSetupSteps.SETUP_PROGRAMME
-    ) {
-      setIsFundaAppAdmin(false);
-    }
-
-    if (
       page === PractitionerSetupSteps.CONFIRM_PRACTITIONERS &&
       tenant?.isWhiteLabel
     ) {
@@ -197,14 +189,10 @@ export const SetupPrincipal: React.FC = () => {
     }
   }, [classesPage, isNotPrincipal, page, previousPage]);
 
-  const handlePreschoolData = (
-    args: MutationAddPractitionerToPrincipalArgs
-  ) => {
-    setPractitionerPreschoolData(args);
-  };
-
   const onAllStepsComplete = async () => {
     setIsLoading(true);
+    appDispatch(notificationActions.resetNotificationState());
+
     if (isNotPrincipal === true && practitioner?.progress !== 1) {
       if (user) {
         if (practitionerPreschoolData && !!practitionerPreschoolData.userId) {
@@ -250,10 +238,13 @@ export const SetupPrincipal: React.FC = () => {
         );
         stopService();
       }
-      setIsLoading(false);
+
       history.push(ROUTES.ROOT);
       return;
     }
+
+    setIsLoading(true);
+
     // update school
     // EC-3957 - only save school information when you add a class for the principle
     const classroomInputModel = classroom as ClassroomDto;
@@ -463,10 +454,7 @@ export const SetupPrincipal: React.FC = () => {
 
       case PractitionerSetupSteps.SELECT_PRACTITIONER_ROLE:
         return isNotPrincipal ? (
-          <PreschoolCodeCheck
-            onNext={setPage}
-            onPreschoolNext={handlePreschoolData}
-          />
+          <PreschoolCodeCheck onNext={setPage} />
         ) : (
           <SelectPractitionerRole
             onNext={() => setPage(PractitionerSetupSteps.SETUP_PROGRAMME)}
@@ -477,17 +465,12 @@ export const SetupPrincipal: React.FC = () => {
 
       case PractitionerSetupSteps.SETUP_PROGRAMME:
         return isNotPrincipal ? (
-          <PreschoolCodeCheck
-            onNext={setPage}
-            onPreschoolNext={handlePreschoolData}
-          />
+          <PreschoolCodeCheck onNext={setPage} />
         ) : (
           <AddProgrammeForm
             onNext={setPage}
             setIsNotPrincipal={setIsNotPrincipal}
             isNotPrincipal={isNotPrincipal}
-            isFundaAppAdmin={isFundaAppAdmin}
-            setIsFundaAppAdmin={setIsFundaAppAdmin}
             onChangeIsPrincipal={onChangeIsPrincipal}
           />
         );
@@ -498,7 +481,6 @@ export const SetupPrincipal: React.FC = () => {
             page={confirmPractitionerPage}
             setConfirmPractitionerPage={setConfirmPractitionerPage}
             onNext={setPage}
-            isFundaAppAdmin={isFundaAppAdmin}
           />
         ) : (
           <SetupClasses

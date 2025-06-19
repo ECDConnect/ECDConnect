@@ -59,6 +59,27 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return null;
         }
 
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public PractitionerModel GetPractitionerPermissions(
+          [Service] IHttpContextAccessor contextAccessor,
+          IGenericRepositoryFactory repoFactory,
+          [Service] PersonnelService personnelService,
+          string userId)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+            Practitioner practitioner = practiRepo.GetByUserId(userId);
+            if (practitioner != null)
+            {
+                return new PractitionerModel()
+                {
+                    Id = practitioner.Id,
+                    Permissions = practitioner.User.UserPermissions.Select(x => new UserPermissionModel(x)).ToList()
+                };
+            }
+            return null;
+        }
+
         public PractitionerModel GetPractitionerById(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,

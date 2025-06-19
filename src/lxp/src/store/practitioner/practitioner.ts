@@ -16,6 +16,7 @@ import {
   updatePractitionerPermissions,
   updatePractitionerCommunityTabStatus,
   updatePractitionerProgressWalkthrough,
+  getPractitionerPermissions,
 } from './practitioner.actions';
 import {
   PractitionerState,
@@ -68,6 +69,12 @@ const practitionerSlice = createSlice({
     });
     builder.addCase(getPractitionerByUserId.fulfilled, (state, action) => {
       state.practitioner = action.payload;
+    });
+    builder.addCase(getPractitionerPermissions.fulfilled, (state, action) => {
+      state.practitioner = {
+        ...state.practitioner,
+        permissions: action.payload.permissions,
+      };
     });
     builder.addCase(getAllPractitioners.fulfilled, (state, action) => {
       state.practitioners = action.payload;

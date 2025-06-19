@@ -47,7 +47,6 @@ export default function ConfirmPractitioners({
 }: {
   onNext: OnNext;
   page: ConfirmPractitionersSteps;
-  isFundaAppAdmin: any;
   setConfirmPractitionerPage: React.Dispatch<
     React.SetStateAction<ConfirmPractitionersSteps>
   >;

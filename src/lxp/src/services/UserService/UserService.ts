@@ -168,6 +168,7 @@ class UserService {
           syncClassroom
           syncReportingPeriods
           syncPoints
+          syncPermissions
         }
       }
       `,

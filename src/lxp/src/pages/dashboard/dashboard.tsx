@@ -20,7 +20,7 @@ import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useDocuments } from '@hooks/useDocuments';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { OfflineSyncModal } from '../../modals';
+import { OfflineSyncModal, SyncTimeExceeded } from '../../modals';
 import OfflineSyncTimeExceeded from '../../modals/offline-sync/offline-sync-time-exceeded';
 import { useAppDispatch } from '@store';
 import { classroomsSelectors, classroomsThunkActions } from '@store/classroom';
@@ -34,7 +34,10 @@ import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
 import TransparentLayer from '../../assets/TransparentLayer.png';
 
-import { practitionerSelectors } from '@/store/practitioner';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
 import * as styles from './dashboard.styles';
 import ROUTES from '@routes/routes';
 import { statementsThunkActions } from '@/store/statements';
@@ -48,6 +51,8 @@ import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/
 import { ReactComponent as EmojiBlueSmile } from '../../assets/neutral_blue_emoticon.svg';
 import { ReactComponent as EmojiOrangeSmile } from '../../assets/mehFace.svg';
 import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
+import { syncThunkActions } from '@store/sync';
+import { settingActions } from '@/store/settings';
 
 import {
   TabsItemForPrincipal,
@@ -92,7 +97,10 @@ export const Dashboard: React.FC = () => {
   const appName = tenant?.tenant?.applicationName;
   const isOpenAccess = tenant?.isOpenAccess;
   const isWhiteLabel = tenant?.isWhiteLabel;
-  const shouldUserSync = useSelector(settingSelectors.getShouldUserSync);
+  const shouldUserSyncOffline = useSelector(settingSelectors.getShouldUserSync);
+  const shouldUserSyncOnline = useSelector(
+    settingSelectors.getShouldUserSyncOnline
+  );
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const userData = useSelector(userSelectors.getUser);
@@ -109,6 +117,7 @@ export const Dashboard: React.FC = () => {
     notificationsSelectors.getNewNotificationCount
   );
   const { setState } = useAppContext();
+  const { resetAppStore, resetAuth } = useStoreSetup();
   const { refreshClassroom, refreshChildren } = useStoreSetup();
   const isPractitioner = !!practitioner;
   const isPrincipal = practitioner?.isPrincipal;
@@ -153,6 +162,13 @@ export const Dashboard: React.FC = () => {
         appDispatch(
           classroomsThunkActions.getClassroom({ overrideCache: true })
         ).unwrap();
+      }
+      if (userSyncStatus.syncPermissions) {
+        appDispatch(
+          practitionerThunkActions.getPractitionerPermissions({
+            userId: practitioner?.userId!,
+          })
+        );
       }
       if (userSyncStatus.syncPoints) {
         appDispatch(
@@ -839,7 +855,7 @@ export const Dashboard: React.FC = () => {
   };
 
   useEffect(() => {
-    if (shouldUserSync) {
+    if (shouldUserSyncOffline) {
       dialog({
         position: DialogPosition.Bottom,
         blocking: true,
@@ -864,7 +880,36 @@ export const Dashboard: React.FC = () => {
         },
       });
     }
-  }, [shouldUserSync]);
+  }, [shouldUserSyncOffline]);
+
+  useEffect(() => {
+    if (isOnline && shouldUserSyncOnline) {
+      dialog({
+        position: DialogPosition.Middle,
+        blocking: true,
+        render: (onSubmit) => {
+          return (
+            <SyncTimeExceeded
+              onSubmit={async () => {
+                if (practitioner?.isPrincipal === true) {
+                  await appDispatch(syncThunkActions.syncOfflineData({}));
+                } else {
+                  await appDispatch(
+                    syncThunkActions.syncOfflineDataForPractitioner({})
+                  );
+                }
+
+                appDispatch(settingActions.setLastDataSync());
+                await resetAppStore();
+                await resetAuth();
+                history.push('/');
+              }}
+            ></SyncTimeExceeded>
+          );
+        },
+      });
+    }
+  }, [isOnline, shouldUserSyncOnline]);
 
   const goToProfile = () => {
     const profileRoute = userData?.roles?.some(

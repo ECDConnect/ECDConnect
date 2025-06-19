@@ -8015,7 +8015,6 @@ export type PractitionerModel = {
   id: Scalars['UUID'];
   isActive: Scalars['Boolean'];
   isCompletedBusinessWalkThrough?: Maybe<Scalars['Boolean']>;
-  isFundaAppAdmin?: Maybe<Scalars['Boolean']>;
   isLeaving?: Maybe<Scalars['Boolean']>;
   isOnLeave: Scalars['Boolean'];
   isPrincipal?: Maybe<Scalars['Boolean']>;
@@ -9236,6 +9235,7 @@ export type Query = {
   practitionerInviteCount: Scalars['Int'];
   practitionerMetrics?: Maybe<PractitionerMetricReport>;
   practitionerNewSignupMetric: Scalars['Int'];
+  practitionerPermissions?: Maybe<PractitionerModel>;
   practitionerProgressReportSummary?: Maybe<PractitionerProgressReportSummaryModel>;
   practitionerRolePermissions?: Maybe<
     Array<Maybe<PractitionerPermissionModel>>
@@ -11288,6 +11288,10 @@ export type QueryPractitionerInviteCountArgs = {
 export type QueryPractitionerNewSignupMetricArgs = {
   fromDate: Scalars['DateTime'];
   toDate: Scalars['DateTime'];
+};
+
+export type QueryPractitionerPermissionsArgs = {
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryPractitionerProgressReportSummaryArgs = {
@@ -13400,6 +13404,7 @@ export type UserSyncStatus = {
   __typename?: 'UserSyncStatus';
   syncChildren: Scalars['Boolean'];
   syncClassroom: Scalars['Boolean'];
+  syncPermissions: Scalars['Boolean'];
   syncPoints: Scalars['Boolean'];
   syncReportingPeriods: Scalars['Boolean'];
 };
@@ -13548,16 +13553,12 @@ export type VisitDataSortInput = {
 
 export type VisitDataStatus = {
   __typename?: 'VisitDataStatus';
-  backReferralAdminComment?: Maybe<Scalars['String']>;
-  backReferralCompleted: Scalars['Boolean'];
-  backReferralDateCompleted?: Maybe<Scalars['DateTime']>;
   color?: Maybe<Scalars['String']>;
   comment?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
   isCompleted: Scalars['Boolean'];
-  referralDateCompleted?: Maybe<Scalars['DateTime']>;
   section?: Maybe<Scalars['String']>;
   type?: Maybe<Scalars['String']>;
   updatedBy?: Maybe<Scalars['String']>;
@@ -13568,9 +13569,6 @@ export type VisitDataStatus = {
 
 export type VisitDataStatusFilterInput = {
   and?: InputMaybe<Array<VisitDataStatusFilterInput>>;
-  backReferralAdminComment?: InputMaybe<StringOperationFilterInput>;
-  backReferralCompleted?: InputMaybe<BooleanOperationFilterInput>;
-  backReferralDateCompleted?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   color?: InputMaybe<StringOperationFilterInput>;
   comment?: InputMaybe<StringOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
@@ -13578,7 +13576,6 @@ export type VisitDataStatusFilterInput = {
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   isCompleted?: InputMaybe<BooleanOperationFilterInput>;
   or?: InputMaybe<Array<VisitDataStatusFilterInput>>;
-  referralDateCompleted?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   section?: InputMaybe<StringOperationFilterInput>;
   type?: InputMaybe<StringOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
@@ -13588,15 +13585,11 @@ export type VisitDataStatusFilterInput = {
 };
 
 export type VisitDataStatusInput = {
-  BackReferralAdminComment?: InputMaybe<Scalars['String']>;
-  BackReferralCompleted: Scalars['Boolean'];
-  BackReferralDateCompleted?: InputMaybe<Scalars['DateTime']>;
   Color?: InputMaybe<Scalars['String']>;
   Comment?: InputMaybe<Scalars['String']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   IsCompleted: Scalars['Boolean'];
-  ReferralDateCompleted?: InputMaybe<Scalars['DateTime']>;
   Section?: InputMaybe<Scalars['String']>;
   Type?: InputMaybe<Scalars['String']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
@@ -13605,16 +13598,12 @@ export type VisitDataStatusInput = {
 };
 
 export type VisitDataStatusSortInput = {
-  backReferralAdminComment?: InputMaybe<SortEnumType>;
-  backReferralCompleted?: InputMaybe<SortEnumType>;
-  backReferralDateCompleted?: InputMaybe<SortEnumType>;
   color?: InputMaybe<SortEnumType>;
   comment?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
   isCompleted?: InputMaybe<SortEnumType>;
-  referralDateCompleted?: InputMaybe<SortEnumType>;
   section?: InputMaybe<SortEnumType>;
   type?: InputMaybe<SortEnumType>;
   updatedBy?: InputMaybe<SortEnumType>;

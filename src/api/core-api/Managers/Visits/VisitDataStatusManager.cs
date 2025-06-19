@@ -65,7 +65,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 // Only 1 additional visit per planned visit allowed
                 Visit record = _visitRepo.GetAll().Where(x => x.LinkedVisitId == new Guid(_visitId) &&
                                                           x.VisitType.Name == _additionalVisitType.Name //&&
-                                                        //   x.MotherId == (GGSettings.client_mother == userType ? new Guid(clientId) : null
                                                         ).FirstOrDefault();
                 if (record == null)
                 {
@@ -83,7 +82,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     VisitModel newVisit = new VisitModel();
                     newVisit.Attended = false;
                     newVisit.VisitType = _additionalVisitType;
-                    // newVisit.MotherId = (GGSettings.client_mother == userType ? new Guid(clientId) : null);
                     newVisit.Comment = comment;
                     newVisit.LinkedVisitId = new Guid(_visitId);
                     newVisit.PlannedVisitDate = nextVisitDate;
