@@ -167,7 +167,7 @@ export const SetupPrincipal: React.FC = () => {
       page === PractitionerSetupSteps.SETUP_PROGRAMME &&
       tenant?.isWhiteLabel
     ) {
-      setLabel('Step 1 of 4sss');
+      setLabel('Step 1 of 4');
     }
 
     if (page === PractitionerSetupSteps.WELCOME) {
