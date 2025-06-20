@@ -26,6 +26,8 @@ namespace ECDLink.Abstractrions.Enums
         NewTenantSetupInfoReceived = 22,
         WelcomeEmailToNewSuperAdmin = 23,
         FourteenDaysNotLoggedOn = 24,
-        RejectedInvitation = 25
+        RejectedInvitation = 25,
+        TweeWeekNotLoggedOn = 26,
+        CoachRemovePractitioner = 27
     }
 }
