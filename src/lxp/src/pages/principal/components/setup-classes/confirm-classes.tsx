@@ -18,6 +18,7 @@ import {
 import { UNSURE_CLASS } from '@/constants/classroom';
 import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
+import { classroomsSelectors } from '@/store/classroom';
 
 export const ConfirmClasses = ({
   title,
@@ -40,6 +41,9 @@ export const ConfirmClasses = ({
   );
   const currentPractitioner = useSelector(
     practitionerSelectors.getPractitioner
+  );
+  const classroomGroupsFromStore = useSelector(
+    classroomsSelectors.getClassroomGroups
   );
 
   // The principal should not be able to edit, remove, or add an unsure class during profile setup flow
@@ -115,11 +119,15 @@ export const ConfirmClasses = ({
       <div className="pb-8">
         <Typography
           type={'h2'}
-          text={classroomGroups.length > 0 ? '' : 'Add a class'}
+          text={
+            classroomGroups.length > 0 && classroomGroupsFromStore.length > 0
+              ? ''
+              : 'Add a class'
+          }
           color={'textDark'}
           className={'mt-3'}
         />
-        {classroomGroups.length > 0 && (
+        {classroomGroups.length > 0 && classroomGroupsFromStore.length > 0 && (
           <div>
             <StackedList
               className={'w-full bg-white'}

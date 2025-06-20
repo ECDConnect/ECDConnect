@@ -24,17 +24,17 @@ import { ContentConsentTypeEnum } from '@ecdlink/core';
 import { PrincipalCheckPreschoolCode } from './components/principal-check-preschool-code';
 import { InvitePrincipal } from './components/invite-principal';
 import { useTenant } from '@/hooks/useTenant';
-import { practitionerThunkActions } from '@/store/practitioner';
 import { useAppDispatch } from '@/store';
 import { userSelectors } from '@/store/user';
 import { updatePrincipalInvitation } from '@/store/practitioner/practitioner.actions';
-import { PractitionerService } from '@/services/PractitionerService';
 import { notificationActions } from '@/store/notifications';
 import { useNotificationService } from '@/hooks/useNotificationService';
 import { ClassroomDto } from '@/models/classroom/classroom.dto';
 import { MutationAddPractitionerToPrincipalArgs } from '@ecdlink/graphql';
 import { ShareSomeDetails } from '../share-some-detail/share-some-detail';
 import { classroomsThunkActions } from '@/store/classroom';
+import { practitionerThunkActions } from '@/store/practitioner';
+import { PractitionerService } from '@/services/PractitionerService';
 
 export const PreschoolCodeCheck: React.FC<{
   onNext: OnNext;
@@ -302,9 +302,10 @@ export const PreschoolCodeCheck: React.FC<{
           color="quatenary"
           className={'border-quatenary bottom-12 mt-1 mb-2 w-full border'}
           onClick={() =>
-            isOpenAccess
-              ? setInvitePrincipal(true)
-              : handleSkipAddPractitionerToPrincipal()
+            // isOpenAccess
+            //   ? setInvitePrincipal(true)
+            //:
+            handleSkipAddPractitionerToPrincipal()
           } // Navigate to a different page if it is principle
         >
           {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
@@ -327,16 +328,20 @@ export const PreschoolCodeCheck: React.FC<{
           setPrincipalPreschoolCodeTutorial={setPrincipalPreschoolCodeTutorial}
         />
       </Dialog>
-      <Dialog
-        stretch={true}
-        visible={invitePrincipal}
-        position={DialogPosition.Full}
-      >
-        <InvitePrincipal
-          onNext={onNext}
-          setInvitePrincipal={setInvitePrincipal}
-        />
-      </Dialog>
+
+      {tenant?.isWhiteLabel && (
+        <Dialog
+          stretch={true}
+          visible={invitePrincipal}
+          position={DialogPosition.Full}
+        >
+          <InvitePrincipal
+            onNext={onNext}
+            setInvitePrincipal={setInvitePrincipal}
+          />
+        </Dialog>
+      )}
+
       <Dialog
         stretch={true}
         visible={shareSomeDetails}

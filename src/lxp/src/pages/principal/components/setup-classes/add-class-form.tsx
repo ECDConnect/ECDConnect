@@ -89,7 +89,7 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
   }, [classroomGroup]);
 
   useEffect(() => {
-    const _list = practitioners
+    const _list = (practitioners ?? [])
       ?.filter((item) => item?.userId)
       ?.map((p) => {
         if (isOpenAccess) {
