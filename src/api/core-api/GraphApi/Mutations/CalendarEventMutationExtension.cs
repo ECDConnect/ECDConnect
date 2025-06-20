@@ -68,6 +68,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         calendarEventParticipant.ParticipantUserId = inputParticipant.ParticipantUserId;
                         calendarEventParticipant.UserId = uId;
                         repoCalendarEventParticipant.Insert(calendarEventParticipant);
+                        participants.Add(calendarEventParticipant);
                     }
                     calendarEvent.Participants = participants;
                     NotifyUsers(notificationService, userManager, calendarEvent);
