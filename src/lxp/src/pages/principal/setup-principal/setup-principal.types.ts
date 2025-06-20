@@ -9,6 +9,7 @@ export enum PractitionerSetupSteps {
   CONFIRM_CLASSES = 4,
   ADD_SIGNATURE = 5,
   ADD_PHOTO = 6,
+  OA_CONFIRM_CLASSES = 3,
 }
 
 export enum ConfirmPractitionersSteps {
