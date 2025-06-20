@@ -101,32 +101,32 @@ namespace EcdLink.Api.CoreApi.Services.Notifications.Portal
                 // when there are no completed reports linked to this period, then we create a notification for each principal who has linked classes and learners
                 if (allCompletedReports.Count() == 0) 
                 {
-                    var allClassroomGroups = _classroomGroupRepo.GetAll().Where(x => x.IsActive && allClassroomIds.Contains(x.ClassroomId)).Select(x => new {x.Id, x.ClassroomId, x.Learners}).ToList();
+                    // var allClassroomGroups = _classroomGroupRepo.GetAll().Where(x => x.IsActive && allClassroomIds.Contains(x.ClassroomId)).Select(x => new {x.Id, x.ClassroomId, x.Learners}).ToList();
 
-                    if (allClassroomGroups.Count() > 0) 
-                    {
+                    // if (allClassroomGroups.Count() > 0) 
+                    // {
 
-                        var replacements = new List<TagsReplacements>
-                        {
-                            new TagsReplacements()
-                            {
-                                FindValue = "TotalChildren",
-                                ReplacementValue = "0"
-                            }
-                        };
+                    //     var replacements = new List<TagsReplacements>
+                    //     {
+                    //         new TagsReplacements()
+                    //         {
+                    //             FindValue = "TotalChildren",
+                    //             ReplacementValue = "0"
+                    //         }
+                    //     };
 
-                        foreach (var record in allClassroomRecords)
-                        {
-                            // only add the notification when there are linked classes and learners
-                            var linkedClassLearners = allClassroomGroups.Where(x => x.ClassroomId == record.ClassroomId).SelectMany(x => x.Learners).ToList();
-                            if (linkedClassLearners.Any()) 
-                            {
-                                var linkedChildProgressReportPeriodId = allReportingEndingPeriods.Where(x => x.ClassroomId == record.ClassroomId).Select(x => x.Id).FirstOrDefault();
-                                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgressSummaryReport, today.Date, record.User, "", MessageStatusConstants.Blue, replacements, endOfNotification,
-                                                                        relatedEntities: new List<RelatedEntity> { new RelatedEntity(linkedChildProgressReportPeriodId, "ChildProgressReportPeriod") });
-                            }
-                        }
-                    }
+                    //     foreach (var record in allClassroomRecords)
+                    //     {
+                    //         // only add the notification when there are linked classes and learners
+                    //         var linkedClassLearners = allClassroomGroups.Where(x => x.ClassroomId == record.ClassroomId).SelectMany(x => x.Learners).ToList();
+                    //         if (linkedClassLearners.Any()) 
+                    //         {
+                    //             var linkedChildProgressReportPeriodId = allReportingEndingPeriods.Where(x => x.ClassroomId == record.ClassroomId).Select(x => x.Id).FirstOrDefault();
+                    //             await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgressSummaryReport, today.Date, record.User, "", MessageStatusConstants.Blue, replacements, endOfNotification,
+                    //                                                     relatedEntities: new List<RelatedEntity> { new RelatedEntity(linkedChildProgressReportPeriodId, "ChildProgressReportPeriod") });
+                    //         }
+                    //     }
+                    // }
                 } 
                 else 
                 {
