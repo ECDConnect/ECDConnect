@@ -27,7 +27,7 @@ namespace ECDLink.Abstractrions.Enums
         WelcomeEmailToNewSuperAdmin = 23,
         FourteenDaysNotLoggedOn = 24,
         RejectedInvitation = 25,
-        TweeWeekNotLoggedOn = 26,
+        TwoWeekNotLoggedOn = 26,
         CoachRemovePractitioner = 27
     }
 }
