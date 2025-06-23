@@ -101,11 +101,13 @@ export const NewCommunityWelcome = ({
 
     if (removalNotifications && removalNotifications?.length > 0) {
       removalNotifications.map((notification) => {
-        return dispatch(
-          disableBackendNotification({
-            notificationId: notification.message.reference ?? '',
-          })
-        );
+        if (notification?.message?.isFromBackend) {
+          return dispatch(
+            disableBackendNotification({
+              notificationId: notification.message.reference ?? '',
+            })
+          );
+        }
       });
     }
     setIsLoading(false);
