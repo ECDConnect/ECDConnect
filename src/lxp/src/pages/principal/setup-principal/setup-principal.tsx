@@ -49,6 +49,7 @@ import { usePractitionerNotification } from '@/hooks/usePractitionerNotification
 import { ClassroomDto } from '@/models/classroom/classroom.dto';
 import { ClassroomService } from '@/services/ClassroomService';
 import { ClassroomDto as SimpleClassroomDto } from '@/models/classroom/classroom.dto';
+import { PrincipalInviteDto } from '@/models/practitioner/PrincipalInvite.dto';
 
 export const SetupPrincipal: React.FC = () => {
   const history = useHistory();
@@ -78,6 +79,18 @@ export const SetupPrincipal: React.FC = () => {
   const { getPractitionerProgressNotification } = usePractitionerNotification();
   const [practitionerPreschoolData, setPractitionerPreschoolData] =
     useState<MutationAddPractitionerToPrincipalArgs>();
+  const [practitionerPrincipalData, setPractitionerPrincipalData] =
+    useState<PrincipalInviteDto>();
+
+  const handlePreschoolData = (
+    args: MutationAddPractitionerToPrincipalArgs
+  ) => {
+    setPractitionerPreschoolData(args);
+  };
+
+  const handlePrincipalNumberDetails = (args: PrincipalInviteDto) => {
+    setPractitionerPrincipalData(args);
+  };
 
   const [isLoading, setIsLoading] = useState(false);
   const inviTePractitionerUserId = localStorage
@@ -222,6 +235,16 @@ export const SetupPrincipal: React.FC = () => {
             classroomsThunkActions.getClassroom({ overrideCache: true })
           ).unwrap();
         }
+
+        if (practitionerPrincipalData) {
+          await new PractitionerService(
+            userAuth?.auth_token!
+          ).practitionerInvitePrincipal(
+            practitionerPrincipalData.principalPhoneNumber,
+            practitionerPrincipalData.userId
+          );
+        }
+
         await appDispatch(
           practitionerThunkActions.updatePractitionerRegistered({
             practitionerId: user.id,
@@ -451,7 +474,11 @@ export const SetupPrincipal: React.FC = () => {
 
       case PractitionerSetupSteps.SELECT_PRACTITIONER_ROLE:
         return isNotPrincipal ? (
-          <PreschoolCodeCheck onNext={setPage} />
+          <PreschoolCodeCheck
+            onNext={setPage}
+            onPreschoolNext={handlePreschoolData}
+            setPrincipalNumberDetails={handlePrincipalNumberDetails}
+          />
         ) : (
           <SelectPractitionerRole
             onNext={() => setPage(PractitionerSetupSteps.SETUP_PROGRAMME)}
@@ -462,7 +489,11 @@ export const SetupPrincipal: React.FC = () => {
 
       case PractitionerSetupSteps.SETUP_PROGRAMME:
         return isNotPrincipal ? (
-          <PreschoolCodeCheck onNext={setPage} />
+          <PreschoolCodeCheck
+            onNext={setPage}
+            onPreschoolNext={handlePreschoolData}
+            setPrincipalNumberDetails={handlePrincipalNumberDetails}
+          />
         ) : (
           <AddProgrammeForm
             onNext={setPage}
