@@ -47,7 +47,6 @@ import {
 import {
   PractitionerActions,
   deActivatePractitioner,
-  delicensePractitioner,
 } from '@/store/practitioner/practitioner.actions';
 import {
   delicensingQuestion2,
@@ -675,13 +674,6 @@ export const Form = ({
         )
       )?.answer as string[] | [];
 
-    const collectedSSPlaykit = collectedDocsQuestions.some((answer) =>
-      answer.endsWith('SmartStart playkit')
-    );
-    const collectedSSHandbook = collectedDocsQuestions.some((answer) =>
-      answer.endsWith('SmartStart handbook')
-    );
-
     if (!!practitioner?.userId) {
       appDispatch(
         deActivatePractitioner({
@@ -689,15 +681,6 @@ export const Form = ({
           reasonForPractitionerLeavingId:
             ReasonsForPractitionerLeaving.DELICENSED,
           leavingComment,
-        })
-      );
-      appDispatch(
-        delicensePractitioner({
-          userId: practitioner?.userId,
-          delicensedDate: new Date(),
-          delicensedComment: leavingComment,
-          collectedSSHandbook,
-          collectedSSPlaykit,
         })
       );
     }

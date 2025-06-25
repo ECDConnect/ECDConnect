@@ -70,32 +70,34 @@ export const DashboardItems: React.FC<DashboardItemsProps> = ({
         markAsReadNotification({
           notificationId: notification?.message?.reference ?? '',
         })
-      ).then(() => {
-        // when notification is marked as read, we want to remove it
-        appDispatch(notificationActions.removeNotification(notification!));
-      });
+      );
+    }
 
-      if (
-        notification.message?.cta?.includes(
-          notificationTagConfig?.StartJourney?.cta ?? ''
-        ) ||
-        notification.message?.cta?.includes(
-          notificationTagConfig?.GetStartedTrainee?.cta ?? ''
-        )
-      ) {
-        appDispatch(notificationActions.removeNotification(notification!));
+    appDispatch(
+      notificationActions.markNotificationRead({
+        reference: notification?.message?.reference ?? '',
+      })
+    );
+
+    if (
+      notification.message?.cta?.includes(
+        notificationTagConfig?.TrackIncome?.cta ?? ''
+      ) ||
+      notification.message?.cta?.includes(
+        notificationTagConfig?.ProgressSummary?.cta ?? ''
+      ) ||
+      notification.message?.cta?.includes(
+        notificationTagConfig?.SeeClasses?.cta ?? ''
+      )
+    ) {
+      appDispatch(notificationActions.removeNotification(notification!));
+      if (notification.message?.isFromBackend) {
         appDispatch(
           disableBackendNotification({
             notificationId: notification?.message?.reference ?? '',
           })
         );
       }
-    } else {
-      appDispatch(
-        notificationActions.markNotificationRead({
-          reference: notification?.message?.reference ?? '',
-        })
-      );
     }
 
     if (resetNotificationOnClick) {
@@ -113,7 +115,23 @@ export const DashboardItems: React.FC<DashboardItemsProps> = ({
       const action = JSON.parse(
         notification.message.action
       ) as MessageActionConfig;
-      action?.url && history.push(action.url, action.state);
+
+      if (action.state?.activeTabIndex) {
+        return (
+          action?.url &&
+          history.push({
+            pathname: action.url,
+            state: {
+              activeTabIndex: Number(action.state.activeTabIndex),
+            },
+          })
+        );
+      } else {
+        return (
+          action?.url &&
+          history.push({ pathname: action.url, state: action.state })
+        );
+      }
     }
 
     for (const [key, value] of Object.entries(notificationTagConfig)) {

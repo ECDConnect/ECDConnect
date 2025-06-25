@@ -1,12 +1,12 @@
 import { ConfigProvider } from '@ecdlink/core';
 import { defineCustomElements } from '@ionic/pwa-elements/loader';
-import React from 'react';
 import ReactDOM from 'react-dom';
 import ConfigWrapper from './config-wrapper';
 import reportWebVitals from './reportWebVitals';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import './styles.css';
 import './i18n';
+import Loader from './components/loader/loader';
 
 if (
   process.env.NODE_ENV === 'development' &&
@@ -25,10 +25,11 @@ const updateHandler = (registration: ServiceWorkerRegistration) => {
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
 // Learn more about service workers: https://cra.link/PWA
-serviceWorkerRegistration.register({
+const registering = serviceWorkerRegistration.register({
   onUpdate: updateHandler,
 });
 
+console.log('[REACT] render app');
 ReactDOM.render(
   <ConfigProvider>
     <ConfigWrapper />

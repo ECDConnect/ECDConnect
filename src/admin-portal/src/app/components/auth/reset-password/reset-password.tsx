@@ -14,7 +14,6 @@ import logo from '../../../../assets/Logo-ECDConnect.svg';
 import thumbs_up from '../../../../assets/icon_thumbsup.svg';
 import { PasswordInput } from '../../password-input/password-input';
 import { useAuth } from '../../../hooks/useAuth';
-import ROUTES from '../../../routes/app.routes-constants';
 
 export default function ResetPassword() {
   const { theme } = useTheme();
@@ -54,10 +53,6 @@ export default function ResetPassword() {
 
       if (isLinkSent) {
         setIsLoading(false);
-        if (username) {
-          history.push(ROUTES.ROOT_TEAM_LEAD);
-          return;
-        }
         history.push('/login');
       } else {
         setIsLoading(false);

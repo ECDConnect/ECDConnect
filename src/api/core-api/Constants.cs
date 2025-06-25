@@ -5,10 +5,6 @@ namespace EcdLink.Api.CoreApi
 {
     public static class Constants
     {
-        public static class Tenants
-        {
-            public static readonly Guid GrowGreatTenantId = Guid.Parse("39077d0e-e443-4076-aaf2-978dc6805aa0");
-        }
         public static class ApplicationSettings
         {
             public const string DefaultDbConnection = "ConnectionStrings:DefaultConnection";
@@ -19,7 +15,6 @@ namespace EcdLink.Api.CoreApi
         public static class SSSettings
         {
             public const string client_practitioner = "practitioner";
-            public const string client_trainee = "trainee";
             public const string client_coach = "coach";
 
             // Visit types
@@ -34,15 +29,10 @@ namespace EcdLink.Api.CoreApi
             public const string visitType_re_accreditation_1 = "re_accreditation_1";
             public const string visitType_re_accreditation_follow_up = "re_accreditation_follow_up";
 
-            public const string visitType_smart_space_checklist = "smart_space_checklist";
-            public const string visitType_startup_support_agreement = "startup_support_agreement";
             public const string visitType_self_assessment = "self_assessment";
 
-            public const string visitType_trainee_visit = "trainee_visit";
             public const string visitType_practitioner_visit = "practitioner_visit";
             public const string visitType_practitioner_call = "practitioner_call";
-            public const string visitType_coach_franchisee_agreement = "franchisee_agreement";
-
             public const string answer_yes = "true";
             public const string answer_no = "false";
 
@@ -411,7 +401,6 @@ namespace EcdLink.Api.CoreApi
             public const string consent_type_franchisee = "FranchiseeAgreement";
             public const string consent_type_support_agreement = "StartupSupportAgreement";
 
-            // integration values
             public const string own_property = "Do you own the property where you will run your SmartStart programme?";
             public const string number_assistants = "How many assistants will attend every session?";
             public const string capacity = "Capacity";
@@ -426,394 +415,8 @@ namespace EcdLink.Api.CoreApi
             public const string franchisee_agreement_q3 = "I understand that I cannot have more children in the programme than my space can accommodate.";
 
         }
-        public static class GGSettings
-        {
-            public const int recordsPerPage = 40;
-            public const int pageNumber = 0;
-            public const string visitType_all = "all";
-            public const string visitType_overdue = "overdue";
-            public const string visitType_due = "due";
-            public const string visit_follow_up = "Follow up";
-            public const string client_mother = "mother";
-            public const string client_child = "child";
-            public const string client_new = "New client";
-            public const string client_teenager = "Teenager";
-            public const string client_pregnant_mom = "Pregnant mom";
-            public const string client_pregnant_mom_and_child = "Pregnant mom and child";
-            public const string client_pregnant_mom_multiple_children = "Multiple children";
-            public const string maternal_record_name = "maternalcaserecord.png";
-            public const string upload_maternal_case_record = "Upload maternal case record";
-            public const string VisitTypeAdditionalVisit = "additional_visits";
-            public const string visit1 = "visit_1";
-            public const string visit2 = "visit_2";
-            public const string visit3 = "visit_3";
-            public const string visit4 = "visit_4";
-            public const string visit_data_client_dashboard = "ClientDashboard";
-            public const string visit_data_client_summary = "ClientSummary";
-            public const string visit_data_client_referral = "Referral";
-            public const string visit_data_client_progress = "Progress";
-
-            // Mother Questions
-            public const string q_first_antenatal_visit = "Has {client} gone to the clinic for her first antenatal visit?";
-            public const string q_antenatal_visits = "Is {client} up to date with their antenatal clinic visits?";
-            public const string q_measurement = "What is {client} mid-upper arm circumference (MUAC) today?";
-            public const string q_danger_signs = "Tick the danger signs {client} is experiencing:";
-            public const string q_stop_worry = "Felt unable to stop worrying or thinking too much?";
-            public const string q_felt_down = "Felt down, depressed or hopeless?";
-            public const string q_suicide = "Had thoughts and plans to harm yourself or commit suicide?";
-            public const string QuestionAlcoholTolerance = "(T) Tolerance: how many drinks does it take to make you high?";
-            public const string q_A = "(A) Have people annoyed you by criticizing your drinking?";
-            public const string q_C = "(C) Have you ever felt you need to cut down on your drinking?";
-            public const string q_E = "(E) Eye-opener: have you ever had a drink the first thing in the morning to steady your nerves or get rid of a hangover?";
-
-            public const string q_ID_doc = "Does {client} have an ID document?";
-            public const string q_citizen = "Is {client} a South African citizen or permanent resident?";
-
-            // Mother referral, progress, G4 (ClientDashboardAlert), G9 (ClientSummaryDownload)
-            public const string pregnancy_not_booked = "Pregnancy not booked";
-            public const string pregnancy_booked = "Pregnancy booked";
-            public const string refer_to_clinic = "Refer to clinic";
-            public const string refer_to_clinic_urgently = "Refer to clinic urgently";
-            public const string clinic_visits_not_up_to_date = "Clinic visits not up to date";
-            public const string clinic_visits_up_to_date = "Clinic visits up to date";
-            public const string clinic_visits_up_to_date_2 = "You are up to date with your clinic visits!";
-            public const string clinic_referrals = "Clinic referrals";
-            public const string home_affairs_referrals = "Department of Home Affairs referrals";
-            public const string sassa_refferals = "Refer to SASSA";
-            public const string missed_clinic_visit = "You missed a clinic visit - make sure you go as soon as possible!";
-            public const string all_clinic_visit = "You are up to date with your clinic visits!";
-            public const string IndicatorMotherUnderweight = "May be underweight - MUAC less than 22cm";
-            public const string underweight2 = "You might be underweight: eat 3 meals every day";
-            public const string IndicatorUnderweight = "Underweight";
-            public const string IndicatorOverweight = "Overweight";
-            public const string IndicatorObese = "Obese";
-            public const string muac_over_22 = "MUAC over 22cm";
-            public const string healthy_weight = "According to your mid-upper arm circumference, you are a healthy weight";
-            public const string urgent_care = "You need urgent care for some serious health issues";
-            public const string no_danger_signs = "No danger signs for ";
-            public const string danger_signs = "Danger signs";
-            public const string physical_feeling_well = "You are feeling physically well";
-            public const string maternal_distress = " was experiencing maternal distress";
-            public const string maternal_distress2 = "Maternal distress";
-            public const string need_support = "You are struggling and need some support";
-            public const string was_coping = " was coping well";
-            public const string coping_well = "You are coping well!";
-            public const string was_experiencing = " was experiencing: ";
-            public const string t_ace_score = " is at risk of a drinking problem (T-ACE score = ";
-            public const string support_drinking = "You may need support to reduce your drinking";
-            public const string no_alcohol_abuse = " is not at risk for alcohol abuse";
-            public const string no_id_book = " doesn't have an ID book";
-            public const string id_book = " has an ID book";
-            public const string go_to_home_affairs = "Go to Home Affairs to apply for your ID book.  This will allow you to apply for the child social grant as soon as the baby is born.";
-            public const string apply_social_grant = "You have your ID document & can apply for a child social grant once the baby is born!";
-            public const string growth_referral = " is not growing well: ";
-            public const string not_growing = " is not growing well";
-            public const string growing_well = " is growing well";
-            public const string health_issues = "You have some health issues";
-            public const string IndicatorSeverelyUnderweight = "Severely underweight";
-            public const string IndicatorSeverelyStunted = "Severely stunted";
-            public const string IndicatorStunted = "Stunted";
-            public const string IndicatorSevereAcuteMalnutrition = "Severe acute malnutrition";
-            public const string IndicatorModerateAcuteMalnutrition = "Moderate acute malnutrition";
-            public const string IndicatorGrowthFaltering = "Growth faltering: weight has not increased ";
-            public const string great_job_breastfeeding = "You're doing a great job breastfeeding!";
-            public const string great_job_formula_feeding = "You're doing a great job formula feeding!";
-            public const string try_to_make_sure = "Try to make sure you give ";
-            public const string only_milk = " only breast milk or only formula milk";
-            public const string poor_dietary_diversity = "Poor dietary diversity: {x} out of {y} food groups";
-            public const string give_client_food = "You are giving {client} foods from {x} out of {y} groups. Try to give {client} a variety of foods!";
-            public const string good_dietary_diversity = "Good dietary diversity: {x} out of {y} food groups!";
-            public const string give_client_food_most = "You are giving {client} foods from most of the groups!";
-            public const string dev_is_struggling = "{client} is struggling with ";
-            public const string dev_might_struggling = "{client} might be having issues with: ";
-            public const string ImmunisationsNotUpToDate = "Immunisations not up to date";
-            public const string VitaminANotUpToDate = "Vitamin A not up to date";
-            public const string DewormingNotUpToDate = "Deworming not up to date";
-            public const string not_up_to_date = "Immunisations, deworming and Vitamin A not up to date";
-            public const string missed_immunisations = "{client} missed an immunisation, deworming and Vitamin A supplement";
-            public const string all_up_to_date = "All immunisations, Vitamin A and deworming are up to date";
-            public const string all_up_to_date_client = "All of {client}'s immunisations are up to date";
-            public const string physical_well = " is doing well physically";
-            public const string no_birth_certificate = " does not have a birth certificate";
-            public const string has_birth_certificate = "Has applied for a birth certificate";
-            public const string has_csg = "Has applied for a child support grant";
-            public const string has_csg2 = "You applied for the child support grant - this will support {client}'s healthy growth!";
-            public const string has_csg3 = "Has not applied for a child support grant";
-
-            // Infant Questions
-            public const string q_postnatal_check_up = "Has {client} been to the clinic for a postnatal check-up?";
-            public const string q_postnatal_6_weeks = "Did your client attend her 6-week postnatal clinic visit?";
-            public const string QuestionWeight = "Weight";
-            public const string QuestionLength = "Length";
-            public const string QuestionMUAC = "What is {client} MUAC today?";
-            public const string q_eat_drink = "What did {client} eat or drink in the last 24 hours?";
-            public const string q_eat_drink_nutrition = "What did you give {client} to eat or drink in the last 24 hours?";
-            public const string q_breastfeeding_club = "Would you like to join a breastfeeding club?";
-            public const string q_mixed_foods = "Which of these foods have you given {client}?  You can choose more than one.";
-            public const string q_check_can_do = "Check what {client} can do:";
-
-            public const string q_hearing1 = "Gets a fright when they hear a loud sound";
-            public const string q_hearing2 = "Moves eyes or head in direction of sounds";
-            public const string q_hearing3 = "Responds by making sounds when talked to";
-            public const string q_hearing4 = "Babbles (ma-ma. da-daa)";
-            public const string q_hearing5 = "Turns when called";
-            public const string q_hearing6 = "Uses simple gestures (lifts arms to be picked up)";
-            public const string q_hearing7 = "Has one meaningful word (dada. mama) although it may not be clear";
-            public const string q_hearing8 = "Understands names of at least 2 common objects (cup)";
-            public const string q_hearing9 = "Uses at least 3 words";
-
-            public const string q_seeing1 = "Follows faces or close objects with their eyes";
-            public const string q_seeing2 = "Follows faces or close objects with his/her eyes";
-            public const string q_seeing3 = "Eyes move well together (no squinting). recognises familiar faces and looks at own hands";
-            public const string q_seeing4 = "Eyes focus on far objects?";
-            public const string q_seeing5 = "Looks for toys/objects that disappear";
-            public const string q_seeing6 = "Looks closely at toys/objects and pictures";
-            public const string q_seeing7 = "Looks at small shapes clearly at a distance";
-
-            public const string q_brain1 = "Smiles at people";
-            public const string q_brain2 = "Laughs out loud";
-            public const string q_brain3 = "Uses different cries or sounds to show hunger. tiredness or discomfort?";
-            public const string q_brain4 = "Throws. bangs toys/objects";
-            public const string q_brain5 = "React when caregiver leaves and calms when they return";
-            public const string q_brain6 = "Imitates gestures (clapping hands)";
-            public const string q_brain7 = "Follows simple commands";
-
-            public const string q_moving1 = "Holds up their head upright when held against shoulder";
-            public const string q_moving2 = "Grabs toys in each hand";
-            public const string q_moving3 = "Lifts their head when lying on their tummy";
-            public const string q_moving4 = "Moves objects from hand to hand";
-            public const string q_moving5 = "Sits without support";
-            public const string q_moving6 = "Walks alone";
-            public const string q_moving7 = "Uses fingers to feed themselves";
-
-            public const string QuestionImmunisation = "Did the baby have the {age} immunisation?";
-            public const string QuestionVitaminA = "Is Vitamin A up to date?";
-            public const string QuestionDeworming = "Is deworming up to date?";
-            public const string q_birth_certificate = "Does {client} have a birth certificate?";
-            public const string QuestionReceivingCSG = "Is {client} receiving the CSG?";
-            public const string q_csg_applied = "Has {client} applied for a CSG?";
-            public const string QuestionCSGQualification = "Does {client} qualify for CSG?";
-            public const string q_csg_not_applied = "Why has {client} not applied for a CSG?";
-
-            public const string cfm_name = "Care for mom";
-            public const string cfb_name = "Care for baby";
-            public const string p4_name = "Pillar 4: Healthcare";
-            public const string IndicatorLowBirthWeight = "Low birth weight";
-            public const string IndicatorLowBirthLength = "Low birth length";
-
-            // Infant referral, progress, G4 (ClientDashboardAlert), G9 (ClientSummaryDownload)
-            public const string infant_missed_clinic_visit = "Missed clinic visit";
-            public const string infant_missed_clinic_visit_g9 = "You missed a clinic visit - make sure you go as soon as possible!";
-
-            public const string infant_clinic_visit = "Up to date with clinic visits";
-            public const string infant_clinic_visit_g9 = "You are up to date with clinic visits";
-
-            public const string cfm_ds_1 = "Not feeling physically well";
-            public const string cfm_ds_2 = "Abdominal pain";
-            public const string cfm_ds_3 = "Heavy bleeding";
-            public const string cfm_ds_4 = "Feeling too hot or too cold";
-            public const string cfm_ds_5 = "Offensive or bad-smelling vaginal fluid";
-            public const string cfm_ds_6 = "Unable to manage the baby";
-            public const string cfm_ds_7 = "High stress";
-            public const string cfm_ds_8 = "Problems with breastfeeding";
-
-            public const string cfb_ds_1 = "Blue skin colour";
-            public const string cfb_ds_2 = "Baby is not alert";
-            public const string cfb_ds_3 = "Fast breathing or difficulty breathing";
-            public const string cfb_ds_4 = "Poor feeding or repeated vomiting";
-            public const string cfb_ds_5 = "Low (below 35 degrees C) or high temperature";
-            public const string cfb_ds_6 = "Yellow skin or eyes";
-            public const string cfb_ds_7 = "Severe eye infection";
-            public const string cfb_ds_8 = "Severe cord infection";
-
-            public const string p4_ds_1 = "Not moving or does not wake up";
-            public const string p4_ds_2 = "Shaking (convulsions)";
-            public const string p4_ds_3 = "Diarrhoea, sunken eyes and a sunken fontanelle";
-            public const string p4_ds_4 = "Coughing and breathing fast (more than 50 breaths per minute)";
-            public const string p4_ds_5 = "Signs of malnutrition (swollen ankles and feet)";
-            public const string p4_ds_6 = "Vomiting everything";
-            public const string p4_ds_7 = "Fever and not feeding";
-            public const string p4_ds_8 = "Unable to breastfeed";
-
-            public const string p1_1 = "Breast milk";
-            public const string p1_2 = "Starch";
-            public const string p1_3 = "Nuts, beans, peas, lentils";
-            public const string p1_4 = "Dairy";
-            public const string p1_5 = "Meat";
-            public const string p1_6 = "Eggs";
-            public const string p1_7 = "Vitamin A rich fruit & vegetables";
-            public const string p1_8 = "Other fruits & vegetables";
-
-            // Answers
-            public const string AnswerYes = "true";
-            public const string AnswerNo = "false";
-            public const string none_above = "None of the above";
-            public const string normal_risk = "normal";
-            public const string more_than_2 = "More than 2";
-            public const string male = "Male";
-            public const string female = "Female";
-            public const string growth_section = "Growth";
-            public const string breast_milk_only = "Breast milk only";
-            public const string formula_milk_only = "Formula milk only";
-            public const string mixed_feeding = "Mixed feeding";
-            public const string NormalComment = "Normal";
-
-            // Growth names
-            public const string weightForAgeBoys = "weight-for-age-boys";
-            public const string weightForAgeGirls = "weight-for-age-girls";
-            public const string weightForLengthGirls = "weight-for-length-girls";
-            public const string weightForLengthBoys = "weight-for-length-boys";
-            public const string weightForHeightGirls = "weight-for-height-girls";
-            public const string weightForHeightBoys = "weight-for-height-boys";
-
-            public const string lengthHeightForAgeGirls = "length-height-for-age-girls";
-            public const string lengthHeightForAgeBoys = "length-height-for-age-boys";
-
-            // Visit names
-            public const string careForMom = "Care for mom";
-            public const string CareForBaby = "Care for baby";
-
-            public const string pillar1_report = "Nutrition";
-            public const string pillar1_db = "Pillar 1: Nutrition";
-
-            public const string pillar2_report = "Love, talk and play";
-            public const string pillar2_db = "Pillar 2: Love, talk and play";
-
-            public const string pillar3_report = "Protection";
-            public const string pillar3_db = "Pillar 3: Protection";
-            public const string pillar3_section = "Immunisations, supplements & deworming";
-
-            public const string pillar4_report = "Healthcare";
-            public const string pillar4_db = "Pillar 4: Healthcare";
-
-            public const string pillar5_report = "Extra care";
-            public const string pillar5_db = "Pillar 5: Extra care";
-
-            public const string antenatalCare = "Antenatal care";
-            public const string nutrition = "Nutrition";
-            public const string pregnancyCare = "Pregnancy care";
-            public const string dangerSigns = "Danger signs";
-
-            public const string doingWell = "You are doing well in these areas:";
-            public const string needSupport = "You need support in these areas:";
-            public const string needUrgentSupport = "You need urgent support with these areas:";
-
-            public const string idDocSection = "ID document";
-
-            // Infant Dates
-            public const string day_3 = "day_3";
-            public const string day_7 = "day_7";
-            public const string week_2 = "week_2";
-            public const string week_4 = "week_4";
-            public const string VisitTypeWeekSevenToEight = "week_7_to_8";
-            public const string VisitTypeThreeMonths = "3_months";
-            public const string VisitTypeFourMonths = "4_months";
-            public const string VisitTypeFiveMonths = "5_months";
-            public const string VisitTypeSixMonths = "6_months";
-            public const string VisitTypeNineMonths = "9_months";
-            public const string VisitTypeTwelveMonths = "12_months";
-            public const string VisitTypeFifteenMonths = "15_months";
-            public const string VisitTypeEighteenMonths = "18_months";
-            public const string VisitTypeTwentyOneMonths = "21_months";
-            public const string VisitTypeTwentyFourMonths = "24_months";
-            public const string VisitTypeYearFive = "5_years";
-
-            //record events
-            public const string caregiverIsPregnant = "caregiver_is_pregnant";
-            public const string newChildInFamily = "new_child_in_family";
-            public const string caregiverHasChanged = "caregiver_has_changed";
-
-            //sections
-            public const string MaternalDistressScreening = "Maternal distress screening";
-            public const string MotherNutritionMUACMeasurement = "Mother growth monitoring (Mid-upper arm circumference)";
-            public const string alcohol_use = "Alcohol use";
-            public const string child_docs = "Child documentation";
-            public const string child_road_to_health = "Road to Health Book";
-        }
-        public static class SSIntegrationSettings
-        {
-            //Franchisee Queries
-            public const string SSPractitioner = "Practitioner";
-            public const string SLPractitioner = "Franchisee";
-            public const string SLPractitionerQueryAll = SLPractitioner + QueryAll;
-            public const string SLPractitionerQueryByGuid = SLPractitioner + QueryByGuid;
-            public const string SLPractitionerUpdate = SLPractitioner + UpdateSingular;
-            //Coach Queries
-            public const string SSCoach = "Coach";
-            public const string SLCoach = "Coach";
-            //Franchisor Queries
-            public const string SSFranchisor = "Franchisor";
-            public const string SLFranchisor = "Franchisor";
-            //Child Queries
-            public const string SSChild = "Child";
-            public const string SLChild = "Child";
-            //Caregiver Queries
-            public const string SSCaregiver = "Caregiver";
-            public const string SLCaregiver = "Caregiver";
-            //Trainee Queries
-            public const string SSTrainee = "Trainee";
-            public const string SLTrainee = "Trainee";
-            //Address Queries
-            public const string SSAddress = "SiteAddress";
-            public const string SLAddress = "Address";
-            //Record Queries
-            public const string SSRecordChange = "";
-            public const string SLRecordChange = "RecordChange";
-            //Column Queries
-            public const string SSColumnChange = "";
-            public const string SLColumnChange = "ColumnChange";
-            //Document Queries
-            public const string SSDocument = "Document";
-            public const string SLDocument = "Document";
-            //DocumentType Queries
-            public const string SSDocumentType = "DocumentType";
-            public const string SLDocumentType = "DocumentType";
-            //IncomeStatement Queries
-            public const string SSIncomeStatementIncome = "StatementsIncome";
-            public const string SLIncomeStatementIncome = "IncomeStatement";
-            public const string SSIncomeStatementExpense = "StatementsExpense";
-            public const string SLIncomeStatementExpense = "IncomeStatement";
-            //ChildAttendanceRegister Queries
-            public const string SSChildAttendanceRegister = "Attendance";
-            public const string SLChildAttendanceRegister = "ChildAttendanceRegister";
-            // Child Progress
-            public const string SSChildProgressReport = "ChildProgressReport";
-            //Note Queries
-            public const string SSNote = "Note";
-            public const string SLNote = "Note";
-            //Club data Queries
-            public const string SSClub = "Club";
-            public const string SLClub = "Club";
-            public const string SSClubMeeting = "ClubMeeting";
-            public const string SLClubMeeting = "ClubMeeting";
-            public const string SSClubMeetingRegister = "ClubMeetingRegister";
-            public const string SLClubMeetingRegister = "ClubMeetingRegister";
-            //PQA
-            public const string SSPQA = "PQA";
-            public const string SLPQA = "PQA";
-            //Re-accreditation
-            public const string SSAnnualAccreditation = "AnnualAccreditation";
-            public const string SLAnnualAccreditation = "AnnualAccreditation";
-            //SmartSpaceVisits
-            public const string SSSmartSpaceVisit = "SmartSpaceVisit";
-            public const string SLSmartSpaceVisit = "SmartSpaceVisit";
-
-            public const string SLLeagues = "League";
-
-            //Additional API Switches
-            public const string QueryAll = "/Query";
-            public const string Singular = "/{{Guid}}";
-            public const string QueryByGuid = "/Query/{{Guid}}";
-            public const string ColumnsMetadata = "/Columns";
-            public const string UpdateMultiple = "/Multiple";
-            public const string UpdateSingular = "/{{Guid}}";
-            public const string CreateMultiple = "/Multiple";
-            public const string CreateSingular = "/";
-            public const string DocumentSendLength = "20";
-            public const string IntegrationSystem = "Smartlink";
-            public const string Upsert = "/Upsert";
-
-        }
+        
+    
         public static class PointsEngineSettings
         {
             public const string client_registration = "Client Registration";
@@ -863,11 +466,6 @@ namespace EcdLink.Api.CoreApi
             public const int monthly_points_max_principal_or_admin = 150;
         }
 
-        public static class PointsCategoryConstants
-        {
-            public static readonly Guid BreastFeedingClubCategoryId = new Guid("5f8fd37a-d2f5-44bc-9670-0513a47b88e5");
-        }
-
         public static class PointsActivityConstants
         {
             public static readonly Guid ChildAttendanceRegisterSavedId = new Guid("af31301f-2791-438f-8341-d605af9b4616");
@@ -913,45 +511,10 @@ namespace EcdLink.Api.CoreApi
 
         public static class PractitionerPermissions
         {
-            public static readonly Guid TakeAttendanceId = new Guid("a929377d-79af-47f0-a65c-b5a81466d033");
-            public static readonly Guid CreateProgressReportsId = new Guid("5307eafe-a165-419e-a09d-9d9988c28676");
-            public static readonly Guid ManageChildrenId = new Guid("357350a6-cb12-49d9-8045-a69c520e1da5");
-            public static readonly Guid PlanClassroomActivitiesId = new Guid("c39c1be5-0f4b-43ad-aa9f-f1da524efe84");
-        }
-
-        public static class ReferralTypes
-        {
-            public const string EarlyIdentificationOfPregnancy = "Early identification of pregnancy";
-            public const string ChildSupportGrant = "Child support grant";
-            public const string DevelopmentalDelays = "Developmental delays";
-            public const string MaternalDistress = "Maternal distress";
-            public const string SeverelyUnderweight = "Severely underweight";
-            public const string VitaminANotUpToDate = "Vitamin A not up to date";
-            public const string ClinicVisitsNotUpToDate = "Clinic visits not up to date";
-            public const string DangerSignsChildsMother = "Danger signs - child's mother";
-            public const string DangerSignsPregnantMom = "Danger signs - pregnant mom";
-            public const string MaternalMalnutrition = "Maternal malnutrition";
-            public const string SubstanceAbuse = "Substance abuse";
-            public const string DangerSignsChild = "Danger signs - child";
-            public const string CaregiverIDBook = "Caregiver ID book";
-            public const string SevereAcuteMalnutrition = "Severe acute malnutrition";
-            public const string SeverelyStunted = "Severely stunted";
-            public const string LowBirthWeight = "Low birth weight";
-            public const string GrowthFaltering = "Growth faltering";
-            public const string Underweight = "Underweight";
-            public const string Overweight = "Overweight";
-            public const string Obese = "Obese";
-            public const string LowBirthLength = "Low birth length";
-            public const string Stunted = "Stunted";
-            public const string ModerateAcuteMalnutrition = "Moderate acute malnutrition";
-            public const string DewormingNotUpToDate = "Deworming not up to date";
-            public const string ImmunisationNotUpToDate = "Immunisation not up to date";
-            public const string ChildBirthCertificate = "Child birth certificate";
-        }
-
-        public static class GrowGreatPointsAmounts
-        {
-            public const int MontlyPointsMaxForHealthCareWorker = 785;
+            public static readonly string TakeAttendance = "take_attendance";
+            public static readonly string CreateProgressReports = "create_progress_reports";
+            public static readonly string ManageChildren = "manage_children";
+            public static readonly string PlanClassroomActivities = "plan_classroom_activities";
         }
         
         public static class StatusColours
@@ -961,91 +524,6 @@ namespace EcdLink.Api.CoreApi
             public static readonly string Red = MetricsColorEnum.Error.ToString();
             public static readonly string None = MetricsColorEnum.None.ToString();
         }
-
-        public static class CoachingCircleSettings
-        {
-            public const string no_circle_meetings_held = "No coaching circles held yet ";
-            public const string circle_meetings_held = "Last coaching circle held: ";
-
-            public const string meeting_type_coach_circle = "coaching_circle";
-        }
-        public static class ClubSettings
-        {
-            public const string meeting_type_club_meeting = "club_meeting";
-            public const string meeting_type_play_day = "play_day";
-            public const string meeting_type_story_day = "story_day";
-            public const string meeting_type_end_of_year_celebration = "end_of_year_celebration";
-            public const string meeting_type_open_day = "open_day";
-            public const string meeting_type_caregiver_meeting = "caregiver_meeting";
-            public const string meeting_type_other = "other";
-
-            public const string calendar_club_monthly_meeting = "Club Monthly Meeting";
-
-            public const string no_club_leader = "No club leader";
-            public const string contact_club_leader = "Contact club leader";
-            public const string contact_club_leader_name = "Contact ";
-            public const string choose_club_leader = "Choose a new club leader";
-            public const string assign_club_leader = "Assign club leader";
-            public const string not_accepted_club_leader = "Club leader has not accepted agreement";
-            public const string not_enough_club_members = "Not enough club members";
-            public const string contact_club_members = "Contact club members";
-            public const string add_members = "Add members";
-            public const string too_many_club_members = "Too many club members";
-            public const string create_club = "Create an additional club";
-            public const string club_leader_months = " has been a club leader for 6 or more months";
-            public const string missing_register = "Missing club meeting register";
-            public const string missing_register_for_month = " club meeting register";
-            public const string club_attendance = "% club attendance in ";
-            public const string new_club = "New club";
-            public const string name_purple = "Purple";
-            public const string club_purple = "Purple club";
-            public const string club_not_in_league = "Club not in league";
-            public const string name_new_stars = "New Stars";
-            public const string name_rising_stars = "Rising Stars";
-            public const string top_of_the_league = "Top of the league";
-            public const string points_earned = " points earned in ";
-            public const string coach_meeting_attended = ", Attend club meeting";
-            public const string coach_attend_first_meeting = ", Attend first club meeting";
-            public const string first_meeting_attended = ", Attended first club meeting";
-            public const int purple_club_max_points = 2200;
-            public const int non_purple_club_max_points = 2000;
-
-            public const string leave_no_one_behind = "Leave no one behind";
-            public const string host_family_days = "Host family days";
-            public const string child_progress_reports = "Complete child progress reports";
-            public const string capture_child_attendance = "Capture child attendance";
-            public const string meet_regularly = "Meet regularly";
-            public const string be_creative = "Be creative";
-            public const string sub_caregiver_meeting = "Caregiver meeting";
-            public const string sub_progress_tracking = "Progress tracking";
-
-            public const string document_success = "Image completed";
-            public const string document_verified = "Image verified";
-            public const string document_in_complete = "Image incomplete";
-            public const string document_waiting_verified = "Image uploaded, waiting for verification";
-            public const string document_images_add = "Images added";
-
-            public const string not_completed = "Not completed";
-
-            public static readonly int[] allowed_months = { 4,5,6,7,8,9,10,11 };
-
-            public const int warning_start_800 = 1;
-            public const int warning_end_800 = 599;
-
-            public const int success_start_800 = 600;
-            public const int success_end_800 = 800;
-
-            public const string workflow_upload_type = "Document";
-            public const string workflow_status_upload_type = "Verified";
-            public const string activity_upload_type = "ClubActivityUpload";
-
-            public const string upload_type_be_creative = "BeCreative";
-            public const string upload_type_family_days = "FamilyDays";
-
-            public const string first_reporting_period = "\"reportingPeriod\":\"First\"";
-
-        }
-
         public static class PortalSettings
         {
             public const string visit_high_activity = "High activity (at least 20 visits in past month)";
@@ -1074,11 +552,6 @@ namespace EcdLink.Api.CoreApi
             public const string Orange = "alertMain";
             public const string Red = "errorMain";
             public const string Blue = "infoMain";
-        }
-
-        public static class MeetingTypes
-        {
-            public static readonly Guid TeamLeadMonthlyMeetingId = new Guid("2497b684-2d62-46ea-af56-34b1746891be");
         }
 
         public static class ResourceLikes

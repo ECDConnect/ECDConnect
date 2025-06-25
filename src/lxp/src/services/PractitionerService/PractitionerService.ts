@@ -8,7 +8,6 @@ import {
 } from '@ecdlink/core';
 import {
   ClassroomGroupReassignmentsInput,
-  LicenseModelInput,
   MutationAddPractitionerToPrincipalArgs,
   MutationUpdatePractitionerContactInfoArgs,
   NotificationDisplay,
@@ -198,20 +197,6 @@ class PractitionerService {
                 }
                 eventId
               }
-              clubMeetings {
-                totalMeetings
-                totalPresent
-                percAttended
-                attendanceText
-                attendanceColor
-                meetingRegister {
-                  attended
-                   clubMeeting {
-                    meetingDate
-                    meetingNotes
-                  }
-                }
-              }
             }
           }
         }
@@ -266,30 +251,22 @@ class PractitionerService {
             }
             programmeType
             isPrincipal
-            isTrainee
             isRegistered
-            isTrainee
             principalHierarchy
             coachHierarchy
             attendanceRegisterLink
-            maxChildren
             consentForPhoto
             parentFees
             languageUsedInGroups
             signingSignature
             startDate
-            monthSinceFranchisee
             shareInfo
             dateLinked
             dateAccepted
             dateToBeRemoved
             isLeaving
             progress
-            attendedChildProgress
             usePhotoInReport
-            setupTraineeInitiated
-            isOnStipend
-            stipendType
             isCompletedBusinessWalkThrough
           }
         }
@@ -343,32 +320,24 @@ class PractitionerService {
             }
             programmeType
             isPrincipal
-            isTrainee
             isRegistered
-            isTrainee
             principalHierarchy
             coachHierarchy
             coachName
             coachProfilePic
             attendanceRegisterLink
-            maxChildren
             consentForPhoto
             parentFees
             languageUsedInGroups
             signingSignature
             startDate
-            monthSinceFranchisee
             shareInfo
             dateLinked
             dateAccepted
             dateToBeRemoved
             isLeaving
             progress
-            attendedChildProgress
             usePhotoInReport
-            setupTraineeInitiated
-            isOnStipend
-            stipendType
             isCompletedBusinessWalkThrough
             clickedCommunityTab
             communitySectionViewDate
@@ -411,6 +380,39 @@ class PractitionerService {
     return response.data.data.practitionerByUserId;
   }
 
+  async getPractitionerPermissions(userId: string): Promise<PractitionerDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        query GetPractitionerPermissions($userId: String) {
+          practitionerPermissions(userId: $userId) {
+            id
+            permissions {
+              id
+              userId
+              permissionId
+              isActive
+              permissionName
+              permissionNormalizedName
+              permissionGrouping
+            }
+          }
+        }
+      `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get Practitioner by user id Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.practitionerPermissions;
+  }
+
   async getAllPractitioners(): Promise<PractitionerDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
@@ -420,8 +422,6 @@ class PractitionerService {
             id
             userId
             isPrincipal
-            isFundaAppAdmin
-            isTrainee
             programmeType
             principalHierarchy
             isActive
@@ -486,11 +486,8 @@ class PractitionerService {
             dateToBeRemoved
             isLeaving
             progress
-            attendedChildProgress
             usePhotoInReport
-            isOnStipend
             isCompletedBusinessWalkThrough
-            clubId
             absentees {
               absentDate
               absentDateEnd
@@ -537,8 +534,6 @@ class PractitionerService {
                 dateToBeRemoved
                 isLeaving
                 progress
-                isTrainee
-                attendedChildProgress
                 usePhotoInReport
                 isCompletedBusinessWalkThrough
               }
@@ -1314,32 +1309,6 @@ class PractitionerService {
     }
 
     return response.data.data.deActivatePractitioner;
-  }
-
-  async delicensePractitioner(input: LicenseModelInput): Promise<boolean> {
-    const apiInstance = api(Config.graphQlApi, this._accessToken);
-
-    const response = await apiInstance.post<{
-      data: { delicensePractitioner: boolean };
-      errors?: {};
-    }>(``, {
-      query: `
-      mutation delicensePractitioner($input: LicenseModelInput) {          
-        delicensePractitioner(input: $input) {          
-      }        
-      }
-      `,
-      variables: {
-        input,
-      },
-    });
-    if (response.status !== 200 || response.data.errors) {
-      throw new Error(
-        'Delicense Practitioner Failed - Server connection error'
-      );
-    }
-
-    return response.data.data.delicensePractitioner;
   }
 
   async getRemovalForPractitioner(

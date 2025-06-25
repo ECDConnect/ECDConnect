@@ -120,6 +120,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
               JSON.stringify(userLocalxpiration)
             );
             await appDispatch(settingActions.setApplicationVersion(version));
+            await appDispatch(settingActions.setLoginDate());
             await appDispatch(authActions.setUserExpired());
             setIsLoading(false);
           } else {

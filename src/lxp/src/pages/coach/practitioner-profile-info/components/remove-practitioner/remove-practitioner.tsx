@@ -99,7 +99,7 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
     { label: string; value: string }[]
   >(() => {
     return (
-      ((practitioner?.isPrincipal || practitioner?.isFundaAppAdmin
+      ((practitioner?.isPrincipal
         ? practitioners?.filter(
             // If they are the principal, get any practitioners where their principal is this practitioner
             (x) => x.principalHierarchy === practitionerUserId
@@ -195,7 +195,7 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
     if (!practitionersForClass || !practitionersForClass.length) {
       setRemovePractionerFormValues('requireClassReassignments', false);
     } else {
-      if (practitioner?.isPrincipal || practitioner?.isFundaAppAdmin) {
+      if (practitioner?.isPrincipal) {
         setRemovePractionerFormValues('requirePrincipal', true);
       }
     }
@@ -289,7 +289,7 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
               error={errors.reasonDetail}
             />
           )}
-          {(practitioner?.isFundaAppAdmin || practitioner?.isPrincipal) &&
+          {practitioner?.isPrincipal &&
             !!practitionerClassroom &&
             !!practitionersForClass.length && (
               <div>
@@ -297,9 +297,9 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
                   placeholder={'Select practitioner'}
                   list={practitionersForClass}
                   fillType="clear"
-                  label={`Which practitioner will take over as ${
-                    practitioner?.isFundaAppAdmin ? 'FAA' : 'principal'
-                  } at ${practitionerClassroom.name}`}
+                  label={`Which practitioner will take over as ${'principal'} at ${
+                    practitionerClassroom.name
+                  }`}
                   fullWidth
                   onChange={(item: any) => {
                     setRemovePractionerFormValues('newPrincipalId', item);

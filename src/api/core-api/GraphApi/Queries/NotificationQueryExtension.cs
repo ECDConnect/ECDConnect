@@ -3,7 +3,6 @@ using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Clinics;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Managers;
@@ -44,9 +43,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var dbRepo = repoFactory.CreateGenericRepository<MessageLog>(userContext: uId);
             var templateRepo = repoFactory.CreateGenericRepository<MessageTemplate>(userContext: uId);
             // these items to exclude are not specifically applicable to user
-            var templatesToExclude = new List<string>() {
-                "finish-progress-report"
-            };
+           // var templatesToExclude = new List<string>() {
+           //     "finish-progress-report"
+           // };
             List<MessageLog> logs = new List<MessageLog>();
 
             ApplicationUser user = userManager.FindByIdAsync(userId).Result;
@@ -86,11 +85,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 //TO BE COMPLETED - RESERVED FOR TAG REPLACEMENT IN ACTION
 
             }
-            // Do not include the Message End date here - FE needs to make the decision to not show, because user might have been offline for a long time and the emssages are still relevant
+           
             logs.AddRange(dbRepo.GetAll().Where(x => x.To == userId 
                                                 && x.IsActive == true 
-                                                && !x.ReadDate.HasValue 
-                                                && !templatesToExclude.Contains(x.MessageTemplateType))
+                                                && (x.MessageEndDate >= DateTime.Now.Date || x.MessageEndDate == null))
+                                               // && !templatesToExclude.Contains(x.MessageTemplateType))
                                         .ToList());
             //only send in the relevcant prototcol types
             if (inApp)
@@ -180,28 +179,15 @@ IGenericRepositoryFactory repoFactory, string templateId)
 
             if (roleIds.Count != 0)
             {
-                var isTrainee = roleIds.FindIndex(x => x == "trainees") != -1;
                 var isPrincipal = roleIds.FindIndex(x => x == "practitioners_principals") != -1;
                 var isNonPractitioner = roleIds.FindIndex(x => x == "practitioners_non_principals") != -1;
                 var isCoach = roleIds.FindIndex(x => x == "coaches") != -1;
-                var isCHW = roleIds.FindIndex(x => x == "chw") != -1;
-                var isTeamLead = roleIds.FindIndex(x => x == "team_lead") != -1;
 
-                // SS roles
-                if (isTrainee)
-                {
-                    messageRecords.AddRange(
-                        (from message in context.MessageLogs.Where(x => x.SentByUserId.ToString() == userId && x.MessageProtocol == "push" && x.MessageTemplateType == "generic-message" && x.IsActive == true)
-                            join practitioner in context.Practitioners.Where(x => x.IsTrainee == true && x.IsActive == true) on message.To equals practitioner.UserId.ToString()
-                            select new MessageLog() { Id = message.Id, Message = message.Message, Subject = message.Subject, ToGroups = message.ToGroups, MessageDate = message.MessageDate, Status = message.Status })
-                            .OrderByDescending(x => x.MessageDate).Distinct().ToList()
-                        );
-                }
                 if (isPrincipal)
                 {
                     messageRecords.AddRange(
                         (from message in context.MessageLogs.Where(x => x.SentByUserId.ToString() == userId && x.MessageProtocol == "push" && x.MessageTemplateType == "generic-message" && x.IsActive == true)
-                            join practitioner in context.Practitioners.Where(x => (x.IsPrincipal == true || x.IsFundaAppAdmin == true) && x.IsActive == true) on message.To equals practitioner.UserId.ToString()
+                            join practitioner in context.Practitioners.Where(x => (x.IsPrincipal == true) && x.IsActive == true) on message.To equals practitioner.UserId.ToString()
                          select new MessageLog() { Id = message.Id, Message = message.Message, Subject = message.Subject, ToGroups = message.ToGroups, MessageDate = message.MessageDate, Status = message.Status })
                             .OrderByDescending(x => x.MessageDate).Distinct().ToList()
                         );
@@ -210,7 +196,7 @@ IGenericRepositoryFactory repoFactory, string templateId)
                 {
                     messageRecords.AddRange(
                         (from message in context.MessageLogs.Where(x => x.SentByUserId.ToString() == userId && x.MessageProtocol == "push" && x.MessageTemplateType == "generic-message" && x.IsActive == true)
-                            join practitioner in context.Practitioners.Where(x => (x.IsPrincipal == false && x.IsFundaAppAdmin == false) && x.IsActive == true) on message.To equals practitioner.UserId.ToString()
+                            join practitioner in context.Practitioners.Where(x => (x.IsPrincipal == false) && x.IsActive == true) on message.To equals practitioner.UserId.ToString()
                          select new MessageLog() { Id = message.Id, Message = message.Message, Subject = message.Subject, ToGroups = message.ToGroups, MessageDate = message.MessageDate, Status = message.Status })
                             .OrderByDescending(x => x.MessageDate).Distinct().ToList()
                         );
@@ -220,26 +206,6 @@ IGenericRepositoryFactory repoFactory, string templateId)
                     messageRecords.AddRange(
                         (from message in context.MessageLogs.Where(x => x.SentByUserId.ToString() == userId && x.MessageProtocol == "push" && x.MessageTemplateType == "generic-message" && x.IsActive == true)
                             join coach in context.Coaches.Where(x => x.IsActive == true) on message.To equals coach.UserId.ToString()
-                         select new MessageLog() { Id = message.Id, Message = message.Message, Subject = message.Subject, ToGroups = message.ToGroups, MessageDate = message.MessageDate, Status = message.Status })
-                            .OrderByDescending(x => x.MessageDate).Distinct().ToList()
-                        );
-                }
-
-                // GG roles
-                if (isCHW)
-                {
-                    messageRecords.AddRange(
-                        (from message in context.MessageLogs.Where(x => x.SentByUserId.ToString() == userId && x.MessageProtocol == "push" && x.MessageTemplateType == "generic-message" && x.IsActive == true)
-                            join chw in context.HealthCareWorkers.Where(x => x.IsActive == true) on message.To equals chw.UserId.ToString()
-                            select new MessageLog() { Id = message.Id, Message = message.Message, Subject = message.Subject, ToGroups = message.ToGroups, MessageDate = message.MessageDate, Status = message.Status })
-                            .OrderByDescending(x => x.MessageDate).Distinct().ToList()
-                        );
-                }
-                if (isTeamLead)
-                {
-                    messageRecords.AddRange(
-                        (from message in context.MessageLogs.Where(x => x.SentByUserId.ToString() == userId && x.MessageProtocol == "push" && x.MessageTemplateType == "generic-message" && x.IsActive == true)
-                         join teamLead in context.TeamLead.Where(x => x.IsActive == true) on message.To equals teamLead.UserId.ToString()
                          select new MessageLog() { Id = message.Id, Message = message.Message, Subject = message.Subject, ToGroups = message.ToGroups, MessageDate = message.MessageDate, Status = message.Status })
                             .OrderByDescending(x => x.MessageDate).Distinct().ToList()
                         );
@@ -292,86 +258,6 @@ IGenericRepositoryFactory repoFactory, string templateId)
             return messages;
         }
 
-        public List<Notification> GetAllMessageLogsForTeamLead(
-            [Service] IDbContextFactory<AuthenticationDbContext> dbContextFactory,
-            [Service] IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory,
-            Guid userId)
-        {
-            var tenantId = TenantExecutionContext.Tenant.Id;
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var clinicTLRepo = repoFactory.CreateGenericRepository<ClinicTeamLead>(userContext: uId);
-            var messageRepo = repoFactory.CreateGenericRepository<MessageLog>(userContext: uId);
-            AuthenticationDbContext context = dbContextFactory.CreateDbContext();
-            
-
-            List<MessageLog> logs = new List<MessageLog>();
-
-            List<Notification> messageRecords = new List<Notification>();
-            var linkedClinicIds = clinicTLRepo.GetAll().Where(x => x.TeamLead.UserId == userId && x.IsActive).Select(x => x.ClinicId).ToList();
-
-            // Get all health care workers linked to same clinics as team lead
-            messageRecords.AddRange(
-                (from message in context.MessageLogs.Where(x => x.MessageProtocol == "portal" && x.IsActive == true && x.ReadDate == null)
-                 join messageTemplate in context.MessageTemplates.Where(x => x.IsActive) on message.MessageTemplateType equals messageTemplate.TemplateType
-                 join chw in context.HealthCareWorkers.Where(x => x.IsActive == true && x.ClinicId.HasValue && linkedClinicIds.Contains((Guid)x.ClinicId)) on message.To equals chw.UserId.ToString()
-                    select new Notification() { 
-                        Id = message.Id,
-                        From = message.From,
-                        FromUserId = message.FromUserId,
-                        Message = message.Message,
-                        MessageProtocol = message.MessageProtocol,
-                        To = message.To,
-                        SentByUserId = message.SentByUserId,
-                        Subject = message.Subject,
-                        MessageTemplateType = message.MessageTemplateType,
-                        MessageTemplate = messageTemplate,
-                        CTA = message.CTA,
-                        CTAText = message.CTAText,
-                        MessageDate = message.MessageDate,
-                        MessageEndDate = message.MessageEndDate,
-                        Status = message.Status,
-                        ToGroups = message.ToGroups,
-                        ReadDate = message.ReadDate,
-                        Action = message.Action,
-                        GroupingId = message.GroupingId,
-                        RelatedEntities = message.MessageLogRelatedTos.Select(x => new RelatedEntity(x.RelatedEntityId, x.EntityType)).ToList()
-                    })
-                    .OrderByDescending(x => x.MessageDate).ToList()
-                );
-
-            // Retrieve messages linked to team lead
-            messageRecords.AddRange(
-                messageRepo.GetAll().Where(x => x.To == userId.ToString() && x.MessageProtocol == "portal" && x.ReadDate == null && x.IsActive == true)
-                .Select(message => new Notification()
-                 {
-                     Id = message.Id,
-                     From = message.From,
-                     FromUserId = message.FromUserId,
-                     Message = message.Message,
-                     MessageProtocol = message.MessageProtocol,
-                     To = message.To,
-                     SentByUserId = message.SentByUserId,
-                     Subject = message.Subject,
-                     MessageTemplateType = message.MessageTemplateType,
-                     MessageTemplate = message.MessageTemplate,
-                     CTA = message.CTA,
-                     CTAText = message.CTAText,
-                     MessageDate = message.MessageDate,
-                     MessageEndDate = message.MessageEndDate,
-                     Status = message.Status,
-                     ToGroups = message.ToGroups,
-                     ReadDate = message.ReadDate,
-                     Action = message.Action,
-                     GroupingId = message.GroupingId,
-                     RelatedEntities = message.MessageLogRelatedTos.Select(x => new RelatedEntity(x.RelatedEntityId, x.EntityType)).ToList()
-                 })
-                 .OrderByDescending(x => x.MessageDate).ToList()
-                );
-
-            return messageRecords;
-        }
-
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public int GetUserCountForMessageCriteria([Service] IDbContextFactory<AuthenticationDbContext> dbContextFactory,
                                                   [Service] IHttpContextAccessor contextAccessor,
@@ -386,8 +272,6 @@ IGenericRepositoryFactory repoFactory, string templateId)
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
-            var teamLeadRepo = repoFactory.CreateGenericRepository<TeamLead>(userContext: uId);
-            var hcwRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
 
             List<Guid> userIds = new List<Guid>();
             List<Practitioner> practitioners = new List<Practitioner>();
@@ -399,50 +283,33 @@ IGenericRepositoryFactory repoFactory, string templateId)
                 return count;
             }
 
-            var isTrainee = roleIds.FindIndex(x => x == "trainees") != -1;
             var isPrincipal = roleIds.FindIndex(x => x == "practitioners_principals") != -1;
             var isNonPractitioner = roleIds.FindIndex(x => x == "practitioners_non_principals") != -1;
             var isCoach = roleIds.FindIndex(x => x == "coaches") != -1;
-            var isCHW = roleIds.FindIndex(x => x == "chw") != -1;
-            var isTeamLead = roleIds.FindIndex(x => x == "team_lead") != -1;
 
-            if (isTrainee || isPrincipal || isNonPractitioner)
+            if (isPrincipal || isNonPractitioner)
             {
                 practitioners = practitionerRepo.GetAll().Where(x => x.IsActive == true).ToList();
             }
 
-            // SS roles
-            if (isTrainee)
-            {
-                userIds.AddRange(practitioners.Where(x => x.IsTrainee == true).Select(x => x.UserId.Value).Distinct().ToList());
-            }
             if (isPrincipal)
             {
-                userIds.AddRange(practitioners.Where(x => (x.IsPrincipal == true || x.IsFundaAppAdmin == true)).Select(x => x.UserId.Value).Distinct().ToList());
+                userIds.AddRange(practitioners.Where(x => x.IsPrincipal == true).Select(x => x.UserId.Value).Distinct().ToList());
             }
             if (isNonPractitioner)
             {
-                userIds.AddRange(practitioners.Where(x => (x.IsPrincipal == false && x.IsFundaAppAdmin == false)).Select(x => x.UserId.Value).Distinct().ToList());
+                userIds.AddRange(practitioners.Where(x => x.IsPrincipal == true).Select(x => x.UserId.Value).Distinct().ToList());
             }
             if (isCoach)
             {
                 coaches = coachRepo.GetAll().Where(x => x.IsActive == true).ToList();
                 userIds.AddRange(coaches.Select(x => x.UserId.Value).Distinct().ToList());
             }
-            // GG roles
-            if (isCHW)
-            {
-                userIds.AddRange(hcwRepo.GetAll().Where(x => x.IsActive == true).Select(x => x.UserId.Value).Distinct().ToList());
-            }
-            if (isTeamLead)
-            {
-                userIds.AddRange(teamLeadRepo.GetAll().Where(x => x.IsActive == true).Select(x => x.UserId.Value).Distinct().ToList());
-            }
 
             // Currently we don't have districts in the system, but this will change after the development in December 23
             if (provinceId != "" || wardName != "")
             {
-                if (isTrainee || isPrincipal || isNonPractitioner)
+                if (isPrincipal || isNonPractitioner)
                 {
                     if (provinceId != "" && wardName == "")
                     {

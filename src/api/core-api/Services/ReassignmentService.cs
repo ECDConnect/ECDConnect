@@ -12,7 +12,6 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
-using ECDLink.SmartStart.Services.Interfaces;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -383,16 +382,6 @@ namespace ECDLink.Core.Services
                                     {
                                         _personnelService.SwitchPrincipal(reassignment.ReassignedBackToUserId.ToString(), reassignment.UserId.ToString());
                                     }
-                                    //FAA to principal
-                                    if (reassignment.AssignedRole == "FAA" && reassignment.ReassignedRoleBack == Roles.PRACTITIONER)
-                                    {
-                                        _personnelService.MarkFAA(practitioner.UserId.ToString(), true);
-                                    }
-                                    if (reassignment.AssignedRole == Roles.PRACTITIONER && reassignment.ReassignedRoleBack == "FAA")
-                                    {
-                                        _personnelService.MarkFAA(practitioner.UserId.ToString(), true);
-                                    }
-                                    
                                     reassignment.AssignedRoleDate = DateTime.Now;
                                 }
                             }
@@ -422,15 +411,6 @@ namespace ECDLink.Core.Services
                                     {
                                         _personnelService.SwitchPrincipal(reassignment.UserId.ToString(),reassignment.ReassignedBackToUserId.ToString());
 
-                                    }
-                                    //FAA to principal
-                                    if (reassignment.ReassignedRoleBack == "FAA" && reassignment.AssignedRole == Roles.PRACTITIONER)
-                                    {
-                                        _personnelService.MarkFAA(practitioner.UserId.ToString(), true);
-                                    }
-                                    if (reassignment.ReassignedRoleBack == Roles.PRACTITIONER && reassignment.AssignedRole == "FAA")
-                                    {
-                                        _personnelService.MarkFAA(practitioner.UserId.ToString(), false);
                                     }
                                     reassignment.AssignedRoleDate = DateTime.Now;
                                 }

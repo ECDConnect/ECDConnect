@@ -8,7 +8,6 @@ import {
   MutationUpdatePractitionerProgressArgs,
   MutationUpdatePractitionerUsePhotoInReportArgs,
   MutationUpdatePractitionerShareInfoArgs,
-  LicenseModelInput,
   NotificationDisplay,
   PrincipalInvitationStatus,
   UserPermissionModel,
@@ -19,7 +18,6 @@ export const PractitionerActions = {
   UPDATE_PRACTITIONER_REGISTERED: 'updatePractitionerRegistered',
   UPDATE_PRACTITIONER_PROGRESS: 'updatePractitionerProgress',
   DEACTIVATE_PRACTITIONER: 'deActivatePractitioner',
-  DELICENSE_PRACTITIONER: 'delicensePractitioner',
   UPDATE_PRACTITIONER_USEPHOTOINPROGRESS:
     'updatePractitionerUsePhotoInProgress',
   GET_ALL_STATEMENTS_BALANCE_SHEET_FOR_PRACTITIONER:
@@ -137,6 +135,44 @@ export const getPractitionerByUserId = createAsyncThunk<
         practitioner = await new PractitionerService(
           userAuth?.auth_token
         ).getPractitionerByUserId(userId);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!practitioner) {
+        return rejectWithValue('Error getting practitioner by user id');
+      }
+
+      return practitioner;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getPractitionerPermissions = createAsyncThunk<
+  PractitionerDto,
+  { userId: string },
+  ThunkApiType<RootState>
+>(
+  'getPractitionerPermissions',
+  // eslint-disable-next-line no-empty-pattern
+  async ({ userId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let practitioner: PractitionerDto | undefined;
+
+      if (userId === null || userId?.trim() === '') {
+        return rejectWithValue('no user id supplied');
+      }
+
+      if (userAuth?.auth_token) {
+        practitioner = await new PractitionerService(
+          userAuth?.auth_token
+        ).getPractitionerPermissions(userId);
       } else {
         return rejectWithValue('no access token, profile check required');
       }
@@ -378,29 +414,6 @@ export const deActivatePractitioner = createAsyncThunk<
           leavingComment,
           reasonDetails
         );
-      }
-    } catch (err) {
-      return rejectWithValue(err);
-    }
-  }
-);
-
-export const delicensePractitioner = createAsyncThunk<
-  boolean | undefined,
-  LicenseModelInput,
-  ThunkApiType<RootState>
->(
-  PractitionerActions.DELICENSE_PRACTITIONER,
-  async (input, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-    } = getState();
-
-    try {
-      if (userAuth?.auth_token) {
-        return await new PractitionerService(
-          userAuth.auth_token
-        ).delicensePractitioner(input);
       }
     } catch (err) {
       return rejectWithValue(err);

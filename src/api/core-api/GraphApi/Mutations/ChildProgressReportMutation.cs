@@ -1,4 +1,4 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models.ChildProgress;
 using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
@@ -10,7 +10,7 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using System;
 
-namespace ECDLink.SmartStart.GraphQL.Mutations
+namespace ECDLink.GraphQL.Mutations
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class ChildProgressReportMutation

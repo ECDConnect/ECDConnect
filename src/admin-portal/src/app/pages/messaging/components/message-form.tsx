@@ -6,7 +6,7 @@ import { ProvinceDto, TenantDto, WardDto } from '@ecdlink/core';
 import { DatePicker, FormInput, Typography } from '@ecdlink/ui';
 import FormField from '../../../components/form-field/form-field';
 import FormSelectorField from '../../../components/form-selector-field/form-selector-field';
-import { MessageRoleDto, ggRoles, ssRoles } from './message';
+import { MessageRoleDto, ssRoles } from './message';
 import { useTenant } from '../../../hooks/useTenant';
 
 export interface MessageFormProps {
@@ -36,7 +36,7 @@ const MessageForm: React.FC<MessageFormProps> = ({
 }) => {
   const [provinceData, setProvinceData] = useState<ProvinceDto[]>([]);
   const [roleData, setRoleData] = useState<MessageRoleDto[]>([]);
-  const [selectedRoles, setSelectedRoles] = useState<MessageRoleDto[]>([]);
+  const [selectedRoles, setSelectedRoles] = useState<MessageRoleDto[]>(ssRoles);
   const [messageDate, setMessageDate] = useState<Date>(editMessageDate);
   const [messageText, setMessageText] = useState('');
   const [messageTitle, setMessageTitle] = useState('');
@@ -62,12 +62,6 @@ const MessageForm: React.FC<MessageFormProps> = ({
       copyItems.unshift(newProvince);
       copyItems.push(unknown);
       setProvinceData(copyItems);
-    }
-
-    if (tenant.isCHWConnect) {
-      setRoleData(ggRoles);
-    } else {
-      setRoleData(ssRoles);
     }
 
     if (editRoles) {

@@ -15,6 +15,7 @@ import { BasePractitionerDto } from '@/models/classroom/practitioner.dto';
 import { isBefore } from 'date-fns';
 import { ProgressReportPeriod } from '@/models/progress/progress-report-period';
 import { CompleteReportPeriods } from '@/models/progress/completed-report-periods';
+import { UpdateUserPermissionInputModelInput } from '@ecdlink/graphql';
 
 export const getClassroom = (
   state: RootState
@@ -176,6 +177,13 @@ export const getLearnersForClassroomGroups = (
                 (!learner.stoppedAttendance ||
                   new Date(learner.stoppedAttendance) >= startDate)
             )
+            .filter((learner) =>
+              children.find(
+                (child) =>
+                  child.userId === learner.childUserId &&
+                  child.caregiverId != null
+              )
+            )
             .map((learner) => ({
               ...learner,
               child: children.find(
@@ -324,3 +332,8 @@ export const getAllProgressReportPeriods = () =>
       return sortedReportingPeriods;
     }
   );
+
+export const getSetupClassroomPractitioners = (
+  state: RootState
+): UpdateUserPermissionInputModelInput[] =>
+  state.classroomData.classroomPractitioners;

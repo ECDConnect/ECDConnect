@@ -1,16 +1,9 @@
 import {
   ApplicationUserInput,
-  ClubMeetingModelInput,
   CoachInput,
   SiteAddressInput,
 } from '@ecdlink/graphql';
-import {
-  ClubDto,
-  CoachCirclesDto,
-  CoachDto,
-  CoachingCircleTopicDto,
-  SiteAddressDto,
-} from '@ecdlink/core';
+import { CoachDto, SiteAddressDto } from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 
 import { SiteAddressService } from '@/services/SiteAddressService';
@@ -18,7 +11,6 @@ import { CoachService } from '@/services/CoachService';
 import { RootState, ThunkApiType } from '../types';
 
 export const CoachActions = {
-  UPDATE_COACH_CLUB_CLICKED: 'updateCoachClubClicked',
   GET_COACH_BY_COACH_ID: 'getCoachByCoachId',
 };
 
@@ -201,158 +193,6 @@ export const updateCoach = createAsyncThunk<
   }
 );
 
-export const getAllCoachingCircleClubsForCoach = createAsyncThunk<
-  CoachCirclesDto,
-  { coachId: string; startDate: Date; endDate: Date },
-  ThunkApiType<RootState>
->(
-  'getAllCoachingCircleClubsForCoach',
-  async ({ coachId, startDate, endDate }, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-    } = getState();
-
-    try {
-      let coachCircle: CoachCirclesDto | undefined;
-
-      if (userAuth?.auth_token) {
-        coachCircle = await new CoachService(
-          userAuth?.auth_token
-        ).GetAllCoachingCircleClubsForCoachserId(coachId, startDate, endDate);
-      } else {
-        return rejectWithValue('no access token, profile check required');
-      }
-      if (!coachCircle) {
-        return rejectWithValue(
-          'getAllCoachingCircleClubsForCoach: Error getting coachCircles'
-        );
-      }
-      return coachCircle;
-    } catch (err) {
-      return rejectWithValue(err);
-    }
-  }
-);
-
-export const getAllClubsForCoach = createAsyncThunk<
-  ClubDto[],
-  { userId: string },
-  ThunkApiType<RootState>
->('getAllClubsForCoach', async ({ userId }, { getState, rejectWithValue }) => {
-  const {
-    auth: { userAuth },
-    coach: { coachClubs: coachClubsCache },
-  } = getState();
-
-  if (!coachClubsCache) {
-    try {
-      let coachClubs: ClubDto[] | undefined;
-
-      if (userAuth?.auth_token) {
-        coachClubs = await new CoachService(
-          userAuth?.auth_token
-        ).GetAllClubsForCoach(userId);
-      } else {
-        return rejectWithValue('no access token, profile check required');
-      }
-      if (!coachClubs) {
-        return rejectWithValue('getAllClubsForCoach: Error getting coachClubs');
-      }
-      return coachClubs;
-    } catch (err) {
-      return rejectWithValue(err);
-    }
-  } else {
-    return coachClubsCache;
-  }
-});
-
-export const addCoachCircleMeeting = createAsyncThunk<
-  boolean[],
-  { input: ClubMeetingModelInput },
-  ThunkApiType<RootState>
->('addCoachCircleMeeting', async ({ input }, { getState, rejectWithValue }) => {
-  const {
-    auth: { userAuth },
-    coach: { coach },
-  } = getState();
-
-  try {
-    let clubMeetingInput: boolean | undefined;
-
-    if (userAuth?.auth_token && coach) {
-      clubMeetingInput = await new CoachService(
-        userAuth?.auth_token
-      ).addCoachCircleMeeting(input);
-    } else {
-      return rejectWithValue('no access token, profile check required');
-    }
-
-    if (!clubMeetingInput) {
-      return rejectWithValue('Error adding meeting circle');
-    }
-
-    return [clubMeetingInput];
-  } catch (err) {
-    if (err instanceof Error) {
-      return rejectWithValue(err.message);
-    }
-    return rejectWithValue(err);
-  }
-});
-
-export const getCoachingCircleTopics = createAsyncThunk<
-  CoachingCircleTopicDto[],
-  { locale: string },
-  ThunkApiType<RootState>
->(
-  'getCoachingCircleTopics',
-  async ({ locale }, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-    } = getState();
-
-    try {
-      if (userAuth?.auth_token) {
-        const content = await new CoachService(
-          userAuth?.auth_token ?? ''
-        ).getCoachingCircleTopics(locale);
-
-        return content;
-      } else {
-        return rejectWithValue('no access token, profile check required');
-      }
-    } catch (err) {
-      return rejectWithValue(err);
-    }
-  }
-);
-
-export const updateCoachClubClicked = createAsyncThunk<
-  boolean,
-  { userId: string },
-  ThunkApiType<RootState>
->(
-  CoachActions.UPDATE_COACH_CLUB_CLICKED,
-  async ({ userId }, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-    } = getState();
-
-    try {
-      if (userAuth?.auth_token) {
-        return await new CoachService(
-          userAuth?.auth_token
-        ).updateCoachClubClicked(userId);
-      } else {
-        return rejectWithValue('no access token, profile check required');
-      }
-    } catch (err) {
-      return rejectWithValue(err);
-    }
-  }
-);
-
 const mapCoach = (coach: Partial<CoachDto>): CoachInput => ({
   SecondaryAreaOfOperation: coach.secondaryAreaOfOperation,
   SigningSignature: coach.signingSignature || undefined,
@@ -361,10 +201,8 @@ const mapCoach = (coach: Partial<CoachDto>): CoachInput => ({
   StartDate: coach.startDate || undefined,
   AreaOfOperation: coach.areaOfOperation,
   IsActive: coach.isActive || false,
-  FranchisorId: coach.franchisorId,
   UserId: coach.userId,
   Id: coach.id,
-  ClickedClubTab: coach.clickedClubTab,
 });
 
 const mapSiteAddress = (

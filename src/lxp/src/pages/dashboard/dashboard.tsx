@@ -1,10 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import {
-  LocalStorageKeys,
-  RoleSystemNameEnum,
-  useDialog,
-  useTheme,
-} from '@ecdlink/core';
+import { RoleSystemNameEnum, useDialog, useTheme } from '@ecdlink/core';
+import { UserSyncStatus } from '@ecdlink/graphql';
 import {
   ActionModal,
   Avatar,
@@ -19,12 +15,12 @@ import {
   ScoreCard,
   NoPointsScoreCard,
 } from '@ecdlink/ui';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useDocuments } from '@hooks/useDocuments';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { OfflineSyncModal } from '../../modals';
+import { OfflineSyncModal, SyncTimeExceeded } from '../../modals';
 import OfflineSyncTimeExceeded from '../../modals/offline-sync/offline-sync-time-exceeded';
 import { useAppDispatch } from '@store';
 import { classroomsSelectors, classroomsThunkActions } from '@store/classroom';
@@ -33,12 +29,15 @@ import {
   notificationsSelectors,
 } from '@store/notifications';
 import { settingSelectors } from '@store/settings';
-import { userSelectors } from '@store/user';
+import { userSelectors, userThunkActions } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
 import TransparentLayer from '../../assets/TransparentLayer.png';
 
-import { practitionerSelectors } from '@/store/practitioner';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
 import * as styles from './dashboard.styles';
 import ROUTES from '@routes/routes';
 import { statementsThunkActions } from '@/store/statements';
@@ -48,14 +47,12 @@ import { setStorageItem } from '@/utils/common/local-storage.utils';
 import { convertImageToBase64 } from '@/utils/common/convert-image-to-64.utils';
 import { pointsSelectors, pointsThunkActions } from '@/store/points';
 import { pointsConstants } from '@/constants/points';
-import { traineeThunkActions } from '@/store/trainee';
 import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg';
 import { ReactComponent as EmojiBlueSmile } from '../../assets/neutral_blue_emoticon.svg';
 import { ReactComponent as EmojiOrangeSmile } from '../../assets/mehFace.svg';
 import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
-import { CommunityRouteState } from '../community-old/community.types';
-import { coachSelectors } from '@/store/coach';
-import { childrenThunkActions } from '@/store/children';
+import { syncThunkActions } from '@store/sync';
+import { settingActions } from '@/store/settings';
 
 import {
   TabsItemForPrincipal,
@@ -72,19 +69,14 @@ import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import DashboardWrapper from './dashboard-wrapper/dashboard-wrapper';
 import { useAppContext } from '@/walkthrougContext';
 import { useTenantModules } from '@/hooks/useTenantModules';
-import {
-  CalendarIcon,
-  ClipboardCheckIcon,
-  FireIcon,
-} from '@heroicons/react/solid';
-import { ReactComponent as Kindgarden } from '@/assets//icon/kindergarten1.svg';
-import { ReactComponent as Crown } from '@/assets//icon/crown.svg';
 import { PermissionsNames } from '../principal/components/add-practitioner/add-practitioner.types';
+import { usePoints } from '@/hooks/usePoints';
+import { usePointsToDoEmoji } from '@/hooks/usePointsToDoEmoji';
+import { useStoreSetup } from '@hooks/useStoreSetup';
 
 const { version } = require('../../../package.json');
 
 export interface DashboardRouteState {
-  isFromTraineeFlow?: boolean;
   isFromLogin?: boolean;
   isFromCompleteProfile?: boolean;
 }
@@ -100,18 +92,19 @@ export const Dashboard: React.FC = () => {
     calendarEnabled,
     classroomActivitiesEnabled,
     progressEnabled,
-    trainingEnabled,
   } = useTenantModules();
 
   const appName = tenant?.tenant?.applicationName;
   const isOpenAccess = tenant?.isOpenAccess;
   const isWhiteLabel = tenant?.isWhiteLabel;
-  const shouldUserSync = useSelector(settingSelectors.getShouldUserSync);
+  const shouldUserSyncOffline = useSelector(settingSelectors.getShouldUserSync);
+  const shouldUserSyncOnline = useSelector(
+    settingSelectors.getShouldUserSyncOnline
+  );
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const userData = useSelector(userSelectors.getUser);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const coach = useSelector(coachSelectors.getCoach);
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
   const history = useHistory();
@@ -124,15 +117,14 @@ export const Dashboard: React.FC = () => {
     notificationsSelectors.getNewNotificationCount
   );
   const { setState } = useAppContext();
-
+  const { resetAppStore, resetAuth } = useStoreSetup();
+  const { refreshClassroom, refreshChildren } = useStoreSetup();
   const isPractitioner = !!practitioner;
   const isPrincipal = practitioner?.isPrincipal;
-  const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
   const isRegistered = practitioner?.isRegistered;
   const isProgress = practitioner?.progress;
   const hasConsent = practitioner?.shareInfo;
 
-  const isFirstTimeCommunitySection = !coach?.clickedClubTab;
   const missingProgramme =
     (practitioner?.isRegistered === null || practitioner?.isRegistered) &&
     !practitioner?.principalHierarchy &&
@@ -147,35 +139,73 @@ export const Dashboard: React.FC = () => {
 
   const pointsSummaryData = useSelector(pointsSelectors.getPointsSummary);
   const [pointsScoreProps, setPointsScoreProps] = useState<ScoreCardProps>();
-  const pointsToDo = useSelector(pointsSelectors.getPointsToDo);
   const totalYearPoints = useSelector(pointsSelectors.getTotalYearPoints);
+
   const planActivitiesPermission = practitioner?.permissions?.find(
     (item) =>
       item?.permissionName === PermissionsNames.plan_classroom_actitivies
   );
 
-  const getPointsToDoItems = useCallback(async () => {
-    appDispatch(
-      pointsThunkActions.pointsTodoItems({ userId: practitioner?.userId! })
-    );
+  const getUserSyncStatus = useCallback(async () => {
+    const userSyncStatus: UserSyncStatus = await appDispatch(
+      userThunkActions.getUserSyncStatus({ userId: practitioner?.userId! })
+    ).unwrap();
 
-    appDispatch(
-      pointsThunkActions.yearPointsView({ userId: practitioner?.userId! })
-    );
+    if (userSyncStatus) {
+      if (userSyncStatus.syncChildren) {
+        await refreshChildren();
+      }
+      if (userSyncStatus.syncClassroom) {
+        await refreshClassroom();
+      }
+      if (userSyncStatus.syncReportingPeriods) {
+        appDispatch(
+          classroomsThunkActions.getClassroom({ overrideCache: true })
+        ).unwrap();
+      }
+      if (userSyncStatus.syncPermissions) {
+        appDispatch(
+          practitionerThunkActions.getPractitionerPermissions({
+            userId: practitioner?.userId!,
+          })
+        );
+      }
+      if (userSyncStatus.syncPoints) {
+        appDispatch(
+          pointsThunkActions.pointsTodoItems({ userId: practitioner?.userId! })
+        );
 
-    appDispatch(
-      pointsThunkActions.sharedData({
-        userId: practitioner?.userId!,
-        isMonthly: true,
-      })
-    );
+        appDispatch(
+          pointsThunkActions.yearPointsView({ userId: practitioner?.userId! })
+        );
+
+        appDispatch(
+          pointsThunkActions.sharedData({
+            userId: practitioner?.userId!,
+            isMonthly: true,
+          })
+        );
+        const currentDate = new Date();
+        const oneYearAgo = new Date();
+
+        oneYearAgo.setMonth(currentDate.getMonth() - 12);
+        (async () =>
+          await appDispatch(
+            pointsThunkActions.getPointsSummaryForUser({
+              userId: practitioner?.userId!,
+              startDate: oneYearAgo,
+              endDate: currentDate,
+            })
+          ).unwrap())();
+      }
+    }
   }, [appDispatch, practitioner?.userId]);
 
   useEffect(() => {
-    if (isOnline && practitioner) {
-      getPointsToDoItems();
+    if (isOnline && !isCoach && practitioner) {
+      getUserSyncStatus();
     }
-  }, []);
+  }, [practitioner?.userId]);
 
   const offlineCommunity = () => {
     if (!isOnline) {
@@ -210,14 +240,6 @@ export const Dashboard: React.FC = () => {
     }
   }, []);
 
-  // Sync the coach data -> TODO make a better sync method
-  useEffect(() => {
-    if (isCoach) {
-      appDispatch(traineeThunkActions.syncCoachSmartSpaceVisitData());
-      appDispatch(traineeThunkActions.syncTraineeFranchisorAgreementData());
-    }
-  }, []);
-
   useEffect(() => {
     //This will prevent points card showing up for coaches
     if (isCoach) {
@@ -238,10 +260,9 @@ export const Dashboard: React.FC = () => {
       return total;
     }, 0);
 
-    let pointsMax =
-      isPrincipal || isFundaAppAdmin
-        ? pointsConstants.principalOrAdminMonthlyMax
-        : pointsConstants.practitionerMonthlyMax;
+    let pointsMax = isPrincipal
+      ? pointsConstants.principalOrAdminMonthlyMax
+      : pointsConstants.practitionerMonthlyMax;
 
     const percentageScore = (pointsTotal / pointsMax) * 100;
 
@@ -395,41 +416,6 @@ export const Dashboard: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
-  /**
-   * Data loading for coaches:
-   * 1. Practitioners
-   * 2. Children of Practitioners
-   */
-  useEffect(() => {
-    if (isOnline && !!userData) {
-      if (
-        userData.roles?.some(
-          (role) =>
-            role.systemName === RoleSystemNameEnum.Practitioner ||
-            role.systemName === RoleSystemNameEnum.Principal
-        )
-      ) {
-        const currentDate = new Date();
-        const oneYearAgo = new Date();
-        oneYearAgo.setMonth(currentDate.getMonth() - 12);
-        (async () =>
-          await appDispatch(
-            pointsThunkActions.getPointsSummaryForUser({
-              userId: userData?.id!,
-              startDate: oneYearAgo,
-              endDate: currentDate,
-            })
-          ).unwrap())();
-
-        // (async () =>
-        //   await appDispatch(
-        //     pointsThunkActions.getUserClubStanding({
-        //       userId: userData?.id!,
-        //     })
-        //   ).unwrap())();
-      }
-    }
-  }, [userData]);
 
   // This dialog prevents a user to access classrooms, before completing profile/programme info
   const showCompleteProfileBlockingDialog = () => {
@@ -488,33 +474,6 @@ export const Dashboard: React.FC = () => {
       history.push(navItem.href, navItem.params);
     }
   };
-
-  useEffect(() => {
-    if (isOnline) {
-      if (!!practitioner?.userId && !classroom) {
-        (async () =>
-          await appDispatch(
-            classroomsThunkActions.getClassroom({})
-          ).unwrap())();
-      }
-      if (
-        !!practitioner?.userId &&
-        (!classroomGroups || !classroomGroups.length)
-      ) {
-        (async () =>
-          await appDispatch(
-            classroomsThunkActions.getClassroomGroups({})
-          ).unwrap())();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-      }
-      (async () =>
-        await appDispatch(childrenThunkActions.getChildren({})).unwrap())();
-    }
-  }, [practitioner?.userId]);
-
-  const currentReportingPeriod = useSelector(
-    classroomsSelectors.getCurrentProgressReportPeriod()
-  );
 
   const navigation: (NavigationRouteItem | NavigationDropdown)[] = [
     {
@@ -636,7 +595,7 @@ export const Dashboard: React.FC = () => {
             },
           ],
     },
-    ...(isPrincipal || isFundaAppAdmin || isTrialPeriod
+    ...(isPrincipal || isTrialPeriod
       ? [
           {
             name: NavigationNames.Business.Business,
@@ -671,32 +630,6 @@ export const Dashboard: React.FC = () => {
           },
         ]
       : []),
-    {
-      name: NavigationNames.Community.Community,
-      icon: styles.communityIconName,
-      current: false,
-      showDivider: true,
-      nestedChildren: [
-        {
-          name: NavigationNames.Community.Community,
-          href: isFirstTimeCommunitySection
-            ? ROUTES.COMMUNITY.WELCOME
-            : ROUTES.COMMUNITY.ROOT,
-          params: { isFromDashboard: true } as CommunityRouteState,
-          onNavigation: onNavigation,
-          current: false,
-        },
-        {
-          name: NavigationNames.Community.Resources,
-          href: isFirstTimeCommunitySection
-            ? ROUTES.COMMUNITY.WELCOME
-            : ROUTES.COMMUNITY.ROOT,
-          params: { isFromDashboard: true } as CommunityRouteState,
-          onNavigation: onNavigation,
-          current: false,
-        },
-      ],
-    },
     // {
     //   name: NavigationNames.Training,
     //   href: ROUTES.TRAINING,
@@ -705,13 +638,13 @@ export const Dashboard: React.FC = () => {
     //   showDivider: true,
     //   hideItem: !trainingEnabled && isWhiteLabel,
     // },
-    // {
-    //   name: NavigationNames.Points,
-    //   href: ROUTES.PRACTITIONER.POINTS.SUMMARY,
-    //   icon: styles.pointsIconName,
-    //   current: false,
-    //   showDivider: true,
-    // },
+    {
+      name: NavigationNames.Points,
+      href: ROUTES.PRACTITIONER.POINTS.SUMMARY,
+      icon: styles.pointsIconName,
+      current: false,
+      showDivider: true,
+    },
     {
       name: NavigationNames.Calendar,
       href: ROUTES.CALENDAR,
@@ -822,7 +755,7 @@ export const Dashboard: React.FC = () => {
     });
   }
 
-  if (isPrincipal || isFundaAppAdmin || isTrialPeriod) {
+  if (isPrincipal || isTrialPeriod) {
     dashboardItems.splice(1, 0, {
       title: NavigationNames.Business.Business,
       titleIcon: styles.businessIconName,
@@ -922,7 +855,7 @@ export const Dashboard: React.FC = () => {
   };
 
   useEffect(() => {
-    if (shouldUserSync) {
+    if (shouldUserSyncOffline) {
       dialog({
         position: DialogPosition.Bottom,
         blocking: true,
@@ -947,7 +880,34 @@ export const Dashboard: React.FC = () => {
         },
       });
     }
-  }, [shouldUserSync]);
+  }, [shouldUserSyncOffline]);
+
+  useEffect(() => {
+    if (isOnline && shouldUserSyncOnline) {
+      dialog({
+        position: DialogPosition.Middle,
+        blocking: true,
+        render: (onSubmit) => {
+          return (
+            <SyncTimeExceeded
+              onSubmit={async () => {
+                if (practitioner?.isPrincipal === true) {
+                  await appDispatch(syncThunkActions.syncOfflineData({}));
+                } else {
+                  await appDispatch(
+                    syncThunkActions.syncOfflineDataForPractitioner({})
+                  );
+                }
+                await resetAppStore();
+                await resetAuth();
+                return history.push(ROUTES.LOGIN);
+              }}
+            ></SyncTimeExceeded>
+          );
+        },
+      });
+    }
+  }, [isOnline, shouldUserSyncOnline]);
 
   const goToProfile = () => {
     const profileRoute = userData?.roles?.some(
@@ -1037,7 +997,7 @@ export const Dashboard: React.FC = () => {
   };
 
   const goToBusiness = () => {
-    if (isPrincipal || isFundaAppAdmin || isTrialPeriod) {
+    if (isPrincipal || isTrialPeriod) {
       history.push(ROUTES.BUSINESS);
       return;
     }
@@ -1073,223 +1033,17 @@ export const Dashboard: React.FC = () => {
     userData?.profileImageUrl ||
     userProfilePicture?.reference;
 
-  const getCurrentPointsToDo = useMemo(() => {
-    if (pointsToDo) {
-      let newPointsToDo = { ...pointsToDo };
-      if (practitioner?.isPrincipal) {
-        removeMandatoryProperty(
-          newPointsToDo,
-          'plannedOneDay',
-          (value) => practitioner?.isPrincipal === true
-        );
-      } else {
-        removeMandatoryProperty(
-          newPointsToDo,
-          'savedIncomeOrExpense',
-          (value) => !practitioner?.isPrincipal
-        );
-      }
+  // Hooks for points
+  const {
+    phase1StatusText,
+    isPhase1Completed,
+    getCurrentPointsToDo,
+    renderPointsToDoProgressBarColor,
+    renderPointsToDoScoreCardBgColor,
+    showPhase2Card,
+  } = usePoints();
 
-      const pointsToDoValues = Object.values(newPointsToDo!)?.filter(
-        (item) => item === true
-      );
-      return pointsToDoValues?.length;
-    } else {
-      return 0;
-    }
-  }, [pointsToDo, practitioner?.isPrincipal]);
-
-  const renderTodoText = useMemo(() => {
-    const planActivitiesPermission = practitioner?.permissions?.find(
-      (item) =>
-        item?.permissionName === PermissionsNames.plan_classroom_actitivies
-    );
-
-    if (pointsToDo?.viewedCommunitySection) {
-      return 'Influencer';
-    }
-
-    if (pointsToDo?.savedIncomeOrExpense && practitioner?.isPrincipal) {
-      return 'Boss';
-    }
-
-    if (
-      (pointsToDo?.plannedOneDay && practitioner?.isPrincipal) ||
-      (pointsToDo?.plannedOneDay &&
-        !practitioner?.isPrincipal &&
-        planActivitiesPermission?.isActive === true)
-    ) {
-      return 'Cwepheshe';
-    }
-    if (pointsToDo?.isPartOfPreschool && !isTrialPeriod) {
-      return 'Tichere';
-    }
-
-    if (pointsToDo?.signedUpForApp || isTrialPeriod) {
-      return 'Umtsha';
-    }
-
-    return 'Umtsha';
-  }, [
-    pointsToDo?.isPartOfPreschool,
-    pointsToDo?.plannedOneDay,
-    pointsToDo?.savedIncomeOrExpense,
-    pointsToDo?.signedUpForApp,
-    pointsToDo?.viewedCommunitySection,
-    practitioner?.isPrincipal,
-  ]);
-
-  const renderPointsToDoScoreCardBgColor = useMemo(() => {
-    if (pointsToDo?.viewedCommunitySection) {
-      if (getCurrentPointsToDo === 3) {
-        return 'quatenaryBg';
-      }
-      return 'successBg';
-    }
-
-    if (pointsToDo?.savedIncomeOrExpense && practitioner?.isPrincipal) {
-      return 'quatenaryBg';
-    }
-
-    if (pointsToDo?.plannedOneDay && !practitioner?.isPrincipal) {
-      return 'quatenaryBg';
-    }
-
-    if (pointsToDo?.isPartOfPreschool && !isTrialPeriod) {
-      return 'secondaryAccent2';
-    }
-
-    if (pointsToDo?.signedUpForApp || isTrialPeriod) {
-      return 'alertBg';
-    }
-
-    return 'alertBg';
-  }, [
-    pointsToDo?.isPartOfPreschool,
-    pointsToDo?.plannedOneDay,
-    pointsToDo?.savedIncomeOrExpense,
-    pointsToDo?.signedUpForApp,
-    pointsToDo?.viewedCommunitySection,
-    practitioner?.isPrincipal,
-  ]);
-
-  const renderPointsToDoEmoji = useMemo(() => {
-    if (pointsToDo?.viewedCommunitySection) {
-      if (getCurrentPointsToDo === 3) {
-        return (
-          <div className="bg-quatenary mr-4 rounded-full p-3">
-            <FireIcon className="font-white h-8 w-8 text-white" />
-          </div>
-        );
-      }
-      return (
-        <div className="bg-successMain mr-4 rounded-full p-3">
-          <FireIcon className="font-white h-8  w-8 text-white" />
-        </div>
-      );
-    }
-
-    if (pointsToDo?.savedIncomeOrExpense && practitioner?.isPrincipal) {
-      return (
-        <div className="bg-quatenary mr-4 rounded-full p-3">
-          <Crown className="font-white h-8  w-8 text-white" />
-        </div>
-      );
-    }
-
-    if (pointsToDo?.plannedOneDay && !practitioner?.isPrincipal) {
-      return (
-        <div className="bg-quatenary mr-4 rounded-full p-3">
-          <CalendarIcon className="font-white h-8  w-8 text-white" />
-        </div>
-      );
-    }
-
-    if (pointsToDo?.isPartOfPreschool && !isTrialPeriod) {
-      return (
-        <div className="bg-secondary mr-4 rounded-full p-3">
-          <Kindgarden className="font-white h-8  w-8 text-white" />
-        </div>
-      );
-    }
-
-    if (pointsToDo?.signedUpForApp || isTrialPeriod) {
-      return (
-        <div className="bg-alertMain mr-4 rounded-full p-2">
-          <ClipboardCheckIcon className="font-white h-8  w-8 text-white" />
-        </div>
-      );
-    }
-
-    return (
-      <div className="bg-alertMain mr-4 rounded-full p-2">
-        <ClipboardCheckIcon className="font-white h-8  w-8 text-white" />
-      </div>
-    );
-  }, [
-    pointsToDo?.isPartOfPreschool,
-    pointsToDo?.plannedOneDay,
-    pointsToDo?.savedIncomeOrExpense,
-    pointsToDo?.signedUpForApp,
-    pointsToDo?.viewedCommunitySection,
-    practitioner?.isPrincipal,
-  ]);
-
-  const renderPointsToDoProgressBarColor = useMemo(() => {
-    if (pointsToDo?.viewedCommunitySection) {
-      if (getCurrentPointsToDo === 3) {
-        return 'quatenary';
-      }
-      return 'successMain';
-    }
-
-    if (pointsToDo?.savedIncomeOrExpense && practitioner?.isPrincipal) {
-      return 'quatenary';
-    }
-
-    if (pointsToDo?.plannedOneDay && !practitioner?.isPrincipal) {
-      return 'quatenary';
-    }
-
-    if (pointsToDo?.isPartOfPreschool && !isTrialPeriod) {
-      return 'secondary';
-    }
-
-    if (pointsToDo?.signedUpForApp || isTrialPeriod) {
-      return 'alertMain';
-    }
-
-    return 'alertMain';
-  }, [
-    pointsToDo?.isPartOfPreschool,
-    pointsToDo?.plannedOneDay,
-    pointsToDo?.savedIncomeOrExpense,
-    pointsToDo?.signedUpForApp,
-    pointsToDo?.viewedCommunitySection,
-    practitioner?.isPrincipal,
-  ]);
-
-  // const practitionerWithAttendancePermissionPointsToDo =
-  //   practitioner?.isPrincipal ||
-  //   (!practitioner?.isPrincipal && planActivitiesPermission?.isActive === true)
-  //     ? getCurrentPointsToDo < 4
-  //     : getCurrentPointsToDo < 3;
-
-  // const practitionerWithAttendancePermissionPoints =
-  //   practitioner?.isPrincipal ||
-  //   (!practitioner?.isPrincipal && planActivitiesPermission?.isActive === true)
-  //     ? getCurrentPointsToDo === 4
-  //     : getCurrentPointsToDo === 3;
-
-  function removeMandatoryProperty<T, K extends keyof T>(
-    obj: T,
-    prop: K,
-    condition: (value: T[K]) => boolean
-  ): void {
-    if (condition(obj[prop])) {
-      delete (obj as any)[prop]; // Use type assertion to bypass TypeScript checks
-    }
-  }
+  const { renderPointsToDoEmoji } = usePointsToDoEmoji();
 
   const name =
     userData && userData?.firstName
@@ -1373,31 +1127,12 @@ export const Dashboard: React.FC = () => {
             listItems={dashboardItems}
             notification={dashboardNotification}
           />
-          {/* {totalYearPoints &&
-          totalYearPoints >= 10 &&
-          !!pointsScoreProps &&
-          !isCoach ? (
-            <ScoreCard
-              className="mt-1 mb-1 h-20"
-              progressBarClassName="flex pt-2"
-              mainText={pointsScoreProps?.mainText!}
-              hint={pointsScoreProps?.hint}
-              currentPoints={pointsScoreProps?.currentPoints!}
-              maxPoints={pointsScoreProps?.maxPoints!}
-              onClick={pointsScoreProps?.onClick!}
-              barBgColour={pointsScoreProps?.barBgColour!}
-              barColour={pointsScoreProps?.barColour!}
-              bgColour={pointsScoreProps?.bgColour!}
-              image={pointsScoreProps?.image!}
-              textColour={pointsScoreProps?.textColour!}
-              textPosition={pointsScoreProps?.textPosition!}
-            />
-          ) : null} */}
-          {/* {(!totalYearPoints || (totalYearPoints && totalYearPoints < 10)) &&
-          !isCoach ? (
+
+          {/* Score Card for phase 1 */}
+          {(!isPhase1Completed && !isCoach) || totalYearPoints === 0 ? (
             <NoPointsScoreCard
               image={renderPointsToDoEmoji}
-              className="mt-5 w-full py-6"
+              className="mt-1 w-full py-4"
               mainText={''}
               currentPoints={getCurrentPointsToDo}
               maxPoints={
@@ -1415,10 +1150,34 @@ export const Dashboard: React.FC = () => {
               textColour="black"
               onClick={() => history.push(ROUTES.PRACTITIONER.POINTS.SUMMARY)}
               isBigTitle={false}
-              hint={renderTodoText}
+              hint={phase1StatusText}
               textPosition="left"
             />
-          ) : null} */}
+          ) : null}
+
+          {/* Score Card for phase 2 */}
+          {isPhase1Completed &&
+          showPhase2Card &&
+          totalYearPoints &&
+          totalYearPoints > 0 &&
+          !isCoach &&
+          !!pointsScoreProps ? (
+            <ScoreCard
+              className="mt-1 mb-1 h-20 w-full"
+              progressBarClassName="flex pt-2"
+              mainText={pointsScoreProps?.mainText!}
+              hint={pointsScoreProps?.hint}
+              currentPoints={pointsScoreProps?.currentPoints!}
+              maxPoints={pointsScoreProps?.maxPoints!}
+              onClick={pointsScoreProps?.onClick!}
+              barBgColour={pointsScoreProps?.barBgColour!}
+              barColour={pointsScoreProps?.barColour!}
+              bgColour={pointsScoreProps?.bgColour!}
+              image={pointsScoreProps?.image!}
+              textColour={pointsScoreProps?.textColour!}
+              textPosition={pointsScoreProps?.textPosition!}
+            />
+          ) : null}
         </div>
       </BannerWrapper>
     </>

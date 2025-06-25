@@ -18,7 +18,6 @@ namespace ECDLink.Abstractrions.Enums
         ForgotPasswordPortal = 13,
         StatementReminder = 14,
         ProgrammeInvitation = 15,
-        TeamLeadInvitation = 16,
         VerifyCellphoneNumber = 17,
         AdminUserHelpForm = 18,
         OAWLAuthCode = 19,
@@ -27,6 +26,8 @@ namespace ECDLink.Abstractrions.Enums
         NewTenantSetupInfoReceived = 22,
         WelcomeEmailToNewSuperAdmin = 23,
         FourteenDaysNotLoggedOn = 24,
-        RejectedInvitation = 25
+        RejectedInvitation = 25,
+        TweeWeekNotLoggedOn = 26,
+        CoachRemovePractitioner = 27
     }
 }

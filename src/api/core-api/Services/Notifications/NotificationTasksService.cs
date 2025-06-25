@@ -42,7 +42,7 @@ namespace EcdLink.Api.CoreApi.Services
             _contextAccessor = contextAccessor;
             _repositoryFactory = repositoryFactory;
             _hierarchyEngine = hierarchyEngine;
-            _applicationUserId = (_contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId().Value);
+            _applicationUserId = (_contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId().Value);
 
             _practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
             _coachRepo = _repositoryFactory.CreateGenericRepository<Coach>(userContext: _applicationUserId);
@@ -55,6 +55,8 @@ namespace EcdLink.Api.CoreApi.Services
         public async Task DailyUserOfflineNotification()
         {
             DateTime today = DateTime.Today;
+            var start14Days = today.AddDays(-14).Date;
+            var end14Days = today.AddDays(-13).Date;
             var start21Days = today.AddDays(-21).Date;
             var end21Days = today.AddDays(-20).Date;
 
@@ -73,6 +75,7 @@ namespace EcdLink.Api.CoreApi.Services
                                                     .Include(x => x.User)
                                                     .Where(x => x.IsActive == true && 
                                                     (
+                                                        (x.User.LastSeen >= start14Days && x.User.LastSeen < end14Days) || 
                                                         (x.User.LastSeen >= start21Days && x.User.LastSeen < end21Days) || 
                                                         (x.User.LastSeen >= start30Days && x.User.LastSeen < end30Days)
                                                     )
@@ -97,7 +100,11 @@ namespace EcdLink.Api.CoreApi.Services
                         TimeSpan timeDifference = DateTime.Now - user.LastSeen;
                         var totalDays = timeDifference.Days;
 
-                        if (totalDays >= 21 && totalDays < 30)
+                        if (totalDays >= 14 && totalDays < 21)
+                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.TwoWeekNotLoggedOn, DateTime.Now.Date, user, "", null, replacements, null, false, false, null,
+                                   relatedEntities: new List<RelatedEntity> { new RelatedEntity(user.Id, "ApplicationUser") });
+
+                        else if (totalDays >= 21 && totalDays < 30)
                         {
                             // _notificationManager.SendOfflineSmsAsync(user, TemplateTypeConstants.ThreeWeekNotLoggedOn);
                             await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ThreeWeekNotLoggedOn, DateTime.Now.Date, user, "", null, replacements, null, false, false, null,

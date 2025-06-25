@@ -25,4 +25,5 @@ export interface RegisterRequestModel {
   preferId?: boolean | undefined;
   phoneNumber?: string;
   registerType?: string;
+  shareInfoPartners?: boolean;
 }

@@ -20,31 +20,29 @@ export default function ForgotPassword() {
   const [isLoading, setIsLoading] = useState(false);
   const { forgotPassword } = useAuth();
   const [displayError, setDisplayError] = useState(false);
-
   const history = useHistory();
 
-  const { register, getValues, formState } = useForm({
+  const { register, formState, watch } = useForm({
     resolver: yupResolver(resetSchema),
     defaultValues: initialForgotPasswordValues,
     mode: 'onChange',
   });
 
-  const formValues = getValues();
+  const email = watch('email');
 
   const { errors, isValid } = formState;
 
-  const requestResetPasword = async () => {
+  const requestResetPassword = async () => {
     if (isValid) {
       setIsLoading(true);
       const body = {
-        email: formValues.email,
+        email: email,
       };
       const isLinkSent = await forgotPassword(body, Config.authApi);
 
       if (isLinkSent) {
         setIsLoading(false);
-        history.push('/reset');
-        localStorage.setItem('email', formValues.email);
+        localStorage.setItem('email', email);
       } else {
         setIsLoading(false);
         setDisplayError(true);
@@ -60,10 +58,10 @@ export default function ForgotPassword() {
     if (isValid) {
       setResetLinkSent(!resetLinkSent);
       setIsLoading(!isLoading);
-      requestResetPasword();
+      requestResetPassword();
     } else if (isValid && resetLinkSent) {
       setIsLoading(!isLoading);
-      requestResetPasword();
+      requestResetPassword();
     }
   };
 

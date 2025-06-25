@@ -170,7 +170,6 @@ export default function ActivityList({
 
   const [tableData, setTableData] = useState<any[]>([]);
   const [languageId, setLanguageId] = useState<string>(LanguageId.enZa);
-  const [searchText, setSearchText] = useState('Search by title or content...');
   const [displayFields, setDisplayFields] = useState<ContentTypeFieldDto[]>();
 
   // Filter options
@@ -237,14 +236,6 @@ export default function ActivityList({
       setFilterDateAdded((prevState) => !prevState);
     }
   };
-
-  const dateDropdownValue = useMemo(
-    () =>
-      startDate && endDate
-        ? `${format(startDate, 'd MMM yy')} - ${format(endDate, 'd MMM yy')}`
-        : '',
-    [endDate, startDate]
-  );
 
   const filterByValue = useCallback((array, value) => {
     return array?.filter(
@@ -442,6 +433,8 @@ export default function ActivityList({
         type: item?.type,
         subCategories: item?.subCategories.split(','),
         image: item?.image,
+        isInUse: item?.isInUse,
+        inUseThemeNames: item?.inUseThemeNames,
       };
       model.content = copyItem;
     }
@@ -472,6 +465,10 @@ export default function ActivityList({
 
   const isAllInactive = selectedActivities.every(
     (obj) => obj?.isActive === false
+  );
+
+  const inUseActivities = selectedActivities?.filter(
+    (item) => item?.isInUse === true
   );
 
   const rows: Irow[] =
@@ -674,7 +671,9 @@ export default function ActivityList({
   const deactivateRecords = useCallback(() => {
     deactivateActivities({
       variables: {
-        contentIds: selectedActivities?.map((item) => item?.id),
+        contentIds: selectedActivities?.map(
+          (item) => item?.id && item?.isInUse === false
+        ), // exclude ids which is in use
       },
     })
       .then((res) => {
@@ -716,11 +715,21 @@ export default function ActivityList({
         <AlertModal
           title={`Are you sure you want to delete ${
             selectedActivities?.length - inactiveActivities?.length
-          } items?`}
-          message={`Practitioners will no longer have access to these activities.`}
+          } items?  Some practitioner's programme plans will be incomplete`}
+          message={`Practitioners who have included these items in their plans will have incomplete programmes`}
           btnText={['Yes, delete', 'No, Cancel']}
-          hasAlert={isAllInactive || inactiveActivities?.length > 0}
-          alertMessage={`Note: ${inactiveActivities?.length} deleted.`}
+          hasAlert={
+            isAllInactive ||
+            inactiveActivities?.length > 0 ||
+            inUseActivities?.length > 0
+          }
+          alertMessage={
+            inUseActivities?.length > 0
+              ? `Note: ${inUseActivities?.length} item(s) selected cannot be removed because they are linked to  a published theme.`
+              : isAllInactive || inactiveActivities?.length > 0
+              ? `Note: ${inactiveActivities?.length} deleted.`
+              : ''
+          }
           alertType="error"
           onCancel={() => {
             onClose();

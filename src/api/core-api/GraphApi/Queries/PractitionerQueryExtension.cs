@@ -1,8 +1,6 @@
 using AngleSharp.Common;
+using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.GraphApi.Models.Portal;
-using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
-using EcdLink.Api.CoreApi.Managers.Users;
-using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.Constants;
@@ -10,6 +8,7 @@ using ECDLink.Abstractrions.Files;
 using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
+using ECDLink.Api.CoreApi.Services;
 using ECDLink.Core.Extensions;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
@@ -25,8 +24,6 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
-using ECDLink.SmartStart.Reports;
-using ECDLink.SmartStart.Reports.Models;
 using ECDLink.Tenancy.Context;
 using ECDLink.UrlShortner.Managers;
 using HotChocolate;
@@ -40,7 +37,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
+namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
     [ExtendObjectType(OperationTypeNames.Query)]
     public class PractitionerQueryExtension
@@ -58,6 +55,27 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             if (practitioner != null)
             {
                 return personnelService.GetPractitionerDetails(practitioner);
+            }
+            return null;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public PractitionerModel GetPractitionerPermissions(
+          [Service] IHttpContextAccessor contextAccessor,
+          IGenericRepositoryFactory repoFactory,
+          [Service] PersonnelService personnelService,
+          string userId)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+            Practitioner practitioner = practiRepo.GetByUserId(userId);
+            if (practitioner != null)
+            {
+                return new PractitionerModel()
+                {
+                    Id = practitioner.Id,
+                    Permissions = practitioner.User.UserPermissions.Select(x => new UserPermissionModel(x)).ToList()
+                };
             }
             return null;
         }
@@ -194,7 +212,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             fieldDefinitionList.Add("Language Used in group", "Language Name");
             fieldDefinitionList.Add("Parent Fees", "Number");
             fieldDefinitionList.Add("StartDate", "Date Text (E.g 2019/10/23)");
-            fieldDefinitionList.Add("MaxChildren", "Number");
 
             var languageList = new Dictionary<string, string>();
             languages.ForEach(x => languageList.Add(x.Locale, x.Description));
@@ -207,7 +224,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             fieldList.Add("Language Used in group");
             fieldList.Add("Parent Fees");
             fieldList.Add("StartDate");
-            fieldList.Add("MaxChildren");
 
             var reportName = $"Practitioner Template";
             return await fileService.FieldsToExcelTemplate(fieldList, fieldDefinitionList, languageList, reportName);
@@ -295,10 +311,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                             string practiNumber = practitioner.User.PhoneNumber;
                             string practiClassroomNames = "";
                             string practiType = "";
-                            if (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin != false)
-                            {
-                                practiType = "Funda App Admin";
-                            }
+                         
                             if (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal != false)
                             {
                                 practiType = "Principal";
@@ -352,14 +365,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         public PractitionerTimeline GetPractitionerTimeline([Service] PersonnelService personnelService, string userId)
         {
             return personnelService.GetPractitionerTimeline(userId);
-        }
-
-        public Trainee GetTraineeByUserId(
-            [Service] PersonnelService practiManager,
-            [Service] UserLicenseManager userLicenseManager,
-            string userId)
-        {
-            return practiManager.GetTraineeByUserId(userLicenseManager, userId);
         }
 
         public List<PractitionerNotes> GetVisitNotesForPractitioner([Service] VisitDataManager visitDataManager, string userId)
@@ -484,7 +489,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                    IsRegistered = (item.IsRegistered == null ? false : (bool)item.IsRegistered),
                    UserId = item.UserId,
                    IsPrincipal = item.IsPrincipal,
-                   IsFundaAppAdmin = item.IsFundaAppAdmin,
                    InsertedDate = item.InsertedDate.Date,
                    User = new PortalPractitionerUserModel(item.User,
                                                           (item.IsRegistered == null ? false : (bool)item.IsRegistered),

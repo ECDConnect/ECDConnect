@@ -27,7 +27,14 @@ interface pointActivitiesDto {
   tabIndex?: number;
 }
 
-export const pointActivitiesItems: pointActivitiesDto[] = [
+export const principalActivitiesItems: pointActivitiesDto[] = [
+  {
+    activity: 'Attendance registers saved',
+    missingActivityText: 'Save your attendance registers',
+    icon: 'ClipboardListIcon',
+    href: ROUTES.CLASSROOM.ROOT,
+    tabIndex: TabsItems.ATTENDANCE,
+  },
   {
     activity: 'Income/expenses added',
     missingActivityText: 'Add income & expenses',
@@ -35,6 +42,29 @@ export const pointActivitiesItems: pointActivitiesDto[] = [
     href: ROUTES.BUSINESS,
     tabIndex: BusinessTabItems.MONEY,
   },
+  {
+    activity: 'Children’s progress observations complete',
+    missingActivityText: 'Add child progress observations',
+    icon: 'PresentationChartBarIcon',
+    href: ROUTES.CLASSROOM.ROOT,
+    tabIndex: TabsItems.PROGRESS,
+  },
+  {
+    activity: 'New connections in community',
+    missingActivityText: 'Connect with your community',
+    icon: 'ShareIcon',
+    href: ROUTES.COMMUNITY.WELCOME,
+  },
+  // Training is currently switched off
+  // {
+  //   activity: 'Training courses completed',
+  //   missingActivityText: 'Complete an online training',
+  //   icon: 'AcademicCapIcon',
+  //   href: ROUTES.TRAINING,
+  // },
+];
+
+export const practitionerActivitiesItems: pointActivitiesDto[] = [
   {
     activity: 'Attendance registers saved',
     missingActivityText: 'Save your attendance registers',
@@ -55,10 +85,11 @@ export const pointActivitiesItems: pointActivitiesDto[] = [
     icon: 'ShareIcon',
     href: ROUTES.COMMUNITY.WELCOME,
   },
-  {
-    activity: 'Training courses completed',
-    missingActivityText: 'Complete an online training',
-    icon: 'AcademicCapIcon',
-    href: ROUTES.TRAINING,
-  },
+  // Training is currently switched off
+  // {
+  //   activity: 'Training courses completed',
+  //   missingActivityText: 'Complete an online training',
+  //   icon: 'AcademicCapIcon',
+  //   href: ROUTES.TRAINING,
+  // },
 ];

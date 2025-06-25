@@ -381,34 +381,6 @@ class PQAService {
               }
               eventId
             }
-            coachCircles {
-              totalMeetings
-              totalPresent
-              percAttended
-              attendanceText
-              attendanceColor
-              meetingRegister {
-                attended
-                 clubMeeting {
-                  meetingDate
-                  meetingNotes
-                }
-              }
-            }
-            clubMeetings {
-              totalMeetings
-              totalPresent
-              percAttended
-              attendanceText
-              attendanceColor
-              meetingRegister {
-                attended
-                 clubMeeting {
-                  meetingDate
-                  meetingNotes
-                }
-              }
-            }
           }
         }
           `,

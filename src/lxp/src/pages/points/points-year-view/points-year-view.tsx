@@ -24,7 +24,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PointsShare } from '../points-share/points-share';
 import { captureAndDownloadComponent } from '@ecdlink/core';
 import { PointsInfoPage } from '../info/points-info-page';
-import { childrenSelectors } from '@/store/children';
 import { useAppDispatch } from '@/store';
 import { PointsUserYearMonthSummary } from '@ecdlink/graphql';
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
@@ -40,30 +39,14 @@ export const PointsYearView: React.FC = () => {
   const { state } = useLocation<PointsYearViewRouteState>();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const dispatch = useAppDispatch();
-  const currentMonth = new Date().getMonth();
   const messageNr = state?.userRankingData?.messageNr;
-  const comparativeTargetPercentage =
-    state?.userRankingData?.comparativeTargetPercentage;
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const children = useSelector(childrenSelectors.getChildren);
-  const userStanding = useSelector(pointsSelectors.getCurrentClubStanding());
 
   const isPrincipal = practitioner?.isPrincipal;
-  const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
 
   const [showInfo, setShowInfo] = useState(false);
 
-  const [monthsLoaded, setMonthsLoaded] = useState<number[]>([currentMonth]);
-  const [loadNextMonthDisabled, setLoadNextMonthDisabled] = useState<boolean>(
-    currentMonth === 0
-  );
-
-  const yearSummaries = useSelector(pointsSelectors.getPointsSummaryForYear());
   const [pointsShareData, setPointsShareData] = useState<any>();
-
-  const pointsTotalForYear = useSelector(
-    pointsSelectors.getPointsTotalForYear()
-  );
   const [monthsIndex, setMonthsIndex] = useState(1);
   const [pointsYearSummary, setPointsYearSummary] =
     useState<PointsUserYearMonthSummary>();
@@ -81,18 +64,11 @@ export const PointsYearView: React.FC = () => {
     getYearPoints();
   }, []);
 
-  const pointsMax =
-    isPrincipal || isFundaAppAdmin
-      ? pointsConstants.principalOrAdminYearlyMax
-      : pointsConstants.practitionerYearlyMax;
+  const pointsMax = isPrincipal
+    ? pointsConstants.principalOrAdminYearlyMax
+    : pointsConstants.practitionerYearlyMax;
 
   const percentageScore = (pointsYearSummary?.total! / pointsMax) * 100;
-
-  const loadNextMonth = useCallback(() => {
-    const nextMonthToLoad = Math.min(...monthsLoaded) - 1;
-    setMonthsLoaded([...monthsLoaded, nextMonthToLoad]);
-    setLoadNextMonthDisabled(nextMonthToLoad === 0);
-  }, [monthsLoaded, setMonthsLoaded, setLoadNextMonthDisabled]);
 
   const getYearShareData = useCallback(async () => {
     const response = await new PointsService(userAuth?.auth_token!).sharedData(
@@ -108,57 +84,6 @@ export const PointsYearView: React.FC = () => {
   }, []);
 
   const celebrationCard = useMemo(() => {
-    if (!!userStanding && !!practitioner?.clubId) {
-      if (userStanding.percentageMembersWithFewerPointsForCurrentYear === 100) {
-        return (
-          <CelebrationCard
-            image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
-            primaryMessage={`Wow, well done ${practitioner?.user?.firstName}!`}
-            secondaryMessage="You are the top points earner in your club! You've earned the most points so far this year."
-            primaryTextColour="successMain"
-            secondaryTextColour="black"
-            backgroundColour="successBg"
-          />
-        );
-      }
-      if (userStanding.percentageMembersWithFewerPointsForCurrentYear > 75) {
-        return (
-          <CelebrationCard
-            image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
-            primaryMessage={`Wow, well done ${practitioner?.user?.firstName}!`}
-            secondaryMessage="You are one of the top points earners in your club!"
-            primaryTextColour="successMain"
-            secondaryTextColour="black"
-            backgroundColour="successBg"
-          />
-        );
-      }
-      if (userStanding.percentageMembersWithFewerPointsForCurrentYear >= 50) {
-        return (
-          <CelebrationCard
-            image={<EmojiBlueSmile className="mr-2 h-16 w-16" />}
-            primaryMessage={`Good job ${practitioner?.user?.firstName}!`}
-            secondaryMessage="So far this year, you have more points than most other SmartStarters in your club!"
-            primaryTextColour="secondary"
-            secondaryTextColour="black"
-            backgroundColour="infoBb"
-          />
-        );
-      }
-      if (userStanding.percentageMembersWithMorePointsForCurrentYear > 50) {
-        return (
-          <CelebrationCard
-            image={<EmojiOrangeSmile className="mr-2 h-16 w-16" />}
-            primaryMessage={`Keep going ${practitioner?.user?.firstName}!`}
-            primaryTextColour="alertMain"
-            backgroundColour="alertBg"
-            secondaryMessage={`Most of the SmartStarters in your club have more than ${pointsYearSummary?.total} points this year! Earn more points to join them.`}
-            secondaryTextColour="black"
-          />
-        );
-      }
-    }
-
     if (pointsYearSummary?.total === 0) {
       return (
         <CelebrationCard
@@ -209,8 +134,6 @@ export const PointsYearView: React.FC = () => {
       />
     );
   }, [
-    userStanding,
-    practitioner?.clubId,
     practitioner?.user?.firstName,
     pointsYearSummary?.total,
     percentageScore,
@@ -363,7 +286,7 @@ export const PointsYearView: React.FC = () => {
                 if (shareRef.current) {
                   captureAndDownloadComponent(
                     shareRef.current,
-                    'points-year-summary.jpg'
+                    `points-year-summary-${format(new Date(), 'yyyy')}`
                   );
                   setShowPrintData(false);
                 }
@@ -384,8 +307,6 @@ export const PointsYearView: React.FC = () => {
               : `${practitioner?.user?.firstName}`
           }
           childCount={pointsShareData?.totalChildren || 0}
-          clubStanding={comparativeTargetPercentage || 0}
-          clubName={practitioner?.clubName || 'Unknown Club'}
         />
       </div>
       <Dialog

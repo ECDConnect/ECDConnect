@@ -107,6 +107,7 @@ export const OaLogin: React.FC = () => {
   const login = async () => {
     appDispatch(settingActions.setApplicationVersion(version));
     appDispatch(authActions.setUserExpired());
+    appDispatch(settingActions.setLoginDate());
     const user = await appDispatch(userThunkActions.getUser({})).unwrap();
     localStorage.setItem(
       LocalStorageKeys.firstTimeOnCommunityDashboard,
@@ -149,7 +150,7 @@ export const OaLogin: React.FC = () => {
     setIsLoading(false);
 
     if (isValid) {
-      if (freeMemory > 300 || freeMemory === 0) {
+      if (freeMemory > 200 || freeMemory === 0) {
         setIsLoading(true);
         const body: LoginRequestModel = {
           username: loginFormGetValues().username,

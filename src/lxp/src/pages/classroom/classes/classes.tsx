@@ -16,7 +16,11 @@ import { EditPlaygroupsRouteState } from '@/pages/practitioner/save-practitioner
 import { IconInformationIndicator } from '../programme-planning/components/icon-information-indicator/icon-information-indicator';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 
-export const Classes = () => {
+interface ClassMenuProps {
+  setSelectedTabIndex: React.Dispatch<React.SetStateAction<number>>;
+}
+
+export const Classes = ({ setSelectedTabIndex }: ClassMenuProps) => {
   const [addChildButtonExpanded, setAddChildButtonExpanded] =
     useState<boolean>(true);
 
@@ -68,14 +72,17 @@ export const Classes = () => {
       blocking: false,
       position: DialogPosition.Middle,
       color: 'bg-white',
-      render: (onClose) => (
-        <ClassMenu
-          isPrincipal={isPrincipal}
-          classroomGroupId={id}
-          className={name}
-          onClose={onClose}
-        />
-      ),
+      render: (onClose) => {
+        return (
+          <ClassMenu
+            isPrincipal={isPrincipal}
+            classroomGroupId={id}
+            className={name}
+            onClose={onClose}
+            setSelectedTabIndex={setSelectedTabIndex}
+          />
+        );
+      },
     });
   };
 

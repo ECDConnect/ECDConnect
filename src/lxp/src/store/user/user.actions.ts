@@ -1,9 +1,14 @@
 import { UserConsentDto, UserDto } from '@ecdlink/core';
-import { UserConsentInput, UserModelInput } from '@ecdlink/graphql';
+import {
+  UserConsentInput,
+  UserModelInput,
+  UserSyncStatus,
+} from '@ecdlink/graphql';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { UserService } from '@services/UserService';
 import { RootState, ThunkApiType } from '../types';
 import { UserResetPasswrodParams } from './user.types';
+import { newGuid } from '@/utils/common/uuid.utils';
 
 export const getUser = createAsyncThunk<
   UserDto,
@@ -193,6 +198,43 @@ export const updateUser = createAsyncThunk<any, {}, ThunkApiType<RootState>>(
       }
 
       return [update];
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getUserSyncStatus = createAsyncThunk<
+  any,
+  {},
+  ThunkApiType<RootState>
+>(
+  'getUserSyncStatus',
+  // eslint-disable-next-line no-empty-pattern
+  async ({}, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      user: { user },
+      settings: { lastDataSync },
+      classroomData: { classroom },
+    } = getState();
+
+    try {
+      let userSyncStatus: UserSyncStatus;
+
+      if (userAuth?.auth_token && user) {
+        userSyncStatus = await new UserService(
+          userAuth?.auth_token
+        ).getUserSyncStatus(
+          userAuth.id,
+          new Date(lastDataSync) || new Date(),
+          classroom?.id || newGuid()
+        );
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return userSyncStatus;
     } catch (err) {
       return rejectWithValue(err);
     }

@@ -17,6 +17,7 @@ import { ClassroomGroupDto as SimpleClassroomGroupDto } from '@/models/classroom
 import { SiteAddressDto } from '@/models/classroom/site-address.dto';
 import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 import { formatISO } from 'date-fns';
+import { UpdateUserPermissionInputModelInput } from '@ecdlink/graphql';
 
 const initialState: ClassroomState = {
   classroom: undefined,
@@ -24,6 +25,7 @@ const initialState: ClassroomState = {
     classroomGroups: [],
     dateRefreshed: undefined,
   },
+  classroomPractitioners: [],
 };
 
 const classroomsSlice = createSlice({
@@ -33,6 +35,11 @@ const classroomsSlice = createSlice({
     resetClassroomState: (state) => {
       state.classroom = initialState.classroom;
       state.classroomGroupData = initialState.classroomGroupData;
+      state.classroomPractitioners = initialState.classroomPractitioners;
+    },
+    resetClassroomObjects: (state) => {
+      state.classroomGroupData = initialState.classroomGroupData;
+      state.classroomPractitioners = initialState.classroomPractitioners;
     },
     updateClassroom: (state, action: PayloadAction<SimpleClassroomDto>) => {
       state.classroom = {
@@ -132,6 +139,18 @@ const classroomsSlice = createSlice({
         synced: false,
       };
     },
+    createClassroomPractitioner: (
+      state,
+      action: PayloadAction<UpdateUserPermissionInputModelInput>
+    ) => {
+      const userExist = state.classroomPractitioners.find(
+        (x) => x.userId == action.payload.userId
+      );
+      if (!userExist) state.classroomPractitioners.push(action.payload);
+    },
+    deleteClassroomPractitioner: (state) => {
+      state.classroomPractitioners = [];
+    },
     createClassroomGroup: (
       state,
       action: PayloadAction<SimpleClassroomGroupDto>
@@ -139,8 +158,6 @@ const classroomsSlice = createSlice({
       const payloadUpdated = { ...action.payload, synced: false };
       state.classroomGroupData.classroomGroups.push(payloadUpdated);
     },
-    // Only used during classroom setup it seems, is this still used? Only state gets updated, no BE sync
-    // Should deactivate instead, so we can sync later
     deleteClassroomGroup: (state, action: PayloadAction<ClassroomGroupDto>) => {
       if (!!action.payload.id) {
         const index = state.classroomGroupData.classroomGroups.findIndex(

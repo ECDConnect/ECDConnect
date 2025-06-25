@@ -1,4 +1,4 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models.Statements;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using System;
 using System.Collections.Generic;

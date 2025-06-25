@@ -4,15 +4,15 @@
   "scripts": {
     "bootstrap": "lerna bootstrap --force-local && lerna run tsc",
     "build:ui": "lerna bootstrap --force-local && lerna run --scope @ecdlink/ui tsc",
-    "portal": "cross-env-shell PORT=3003 \"cd ./src/admin-portal && yarn start\"",
-    "portal-wl": "cross-env-shell PORT=3006 \"cd ./src/admin-portal && yarn start\"",
-    "app": "cross-env-shell PORT=3000 \"cd ./src/lxp && yarn start\"",
-    "app-wl": "cross-env-shell PORT=3005 \"cd ./src/lxp && yarn start\"",
+    "portal": "cross-env-shell PORT=3003 NODE_OPTIONS=--openssl-legacy-provider \"cd ./src/admin-portal && yarn start\"",
+    "portal-wl": "cross-env-shell PORT=3006 NODE_OPTIONS=--openssl-legacy-provider \"cd ./src/admin-portal && yarn start\"",
+    "app": "cross-env-shell PORT=3000 NODE_OPTIONS=--openssl-legacy-provider \"cd ./src/lxp && yarn start\"",
+    "app-wl": "cross-env-shell PORT=3005 NODE_OPTIONS=--openssl-legacy-provider \"cd ./src/lxp && yarn start\"",
     "app:mocks": "cd ./src/lxp && yarn start:mocks",
     "app:withSW": "cd ./src/lxp && npx serve -s build -l 3000",
     "app-wl:withSW": "cd ./src/lxp && npx serve -s build -l 3005",
-    "build:portal": "yarn bootstrap && (cd ./src/admin-portal && yarn build)",
-    "build:app": "yarn bootstrap && (cd ./src/lxp && yarn build)",
+    "build:portal": "cross-env-shell NODE_OPTIONS=--openssl-legacy-provider \"yarn bootstrap && (cd ./src/admin-portal && yarn build)\"",
+    "build:app": "cross-env-shell NODE_OPTIONS=--openssl-legacy-provider \"yarn bootstrap && (cd ./src/lxp && cross-env  && yarn build)\"",
     "lint:app": "eslint ./src/lxp/src --ext .js,jsx,.ts,.tsx",
     "lint:portal": "eslint ./src/admin-portal/src --ext .js,jsx,.ts,.tsx",
     "format": "prettier --write './**/*.{ts,tsx}'",
@@ -28,7 +28,9 @@
     "purge:portal": "cd ./src/admin-portal && npx rimraf ./{yarn.lock,package-lock.json,node_modules,build}",
     "purge:app": "cd ./src/lxp && npx rimraf ./{yarn.lock,package-lock.json,node_modules,build}",
     "purge:app-wl": "cd ./src/lxp && npx rimraf ./{yarn.lock,package-lock.json,node_modules,build}",
-    "patch:fixups": "node ./patch-fixups.js"
+    "patch:fixups": "node ./patch-fixups.js",
+    "setnode": "nvm use 20.19.2",
+    "fixmodules": "xcopy node_modules.fixup\\20.x node_modules /s/e/y"
   },
   "watch": {
     "build:ui": {

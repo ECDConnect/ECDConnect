@@ -1,9 +1,10 @@
 ﻿
 using DinkToPdf.Contracts;
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.GraphApi.Models.Statements;
 using EcdLink.Api.CoreApi.Managers;
-using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using ECDLink.Abstractrions.Constants;
+using ECDLink.Api.CoreApi.Services;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Classroom;
@@ -65,7 +66,7 @@ namespace ECDLink.Core.Services
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
             _hierarchyEngine = hierarchyEngine;
-            _applicationUserId = (_contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId().Value);
+            _applicationUserId = (_contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId().Value);
 
             _statementsExpenseTypeRepo = _repoFactory.CreateGenericRepository<StatementsExpenseType>(userContext: _applicationUserId);
             _statementsExpensesRepo = _repoFactory.CreateGenericRepository<StatementsExpenses>(userContext: _applicationUserId);
@@ -161,14 +162,18 @@ namespace ECDLink.Core.Services
                 }).ToList(),
             };
 
-            _pointsService.CalculateAddExpenseOrIncomeToStatement(userId);
+            var newRecord = _statementsRepo.Insert(newStatement);
+            
             if (newStatement.IncomeItems.Count > 0 || newStatement.ExpenseItems.Count > 0)
             {
                 _notificationService.ExpireNotificationsTypesForUser(userId.ToString(), TemplateTypeConstants.Statements60DaysNotification);
                 _notificationService.ExpireNotificationsTypesForUser(userId.ToString(), TemplateTypeConstants.Statements30DaysNotification);
             }
 
-            return _statementsRepo.Insert(newStatement);
+            // calucate points after the record was added
+            _pointsService.CalculateAddExpenseOrIncomeToStatement(userId);
+
+            return newRecord;
         }
 
         public StatementsIncomeStatement UpdateStatement(IncomeStatementModel input)
@@ -357,6 +362,15 @@ namespace ECDLink.Core.Services
 
         public string CreateIncomeStatementPDFDocument(string userId, StatementsIncomeStatement statement)
         {
+            // update statement Download field
+            if (statement?.Downloaded == false)
+            {
+                var statementRecord = _statementsRepo.GetById(statement.Id);
+                statementRecord.Downloaded = true;
+                _statementsRepo.Update(statementRecord);
+                _pointsService.CalculateDownloadIncomeStatement((Guid)statement.UserId); 
+            }
+
             var classroom = _classroomRepo.GetByUserId(userId);
             // Data for pdf
             var htmlData = GetStatementsIncomeExpensesPDFData(statement);

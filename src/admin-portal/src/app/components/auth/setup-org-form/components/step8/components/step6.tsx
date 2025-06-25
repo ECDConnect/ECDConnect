@@ -17,7 +17,6 @@ export const Step6: React.FC<StepProps> = ({ getValues, control }) => {
     trainingEnabled,
     calendarEnabled,
     coachRoleEnabled,
-    coachRoleName,
   } = useWatch({
     control: control,
   });

@@ -1,4 +1,4 @@
-using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.GraphApi.Models.ChildProgress;
 using EcdLink.Api.CoreApi.GraphApi.Models.Input;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
@@ -89,11 +89,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                     var newClassRoomGroup = classRepo.Insert(classRoomCreate);
                     UpdateClassProgrammeForPractitioner(contextAccessor, repoFactory, input.ClassroomId, hierarchy);
-                    // add points for adding a new class
-                    pointsService.CalculateAddNewClassToPreschool(uId);
+
                     // EC-3508 - as soon as a class is created, we set the progress to 2
                     var practitionerToUpdate = pracRepo.GetByUserId(uId);
-                    if (practitionerToUpdate.Progress != 2) {
+                    if (practitionerToUpdate.Progress != 2)
+                    {
                         practitionerToUpdate.Progress = 2;
                         practitionerToUpdate.IsPrincipal = true;
                         pracRepo.Update(practitionerToUpdate);
@@ -122,8 +122,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         };
                         notificationService.SendNotificationAsync(null, TemplateTypeConstants.ReassignedToNewClass, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null, new List<RelatedEntity> { new RelatedEntity(newClassRoomGroup.Id, "ClassRoomGroup") });
                     }
-                    return newClassRoomGroup;
 
+                    // add points for adding a new class for the principal
+                    pointsService.CalculateAddNewClassToPreschool(uId);
+
+                    return newClassRoomGroup;
                 }
             }
             else
@@ -191,13 +194,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     // if the user has changed, we need to disable notification for previous user.
                     var previousUser = userManager.FindByIdAsync(previousUserId.ToString()).Result;
                     var previousReassignedMessages = notificationService.GetMessagesForUser(previousUserId.ToString(), TemplateTypeConstants.ReassignedToNewClass, classRoomGroup.Id);
-                    if (previousReassignedMessages.Count > 0) {
+                    if (previousReassignedMessages.Count > 0)
+                    {
                         foreach (var item in previousReassignedMessages)
                         {
                             notificationService.DisableNotification(item.Id.ToString());
                         }
                     }
-
                 }
 
                 //also update the userhierarchy on classroomgroup, as well as classProgramme so that a practitioner can see this
@@ -214,10 +217,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         notificationService.DisableNotification(item.Id.ToString());
                     }
                 }
-
                 return classRoomGroup;
             }
 
+            // add points for adding a new class for the principal
+            pointsService.CalculateAddNewClassToPreschool(uId);
+            
             return new ClassroomGroup();
         }
 
@@ -491,7 +496,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         new TagsReplacements()
                         {
                             FindValue = "ReportEndDate",
-                            ReplacementValue = sevenDaysBeforeEnd.ToString("dd MMM yyyy")
+                            ReplacementValue = item.EndDate.ToString("dd MMM yyyy")
                         }
                     };
                     notificationService.SendNotificationAsync(null, TemplateTypeConstants.FinishProgressReport, sevenDaysBeforeEnd, user, "", MessageStatusConstants.Amber, replacements, item.EndDate,

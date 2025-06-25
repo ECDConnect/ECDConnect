@@ -805,7 +805,7 @@ namespace ECDLink.ContentManagement.Repositories
             using MemoryStream fileStream = new MemoryStream(bytes);
 
             var fileName = DateTime.Now.Ticks + "_" + fieldName + getFileType(fileStr.Substring(0, fileStr.LastIndexOf(',')));
-            var fileUrl = Task.Run(() => _fileService.UploadFileStream(fileStream, fileName, FileTypeEnum.ContentImage)).Result;
+            var fileUrl = Task.Run(() => _fileService.UploadFileStreamAsync(fileStream, fileName, FileTypeEnum.ContentImage)).Result;
             fileStream.Dispose();
 
             return fileUrl.ToString();
@@ -919,72 +919,6 @@ namespace ECDLink.ContentManagement.Repositories
 
             return objDict.ToObject();
         }
-
-        // public bool Delete(int contentId)
-        // {
-        //     // get content with content values for tenant id
-        //     var content = _context.Contents
-        //                     .Include(i => i.ContentValues.Where(x => x.TenantId == TenantExecutionContext.Tenant.Id))
-        //                     .Where(x => x.Id == contentId)
-        //                     .FirstOrDefault();
-        //     if (content != null) {
-
-        //        // If the content value is a "SmallGroupActivity" || "LargeGroupActivity" || "StoryBook" || "StoryActivity",
-        //         if (content.ContentTypeId == ContentTypeConstants.ActivityId || content.ContentTypeId == ContentTypeConstants.StoryBookId) 
-        //         {
-        //             // activities
-        //             if (content.ContentTypeId == ContentTypeConstants.ActivityId) {
-        //                 var isSmallGroupActivity = content.ContentValues.Where(x => x.Value == ContentTypeConstants.SmallGroup).FirstOrDefault() != null;
-        //                 var isLargeGroupActivity = content.ContentValues.Where(x => x.Value == ContentTypeConstants.LargeGroup).FirstOrDefault() != null;
-        //                 var isStoryActivity = content.ContentValues.Where(x => x.Value == ContentTypeConstants.ActivityStoryTime).FirstOrDefault() != null;
-
-        //                 if (isSmallGroupActivity) {
-        //                     var programmeDays = _dbContext.DailyProgrammes.Where(x => x.SmallGroupActivityId == contentId).ToArray();
-        //                     foreach(var day in programmeDays) {
-        //                         day.SmallGroupActivityId = 0;
-        //                     }
-        //                     _dbContext.SaveChanges();
-        //                 }
-        //                 if (isLargeGroupActivity) {
-        //                     var programmeDays = _dbContext.DailyProgrammes.Where(x => x.LargeGroupActivityId == contentId).ToArray();
-        //                     foreach(var day in programmeDays) {
-        //                         day.LargeGroupActivityId = 0;
-        //                     }
-        //                     _dbContext.SaveChanges();
-        //                 }
-        //                 if (isStoryActivity) {
-        //                     var programmeDays = _dbContext.DailyProgrammes.Where(x => x.StoryActivityId == contentId).ToArray();
-        //                     foreach(var day in programmeDays) {
-        //                         day.StoryActivityId = 0;
-        //                     }
-        //                     _dbContext.SaveChanges();
-        //                 }
-        //             }
-        //             // story book
-        //             if (content.ContentTypeId == ContentTypeConstants.StoryBookId) {
-        //                 var programmeDays = _dbContext.DailyProgrammes.Where(x => x.StoryBookId == contentId).ToArray();
-        //                 foreach(var day in programmeDays) {
-        //                     day.StoryBookId = 0;
-        //                 }
-        //                 _dbContext.SaveChanges();
-        //             }
-        //         }
-
-        //         // remove content values
-        //         if (content.ContentValues.Count > 0) {
-        //             _context.RemoveRange(content.ContentValues);
-        //             _context.SaveChanges();
-        //         }
-
-        //         // remove content if no values are linked
-        //         content = _context.Contents.Where(x => x.Id == contentId).Include(i => i.ContentValues).FirstOrDefault();
-        //         if (content.ContentValues.Count == 0) {
-        //             _context.Remove(content);
-        //             _context.SaveChanges();
-        //         }
-        //     }
-        //     return true;
-        // }
 
         public bool Delete(int contentId)
         {
