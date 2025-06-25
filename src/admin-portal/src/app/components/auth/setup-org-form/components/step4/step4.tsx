@@ -8,7 +8,6 @@ import {
   useWatch,
 } from 'react-hook-form';
 import FormColorField from '../../../../form-color-field/form-color-field';
-import AppExample from '../../../../../../assets/app_example.png';
 import { useEffect, useState } from 'react';
 import { lightenColor } from '../../../../../utils/color-utils/color-utils';
 import { SetupOrgModel } from '../../../../../schemas/setup-org';

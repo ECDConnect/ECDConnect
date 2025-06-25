@@ -15,11 +15,7 @@ import {
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
-import {
-  classroomsActions,
-  classroomsSelectors,
-  classroomsThunkActions,
-} from '@store/classroom';
+import { classroomsActions, classroomsSelectors } from '@store/classroom';
 import { newGuid } from '@/utils/common/uuid.utils';
 import { useSelector } from 'react-redux';
 import {
@@ -93,7 +89,7 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
   }, [classroomGroup]);
 
   useEffect(() => {
-    const _list = practitioners
+    const _list = (practitioners ?? [])
       ?.filter((item) => item?.userId)
       ?.map((p) => {
         if (isOpenAccess) {
@@ -157,14 +153,11 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
         }),
       };
 
+      // moving database calls to setup-principal final step
       await appDispatch(
         classroomsActions.createClassroomGroup(classroomGroupModel)
       );
-      await appDispatch(classroomsThunkActions.upsertClassroomGroups({}));
-      await appDispatch(
-        classroomsThunkActions.upsertClassroomGroupProgrammes({})
-      );
-      await appDispatch(classroomsThunkActions.getClassroomGroups({}));
+
       (async () =>
         await appDispatch(
           practitionerThunkActions.getPractitionerByUserId({

@@ -32,7 +32,7 @@ namespace EcdLink.Api.CoreApi.Documents
                 return false;
             }
 
-            var isDeleted = _fileService.DeleteFile(document.Reference, document.DocumentType.EnumId).Result;
+            var isDeleted = _fileService.DeleteFileAsync(document.Reference, document.DocumentType.EnumId).Result;
 
             if (!isDeleted)
             {
@@ -57,7 +57,7 @@ namespace EcdLink.Api.CoreApi.Documents
             {
                 var fileName = document.Reference.Split("/").Last();
 
-                var isDeleted = _fileService.DeleteFile(fileName, document.DocumentType.EnumId).Result;
+                var isDeleted = _fileService.DeleteFileAsync(fileName, document.DocumentType.EnumId).Result;
 
                 if (!isDeleted)
                 {
@@ -85,7 +85,7 @@ namespace EcdLink.Api.CoreApi.Documents
 
             if (doc != null)
             {
-                _fileService.DeleteFile(doc.Name, doc.DocumentType.EnumId);
+                _fileService.DeleteFileAsync(doc.Name, doc.DocumentType.EnumId);
             }
 
             var document = _fileService.UploadBase64StringFileAsync(file, fileName, docType.EnumId).Result;

@@ -1,7 +1,8 @@
 import {
-  pointActivitiesItems,
   pointsActivitiesIds,
   pointsConstants,
+  practitionerActivitiesItems,
+  principalActivitiesItems,
 } from '@/constants/points';
 import { pointsSelectors, pointsThunkActions } from '@/store/points';
 import { practitionerSelectors } from '@/store/practitioner';
@@ -39,20 +40,16 @@ import { authSelectors } from '@/store/auth';
 import { PointsTodoItem } from './components/points-todo-item/points-todo-item';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useAppDispatch } from '@/store';
-import {
-  CalendarIcon,
-  ClipboardCheckIcon,
-  FireIcon,
-} from '@heroicons/react/solid';
-import { ReactComponent as Kindgarden } from '@/assets//icon/kindergarten1.svg';
-import { ReactComponent as Crown } from '@/assets//icon/crown.svg';
+import { ReactComponent as Kindgarden } from '@/assets/icon/kindergarten1.svg';
+import { ReactComponent as Crown } from '@/assets/icon/crown.svg';
 import { useTenant } from '@/hooks/useTenant';
-// import { pointsTodoItems } from '@/store/points/points.actions';
 import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import { PermissionsNames } from '@/pages/principal/components/add-practitioner/add-practitioner.types';
 import { BusinessTabItems } from '@/pages/business/business.types';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
+import { usePoints } from '@/hooks/usePoints';
+import { usePointsToDoEmoji } from '@/hooks/usePointsToDoEmoji';
 
 export const PointsSummary: React.FC = () => {
   const isTrialPeriod = useIsTrialPeriod();
@@ -65,7 +62,6 @@ export const PointsSummary: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const isPrincipal = practitioner?.isPrincipal;
-  const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
   const userAuth = useSelector(authSelectors.getAuthUser);
   const [showInfo, setShowInfo] = useState(false);
   const pointsToDo = useSelector(pointsSelectors.getPointsToDo);
@@ -83,10 +79,6 @@ export const PointsSummary: React.FC = () => {
   const pointsSummaryData = useSelector(pointsSelectors.getPointsSummary);
   const monthPoints = useSelector(pointsSelectors.getMonthPointsSummary);
 
-  const userStanding = useSelector(pointsSelectors.getCurrentClubStanding());
-  // const pointsTotalForYear = useSelector(
-  //   pointsSelectors.getPointsTotalForYear()
-  // );
   const pointsTotalForYear = useSelector(pointsSelectors.getTotalYearPoints);
 
   const pointsShareData = useSelector(pointsSelectors.getPointsShareData);
@@ -97,6 +89,18 @@ export const PointsSummary: React.FC = () => {
     );
     return response;
   }, [dispatch, practitioner?.userId]);
+
+  const {
+    phase1StatusText,
+    isPhase1Completed,
+    showPhase2Card,
+    getCurrentPointsToDo,
+    renderPointsToDoProgressBarColor,
+    renderPointsToDoScoreCardBgColor,
+    isPartOfPreschool,
+  } = usePoints();
+
+  const { renderPointsToDoEmoji } = usePointsToDoEmoji();
 
   const getshareData = useCallback(async () => {
     const response = await dispatch(
@@ -116,9 +120,15 @@ export const PointsSummary: React.FC = () => {
     return response;
   }, [practitioner?.userId, userAuth?.auth_token]);
 
-  const todoListFiltered = !practitioner?.isPrincipal
-    ? pointActivitiesItems
-        ?.filter((item) => item?.activity !== 'Income/expenses added')
+  const todoListFiltered = practitioner?.isPrincipal
+    ? principalActivitiesItems
+    : pointsShareData?.activityDetail?.length === 0
+    ? practitionerActivitiesItems?.filter((item2) =>
+        attendancePermission?.isActive !== true
+          ? item2?.activity !== 'Attendance registers saved'
+          : item2
+      )
+    : practitionerActivitiesItems
         ?.filter((item2) =>
           attendancePermission?.isActive !== true
             ? item2?.activity !== 'Attendance registers saved'
@@ -128,684 +138,237 @@ export const PointsSummary: React.FC = () => {
           return pointsShareData?.activityDetail?.some((f: any) => {
             return f.activity !== el.activity;
           });
-        })
-    : pointActivitiesItems.filter((el) => {
-        if (pointsShareData?.activityDetail?.length === 0) return true;
-        return pointsShareData?.activityDetail?.some((f: any) => {
-          return f.activity !== el.activity;
         });
-      });
 
-  const getCurrentPointsToDo = useMemo(() => {
-    if (pointsToDo) {
-      let newPointsToDo = { ...pointsToDo };
-      if (practitioner?.isPrincipal) {
-        removeMandatoryProperty(
-          newPointsToDo,
-          'plannedOneDay',
-          (value) => practitioner?.isPrincipal === true
-        );
-      } else {
-        removeMandatoryProperty(
-          newPointsToDo,
-          'savedIncomeOrExpense',
-          (value) => !practitioner?.isPrincipal
-        );
-      }
-
-      const pointsToDoValues = Object.values(newPointsToDo!)?.filter(
-        (item) => item === true
-      );
-      return pointsToDoValues?.length;
-    } else {
-      return 0;
-    }
-  }, [pointsToDo, practitioner?.isPrincipal]);
-
-  const renderTodoText = useMemo(() => {
-    if (pointsToDo?.viewedCommunitySection) {
-      return 'Influencer';
-    }
-
-    if (pointsToDo?.savedIncomeOrExpense && practitioner?.isPrincipal) {
-      return 'Boss';
-    }
-
-    if (
-      (pointsToDo?.plannedOneDay && practitioner?.isPrincipal) ||
-      (pointsToDo?.plannedOneDay &&
-        !practitioner?.isPrincipal &&
-        planActivitiesPermission?.isActive === true)
-    ) {
-      return 'Cwepheshe';
-    }
-
-    if (pointsToDo?.isPartOfPreschool && !isTrialPeriod) {
-      return 'Tichere';
-    }
-    if (pointsToDo?.signedUpForApp) {
-      return 'Umtsha';
-    }
-
-    return 'Umtsha';
-  }, [
-    planActivitiesPermission?.isActive,
-    pointsToDo?.isPartOfPreschool,
-    pointsToDo?.plannedOneDay,
-    pointsToDo?.savedIncomeOrExpense,
-    pointsToDo?.signedUpForApp,
-    pointsToDo?.viewedCommunitySection,
-    practitioner?.isPrincipal,
-    isTrialPeriod,
-  ]);
-
-  const renderPointsToDoScoreCardBgColor = useMemo(() => {
-    if (pointsToDo?.viewedCommunitySection) {
-      if (
-        (getCurrentPointsToDo === 3 && practitioner?.isPrincipal) ||
-        (!practitioner?.isPrincipal &&
-          planActivitiesPermission?.isActive === true &&
-          getCurrentPointsToDo === 3)
-      ) {
-        return 'quatenaryBg';
-      }
-      return 'successBg';
-    }
-
-    if (pointsToDo?.savedIncomeOrExpense && practitioner?.isPrincipal) {
-      return 'quatenaryBg';
-    }
-
-    if (
-      pointsToDo?.plannedOneDay &&
-      !practitioner?.isPrincipal &&
-      planActivitiesPermission?.isActive === true
-    ) {
-      return 'quatenaryBg';
-    }
-
-    if (pointsToDo?.isPartOfPreschool && !isTrialPeriod) {
-      return 'secondaryAccent2';
-    }
-
-    if (pointsToDo?.signedUpForApp) {
-      return 'alertBg';
-    }
-
-    return 'alertBg';
-  }, [
-    getCurrentPointsToDo,
-    planActivitiesPermission?.isActive,
-    pointsToDo?.isPartOfPreschool,
-    pointsToDo?.plannedOneDay,
-    pointsToDo?.savedIncomeOrExpense,
-    pointsToDo?.signedUpForApp,
-    pointsToDo?.viewedCommunitySection,
-    practitioner?.isPrincipal,
-    isTrialPeriod,
-  ]);
-
-  const renderPointsToDoEmoji = useMemo(() => {
-    if (pointsToDo?.viewedCommunitySection) {
-      if (
-        (getCurrentPointsToDo === 5 && practitioner?.isPrincipal) ||
-        (!practitioner?.isPrincipal &&
-          planActivitiesPermission?.isActive === true &&
-          getCurrentPointsToDo === 3)
-      ) {
-        return (
-          <div className="bg-quatenary mr-4 rounded-full p-3">
-            <FireIcon className="font-white h-8  w-8 text-white" />
-          </div>
-        );
-      }
-      return (
-        <div className="bg-successDark mr-4 rounded-full p-3">
-          <FireIcon className="font-white h-8  w-8 text-white" />
-        </div>
-      );
-    }
-
-    if (pointsToDo?.savedIncomeOrExpense && practitioner?.isPrincipal) {
-      return (
-        <div className="bg-quatenary mr-4 rounded-full p-3">
-          <Crown className="font-white h-8  w-8  text-white text-white" />
-        </div>
-      );
-    }
-
-    if (
-      pointsToDo?.plannedOneDay &&
-      !practitioner?.isPrincipal &&
-      planActivitiesPermission?.isActive === true
-    ) {
-      return (
-        <div className="bg-quatenary mr-4 rounded-full p-3">
-          <CalendarIcon className="font-white h-8  w-8  text-white text-white" />
-        </div>
-      );
-    }
-
-    if (pointsToDo?.isPartOfPreschool && !isTrialPeriod) {
-      return (
-        <div className="bg-secondary mr-4 rounded-full p-3">
-          <Kindgarden className="font-white h-8  w-8 text-white" />
-        </div>
-      );
-    }
-    if (pointsToDo?.signedUpForApp) {
-      return (
-        <div className="bg-alertMain mr-4 rounded-full p-2">
-          <ClipboardCheckIcon className="font-white h-8  w-8 text-white" />
-        </div>
-      );
-    }
-
-    return (
-      <div className="bg-alertMain mr-4 rounded-full p-2">
-        <ClipboardCheckIcon className="font-white h-8  w-8 text-white" />
-      </div>
-    );
-  }, [
-    getCurrentPointsToDo,
-    planActivitiesPermission?.isActive,
-    pointsToDo?.isPartOfPreschool,
-    pointsToDo?.plannedOneDay,
-    pointsToDo?.savedIncomeOrExpense,
-    pointsToDo?.signedUpForApp,
-    pointsToDo?.viewedCommunitySection,
-    practitioner?.isPrincipal,
-    isTrialPeriod,
-  ]);
-
-  const renderPointsToDoProgressBarColor = useMemo(() => {
-    if (pointsToDo?.viewedCommunitySection) {
-      if (
-        (getCurrentPointsToDo === 3 && practitioner?.isPrincipal) ||
-        (!practitioner?.isPrincipal &&
-          planActivitiesPermission?.isActive === true &&
-          getCurrentPointsToDo === 3)
-      ) {
-        return 'quatenary';
-      }
-      return 'successMain';
-    }
-
-    if (pointsToDo?.savedIncomeOrExpense && practitioner?.isPrincipal) {
-      return 'quatenary';
-    }
-
-    if (
-      pointsToDo?.plannedOneDay &&
-      !practitioner?.isPrincipal &&
-      planActivitiesPermission?.isActive === true
-    ) {
-      return 'quatenary';
-    }
-
-    if (pointsToDo?.isPartOfPreschool && !isTrialPeriod) {
-      return 'secondary';
-    }
-
-    if (pointsToDo?.signedUpForApp) {
-      return 'alertMain';
-    }
-
-    return 'alertMain';
-  }, [
-    getCurrentPointsToDo,
-    planActivitiesPermission?.isActive,
-    pointsToDo?.isPartOfPreschool,
-    pointsToDo?.plannedOneDay,
-    pointsToDo?.savedIncomeOrExpense,
-    pointsToDo?.signedUpForApp,
-    pointsToDo?.viewedCommunitySection,
-    practitioner?.isPrincipal,
-    isTrialPeriod,
-  ]);
-
-  // const practitionerWithAttendancePermissionPointsToDo =
-  //   practitioner?.isPrincipal ||
-  //   (!practitioner?.isPrincipal && planActivitiesPermission?.isActive === true)
-  //     ? getCurrentPointsToDo < 4
-  //     : getCurrentPointsToDo < 3;
-
-  // const practitionerWithAttendancePermissionPoints =
-  //   practitioner?.isPrincipal ||
-  //   (!practitioner?.isPrincipal && planActivitiesPermission?.isActive === true)
-  //     ? getCurrentPointsToDo === 4
-  //     : getCurrentPointsToDo === 3;
-
-  function removeMandatoryProperty<T, K extends keyof T>(
-    obj: T,
-    prop: K,
-    condition: (value: T[K]) => boolean
-  ): void {
-    if (condition(obj[prop])) {
-      delete (obj as any)[prop]; // Use type assertion to bypass TypeScript checks
-    }
-  }
-
-  const getStackedMenuList = (): MenuListDataItem[] => {
+  const getPhase1StackedMenuList = (): MenuListDataItem[] => {
     const titleStyle = 'text-textDark font-semibold text-base leading-snug';
     const subTitleStyle = 'text-sm font-h1 font-normal text-textMid';
+    const stackedMenuList: MenuListDataItem[] = [];
 
-    const stackedMenuList: MenuListDataItem[] = [
-      {
-        id: '1',
-        title: `Umtsha`,
-        titleStyle: pointsToDo?.signedUpForApp
-          ? 'text-successDark'
-          : 'text-white',
-        subTitle: `Sign up for ${appName}`,
-        subTitleStyle: pointsToDo?.signedUpForApp
-          ? 'text-successDark'
-          : 'text-white',
-        className: !pointsToDo?.signedUpForApp ? '' : 'px-2',
-        menuIcon: pointsToDo?.signedUpForApp
-          ? 'CheckIcon'
-          : 'ClipboardCheckIcon',
-        iconBackgroundColor: 'quatenary',
-        iconColor: 'white',
-        menuIconClassName: 'bg-successMain rounded-full h-12 w-12 p-2.5',
-        backgroundColor: 'successBg',
-        showIcon: true,
-        onActionClick: () => {},
-        hideRightIcon: true,
-      },
-      {
-        id: '2',
-        title: 'Tichere',
-        titleStyle:
-          pointsToDo?.isPartOfPreschool && !isTrialPeriod
-            ? 'text-successDark'
-            : titleStyle,
-        subTitle: 'Set up or join your preschool',
-        subTitleStyle:
-          pointsToDo?.isPartOfPreschool && !isTrialPeriod
-            ? 'text-successDark'
-            : subTitleStyle,
-        className:
-          pointsToDo?.signedUpForApp &&
-          !pointsToDo?.isPartOfPreschool &&
-          isTrialPeriod
-            ? ''
-            : 'px-2',
-        menuIcon:
-          pointsToDo?.isPartOfPreschool && !isTrialPeriod ? 'CheckIcon' : '',
-        customIcon:
-          isTrialPeriod ||
-          (pointsToDo?.signedUpForApp && !pointsToDo?.isPartOfPreschool) ? (
-            <Kindgarden
-              className={`${
-                pointsToDo?.isPartOfPreschool && !isTrialPeriod
-                  ? `bg-successMain text-white`
-                  : 'text-quatenary bg-quatenary'
-              } z-50 mr-4 h-12 w-12 rounded-full p-2`}
-            />
-          ) : undefined,
-        iconBackgroundColor:
-          pointsToDo?.isPartOfPreschool && !isTrialPeriod
-            ? 'successMain'
-            : 'quatenary',
-        showIcon: true,
-        iconColor: 'white',
-        hideRightIcon: true,
-        backgroundColor:
-          pointsToDo?.isPartOfPreschool && !isTrialPeriod
-            ? 'successBg'
-            : pointsToDo?.signedUpForApp
-            ? 'quatenaryBg'
-            : 'adminPortalBg',
-        onActionClick:
-          pointsToDo?.signedUpForApp &&
-          !pointsToDo?.isPartOfPreschool &&
-          !isTrialPeriod &&
-          practitioner?.isPrincipal
-            ? () => history.push(ROUTES.PRINCIPAL.SETUP_PROFILE)
-            : pointsToDo?.signedUpForApp &&
-              !pointsToDo?.isPartOfPreschool &&
-              !isTrialPeriod &&
-              !practitioner?.isPrincipal
-            ? () => history.push(ROUTES.PRACTITIONER.PROFILE.EDIT)
-            : () => {},
-      },
-      {
-        id: '3',
-        title: practitioner?.isPrincipal ? 'Boss' : 'Cwepheshe',
-        titleStyle:
-          pointsToDo?.savedIncomeOrExpense || pointsToDo?.plannedOneDay
-            ? 'text-successDark'
-            : titleStyle,
-        subTitle: practitioner?.isPrincipal
-          ? 'Add income/expense'
-          : 'Plan your daily routine',
-        subTitleStyle:
-          pointsToDo?.savedIncomeOrExpense || pointsToDo?.plannedOneDay
-            ? 'text-successDark'
-            : subTitleStyle,
-        className:
-          pointsToDo?.isPartOfPreschool &&
-          !isTrialPeriod &&
-          !pointsToDo?.savedIncomeOrExpense &&
-          !pointsToDo?.plannedOneDay
-            ? ''
-            : 'px-2',
-        menuIcon:
-          (practitioner?.isPrincipal && pointsToDo?.savedIncomeOrExpense) ||
-          (!practitioner?.isPrincipal && pointsToDo?.plannedOneDay)
-            ? 'CheckIcon'
-            : !practitioner?.isPrincipal && !pointsToDo?.plannedOneDay
-            ? 'CalendarIcon'
-            : '',
-        customIcon:
-          pointsToDo?.signedUpForApp &&
-          practitioner?.isPrincipal &&
-          !pointsToDo?.savedIncomeOrExpense &&
-          !pointsToDo?.plannedOneDay ? (
-            <Crown
-              className={`${
-                pointsToDo?.savedIncomeOrExpense || pointsToDo?.plannedOneDay
-                  ? 'bg-successMain'
-                  : !pointsToDo?.isPartOfPreschool && isTrialPeriod
-                  ? `bg-uiLight text-white`
-                  : 'text-quatenary bg-quatenary'
-              } z-50 mr-4 h-12 w-12 rounded-full p-2`}
-            />
-          ) : undefined,
-        iconBackgroundColor:
-          pointsToDo?.savedIncomeOrExpense || pointsToDo?.plannedOneDay
-            ? 'successMain'
-            : !pointsToDo?.isPartOfPreschool
-            ? 'uiLight'
-            : 'quatenary',
-        showIcon: true,
-        iconColor: 'white',
-        hideRightIcon: true,
-        backgroundColor:
-          pointsToDo?.savedIncomeOrExpense || pointsToDo?.plannedOneDay
-            ? 'successBg'
-            : pointsToDo?.isPartOfPreschool && !isTrialPeriod
-            ? 'quatenaryBg'
-            : 'adminPortalBg',
-        onActionClick:
-          pointsToDo?.isPartOfPreschool &&
-          !isTrialPeriod &&
-          !pointsToDo?.savedIncomeOrExpense &&
-          !pointsToDo?.savedIncomeOrExpense &&
-          practitioner?.isPrincipal
-            ? () =>
-                history.push(ROUTES.BUSINESS, {
-                  activeTabIndex: BusinessTabItems.MONEY,
-                })
-            : pointsToDo?.isPartOfPreschool &&
-              !isTrialPeriod &&
-              !pointsToDo?.savedIncomeOrExpense &&
-              !pointsToDo?.savedIncomeOrExpense &&
-              !practitioner?.isPrincipal
-            ? () =>
-                history.push(ROUTES.CLASSROOM.ROOT, {
-                  activeTabIndex: TabsItems.ACTIVITES,
-                })
-            : () => {},
-      },
-      {
-        id: '4',
-        title: `Influencer`,
-        titleStyle: pointsToDo?.viewedCommunitySection
+    // To make tichere clickable
+    const canClickTichere = tenant.isWhiteLabel
+      ? pointsToDo?.signedUpForApp && !isPartOfPreschool
+      : // OA Principal/Practitioner will have a preschool by default, but we need to check for progress less than 2
+        pointsToDo?.signedUpForApp && !isPartOfPreschool;
+
+    const tichereUrl = practitioner?.isPrincipal
+      ? ROUTES.PRINCIPAL.SETUP_PROFILE
+      : practitioner?.principalHierarchy && !practitioner?.dateAccepted
+      ? ROUTES.PRACTITIONER.PROFILE.EDIT
+      : ROUTES.PRINCIPAL.SETUP_PROFILE;
+
+    // To make influencer clickable
+    const canClickInfluencer =
+      isPartOfPreschool && !pointsToDo?.viewedCommunitySection;
+
+    const umtsha: MenuListDataItem = {
+      id: '1',
+      title: `Umtsha`,
+      titleStyle: pointsToDo?.signedUpForApp
+        ? 'text-successDark'
+        : 'text-white',
+      subTitle: `Sign up for ${appName}`,
+      subTitleStyle: pointsToDo?.signedUpForApp
+        ? 'text-successDark'
+        : 'text-white',
+      className: !pointsToDo?.signedUpForApp ? '' : 'px-2',
+      menuIcon: pointsToDo?.signedUpForApp ? 'CheckIcon' : 'ClipboardCheckIcon',
+      iconBackgroundColor: 'quatenary',
+      iconColor: 'white',
+      menuIconClassName: 'bg-successMain rounded-full h-12 w-12 p-2.5',
+      backgroundColor: 'successBg',
+      showIcon: true,
+      onActionClick: () => {},
+      hideRightIcon: true,
+    };
+
+    const tichere: MenuListDataItem = {
+      id: '2',
+      title: 'Tichere',
+      titleStyle: isPartOfPreschool ? 'text-successDark' : titleStyle,
+      subTitle: 'Set up or join your preschool',
+      subTitleStyle: isPartOfPreschool ? 'text-successDark' : subTitleStyle,
+      className: !isPartOfPreschool ? '' : 'px-2',
+      menuIcon: isPartOfPreschool ? 'CheckIcon' : '',
+      customIcon: !isPartOfPreschool ? (
+        <Kindgarden
+          className={`${
+            isPartOfPreschool
+              ? `bg-successMain text-white`
+              : 'text-quatenary bg-quatenary'
+          } z-50 mr-4 h-12 w-12 rounded-full p-2`}
+        />
+      ) : undefined,
+      iconBackgroundColor: isPartOfPreschool ? 'successMain' : 'quatenary',
+      showIcon: true,
+      iconColor: 'white',
+      hideRightIcon: true,
+      backgroundColor: isPartOfPreschool ? 'successBg' : 'quatenaryBg',
+      onActionClick: canClickTichere
+        ? () => history.push(tichereUrl, {})
+        : () => {},
+    };
+
+    const bossOrCwepheshe: MenuListDataItem = {
+      id: '3',
+      title: practitioner?.isPrincipal ? 'Boss' : 'Cwepheshe',
+      titleStyle:
+        pointsToDo?.savedIncomeOrExpense || pointsToDo?.plannedOneDay
           ? 'text-successDark'
           : titleStyle,
-        subTitle: `Explore the community`,
-        subTitleStyle: pointsToDo?.viewedCommunitySection
+      subTitle: practitioner?.isPrincipal
+        ? 'Add income/expense'
+        : 'Plan your daily routine',
+      subTitleStyle:
+        pointsToDo?.savedIncomeOrExpense || pointsToDo?.plannedOneDay
           ? 'text-successDark'
           : subTitleStyle,
-        className:
-          (pointsToDo?.savedIncomeOrExpense ||
-            pointsToDo?.plannedOneDay ||
-            (!practitioner?.isPrincipal &&
-              planActivitiesPermission?.isActive === false &&
-              pointsToDo?.isPartOfPreschool &&
-              !isTrialPeriod)) &&
-          !pointsToDo?.viewedCommunitySection
-            ? ''
-            : 'px-2',
-        menuIcon: pointsToDo?.viewedCommunitySection ? 'CheckIcon' : 'FireIcon',
-        iconBackgroundColor: 'quatenary',
-        iconColor: 'white',
-        menuIconClassName: `${
-          pointsToDo?.viewedCommunitySection
-            ? 'bg-successMain'
-            : pointsToDo?.savedIncomeOrExpense ||
-              pointsToDo?.plannedOneDay ||
-              (!practitioner?.isPrincipal &&
-                (planActivitiesPermission?.isActive === false ||
-                  planActivitiesPermission?.isActive === undefined) &&
-                pointsToDo?.isPartOfPreschool &&
-                !isTrialPeriod)
-            ? 'quatenary'
-            : 'bg-uiLight'
-        } rounded-full h-12 w-12 p-2.5`,
-        showIcon: true,
-        onActionClick:
-          pointsToDo?.savedIncomeOrExpense ||
+      className:
+        isPartOfPreschool &&
+        !pointsToDo?.savedIncomeOrExpense &&
+        !pointsToDo?.plannedOneDay
+          ? ''
+          : 'px-2',
+      menuIcon:
+        (practitioner?.isPrincipal && pointsToDo?.savedIncomeOrExpense) ||
+        (!practitioner?.isPrincipal && pointsToDo?.plannedOneDay)
+          ? 'CheckIcon'
+          : !practitioner?.isPrincipal && !pointsToDo?.plannedOneDay
+          ? 'CalendarIcon'
+          : '',
+      customIcon:
+        pointsToDo?.signedUpForApp &&
+        practitioner?.isPrincipal &&
+        !pointsToDo?.savedIncomeOrExpense &&
+        !pointsToDo?.plannedOneDay ? (
+          <Crown
+            className={`${
+              pointsToDo?.savedIncomeOrExpense || pointsToDo?.plannedOneDay
+                ? 'bg-successMain'
+                : !isPartOfPreschool && isTrialPeriod
+                ? `bg-uiLight text-white`
+                : 'text-quatenary bg-quatenary'
+            } z-50 mr-4 h-12 w-12 rounded-full p-2`}
+          />
+        ) : undefined,
+      iconBackgroundColor:
+        pointsToDo?.savedIncomeOrExpense || pointsToDo?.plannedOneDay
+          ? 'successMain'
+          : !isPartOfPreschool
+          ? 'uiLight'
+          : 'quatenary',
+      showIcon: true,
+      iconColor: 'white',
+      hideRightIcon: true,
+      backgroundColor:
+        pointsToDo?.savedIncomeOrExpense || pointsToDo?.plannedOneDay
+          ? 'successBg'
+          : isPartOfPreschool
+          ? 'quatenaryBg'
+          : 'adminPortalBg',
+      onActionClick:
+        isPartOfPreschool &&
+        !pointsToDo?.savedIncomeOrExpense &&
+        practitioner?.isPrincipal
+          ? () =>
+              history.push(ROUTES.BUSINESS, {
+                activeTabIndex: BusinessTabItems.MONEY,
+              })
+          : isPartOfPreschool &&
+            !pointsToDo?.savedIncomeOrExpense &&
+            !practitioner?.isPrincipal
+          ? () =>
+              history.push(ROUTES.CLASSROOM.ROOT, {
+                activeTabIndex: TabsItems.ACTIVITES,
+              })
+          : () => {},
+    };
+
+    const influencer: MenuListDataItem = {
+      id: '4',
+      title: `Influencer`,
+      titleStyle: pointsToDo?.viewedCommunitySection
+        ? 'text-successDark'
+        : titleStyle,
+      subTitle: `Explore the community`,
+      subTitleStyle: pointsToDo?.viewedCommunitySection
+        ? 'text-successDark'
+        : subTitleStyle,
+      className:
+        (pointsToDo?.savedIncomeOrExpense ||
           pointsToDo?.plannedOneDay ||
           (!practitioner?.isPrincipal &&
-            (planActivitiesPermission?.isActive === false ||
-              planActivitiesPermission?.isActive === undefined) &&
-            !pointsToDo?.viewedCommunitySection)
-            ? () => history.push(ROUTES.COMMUNITY.WELCOME)
-            : () => {},
-        hideRightIcon: true,
-        backgroundColor: pointsToDo?.viewedCommunitySection
-          ? 'successBg'
+            planActivitiesPermission?.isActive === false &&
+            isPartOfPreschool)) &&
+        !pointsToDo?.viewedCommunitySection
+          ? ''
+          : 'px-2',
+      menuIcon: pointsToDo?.viewedCommunitySection ? 'CheckIcon' : 'FireIcon',
+      iconBackgroundColor: 'quatenary',
+      iconColor: 'white',
+      menuIconClassName: `${
+        pointsToDo?.viewedCommunitySection
+          ? 'bg-successMain'
           : pointsToDo?.savedIncomeOrExpense ||
             pointsToDo?.plannedOneDay ||
             (!practitioner?.isPrincipal &&
               (planActivitiesPermission?.isActive === false ||
                 planActivitiesPermission?.isActive === undefined) &&
-              pointsToDo?.isPartOfPreschool &&
-              !isTrialPeriod)
-          ? 'quatenaryBg'
-          : 'adminPortalBg',
-      },
-    ];
+              isPartOfPreschool)
+          ? 'quatenary'
+          : 'bg-uiLight'
+      } rounded-full h-12 w-12 p-2.5`,
+      showIcon: true,
+      onActionClick: canClickInfluencer
+        ? () => history.push(ROUTES.COMMUNITY.WELCOME)
+        : () => {},
+      hideRightIcon: true,
+      backgroundColor: pointsToDo?.viewedCommunitySection
+        ? 'successBg'
+        : pointsToDo?.savedIncomeOrExpense ||
+          pointsToDo?.plannedOneDay ||
+          (!practitioner?.isPrincipal &&
+            (planActivitiesPermission?.isActive === false ||
+              planActivitiesPermission?.isActive === undefined) &&
+            isPartOfPreschool)
+        ? 'quatenaryBg'
+        : 'adminPortalBg',
+    };
 
-    return stackedMenuList;
-  };
+    stackedMenuList.push(umtsha);
+    stackedMenuList.push(tichere);
 
-  const getSecondaryStackedMenuList = (): MenuListDataItem[] => {
-    const titleStyle = 'text-textDark font-semibold text-base leading-snug';
-    const subTitleStyle = 'text-sm font-h1 font-normal text-textMid';
-
-    const stackedMenuList: MenuListDataItem[] = [
-      {
-        id: '1',
-        title: `Umtsha`,
-        titleStyle: pointsToDo?.signedUpForApp
-          ? 'text-successDark'
-          : titleStyle,
-        subTitle: `Sign up for ${appName}`,
-        subTitleStyle: pointsToDo?.signedUpForApp
-          ? 'text-successDark'
-          : subTitleStyle,
-        className: !pointsToDo?.signedUpForApp ? '' : 'px-2',
-        menuIcon: pointsToDo?.signedUpForApp
-          ? 'CheckIcon'
-          : 'ClipboardCheckIcon',
-        iconBackgroundColor: 'quatenary',
-        iconColor: 'white',
-        menuIconClassName: 'bg-successMain rounded-full h-12 w-12 p-2.5',
-        backgroundColor: 'successBg',
-        showIcon: true,
-        onActionClick: () => {},
-        hideRightIcon: true,
-      },
-      {
-        id: '2',
-        title: 'Tichere',
-        titleStyle:
-          pointsToDo?.isPartOfPreschool && !isTrialPeriod
-            ? 'text-successDark'
-            : titleStyle,
-        subTitle: 'Set up or join your preschool',
-        subTitleStyle:
-          pointsToDo?.isPartOfPreschool && !isTrialPeriod
-            ? 'text-successDark'
-            : subTitleStyle,
-        className:
-          pointsToDo?.signedUpForApp &&
-          !pointsToDo?.isPartOfPreschool &&
-          isTrialPeriod
-            ? ''
-            : 'px-2',
-        menuIcon:
-          pointsToDo?.isPartOfPreschool && !isTrialPeriod ? 'CheckIcon' : '',
-        customIcon:
-          isTrialPeriod ||
-          (pointsToDo?.signedUpForApp && !pointsToDo?.isPartOfPreschool) ? (
-            <Kindgarden
-              className={`${
-                pointsToDo?.isPartOfPreschool && !isTrialPeriod
-                  ? `bg-successMain text-white`
-                  : 'text-quatenary bg-white'
-              } z-50 mr-4 h-12 w-12 rounded-full p-2`}
-            />
-          ) : undefined,
-        iconBackgroundColor:
-          pointsToDo?.isPartOfPreschool && !isTrialPeriod
-            ? 'successMain'
-            : 'quatenary',
-        showIcon: true,
-        iconColor: 'white',
-        hideRightIcon: true,
-        backgroundColor:
-          pointsToDo?.isPartOfPreschool && !isTrialPeriod
-            ? 'successBg'
-            : 'adminPortalBg',
-        onActionClick:
-          pointsToDo?.signedUpForApp &&
-          !pointsToDo?.isPartOfPreschool &&
-          isTrialPeriod &&
-          practitioner?.isPrincipal
-            ? pointsToDo?.signedUpForApp &&
-              !pointsToDo?.isPartOfPreschool &&
-              isTrialPeriod &&
-              !practitioner?.isPrincipal
-              ? () => history.push(ROUTES.PRINCIPAL.SETUP_PROFILE)
-              : () => history.push(ROUTES.PRACTITIONER.PROFILE.EDIT)
-            : () => {},
-      },
-      {
-        id: '4',
-        title: `Influencer`,
-        titleStyle: pointsToDo?.viewedCommunitySection
-          ? 'text-successDark'
-          : titleStyle,
-        subTitle: `Explore the community`,
-        subTitleStyle: pointsToDo?.viewedCommunitySection
-          ? 'text-successDark'
-          : subTitleStyle,
-        className:
-          (pointsToDo?.savedIncomeOrExpense ||
-            pointsToDo?.savedIncomeOrExpense) &&
-          !pointsToDo?.viewedCommunitySection
-            ? ''
-            : 'px-2',
-        menuIcon: pointsToDo?.viewedCommunitySection ? 'CheckIcon' : 'FireIcon',
-        iconBackgroundColor: 'quatenary',
-        iconColor: 'white',
-        menuIconClassName: `${
-          pointsToDo?.viewedCommunitySection ? 'bg-successMain' : 'bg-uiLight'
-        } rounded-full h-12 w-12 p-2.5`,
-        showIcon: true,
-        onActionClick: () => {},
-        hideRightIcon: true,
-        backgroundColor: pointsToDo?.viewedCommunitySection
-          ? 'successBg'
-          : pointsToDo?.savedIncomeOrExpense ||
-            pointsToDo?.plannedOneDay ||
-            (!practitioner?.isPrincipal &&
-              planActivitiesPermission?.isActive === false &&
-              pointsToDo?.isPartOfPreschool &&
-              !isTrialPeriod)
-          ? 'quatenaryBg'
-          : 'adminPortalBg',
-      },
-      {
-        id: '3',
-        title: practitioner?.isPrincipal ? 'Boss' : 'Cwepheshe',
-        titleStyle:
-          pointsToDo?.savedIncomeOrExpense || pointsToDo?.plannedOneDay
-            ? 'text-successDark'
-            : titleStyle,
-        subTitle: practitioner?.isPrincipal
-          ? 'Add income/expense'
-          : 'Plan your daily routine',
-        subTitleStyle:
-          pointsToDo?.savedIncomeOrExpense || pointsToDo?.plannedOneDay
-            ? 'text-successDark'
-            : subTitleStyle,
-        className:
-          pointsToDo?.isPartOfPreschool &&
-          !isTrialPeriod &&
+    if (!isPartOfPreschool) {
+      stackedMenuList.push(influencer);
+    } else {
+      if (isPrincipal) {
+        if (
           !pointsToDo?.savedIncomeOrExpense &&
-          !pointsToDo?.savedIncomeOrExpense
-            ? ''
-            : 'px-2',
-        menuIcon:
-          (practitioner?.isPrincipal && pointsToDo?.savedIncomeOrExpense) ||
-          (!practitioner?.isPrincipal && pointsToDo?.plannedOneDay)
-            ? 'CheckIcon'
-            : !practitioner?.isPrincipal && !pointsToDo?.plannedOneDay
-            ? 'CalendarIcon'
-            : '',
-        customIcon:
-          pointsToDo?.signedUpForApp && practitioner?.isPrincipal ? (
-            <Crown
-              className={`${
-                !pointsToDo?.isPartOfPreschool && isTrialPeriod
-                  ? `bg-uiLight text-white`
-                  : pointsToDo?.savedIncomeOrExpense
-                  ? 'text-quatenary bg-successMain'
-                  : 'text-quatenary bg-quatenary'
-              } z-50 mr-4 h-12 w-12 rounded-full p-2`}
-            />
-          ) : undefined,
-        iconBackgroundColor:
-          pointsToDo?.savedIncomeOrExpense || pointsToDo?.plannedOneDay
-            ? 'successBg'
-            : !pointsToDo?.isPartOfPreschool && isTrialPeriod
-            ? 'uiLight'
-            : 'quatenary',
-        showIcon: true,
-        iconColor: 'white',
-        hideRightIcon: true,
-        backgroundColor:
-          pointsToDo?.savedIncomeOrExpense || pointsToDo?.savedIncomeOrExpense
-            ? 'successBg'
-            : pointsToDo?.isPartOfPreschool && isTrialPeriod
-            ? 'quatenaryBg'
-            : 'adminPortalBg',
-        onActionClick:
-          pointsToDo?.isPartOfPreschool &&
-          !isTrialPeriod &&
-          !pointsToDo?.savedIncomeOrExpense &&
-          !pointsToDo?.savedIncomeOrExpense &&
-          practitioner?.isPrincipal
-            ? () => history.push(ROUTES.BUSINESS)
-            : pointsToDo?.isPartOfPreschool &&
-              !isTrialPeriod &&
-              !pointsToDo?.savedIncomeOrExpense &&
-              !pointsToDo?.savedIncomeOrExpense &&
-              !practitioner?.isPrincipal
-            ? () =>
-                history.push(ROUTES.CLASSROOM.ROOT, {
-                  activeTabIndex: TabsItems.ACTIVITES,
-                })
-            : () => {},
-      },
-    ];
-
+          pointsToDo?.viewedCommunitySection
+        ) {
+          stackedMenuList.push(influencer);
+          stackedMenuList.push(bossOrCwepheshe);
+        } else {
+          stackedMenuList.push(bossOrCwepheshe);
+          stackedMenuList.push(influencer);
+        }
+      } else {
+        if (!planActivitiesPermission?.isActive) {
+          stackedMenuList.push(influencer);
+        } else {
+          if (
+            !pointsToDo?.plannedOneDay &&
+            pointsToDo?.viewedCommunitySection
+          ) {
+            stackedMenuList.push(influencer);
+            stackedMenuList.push(bossOrCwepheshe);
+          } else {
+            stackedMenuList.push(bossOrCwepheshe);
+            stackedMenuList.push(influencer);
+          }
+        }
+      }
+    }
     return stackedMenuList;
   };
 
@@ -836,18 +399,14 @@ export const PointsSummary: React.FC = () => {
         pointsActivity.pointsLibraryId ===
           pointsActivitiesIds.MonthlyPreschoolFeeUpdated &&
         pointsActivity.pointsYTD === 0 &&
-        (practitioner?.isPrincipal || practitioner?.isFundaAppAdmin)
+        practitioner?.isPrincipal
       ) {
         pointsList.push(pointsActivity);
       }
     });
 
     return pointsList;
-  }, [
-    pointsSummaryDataWithLibrary,
-    practitioner?.isFundaAppAdmin,
-    practitioner?.isPrincipal,
-  ]);
+  }, [pointsSummaryDataWithLibrary, practitioner?.isPrincipal]);
 
   const currentMonth = new Date().getMonth(); // +1 for 0 index
 
@@ -860,10 +419,9 @@ export const PointsSummary: React.FC = () => {
     }
     return total;
   }, 0);
-  let pointsMax =
-    isPrincipal || isFundaAppAdmin
-      ? pointsConstants.principalOrAdminMonthlyMax
-      : pointsConstants.practitionerMonthlyMax;
+  let pointsMax = isPrincipal
+    ? pointsConstants.principalOrAdminMonthlyMax
+    : pointsConstants.practitionerMonthlyMax;
 
   const percentageScore = (monthPoints / pointsMax) * 100;
 
@@ -1007,44 +565,84 @@ export const PointsSummary: React.FC = () => {
             color="black"
             text={format(new Date(), 'MMMM yyyy')}
           />
-          {(!pointsTotalForYear ||
-            (pointsTotalForYear && pointsTotalForYear < 10)) && (
-            <NoPointsScoreCard
-              image={renderPointsToDoEmoji}
-              className="mt-5 py-6"
-              mainText={renderTodoText}
-              currentPoints={getCurrentPointsToDo}
-              maxPoints={
-                isTrialPeriod
-                  ? 6
-                  : practitioner?.isPrincipal ||
-                    (!practitioner?.isPrincipal &&
-                      planActivitiesPermission?.isActive === true)
-                  ? 4
-                  : 3
-              }
-              barBgColour="white"
-              barColour={renderPointsToDoProgressBarColor}
-              bgColour={renderPointsToDoScoreCardBgColor}
-              textColour="black"
-              isBigTitle={false}
-            />
+          {/* Phase 1 ------------------------------------------------------ */}
+
+          {/* Phase 1 not completed */}
+          {!isPhase1Completed && (
+            <>
+              <NoPointsScoreCard
+                image={renderPointsToDoEmoji}
+                className="mt-5 py-6"
+                mainText={phase1StatusText ?? 'Umtsha'}
+                currentPoints={getCurrentPointsToDo}
+                maxPoints={
+                  isTrialPeriod
+                    ? 6
+                    : practitioner?.isPrincipal ||
+                      (!practitioner?.isPrincipal &&
+                        planActivitiesPermission?.isActive === true)
+                    ? 4
+                    : 3
+                }
+                barBgColour="white"
+                barColour={renderPointsToDoProgressBarColor}
+                bgColour={renderPointsToDoScoreCardBgColor}
+                textColour="black"
+                isBigTitle={false}
+              />
+              <Divider dividerType="dashed" className="mt-4" />
+              <Typography
+                className="mt-4 mb-4"
+                type={'h3'}
+                color="black"
+                text={`Get to the next level!`}
+              />
+
+              <div>
+                <StackedList
+                  listItems={getPhase1StackedMenuList()}
+                  type={'MenuList'}
+                  className={'-mt-0.5 flex flex-col gap-1.5'}
+                ></StackedList>
+              </div>
+            </>
           )}
-          {(!pointsTotalForYear ||
-            (pointsTotalForYear && pointsTotalForYear < 10)) &&
-          pointsToDo?.viewedCommunitySection &&
-          getCurrentPointsToDo === 4 ? (
-            <CelebrationCard
-              image={<EmojiHappyYellow className="mr-2 h-20 w-20" />}
-              primaryMessage={`Wow, great job!`}
-              secondaryMessage={`Take a bow, ${appName} pro!`}
-              primaryTextColour="white"
-              secondaryTextColour="white"
-              backgroundColour="successMain"
-              className="mt-4"
-            />
+          {/* Phase 1 complete and still no points */}
+          {isPhase1Completed && pointsTotalForYear === 0 ? (
+            <>
+              <CelebrationCard
+                image={<EmojiHappyYellow className="mr-2 h-20 w-20" />}
+                primaryMessage={`Wow, great job!`}
+                secondaryMessage={`Take a bow, ${appName} pro!`}
+                primaryTextColour="white"
+                secondaryTextColour="white"
+                backgroundColour="successMain"
+                className="mt-4"
+              />
+              <div>
+                <Divider dividerType="dashed" className="mt-4" />
+                <Typography
+                  className="mt-4 mb-4"
+                  type={'h3'}
+                  color="black"
+                  text={`Get to the next level!`}
+                />
+                <div>
+                  <StackedList
+                    listItems={getPhase1StackedMenuList()}
+                    type={'MenuList'}
+                    className={'-mt-0.5 flex flex-col gap-1.5'}
+                  ></StackedList>
+                </div>
+              </div>
+            </>
           ) : null}
-          {pointsTotalForYear && pointsTotalForYear >= 10 ? (
+
+          {/* Phase 2 ------------------------------------------------------ */}
+          {isPhase1Completed &&
+          showPhase2Card &&
+          pointsTotalForYear &&
+          pointsTotalForYear > 0 ? (
             <ScoreCard
               className="mt-5 py-6"
               mainText={`${monthPoints} points`}
@@ -1068,18 +666,21 @@ export const PointsSummary: React.FC = () => {
               textColour="black"
             />
           ) : null}
-          {(!isOnline &&
-            monthPoints &&
-            pointsTotalForYear &&
-            pointsTotalForYear >= 10 &&
-            getCurrentPointsToDo) === 4 || percentageScore === 0 ? (
+
+          {/* celebration card with no percentage score */}
+          {isPhase1Completed && showPhase2Card && percentageScore === 0 ? (
             <div>{celebrationCard}</div>
           ) : null}
+
+          {/* celebration card */}
           {isOnline &&
-          monthPoints &&
+          isPhase1Completed &&
+          showPhase2Card &&
+          monthPoints > 0 &&
           pointsTotalForYear &&
-          pointsTotalForYear >= 10 ? (
+          pointsTotalForYear > 0 ? (
             <CelebrationCard
+              className="mt-3"
               image={getEmoji(
                 pointsShareData?.userRankingData
                   ?.comparativeTargetPercentageColor!
@@ -1101,44 +702,14 @@ export const PointsSummary: React.FC = () => {
               )}
             />
           ) : null}
-          {getCurrentPointsToDo < 4 ? (
-            <div>
-              <Divider dividerType="dashed" />
-              <Typography
-                className="mt-4 mb-4"
-                type={'h3'}
-                color="black"
-                text={`Get to the next level!`}
-              />
-              <div>
-                <StackedList
-                  listItems={
-                    getCurrentPointsToDo === 3 &&
-                    pointsToDo?.viewedCommunitySection
-                      ? practitioner?.isPrincipal ||
-                        (!practitioner?.isPrincipal &&
-                          planActivitiesPermission?.isActive === true)
-                        ? getSecondaryStackedMenuList()
-                        : getSecondaryStackedMenuList()?.filter(
-                            (item) => item?.id !== '3'
-                          )
-                      : practitioner?.isPrincipal ||
-                        (!practitioner?.isPrincipal &&
-                          planActivitiesPermission?.isActive === true)
-                      ? getStackedMenuList()
-                      : getStackedMenuList()?.filter((item) => item?.id !== '3')
-                  }
-                  type={'MenuList'}
-                  className={'-mt-0.5 flex flex-col gap-1.5'}
-                ></StackedList>
-              </div>
-            </div>
-          ) : null}
-          {!!todoListFiltered &&
-          !!todoListFiltered.length &&
-          getCurrentPointsToDo > 3 ? (
+
+          {/* Text heading for earning more points */}
+          {isPhase1Completed &&
+          showPhase2Card &&
+          pointsTotalForYear &&
+          pointsTotalForYear > 0 ? (
             <Typography
-              className="mt-8 mb-4"
+              className="mt-4 mb-4"
               type={'h3'}
               color="black"
               text={`How you can earn more points in ${format(
@@ -1147,10 +718,13 @@ export const PointsSummary: React.FC = () => {
               )}:`}
             />
           ) : null}
+
+          {/* Show items of how you can score - when in phase 2 and there are points for the year */}
           {!!todoListFiltered &&
+          isPhase1Completed &&
+          showPhase2Card &&
           pointsTotalForYear &&
-          pointsTotalForYear >= 10 &&
-          getCurrentPointsToDo > 3
+          pointsTotalForYear > 0
             ? todoListFiltered?.slice(0, 3)?.map((item) => {
                 return (
                   <div
@@ -1170,8 +744,14 @@ export const PointsSummary: React.FC = () => {
               })
             : null}
         </div>
+
+        {/* Share icon button - when phase 2 and there are month and year points */}
         <div className="flex-column mt-10 justify-end p-4">
-          {pointsTotalForYear && pointsTotalForYear >= 10 && monthPoints > 0 ? (
+          {isPhase1Completed &&
+          showPhase2Card &&
+          pointsTotalForYear &&
+          pointsTotalForYear > 0 &&
+          monthPoints > 0 ? (
             <Button
               size="normal"
               className="mb-4 w-full"
@@ -1186,7 +766,7 @@ export const PointsSummary: React.FC = () => {
                   if (shareRef.current) {
                     captureAndDownloadComponent(
                       shareRef.current,
-                      'points-month-summary.jpg'
+                      `points-month-summary-${format(new Date(), 'MMM-yyyy')}`
                     );
                     setShowPrintData(false);
                   }
@@ -1194,27 +774,33 @@ export const PointsSummary: React.FC = () => {
               }}
             />
           ) : null}
-          {(pointsTotalForYear &&
-            pointsTotalForYear >= 10 &&
-            monthPoints === 0 &&
-            !practitioner?.coachHierarchy) ||
-          (percentageScore === 0 && !practitioner?.coachHierarchy) ? (
+
+          {/* Button to find to show how to - when there is yearly points but no month points in phase 2 */}
+          {isPhase1Completed &&
+          showPhase2Card &&
+          pointsTotalForYear &&
+          pointsTotalForYear > 0 &&
+          monthPoints === 0 &&
+          !practitioner?.coachHierarchy ? (
             <Button
               size="normal"
               className="mb-4 w-full"
               type="filled"
               color="quatenary"
-              text="Find out how you can earn points"
+              text="How to earn points"
               textColor="white"
-              icon="LightBulbIcon"
+              icon="QuestionMarkCircleIcon"
               onClick={() => setShowInfo(true)}
             />
           ) : null}
-          {(pointsTotalForYear &&
-            pointsTotalForYear >= 10 &&
-            monthPoints === 0 &&
-            practitioner?.coachHierarchy) ||
-          (percentageScore === 0 && practitioner?.coachHierarchy) ? (
+
+          {/* Button to ask coach help - when there is yearly points, no month points and assigned coach in phase 2 */}
+          {isPhase1Completed &&
+          showPhase2Card &&
+          pointsTotalForYear &&
+          pointsTotalForYear > 0 &&
+          monthPoints === 0 &&
+          practitioner?.coachHierarchy ? (
             <Button
               size="normal"
               className="mb-4 w-full"
@@ -1226,7 +812,12 @@ export const PointsSummary: React.FC = () => {
               onClick={() => history.push(ROUTES.PRACTITIONER.CONTACT_COACH)}
             />
           ) : null}
-          {pointsTotalForYear && pointsTotalForYear >= 10 ? (
+
+          {/* Button to see detailed report - when in phase 2 and there are points for year */}
+          {isPhase1Completed &&
+          showPhase2Card &&
+          pointsTotalForYear &&
+          pointsTotalForYear > 0 ? (
             <Button
               size="normal"
               className="mb-4 w-full"
@@ -1258,10 +849,6 @@ export const PointsSummary: React.FC = () => {
               : `${practitioner?.user?.firstName}`
           }
           childCount={pointsShareData?.totalChildren || 0}
-          clubStanding={
-            userStanding?.percentageMembersWithFewerPointsForCurrentMonth || 0
-          }
-          clubName={practitioner?.clubName || 'Unknown Club'}
         />
       </div>
     </>

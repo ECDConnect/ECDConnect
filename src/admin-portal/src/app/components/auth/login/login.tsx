@@ -3,9 +3,8 @@ import {
   initialLoginValues,
   LoginRequestModel,
   loginSchema,
-  useTheme,
 } from '@ecdlink/core';
-import { Alert, Button, Divider, Typography } from '@ecdlink/ui';
+import { Alert, Button, Typography } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -18,7 +17,6 @@ import { PasswordInput } from '../../password-input/password-input';
 
 export default function Login() {
   const { login } = useAuth();
-  const { theme } = useTheme();
   const history = useHistory();
   const [displayError, setDisplayError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);

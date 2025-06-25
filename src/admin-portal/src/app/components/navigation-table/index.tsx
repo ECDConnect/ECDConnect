@@ -144,7 +144,7 @@ export default function NavigationTable({
         <span
           className="cursor-pointer overflow-ellipsis"
           onClick={() => {
-            component !== 'team-leads' && viewRow(row);
+            viewRow(row);
           }}
         >
           {formatDate(display_value)}

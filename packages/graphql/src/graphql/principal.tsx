@@ -27,23 +27,18 @@ export const GetAllPrincipal = gql`
         ward
       }
       attendanceRegisterLink
-      maxChildren
       isPrincipal
-      isFundaAppAdmin
       isRegistered
-      isTrainee
       consentForPhoto
       parentFees
       languageUsedInGroups
       startDate
-      monthSinceFranchisee
       signingSignature
       isLeaving
       dateLinked
       dateToBeRemoved
       dateAccepted
       progress
-      attendedChildProgress
       usePhotoInReport
     }
   }
@@ -76,21 +71,17 @@ export const allPrincipal = gql`
         ward
       }
       attendanceRegisterLink
-      maxChildren
       isPrincipal
-      isFundaAppAdmin
       isRegistered
       consentForPhoto
       parentFees
       languageUsedInGroups
       startDate
-      monthSinceFranchisee
       isLeaving
       dateLinked
       dateToBeRemoved
       dateAccepted
       progress
-      attendedChildProgress
       usePhotoInReport
     }
   }
@@ -119,23 +110,18 @@ export const GetPrincipalById = gql`
         ward
       }
       attendanceRegisterLink
-      maxChildren
       consentForPhoto
       parentFees
       languageUsedInGroups
       startDate
-      monthSinceFranchisee
       isPrincipal
-      isFundaAppAdmin
       isRegistered
-      isTrainee
       signingSignature
       isLeaving
       dateLinked
       dateToBeRemoved
       dateAccepted
       progress
-      attendedChildProgress
       usePhotoInReport
     }
   }

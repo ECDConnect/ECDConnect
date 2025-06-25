@@ -121,7 +121,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   const hasAbsenteeClasses =
     allAbsenteeClasses && allAbsenteeClasses?.length > 0;
 
-  const isLoggedInUser = practitionerUser?.userId === practitionerId;
+  // const isLoggedInUser = practitionerUser?.userId === practitionerId;
 
   const [selectedLeaveDate, setSelectedLeave] = useState<Date>();
   const currentDate = selectedLeaveDate ? selectedLeaveDate : new Date();
@@ -165,7 +165,8 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
     reassignedClassroomGroupProps[]
   >([]);
 
-  const [pracOnLeave, setPracOnLeave] = useState<string | null>(null);
+  const [pracOnLeaveId, setPracOnLeaveId] = useState<string | null>(null);
+  const isLoggedInUser = pracOnLeaveId === userData?.id;
 
   const [endDate, setEndDate] = useState<Date>();
   const [isLoading, setIsLoading] = useState(false);
@@ -492,38 +493,23 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
     if (isLoggedInUser) {
       await appDispatch(
         practitionerThunkActions.getPractitionerByUserId({
-          userId: practitionerId!,
-        })
-      ).unwrap();
-    }
-
-    if (pracOnLeave) {
-      await appDispatch(
-        practitionerThunkActions.getPractitionerByUserId({
-          userId: pracOnLeave!,
+          userId: pracOnLeaveId!,
         })
       ).unwrap();
     }
 
     setIsLoading(false);
 
-    const redirectTo =
-      principalPractitioner || pracOnLeave === practitionerUser?.userId
-        ? ROUTES.PRACTITIONER.PROFILE.ROOT
-        : practitionerId
-        ? ROUTES.PRINCIPAL.PRACTITIONER_PROFILE
-        : ROUTES.CLASSROOM.ROOT;
-
-    const redirectState = practitionerId
-      ? { practitionerId }
-      : { activeTabIndex: TabsItems.CLASSES };
-
+    const redirectTo = isLoggedInUser
+      ? ROUTES.PRACTITIONER.PROFILE.ROOT
+      : ROUTES.PRINCIPAL.PRACTITIONER_PROFILE;
+    const redirectState = { practitionerId: pracOnLeaveId };
     history.push(redirectTo, redirectState);
   };
 
   useEffect(() => {
     if (routeState?.practitionerId !== undefined) {
-      setPracOnLeave(routeState?.practitionerId);
+      setPracOnLeaveId(routeState?.practitionerId);
     }
   }, []);
 
@@ -551,7 +537,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
           className={'mt-3 w-full'}
           selectedValue={practitioner}
           onChange={(item: any) => {
-            setPracOnLeave(item);
+            setPracOnLeaveId(item);
             setReassignClassValue('practitioner', item);
             setPractitionersTeachList(
               practitionersList.filter((prac) => prac.value !== item)
@@ -743,7 +729,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                         list={
                           filteredPractitioners.filter(
                             (practitioner: any) =>
-                              practitioner.value !== pracOnLeave
+                              practitioner.value !== pracOnLeaveId
                           ) ?? []
                         }
                         fillType="clear"

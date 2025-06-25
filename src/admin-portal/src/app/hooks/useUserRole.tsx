@@ -9,7 +9,6 @@ export const useUserRole = () => {
     const rolesSet = new Set(user?.roles?.map((role) => role.systemName));
 
     return {
-      isTeamLead: rolesSet.has(UserRoles.TeamLead),
       isAdministrator: rolesSet.has(UserRoles.Administrator),
       isSuperAdmin: rolesSet.has(UserRoles.SuperAdmin),
     };

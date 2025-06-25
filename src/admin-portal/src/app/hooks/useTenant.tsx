@@ -6,7 +6,6 @@ export type TenantContextType = {
   tenant: TenantModel | null;
   isWhiteLabel: boolean;
   isOpenAccess: boolean;
-  isCHWConnect: boolean;
   isFundaApp: boolean;
   modules: any | null;
   loading: boolean;
@@ -18,7 +17,6 @@ const TenantContext = React.createContext<TenantContextType>({
   tenant: null,
   isWhiteLabel: false,
   isOpenAccess: true,
-  isCHWConnect: false,
   isFundaApp: false,
   modules: null,
   loading: false,
@@ -31,7 +29,6 @@ export const TenantContextProvider: React.FC<{}> = ({ children }) => {
     tenant: null,
     isWhiteLabel: false,
     isOpenAccess: true,
-    isCHWConnect: false,
     isFundaApp: false,
     modules: null,
     loading: false,
@@ -61,9 +58,6 @@ export const TenantContextProvider: React.FC<{}> = ({ children }) => {
         isOpenAccess: !result
           ? true
           : result.tenantType === TenantType.OpenAccess,
-        isCHWConnect: !result
-          ? false
-          : result.tenantType === TenantType.ChwConnect,
         isFundaApp: !result ? false : result.tenantType === TenantType.FundaApp,
         loading: false,
         error: false,
@@ -96,10 +90,10 @@ export const TenantThemeProvider: React.FC<TenantThemeProviderProps> = (
 ) => {
   const tenant = useTenant();
 
-  const themeUrl =
-    !!tenant && !!tenant.tenant && !!tenant.tenant.themePath
-      ? tenant.tenant.themePath
-      : props.defaultThemeUrl;
+  // const themeUrl =
+  //   !!tenant && !!tenant.tenant && !!tenant.tenant.themePath
+  //     ? tenant.tenant.themePath
+  //     : props.defaultThemeUrl;
 
   return (
     <ThemeProvider themeEndPoint={props.defaultThemeUrl} overRideCache={true}>

@@ -16,6 +16,7 @@ import {
   updatePractitionerPermissions,
   updatePractitionerCommunityTabStatus,
   updatePractitionerProgressWalkthrough,
+  getPractitionerPermissions,
 } from './practitioner.actions';
 import {
   PractitionerState,
@@ -50,30 +51,6 @@ const practitionerSlice = createSlice({
         state.practitioner = action.payload;
       }
     },
-    updateClubForPractitioner: (
-      state,
-      action: PayloadAction<{ practitionerId: string; clubId: string }>
-    ) => {
-      if (!state.practitioners) {
-        return;
-      }
-
-      const practitioner = state.practitioners.find(
-        (practitioner) => practitioner.id === action.payload.practitionerId
-      );
-
-      if (!!practitioner) {
-        state.practitioners = [
-          ...state.practitioners?.filter(
-            (practitioner) => practitioner.id !== action.payload.practitionerId
-          ),
-          {
-            ...practitioner,
-            clubId: action.payload.clubId,
-          },
-        ];
-      }
-    },
   },
   extraReducers: (builder) => {
     setThunkActionStatus(builder, deActivatePractitioner);
@@ -92,6 +69,12 @@ const practitionerSlice = createSlice({
     });
     builder.addCase(getPractitionerByUserId.fulfilled, (state, action) => {
       state.practitioner = action.payload;
+    });
+    builder.addCase(getPractitionerPermissions.fulfilled, (state, action) => {
+      state.practitioner = {
+        ...state.practitioner,
+        permissions: action.payload.permissions,
+      };
     });
     builder.addCase(getAllPractitioners.fulfilled, (state, action) => {
       state.practitioners = action.payload;

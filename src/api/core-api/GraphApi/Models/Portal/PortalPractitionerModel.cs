@@ -9,7 +9,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
         public Guid? UserId { get; set; }
         public bool IsRegistered { get; set; }
         public bool? IsPrincipal { get; set; }
-        public bool? IsFundaAppAdmin { get; set; }
         public DateTime? InsertedDate { get; set; }
         public PortalPractitionerUserModel User { get; set; }
     }

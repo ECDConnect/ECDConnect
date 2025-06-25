@@ -5,8 +5,6 @@ import {
   StarIcon,
 } from '@heroicons/react/solid';
 import { useCallback } from 'react';
-import { useHistory } from 'react-router';
-import ROUTES from '../../routes/app.routes-constants';
 import {
   MessageStatusConstants,
   NotificationsCTAText,
@@ -48,22 +46,12 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
   className,
   refetchNotification,
 }) => {
-  const history = useHistory();
-
   const [markAsRead] = useMutation(MarkAsReadNotification);
 
   const [disableNotification, { loading: loadingDisableNotification }] =
     useMutation(DisableNotification);
 
-  const actionJson = JSON.parse(action || '{}');
-
-  const isToShowDismissButton = [
-    NotificationsCTAText.DuplicateClientPregnantMom,
-    NotificationsCTAText.DuplicateClientChild,
-    NotificationsCTAText.AdminNextMonthTLMeetingTopic,
-    NotificationsCTAText.NoMeetingReportClinic,
-    NotificationsCTAText.CHWsOptedOut,
-  ].includes(cTA as NotificationsCTAText);
+  const isToShowDismissButton = [].includes(cTA as NotificationsCTAText);
 
   const handleIcon = (type: string) => {
     switch (type) {
@@ -89,40 +77,6 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
   const handleRedirectURL = useCallback((value: string) => {
     // TODO: Add more switch cases accordingly with the BE types
     switch (value) {
-      // case NotificationsCTAText.AddMeetingReport:
-      //   return history.push(ROUTES.TEAM_MEETINGS, {
-      //     clinicId: targetClinic?.id,
-      //   });
-      // case NotificationsCTAText.SeeClinicSummary:
-      //   return history.push(ROUTES.TEAM_MEETINGS, {
-      //     clinicId: targetClinic?.id,
-      //   });
-      // case NotificationsCTAText.ContactCHW:
-      //   return goToTargetChw();
-      // case NotificationsCTAText.AddLeagues:
-      //   return history.push(ROUTES.CLINICS.LEAGUES.ROOT);
-      // case NotificationsCTAText.AssignToLeagues:
-      //   return history.push(ROUTES.CLINICS.LEAGUES.ROOT);
-      // case NotificationsCTAText.CHWsOptedOut:
-      //   return history.push(ROUTES.HEALTH_CARE_WORKER.OPTED_OUT, {
-      //     ...actionJson?.state,
-      //   } as HealthCareWorkerOptedOutRouteState);
-      // case NotificationsCTAText.DuplicateClientPregnantMom:
-      //   return goToTargetChw();
-      // case NotificationsCTAText.DuplicateClientChild:
-      //   return goToTargetChw();
-      // case NotificationsCTAText.AdminNextMonthTLMeetingTopic:
-      //   return history.push(ROUTES.TL_MEETINGS.EDIT_TOPICS);
-      // case NotificationsCTAText.ClinicMissingTL:
-      //   return history.push({
-      //     pathname: ROUTES.CLINICS.VIEW_CLINICS,
-      //     state: {
-      //       clinic: targetClinic,
-      //       openEditPanel: true,
-      //     } as ClinicsRouteState,
-      //   });
-      // case NotificationsCTAText.NoMeetingReportClinic:
-      //   return goToTargetTeamLead();
       default:
         return null;
     }
@@ -147,18 +101,6 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
       onCompleted: () => refetchNotification(),
     });
   };
-
-  // if (loadingClinicsData || loadingHcwData || loadingTeamLeadData) {
-  //   return (
-  //     <div className={classNames(className, 'w-full rounded-xl bg-white p-4')}>
-  //       <LoadingSpinner
-  //         size="medium"
-  //         spinnerColor="adminPortalBg"
-  //         backgroundColor="secondary"
-  //       />
-  //     </div>
-  //   );
-  // }
 
   return (
     <Card

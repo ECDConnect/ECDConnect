@@ -1,5 +1,7 @@
+using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Api.CoreApi.Services;
 using ECDLink.Core.Extensions;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
@@ -7,8 +9,6 @@ using ECDLink.DataAccessLayer.Repositories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
-using ECDLink.SmartStart.Reports.Models;
-using ECDLink.SmartStart.Reports;
 using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Types;

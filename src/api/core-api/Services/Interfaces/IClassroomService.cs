@@ -1,5 +1,4 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models;
-using ECDLink.DataAccessLayer.Entities;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models.Users;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using System;
 using System.Collections.Generic;

@@ -7,7 +7,6 @@ import {
   SA_CELL_REGEX,
   SA_ID_REGEX,
   AlertType,
-  Avatar,
   ProfileAvatar,
   classNames,
 } from '@ecdlink/ui';
@@ -43,14 +42,11 @@ import AlertModal from '../../components/dialog-alert/dialog-alert';
 import CustomDateRangePicker from '../../components/date-picker/index';
 import {
   DeleteUser,
-  GetHealthCareWorkerByUserId,
   GetUserById,
   ResetUserPassword,
   UpdateUser,
   UserModelInput,
   SendInviteToApplication,
-  GetHealthCareWorkerSummaryForPeriod,
-  GetTeamLead,
 } from '@ecdlink/graphql';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useUser } from '../../hooks/useUser';
@@ -123,22 +119,6 @@ export function ViewUser(props: any) {
   let userId = localStorage.getItem('selectedUser');
   const [resetUserPassword] = useMutation(ResetUserPassword);
 
-  const [getChwById, { data: chwData, refetch: refetchCHW }] = useLazyQuery(
-    GetHealthCareWorkerByUserId,
-    {
-      variables: {
-        userId: '',
-      },
-      fetchPolicy: 'cache-and-network',
-    }
-  );
-  const [getAllTeamLead, { data: teamLeadData }] = useLazyQuery(GetTeamLead, {
-    variables: {
-      userId: '',
-    },
-    fetchPolicy: 'cache-and-network',
-  });
-
   const [getUserById, { data: userData, refetch }] = useLazyQuery(GetUserById, {
     variables: {
       userId: '',
@@ -146,41 +126,9 @@ export function ViewUser(props: any) {
     fetchPolicy: 'cache-and-network',
   });
 
-  const [getHealthCareWorkerSummaryForPeriod, { data: summaryData }] =
-    useLazyQuery(GetHealthCareWorkerSummaryForPeriod, {
-      variables: {
-        userId: '',
-        healthCareWorkerId: '',
-        startDate: '',
-        endDate: '',
-      },
-      fetchPolicy: 'cache-and-network',
-    });
-
-  useEffect(() => {
-    getHealthCareWorkerSummaryForPeriod({
-      variables: {
-        userId: props.location.state.userId ?? userId,
-        healthCareWorkerId: null,
-        startDate: selectedRange[0]?.toISOString() ?? startDate.toISOString(),
-        endDate: selectedRange[1]?.toISOString() ?? endDate.toISOString(),
-      },
-    });
-  }, [selectedRange]);
-
   useEffect(() => {
     props.location.state?.component === 'administrators' &&
       getUserById({
-        variables: { userId: props.location.state.userId ?? userId },
-      });
-
-    props.location.state?.component === 'chw' &&
-      getChwById({
-        variables: { userId: props.location.state.userId ?? userId },
-      });
-
-    props.location.state?.component === 'team-leads' &&
-      getAllTeamLead({
         variables: { userId: props.location.state.userId ?? userId },
       });
   }, [userId]);
@@ -198,19 +146,13 @@ export function ViewUser(props: any) {
         <AlertModal
           title="Deactivate User"
           btnText={['Yes, Deactivate User', 'No, Cancel']}
-          message={`${
-            chwData?.GetHealthCareWorkerById.user?.firstName ??
-            userData.userById.fullName
-          } will lose their access to ${
-            tenant.tenant?.applicationName
-          } App immediately. Make sure you have communicated with them before deactivating them.`}
+          message={`${userData.userById.fullName} will lose their access to ${tenant.tenant?.applicationName} App immediately. Make sure you have communicated with them before deactivating them.`}
           onCancel={onCancel}
           onSubmit={() => {
             onSubmit();
             deleteUser({
               variables: {
-                id:
-                  userData?.userById?.id ?? chwData.GetHealthCareWorkerById.id,
+                id: userData?.userById?.id,
               },
             })
               .then((response: any) => {
@@ -245,19 +187,14 @@ export function ViewUser(props: any) {
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
           title="Invite User"
-          message={`You are about to send an invite to ${
-            chwData?.GetHealthCareWorkerById?.user?.fullName ??
-            userData?.userById?.fullName
-          }`}
+          message={`You are about to send an invite to ${userData?.userById?.fullName}`}
           btnText={['Yes, Resend Invitation', 'No, Cancel']}
           onCancel={onCancel}
           onSubmit={() => {
             onSubmit();
             sendInviteToApplication({
               variables: {
-                userId:
-                  userData?.userById?.id ??
-                  chwData.GetHealthCareWorkerById.user.id,
+                userId: userData?.userById?.id,
                 inviteToPortal: isAdminUser,
               },
             })
@@ -282,10 +219,6 @@ export function ViewUser(props: any) {
 
   const [editActive, setEditActive] = useState<boolean>(false);
 
-  let isCHW = userData?.userById?.roles?.some(
-    (role: any) => role.systemName === RoleSystemNameEnum.CHW
-  );
-
   const {
     register,
     setValue: adminDetailSetValue,
@@ -294,18 +227,6 @@ export function ViewUser(props: any) {
     handleSubmit: handleSubmitAdminDetails,
   } = useForm({
     resolver: yupResolver(adminSchema),
-    defaultValues: initialUserDetailsValues,
-    mode: 'onChange',
-  });
-
-  const {
-    register: registerCHW,
-    setValue: chwDetailSetValue,
-    formState: chwDetailFormState,
-    getValues: chwDetailGetValues,
-    handleSubmit: handleSubmitChwDetails,
-  } = useForm({
-    resolver: yupResolver(chwSchema),
     defaultValues: initialUserDetailsValues,
     mode: 'onChange',
   });
@@ -327,68 +248,35 @@ export function ViewUser(props: any) {
   const { errors: adminDetailFormErrors, isValid: isAdminDetailValid } =
     adminDetailFormState;
 
-  const { errors: chwDetailFormErrors, isValid: isChwDetailValid } =
-    chwDetailFormState;
   const passwordForm = passwordGetValues();
 
   // SET EDIT FORMS
   useEffect(() => {
-    adminDetailSetValue(
-      'email',
-      userData?.userById?.email || chwData?.GetHealthCareWorkerById?.user.email,
-      {
-        shouldValidate: true,
-      }
-    );
-
-    chwDetailSetValue(
-      'idNumber',
-      userData?.userById?.idNumber ||
-        chwData?.GetHealthCareWorkerById?.user.idNumber,
-      {
-        shouldValidate: true,
-      }
-    );
-
-    chwDetailSetValue(
-      'phoneNumber',
-      userData?.userById?.phoneNumber ||
-        chwData?.GetHealthCareWorkerById?.user.phoneNumber,
-      {
-        shouldValidate: true,
-      }
-    );
-
+    adminDetailSetValue('email', userData?.userById?.email, {
+      shouldValidate: true,
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userData, chwData]);
+  }, [userData]);
 
   const saveUser = async (passwordChange: boolean) => {
     const passwordForm = passwordGetValues();
     const adminDataForm = adminDetailGetValues();
-    const chwDataForm = chwDetailGetValues();
 
     const userInputModel: UserModelInput = {
-      idNumber: chwDataForm?.idNumber,
-      phoneNumber: chwDataForm?.phoneNumber,
+      idNumber: adminDataForm?.idNumber,
+      phoneNumber: adminDataForm?.phoneNumber,
       email: adminDataForm?.email,
-      userName: chwDataForm?.idNumber,
+      userName: adminDataForm?.idNumber,
     };
 
     await updateUser({
       variables: {
-        id:
-          userData?.userById?.id ??
-          chwData?.GetHealthCareWorkerById?.user.id ??
-          teamLeadData?.user.id,
+        id: userData?.userById?.id,
         input: userInputModel,
       },
     })
       .then(() => {
         if (userData?.phoneNumber) refetch();
-
-        if (chwData?.GetHealthCareWorkerById?.user?.phoneNumber) {
-          refetchCHW();
-        }
 
         setNotification({
           title: 'Successfully Updated User!',
@@ -405,8 +293,7 @@ export function ViewUser(props: any) {
     if (passwordChange) {
       await resetUserPassword({
         variables: {
-          id:
-            userData?.userById?.id ?? chwData?.GetHealthCareWorkerById?.user.id,
+          id: userData?.userById?.id,
           newPassword: passwordForm.password,
         },
       }).then(() => {
@@ -441,10 +328,7 @@ export function ViewUser(props: any) {
             {' '}
           </ArrowLeftIcon>
           Back
-          <span className="px-1 text-gray-400">
-            {' '}
-            / View {isCHW ? 'CHW' : 'User'}
-          </span>
+          <span className="px-1 text-gray-400"> / View User</span>
         </button>
       </div>
       {successNotification &&
@@ -463,10 +347,7 @@ export function ViewUser(props: any) {
               <div className="flex flex-col space-y-4 md:flex-row md:space-y-0 ">
                 <ProfileAvatar
                   canChangeImage={false}
-                  dataUrl={
-                    userData?.userById?.profileImageUrl ||
-                    chwData?.GetHealthCareWorkerById?.user?.profileImageUrl
-                  }
+                  dataUrl={userData?.userById?.profileImageUrl}
                   onPressed={() => {}}
                   hasConsent
                   size="header"
@@ -474,8 +355,7 @@ export function ViewUser(props: any) {
 
                 <div className="sm: pt-4 pl-8">
                   <p className="text-3xl font-normal text-black ">
-                    {userData?.userById?.fullName ??
-                      chwData?.GetHealthCareWorkerById?.user?.fullName}
+                    {userData?.userById?.fullName}
                   </p>
                   <div className="flex flex-row pt-2">
                     {userData &&
@@ -494,29 +374,6 @@ export function ViewUser(props: any) {
                           );
                         }
                       )}
-                    {chwData &&
-                      chwData?.GetHealthCareWorkerById?.user?.roles?.map(
-                        (i: any, index: number) => {
-                          return (
-                            <div
-                              key={i.id}
-                              className={classNames(
-                                i.name === 'Community Health Worker'
-                                  ? 'bg-primary'
-                                  : 'bg-tertiary',
-                                ' m-1 my-2 flex flex-row justify-center rounded-full py-1  px-3 text-xs text-white'
-                              )}
-                            >
-                              <p className="text-16">
-                                {' '}
-                                {i.name === 'Community Health Worker'
-                                  ? 'CHW'
-                                  : i.name}
-                              </p>
-                            </div>
-                          );
-                        }
-                      )}
                   </div>
                   {/* <p>{userData?.firstName}</p> */}
                 </div>
@@ -524,17 +381,15 @@ export function ViewUser(props: any) {
             </div>
           </div>
           {/* End main area */}
-          {!userData &&
-            chwData &&
-            !chwData?.GetHealthCareWorkerById?.user?.isActive && (
-              <Alert
-                className="mt-5 mb-3"
-                message={`This user has been deactivated and cannot access ${tenant.tenant?.applicationName} App`}
-                type="error"
-                // customIcon={<SaveIcon></SaveIcon>}
-              />
-            )}
-          {!chwData && userData && !userData?.userById?.isActive && (
+          {!userData && (
+            <Alert
+              className="mt-5 mb-3"
+              message={`This user has been deactivated and cannot access ${tenant.tenant?.applicationName} App`}
+              type="error"
+              // customIcon={<SaveIcon></SaveIcon>}
+            />
+          )}
+          {userData && !userData?.userById?.isActive && (
             <Alert
               className="mt-5 mb-3"
               message={`This user has been deactivated and cannot access ${tenant.tenant?.applicationName} App`}
@@ -559,35 +414,14 @@ export function ViewUser(props: any) {
                 <>
                   <div className="space-y-0">
                     <div className="grid grid-cols-1 ">
-                      {isCHW || props.location.state?.component === 'chw' ? (
-                        <>
-                          <div className="my-4 w-6/12 sm:col-span-3">
-                            <FormField
-                              label={'ID number *'}
-                              nameProp={'idNumber'}
-                              register={registerCHW}
-                              error={chwDetailFormErrors.idNumber?.message}
-                            />
-                          </div>
-                          <div className="my-4 w-6/12 sm:col-span-3">
-                            <FormField
-                              label={'Cellphone number *'}
-                              nameProp={'phoneNumber'}
-                              register={registerCHW}
-                              error={chwDetailFormErrors.phoneNumber?.message}
-                            />
-                          </div>
-                        </>
-                      ) : (
-                        <div className="my-4 w-6/12 sm:col-span-3">
-                          <FormField
-                            label={'Email *'}
-                            nameProp={'email'}
-                            register={register}
-                            error={adminDetailFormErrors.email?.message}
-                          />
-                        </div>
-                      )}
+                      <div className="my-4 w-6/12 sm:col-span-3">
+                        <FormField
+                          label={'Email *'}
+                          nameProp={'email'}
+                          register={register}
+                          error={adminDetailFormErrors.email?.message}
+                        />
+                      </div>
 
                       <div className="my-0 w-6/12 sm:col-span-2">
                         <PasswordInput
@@ -602,65 +436,24 @@ export function ViewUser(props: any) {
                       </div>
                     </div>
                   </div>
-                  {isCHW || props.location.state?.component === 'chw' ? (
-                    <Button
-                      className={' w-4/12 rounded-md '}
-                      type="filled"
-                      isLoading={loading}
-                      color="secondary"
-                      disabled={!isChwDetailValid}
-                      onClick={handleSubmitChwDetails(onSave)}
-                    >
-                      <SaveIcon color="white" className="mr-6 h-6 w-6">
-                        {' '}
-                      </SaveIcon>
-                      <Typography
-                        type="help"
-                        color="white"
-                        text={'Save Changes'}
-                      ></Typography>
-                    </Button>
-                  ) : (
-                    <Button
-                      className={' w-4/12 rounded-md '}
-                      type="filled"
-                      isLoading={loading}
-                      color="secondary"
-                      disabled={!isAdminDetailValid}
-                      onClick={handleSubmitAdminDetails(onSave)}
-                    >
-                      <SaveIcon color="white" className="mr-6 h-6 w-6">
-                        {' '}
-                      </SaveIcon>
-                      <Typography
-                        type="help"
-                        color="white"
-                        text={'Save Changes'}
-                      ></Typography>
-                    </Button>
-                  )}
+                  <Button
+                    className={' w-4/12 rounded-md '}
+                    type="filled"
+                    isLoading={loading}
+                    color="secondary"
+                    disabled={!isAdminDetailValid}
+                    onClick={handleSubmitAdminDetails(onSave)}
+                  >
+                    <SaveIcon color="white" className="mr-6 h-6 w-6">
+                      {' '}
+                    </SaveIcon>
+                    <Typography
+                      type="help"
+                      color="white"
+                      text={'Save Changes'}
+                    ></Typography>
+                  </Button>
                 </>
-              ) : isCHW || props.location.state?.component === 'chw' ? (
-                <div className="flex flex-row justify-start pt-4 text-current">
-                  <p className="px-4 text-xl">
-                    ID:{' '}
-                    {userData?.userById?.idNumber ||
-                      chwData?.GetHealthCareWorkerById?.user?.idNumber}
-                  </p>
-                  <p className="px-4 text-xl">
-                    {' '}
-                    Cellphone:{' '}
-                    {userData?.userById?.phoneNumber ||
-                      chwData?.GetHealthCareWorkerById?.user?.phoneNumber}
-                  </p>
-                  {userData?.userById?.whatsappNumber && (
-                    <p className="px-4 text-xl">
-                      WhatsApp:{' '}
-                      {userData?.userById?.whatsappNumber ||
-                        chwData?.GetHealthCareWorkerById?.user?.whatsappNumber}
-                    </p>
-                  )}
-                </div>
               ) : (
                 <div className="flex flex-row justify-start pt-4 text-current">
                   <p className="px-4 text-xl">
@@ -686,212 +479,6 @@ export function ViewUser(props: any) {
             </button>
           </div>
         </div>
-
-        {(isCHW || props.location.state?.component === 'chw') &&
-          tenant.isCHWConnect && (
-            <div className=" flex justify-end">
-              <div>
-                <CustomDateRangePicker
-                  handleDateChange={handleDateChange}
-                  selectedRange={selectedRange}
-                />
-              </div>
-            </div>
-          )}
-        {(isCHW || props.location.state?.component === 'chw') && (
-          <div className="border-l-secondary border-secondary m-10 my-6 mt-4  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
-            <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
-              {/* Start main area*/}
-              <h3 className="mb-2 border-b-4 border-dashed pb-2 text-xl">
-                {' '}
-                Clients summary
-              </h3>
-              <div className="flex flex-row justify-evenly pt-4 text-current">
-                <p className="px-4 py-2  text-xl">
-                  <span className="p-2  text-2xl">
-                    {
-                      summaryData?.healthCareWorkerSummaryForPeriod
-                        ?.totalPregnantMoms
-                    }
-                  </span>
-                  pregnant moms
-                </p>
-                <p className="px-4 py-2  text-xl">
-                  <span className="p-2  text-2xl">
-                    {
-                      summaryData?.healthCareWorkerSummaryForPeriod
-                        ?.totalChildren
-                    }
-                  </span>
-                  children
-                </p>
-                <p className="px-4 py-2  text-xl">
-                  <span className="p-2  text-2xl">
-                    {
-                      summaryData?.healthCareWorkerSummaryForPeriod
-                        ?.totalClientsVisited
-                    }
-                  </span>
-                  clients visited
-                </p>
-                <p className="px-4 py-2  text-xl">
-                  <span className="p-2  text-2xl">
-                    {
-                      summaryData?.healthCareWorkerSummaryForPeriod
-                        ?.totalFoldersOpened
-                    }
-                  </span>
-                  folders opened
-                </p>
-              </div>
-              {/* End main area */}
-            </div>
-          </div>
-        )}
-        {(isCHW || props.location.state?.component === 'chw') && (
-          <div className="flex flex-row">
-            <div className="border-l-errorMain  border-errorMain m-10 mb-12  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
-              <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
-                {/* Start main area*/}
-                <div className="flex flex-row border-b-4 border-dashed pb-0">
-                  <ExclamationCircleIcon
-                    className="h-12 w-12 pb-2"
-                    style={{
-                      color: '#ED1414',
-                    }}
-                  ></ExclamationCircleIcon>
-                  <h3 className="mb-2  pb-0 pt-2 text-2xl"> Urgent issues</h3>
-                </div>
-                <div className="flex flex-col justify-evenly pt-4 text-current">
-                  <p className="px-4py-2 text-xl">
-                    <span className="text-errorMain p-2 text-2xl">
-                      {
-                        summaryData?.healthCareWorkerSummaryForPeriod
-                          ?.totalVisitsMissed
-                      }
-                    </span>
-                    Visits Missed
-                  </p>
-
-                  <p className="px-4py-2 text-xl">
-                    <span className="text-errorMain p-2 text-2xl">
-                      {
-                        summaryData?.healthCareWorkerSummaryForPeriod
-                          ?.totalPregnantMomsWithUrgentIssues
-                      }
-                    </span>
-                    pregnant moms have urgent issues
-                  </p>
-
-                  <p className="px-4py-2 text-xl">
-                    <span className="text-errorMain p-2 text-2xl">
-                      {
-                        summaryData?.healthCareWorkerSummaryForPeriod
-                          ?.totalCaregiversAndChildrenWithUrgentIssues
-                      }
-                    </span>
-                    caregivers & children have urgent issues
-                  </p>
-                </div>
-                {/* End main area */}
-              </div>
-            </div>
-            <div className="border-l-alertMain  border-alertMain m-10 mb-12  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
-              <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
-                {/* Start main area*/}
-                <div className="flex flex-row border-b-4 border-dashed pb-0">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    className="h-12 w-12"
-                    style={{
-                      color: '#FF5C00',
-                    }}
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <h3 className="mb-2  pb-0 pt-2 text-2xl"> Other issues</h3>
-                </div>
-                <div className="flex flex-col justify-evenly pt-4 text-current">
-                  <p className="px-4py-2 text-xl">
-                    <span className="text-alertMain p-2 text-2xl">
-                      {
-                        summaryData?.healthCareWorkerSummaryForPeriod
-                          ?.totalVisitsOverdue
-                      }
-                    </span>
-                    visits overdue
-                  </p>
-                  <p className="px-4py-2 text-xl">
-                    <span className="text-alertMain p-2 text-2xl">
-                      {
-                        summaryData?.healthCareWorkerSummaryForPeriod
-                          ?.totalPregnantMomsWithIssues
-                      }
-                    </span>
-                    pregnant moms have other issues
-                  </p>
-
-                  <p className="px-4py-2 text-xl">
-                    <span className="text-alertMain p-2 text-2xl">
-                      {
-                        summaryData?.healthCareWorkerSummaryForPeriod
-                          ?.totalCaregiversAndChildrenWithIssues
-                      }
-                    </span>
-                    caregivers & children have other issues
-                  </p>
-                </div>
-
-                {/* End main area */}
-              </div>
-            </div>
-          </div>
-        )}
-        {(isCHW || props.location.state?.component === 'chw') && (
-          <div className="border-l-successMain  border-successMain m-10 mb-10  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
-            <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
-              {/* Start main area*/}
-              <div className="flex flex-row border-b-4 border-dashed pb-0">
-                <StarIcon
-                  className="successMain h-12 w-12 pb-2"
-                  style={{
-                    color: '#83BB26',
-                  }}
-                ></StarIcon>
-                <h3 className="mb-2  pb-0 pt-2 text-2xl"> Highlights</h3>
-              </div>
-              <div className="flex flex-col justify-evenly pt-4 text-current">
-                <p className="px-4 py-2 text-lg">
-                  <span className="text-successMain p-2 text-2xl">
-                    {
-                      summaryData?.healthCareWorkerSummaryForPeriod
-                        ?.totalPregnantMomsWithNoIssues
-                    }
-                  </span>
-                  pregnant moms are doing well & have no issues
-                </p>
-                <p className="px-4 py-2 text-lg">
-                  <span className="text-successMain p-2 text-2xl">
-                    {
-                      summaryData?.healthCareWorkerSummaryForPeriod
-                        ?.totalChildrenWithNoIssues
-                    }
-                  </span>
-                  children are doing well & have no issues
-                </p>
-              </div>
-
-              {/* End main area */}
-            </div>
-          </div>
-        )}
-
         <div className="flex w-full justify-between  pl-4">
           <div className="flex w-10/12 flex-row  pl-4">
             {hasPermission(PermissionEnum.delete_user) && (
@@ -935,10 +522,7 @@ export function ViewUser(props: any) {
           <div className="w-2/12">
             <p className="mt-3 w-full text-sm text-gray-600">
               User added to {tenant.tenant?.applicationName} App :{' '}
-              {formatDate(
-                chwData?.GetHealthCareWorkerById?.insertedDate ||
-                  userData?.userById?.insertedDate
-              )}
+              {formatDate(userData?.userById?.insertedDate)}
             </p>
           </div>
         </div>

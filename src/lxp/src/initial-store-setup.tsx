@@ -57,10 +57,8 @@ import {
   classroomsForCoachActions,
 } from './store/classroomForCoach';
 import { programmeActions, programmeThunkActions } from './store/programme';
-import { traineeSelectors, traineeThunkActions } from './store/trainee';
 import { calendarActions, calendarThunkActions } from './store/calendar';
 import { activityThunkActions } from '@store/content/activity';
-import { clubActions } from './store/club';
 import { authSelectors } from '@store/auth';
 import { statementsActions, statementsThunkActions } from '@store/statements';
 import { LocalStorageKeys, RoleSystemNameEnum } from '@ecdlink/core';
@@ -75,6 +73,7 @@ type IntialStoreSetupContextValues = {
   getLoadingMessage: () => string;
   syncClassroom: () => Promise<void>;
   refreshClassroom: () => Promise<void>;
+  refreshChildren: () => Promise<void>;
 };
 
 export const IntialStoreSetupContext =
@@ -95,12 +94,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
   const classroomForUser = useSelector(classroomsSelectors.getClassroom);
   const isPrincipal = practitioner?.isPrincipal;
-
-  const traineeTimeline = useSelector(
-    traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
-  );
-  const traineeVisits = traineeTimeline?.traineeVisits;
-  const traineeCurrentVisit = traineeVisits?.[0];
   const [otherLoading, setOtherLoading] = useState(false);
 
   const [shouldSaveStateHash, setShouldSaveStateHash] = useState(false);
@@ -151,7 +144,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     appDispatch(documentActions.resetDocumentsState());
     appDispatch(attendanceActions.resetAttendanceState());
     appDispatch(contentReportActions.resetContentReportState());
-    appDispatch(clubActions.resetClubState());
     appDispatch(statementsActions.resetStatementsState());
     appDispatch(calendarActions.resetCalendarState());
   };
@@ -309,10 +301,28 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     ).unwrap();
   };
 
+  const refreshChildren = async () => {
+    appDispatch(settingActions.setLastDataSync());
+    appDispatch(
+      childrenThunkActions.getChildren({ overrideCache: true })
+    ).unwrap();
+    appDispatch(
+      documentThunkActions.getDocuments({ overrideCache: true })
+    ).unwrap();
+    appDispatch(
+      classroomsThunkActions.getClassroomGroups({ overrideCache: true })
+    ).unwrap();
+  };
+
   const refreshClassroom = async () => {
     appDispatch(classroomsActions.resetClassroomState());
-    await appDispatch(classroomsThunkActions.getClassroom({})).unwrap();
-    await appDispatch(classroomsThunkActions.getClassroomGroups({})).unwrap();
+    appDispatch(
+      classroomsThunkActions.getClassroom({ overrideCache: true })
+    ).unwrap();
+    appDispatch(
+      classroomsThunkActions.getClassroomGroups({ overrideCache: true })
+    ).unwrap();
+    appDispatch(settingActions.setLastDataSync());
 
     if (isCoach) {
       appDispatch(classroomsForCoachActions.resetClassroomState());
@@ -349,6 +359,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     getLoadingMessage,
     syncClassroom,
     refreshClassroom,
+    refreshChildren,
   };
 
   useEffect(() => {
@@ -405,28 +416,8 @@ const InitialStoreSetup: React.FC = ({ children }) => {
             ).unwrap())();
         }
       }
-      if (practitioner?.isTrainee) {
-        (async () =>
-          await appDispatch(
-            traineeThunkActions.getTraineeById({ userId: userData?.id! })
-          ).unwrap())();
-
-        (async () =>
-          await appDispatch(
-            traineeThunkActions.getTraineeTimeline({
-              userId: practitioner?.userId ? practitioner?.userId : '',
-            })
-          ).unwrap())();
-
-        (async () =>
-          await appDispatch(
-            traineeThunkActions.getTraineeVisitData({
-              visitId: traineeCurrentVisit?.id,
-            })
-          ).unwrap())();
-      }
     }
-  }, [appDispatch, userData, practitioner, isCoach, traineeCurrentVisit?.id]);
+  }, [appDispatch, userData, practitioner, isCoach]);
 
   useEffect(() => {
     if (userData) {
@@ -440,20 +431,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
         (async () =>
           await appDispatch(
             practitionerForCoachThunkActions.getPractitionersForCoach({})
-          ).unwrap())();
-        (async () =>
-          await appDispatch(
-            coachThunkActions.getAllCoachingCircleClubsForCoach({
-              coachId: userData?.id!,
-              startDate: quarterStartDate,
-              endDate: quarterLastDay,
-            })
-          ).unwrap())();
-        (async () =>
-          await appDispatch(
-            coachThunkActions.getAllClubsForCoach({
-              userId: userData?.id!,
-            })
           ).unwrap())();
         (async (id) =>
           await appDispatch(

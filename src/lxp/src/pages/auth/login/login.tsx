@@ -109,6 +109,7 @@ export const Login: React.FC = () => {
   const login = async () => {
     appDispatch(settingActions.setApplicationVersion(version));
     appDispatch(authActions.setUserExpired());
+    appDispatch(settingActions.setLoginDate());
     const user = await appDispatch(userThunkActions.getUser({})).unwrap();
     setIsLoading(false);
     // Set userId for google

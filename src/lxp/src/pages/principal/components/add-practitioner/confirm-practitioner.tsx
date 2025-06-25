@@ -46,7 +46,6 @@ export default function ConfirmPractitioner({
     RegisterPractitioner[]
   >([]);
   const [allInFundaApp, setAllInFundaApp] = useState<boolean>();
-  const [hasTrainees, setHasTrainees] = useState<boolean>();
   const [editPractitioner, setEditPractitioner] =
     useState<RegisterPractitioner>();
   const [listItems, setListItems] = useState<StackListItems[]>([
@@ -64,15 +63,7 @@ export default function ConfirmPractitioner({
     if (practitionersForPrincipal?.length) {
       const _practitionersList: SetStateAction<RegisterPractitioner[]> = [];
       (practitionersForPrincipal as unknown as RegisterPractitioner[]).forEach(
-        ({
-          firstName,
-          surname,
-          id,
-          idNumber,
-          isRegistered,
-          userId,
-          isTrainee,
-        }) => {
+        ({ firstName, surname, id, idNumber, isRegistered, userId }) => {
           listItems.push(
             createStackItem({
               firstName: firstName ?? '',
@@ -82,7 +73,6 @@ export default function ConfirmPractitioner({
               passport: '',
               preferId: !!idNumber,
               isRegistered: Boolean(isRegistered),
-              isTrainee: Boolean(isTrainee),
             })
           );
 
@@ -101,7 +91,6 @@ export default function ConfirmPractitioner({
             passport: '',
             preferId: !!idNumber,
             isRegistered: Boolean(isRegistered),
-            isTrainee: Boolean(isTrainee),
           });
         }
       );
@@ -160,11 +149,6 @@ export default function ConfirmPractitioner({
       (l) => l.isRegistered === true
     );
     setAllInFundaApp(allInFunda);
-    const hasTrainees = principalPractitioners.every(
-      (l) => l.isTrainee === true
-    );
-    setHasTrainees(hasTrainees);
-
     setConfirmPractitionerPage(ConfirmPractitionersSteps.CONFIRM_PRACTITIONERS);
   };
 
@@ -200,17 +184,6 @@ export default function ConfirmPractitioner({
                   color={'textMid'}
                 />
               </div>
-              {!!hasTrainees && (
-                <div>
-                  <Alert
-                    type={'info'}
-                    title={'One or more of your practitioners is a trainee.'}
-                    list={[
-                      'You will not be able to view their profile or add them to a class until they complete trainee onboarding.',
-                    ]}
-                  />
-                </div>
-              )}
               {allInFundaApp !== undefined && (
                 <div>
                   <Alert

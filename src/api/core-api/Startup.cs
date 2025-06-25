@@ -3,10 +3,8 @@ using DinkToPdf.Contracts;
 using EcdLink.Api.CoreApi.Documents;
 using EcdLink.Api.CoreApi.GraphApi.AccessValidators;
 using EcdLink.Api.CoreApi.Managers;
-using EcdLink.Api.CoreApi.Managers.EventRecords;
 using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Managers.Users;
-using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using EcdLink.Api.CoreApi.Security.Managers;
@@ -24,6 +22,7 @@ using ECDLink.DataAccessLayer.Diagnostics;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Development;
 using ECDLink.EGraphQL;
+using ECDLink.FileStorage;
 using ECDLink.Moodle;
 using ECDLink.Notifications;
 using ECDLink.PDFGenerator;
@@ -32,12 +31,8 @@ using ECDLink.PostgresTenancy.Services;
 using ECDLink.Security;
 using ECDLink.Security.AccessModifiers.OpenAccess;
 using ECDLink.Security.Managers;
-using ECDLink.SmartStart;
-using ECDLink.SmartStart.Services;
-using ECDLink.SmartStart.Services.Interfaces;
 using ECDLink.Tenancy.Extensions;
 using ECDLink.UrlShortner;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -47,14 +42,13 @@ using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace EcdLink.Api.CoreApi
 {
+    using EcdLink.Api.CoreApi.GraphApi.Models;
     using EcdLink.Api.CoreApi.Middleware;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Http;
-    using Microsoft.AspNetCore.HttpLogging;
     using System;
     using System.Threading.Tasks;
 
@@ -160,7 +154,11 @@ namespace EcdLink.Api.CoreApi
 
             //PostgresTenancyStartup.ConfigureDataAccessServices(services, Configuration);
 
-            AzureStorageStartup.ConfigureAzureStorageServices(services, Configuration);
+            var storageType = GetStorageType();
+            if (storageType == "AzureBlob")
+                AzureStorageStartup.ConfigureAzureStorageServices(services, Configuration);
+            else if (storageType == "FileSystem")
+                FileStorageStartup.ConfigureFileStorageServices(services, Configuration);
 
             DataAccessStartup.ConfigureDataAccessServices(services);
 
@@ -174,9 +172,7 @@ namespace EcdLink.Api.CoreApi
 
             NotificationsStartup.ConfigureNotificationServices(services, Configuration);
 
-            PdfGeneratorStartup.ConfigureAzureStorageServices(services, Configuration);
-
-            SmartStartStartup.ConfigureSmartStartServices(services, Environment.IsDevelopment());
+            PdfGeneratorStartup.ConfigurePdfGeneratorServices(services, Configuration);
 
             MoodleStartup.ConfigureMoodleServices(services, Configuration);
 
@@ -200,17 +196,12 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IJWTRepository, JWTRepository>();
             services.AddTransient<SecurityNotificationManager>();
             services.AddTransient<InvitationNotificationManager>();
-            services.AddTransient<HealthCareWorkerManager>();
             services.AddTransient<CaregiverManager>();
-            services.AddTransient<MotherManager>();
-            services.AddTransient<EventRecordManager>();
-            services.AddTransient<InfantManager>();
             services.AddTransient<VisitManager>();
             services.AddTransient<VisitDataManager>();
             services.AddTransient<VisitDataStatusManager>();
             services.AddTransient<VisitDataStatusManager_Practitioner>();
-            services.AddTransient<VisitBackReferralManager>();
-            services.AddTransient<UserLicenseManager>();
+
             services.AddTransient<PersonnelService>();
             services.AddTransient<IPersonnelService, PersonnelService>();
             services.AddTransient<IIncomeExpenseService, IncomeExpenseService>();
@@ -224,15 +215,12 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IReassignmentService, ReassignmentService>();
             services.AddTransient<IAutomatedProcessService, AutomatedProcessService>();
             services.AddTransient<IPointsService, PointsEngineService>();
-            services.AddTransient<IClubService, ClubService>();
             services.AddTransient<IChildService, ChildService>();
             services.AddTransient<DocumentManager>();
+            services.AddTransient<MonthlyAttendanceReport>();
+            services.AddTransient<ChildAttendanceReport>();
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<INotificationTasksService, NotificationTasksService>();
-            services.AddTransient<IClinicService, ClinicService>();
-            services.AddTransient<IReferralService, ReferralService>();
-            services.AddTransient<ILeagueService, LeagueService>();
-            services.AddTransient<ITeamLeadService, TeamLeadService>();
             services.AddTransient<IClassroomService, ClassroomService>();
             services.AddTransient<ICommunityService, CommunityService>();
             services.AddTransient<IChildProgressReportService, ChildProgressReportService>();
@@ -305,6 +293,15 @@ namespace EcdLink.Api.CoreApi
             aiConnString = aiConfig["ConnectionString"];
             if (!string.IsNullOrEmpty(aiConnString)) return true; ;
             return false;
+        }
+
+        string GetStorageType()
+        {
+            var section = Configuration.GetSection("Storage");
+            if (section == null) return "FileSystem";
+            var type = section["Type"];
+            if (string.IsNullOrEmpty(type)) return "FileSystem";
+            return type;
         }
     }
 }

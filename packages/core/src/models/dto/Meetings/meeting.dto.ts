@@ -1,4 +1,3 @@
-import { MeetingReportHealthCareWorkerDto } from '../Users';
 import { EntityBase } from '../entity-base';
 
 export interface MeetingDto extends EntityBase {
@@ -10,12 +9,8 @@ export interface MeetingDto extends EntityBase {
   meetingTypeId: string;
   meetingTopicTitle?: string;
   month?: string;
-  participantsInField?: MeetingReportHealthCareWorkerDto[];
-  participantsOptedOut?: MeetingReportHealthCareWorkerDto[];
   positiveStory?: string;
   reportingIssue?: string;
-  teamLeadId: string;
-  teamLeadName?: string;
   totalSupportVisits: number;
   meetingTopic?: MeetingTopic;
 }

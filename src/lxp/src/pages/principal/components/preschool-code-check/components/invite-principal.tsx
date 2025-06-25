@@ -1,5 +1,4 @@
 import {
-  Alert,
   BannerWrapper,
   Button,
   Card,
@@ -21,18 +20,18 @@ import {
 import Article from '@/components/article/article';
 import { ContentConsentTypeEnum, useTheme } from '@ecdlink/core';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { PractitionerService } from '@/services/PractitionerService';
 import { userSelectors } from '@/store/user';
 import { FieldError } from 'react-hook-form';
 import { useAppDispatch } from '@/store';
-import { practitionerThunkActions } from '@/store/practitioner';
 import { useTenant } from '@/hooks/useTenant';
 import TransparentLayer from '../../../../../assets/TransparentLayer.png';
+import { PrincipalInviteDto } from '@/models/practitioner/PrincipalInvite.dto';
 
 export const InvitePrincipal: React.FC<{
   onNext: OnNext;
   setInvitePrincipal: (item: boolean) => void;
-}> = ({ onNext, setInvitePrincipal }) => {
+  setPrincipalNumberDetails: (item: PrincipalInviteDto) => void;
+}> = ({ onNext, setInvitePrincipal, setPrincipalNumberDetails }) => {
   const { theme } = useTheme();
   const { isOnline } = useOnlineStatus();
   const tenant = useTenant();
@@ -60,39 +59,16 @@ export const InvitePrincipal: React.FC<{
       setError('');
     }
 
-    await new PractitionerService(userAuth?.auth_token!)
-      .practitionerInvitePrincipal(principalPhoneNumber, user?.id!)
-      .catch((error) => {
-        setIsLoading(false);
-        return;
-      });
-
-    await new PractitionerService(
-      userAuth?.auth_token!
-    ).UpdatePractitionerShareInfo(user?.id!);
-
-    await appDispatch(
-      practitionerThunkActions.updatePractitionerProgress({
-        practitionerId: user?.id!,
-        progress: 1.0,
-      })
-    );
+    const input: PrincipalInviteDto = {
+      principalPhoneNumber: principalPhoneNumber,
+      userId: user?.id!,
+    };
+    setPrincipalNumberDetails(input);
     onNext(PractitionerSetupSteps.ADD_PHOTO);
     setIsLoading(false);
   };
 
   const handleSkipAddPractitionerToPrincipal = async () => {
-    await appDispatch(
-      practitionerThunkActions.updatePractitionerProgress({
-        practitionerId: user?.id!,
-        progress: 1.0,
-      })
-    );
-    await appDispatch(
-      practitionerThunkActions.getPractitionerByUserId({
-        userId: user?.id!,
-      })
-    );
     onNext(PractitionerSetupSteps.ADD_PHOTO);
   };
 

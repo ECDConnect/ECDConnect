@@ -8,5 +8,6 @@ namespace EcdLink.Api.CoreApi.Security.Models.Requests
         public string PhoneNumber { get; set; }
         public string Password { get; set; }
         public string RegisterType { get; set; } // username, google, facebook
+        public bool ShareInfoPartners { get; set; }
     }
 }

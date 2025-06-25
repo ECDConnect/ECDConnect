@@ -4,7 +4,6 @@ import {
   useDialog,
   Document,
   ContentConsentTypeEnum,
-  LocalStorageKeys,
   RoleSystemNameEnum,
 } from '@ecdlink/core';
 import {
@@ -68,12 +67,7 @@ import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { practitionerSelectors } from '@/store/practitioner';
 import ChildWrapper from './components/child-wrapper/ChildWrapper';
 import { useAppContext } from '@/walkthrougContext';
-import walkthroughImage from '../../../assets/walktroughImage.png';
 import { useTenant } from '@/hooks/useTenant';
-import {
-  getStorageItem,
-  setStorageItem,
-} from '@/utils/common/local-storage.utils';
 import {
   TabsItemForPrincipal,
   TabsItems,
@@ -106,7 +100,6 @@ const baseNotificationListItem: ListItemProps = {
 };
 
 export const ChildProfile: React.FC = () => {
-  const currentDate = new Date();
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
   const appDispatch = useAppDispatch();
@@ -118,12 +111,10 @@ export const ChildProfile: React.FC = () => {
   const { getDocumentTypeIdByEnum, getWorkflowStatusIdByEnum } =
     useStaticData();
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
-  const progressTrainingDone = practitioner?.attendedChildProgress || false;
   const isPrincipal = practitioner?.isPrincipal;
   const child = useSelector(childrenSelectors.getChildById(childId));
   const tenant = useTenant();
   const isWhiteLabel = tenant?.isWhiteLabel;
-  const appName = tenant?.tenant?.applicationName;
   const { attendanceEnabled, progressEnabled } = useTenantModules();
 
   const practitioners = useSelector(
@@ -178,6 +169,8 @@ export const ChildProfile: React.FC = () => {
     documentSelectors.getDocumentByTypeId(child?.user?.id, typeId)
   );
 
+  const currentDate = useMemo(() => new Date(), []);
+
   const caregiverHasBeenContacted = useSelector(
     childrenSelectors.findCaregiverContactHistoryLog(
       child?.caregiverId,
@@ -228,24 +221,8 @@ export const ChildProfile: React.FC = () => {
   const avatar = profilePicture?.file || child?.user?.profileImageUrl || '';
 
   const {
-    setState,
     state: { run },
   } = useAppContext();
-
-  const childTutorialTaken = getStorageItem(
-    LocalStorageKeys.childProfileTutorialComplete
-  );
-
-  const handleClickStart = () => {
-    setState({ run: true, tourActive: true, stepIndex: 0 });
-  };
-
-  // useEffect(() => {
-  //   if (childTutorialTaken === undefined && !childTutorialTaken && !run) {
-  //     goToChildProfileWalkthrough();
-  //   }
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [childTutorialTaken, run]);
 
   const showOnlineOnly = useCallback(() => {
     dialog({
@@ -260,50 +237,6 @@ export const ChildProfile: React.FC = () => {
       },
     });
   }, [dialog]);
-
-  // const goToChildProfileWalkthrough = () => {
-  //   dialog({
-  //     position: DialogPosition.Middle,
-  //     render: (onSubmit: any, onCancel: any) => (
-  //       <ActionModal
-  //         customIcon={
-  //           <div className="flex">
-  //             <img src={walkthroughImage} alt="profile" className="mb-2" />
-  //           </div>
-  //         }
-  //         importantText={`Welcome to the child profile on ${appName}!`}
-  //         detailText={'Can I show you how to use this section?'}
-  //         actionButtons={[
-  //           {
-  //             text: 'Yes, help me!',
-  //             textColour: 'white',
-  //             colour: 'quatenary',
-  //             type: 'filled',
-  //             onClick: () => {
-  //               onSubmit();
-  //               handleClickStart();
-  //             },
-  //             leadingIcon: 'CheckCircleIcon',
-  //           },
-  //           {
-  //             text: 'No, skip',
-  //             textColour: 'quatenary',
-  //             colour: 'quatenary',
-  //             type: 'outlined',
-  //             onClick: () => {
-  //               setStorageItem(
-  //                 true,
-  //                 LocalStorageKeys.childProfileTutorialComplete
-  //               );
-  //               onCancel();
-  //             },
-  //             leadingIcon: 'ClockIcon',
-  //           },
-  //         ]}
-  //       />
-  //     ),
-  //   });
-  // };
 
   // TODO - This useEffect needs to be fixed, causing infinite re-renders!!!
   useEffect(() => {
@@ -709,7 +642,6 @@ export const ChildProfile: React.FC = () => {
     isOnline,
     isPrincipal,
     practitionerIsOnLeave,
-    progressTrainingDone,
     showOnlineOnly,
   ]);
 

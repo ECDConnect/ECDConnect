@@ -200,7 +200,9 @@ namespace EcdLink.Api.CoreApi.Services
             // Update skills if available
             UpdateProfileSkills(communityProfile.Id, input.CommunitySkillIds);
 
-            return GetCommunityProfile(input.UserId, true);
+            _pointsService.CalculateCompleteCommunityProfile(input.UserId);
+
+            return GetCommunityProfile(input.UserId);
         }
 
         public void UpdateProfileSkills(Guid communityProfileId, List<Guid> communitySkillIds)
@@ -269,7 +271,7 @@ namespace EcdLink.Api.CoreApi.Services
             }
         }
 
-        public CommunityProfileModel GetCommunityProfile(Guid userId, bool includePointCalculation = false)
+        public CommunityProfileModel GetCommunityProfile(Guid userId)
         {
             var userCommunityProfile = _communityProfileRepo.GetAll()
                                         .Include(x => x.User)
@@ -360,10 +362,10 @@ namespace EcdLink.Api.CoreApi.Services
                     completenessPercColor = Constants.CSSColorClasses.Blue;
                 }
 
-                if (includePointCalculation && totalPoints == 100)
-                {
-                    _pointsService.CalculateCompleteCommunityProfile(userId);
-                }
+                // if (totalPoints == 100)
+                // {
+                //     _pointsService.CalculateCompleteCommunityProfile(userId);
+                // }
 
                 return new CommunityProfileModel(userCommunityProfile, 
                                                  acceptedConnections,

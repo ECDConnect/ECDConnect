@@ -149,7 +149,7 @@ export const EditPractitionerProfile: React.FC = () => {
             userAuth.auth_token
           ).UpdatePractitionerProgress(user.id, 2.0);
         }
-        appDispatch(notificationActions.resetFrontendNotificationState());
+        appDispatch(notificationActions.resetNotificationState());
         appDispatch(
           practitionerThunkActions.getPractitionerByUserId({ userId: user.id })
         );

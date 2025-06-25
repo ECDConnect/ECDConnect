@@ -1,4 +1,5 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.GraphApi.Models.Users;
 using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using ECDLink.Abstractrions.GraphQL.Enums;
@@ -129,8 +130,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
-            var teamLeadRepo = repoFactory.CreateGenericRepository<TeamLead>(userContext: uId);
-            var hcwRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
             var messageTemplateRepo = repoFactory.CreateGenericRepository<MessageTemplate>(userContext: uId);
             var messageLogRepo = repoFactory.CreateGenericRepository<MessageLog>(userContext: uId);
 
@@ -144,51 +143,32 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             List<Coach> coaches = new List<Coach>();
             List<Guid> messageUserIds = new List<Guid>();
 
-            var isTrainee = input.RoleIds.FindIndex(x => x == "trainees") != -1;
             var isPrincipal = input.RoleIds.FindIndex(x => x == "practitioners_principals") != -1;
             var isNonPractitioner = input.RoleIds.FindIndex(x => x == "practitioners_non_principals") != -1;
             var isCoach = input.RoleIds.FindIndex(x => x == "coaches") != -1;
-            var isCHW = input.RoleIds.FindIndex(x => x == "chw") != -1;
-            var isTeamLead = input.RoleIds.FindIndex(x => x == "team_lead") != -1;
 
-            if (isTrainee || isPrincipal || isNonPractitioner)
+            if (isPrincipal || isNonPractitioner)
             {
                 practitioners = practitionerRepo.GetAll().Where(x => x.IsActive == true).ToList();
             }
-
-            // SS roles
-            if (isTrainee)
-            {
-                userIds.AddRange(practitioners.Where(x => x.IsActive == true && x.IsTrainee == true).Select(x => x.UserId.Value).Distinct().ToList());
-            }
             if (isPrincipal)
             {
-                userIds.AddRange(practitioners.Where(x => x.IsActive == true && (x.IsPrincipal == true || x.IsFundaAppAdmin == true)).Select(x => x.UserId.Value).Distinct().ToList());
+                userIds.AddRange(practitioners.Where(x => x.IsActive == true && x.IsPrincipal == true).Select(x => x.UserId.Value).Distinct().ToList());
             }
             if (isNonPractitioner)
             {
-                userIds.AddRange(practitioners.Where(x => x.IsActive == true && (x.IsPrincipal == false && x.IsFundaAppAdmin == false)).Select(x => x.UserId.Value).Distinct().ToList());
+                userIds.AddRange(practitioners.Where(x => x.IsActive == true && x.IsPrincipal == false).Select(x => x.UserId.Value).Distinct().ToList());
             }
             if (isCoach)
             {
                 coaches = coachRepo.GetAll().Where(x => x.IsActive == true).ToList();
                 userIds.AddRange(coaches.Select(x => x.UserId.Value).Distinct().ToList());
             }
-            // GG roles
-            if (isCHW)
-            {
-                userIds.AddRange(hcwRepo.GetAll().Where(x => x.IsActive == true).Select(x => x.UserId.Value).Distinct().ToList());
-            }
-            if (isTeamLead)
-            {
-                userIds.AddRange(teamLeadRepo.GetAll().Where(x => x.IsActive == true).Select(x => x.UserId.Value).Distinct().ToList());
-            }
-
             // Finding users for criteria
             if (input.ProvinceId != "" || input.WardName != "")
             {
 
-                if (isTrainee || isPrincipal || isNonPractitioner)
+                if (isPrincipal || isNonPractitioner)
                 {
                     if (input.ProvinceId != "" && input.WardName == "")
                     {

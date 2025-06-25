@@ -16,8 +16,6 @@
     <EmbeddedResource Remove="Tenancy\TempScripts\**" />
     <None Remove="Migrations\**" />
     <None Remove="Tenancy\TempScripts\**" />
-    <Compile Remove="Services\IntegrationService.cs" />
-    <Compile Remove="Services\Interfaces\IIntegrationService.cs" />
     <None Remove="Middleware\" />
     <None Remove="HtmlSanitizer" />
     <None Remove="SQLUpgradeScripts" />
@@ -51,6 +49,7 @@
   
   <ItemGroup>
     <ProjectReference Include="..\ECDLink.AzureStorage\ECDLink.AzureStorage.csproj" />
+    <ProjectReference Include="..\ECDLink.FileStorage\ECDLink.FileStorage.csproj" />
     <ProjectReference Include="..\ECDLink.PostgresTenancy\ECDLink.PostgresTenancy.csproj" />
     <ProjectReference Include="..\ECDLink.Tenancy\ECDLink.Tenancy.csproj" />
     <ProjectReference Include="..\Jobs\ECDLink.AutomatedJobs\ECDLink.AutomatedJobs.csproj" />
@@ -63,13 +62,16 @@
     <ProjectReference Include="..\Libraries\Modules\ECDLink.Notifications\ECDLink.Notifications.csproj" />
     <ProjectReference Include="..\Libraries\Modules\ECDLink.PDFGenerator\ECDLink.PDFGenerator.csproj" />
     <ProjectReference Include="..\Libraries\Modules\ECDLink.Security\ECDLink.Security.csproj" />
-    <ProjectReference Include="..\Libraries\Modules\ECDLink.SmartStart\ECDLink.SmartStart.csproj" />
     <ProjectReference Include="..\Libraries\Modules\ECDLink.UrlShortner\ECDLink.UrlShortner.csproj" />
     <ProjectReference Include="..\ECDLink.Moodle\ECDLink.Moodle.csproj" />
   </ItemGroup>
   
   <ItemGroup>
     <Folder Include="Middleware\" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Include="ECDLink.FileStorage.csproj" />
   </ItemGroup>
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1development_1json__JsonSchema="https://download.stackhawk.com/hawk/jsonconfig/hawkconfig.json" /></VisualStudio></ProjectExtensions>
   

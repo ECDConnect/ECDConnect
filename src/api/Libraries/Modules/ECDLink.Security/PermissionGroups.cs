@@ -11,7 +11,6 @@
         public const string WORKFLOW = "Workflow";
         public const string SYSTEM = "System";
         public const string INCOMESTATEMENTS = "IncomeStatements";
-        public const string INTEGRATION = "Integration";
         public const string LEAGUE = "League";
         public const string USERPERMISSION = "UserPermission";
         public const string COMMUNITY = "Community";

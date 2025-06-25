@@ -68,10 +68,10 @@ export const ProgressViewReportsSummarySelectClassroomGroupAndAgeGroup: React.FC
                 type="h4"
                 color="textMid"
                 text={`${format(
-                  new Date(currentReportingPeriod?.startDate || ''),
+                  new Date(currentReportingPeriod?.startDate || new Date()),
                   'd MMM'
                 )} - ${format(
-                  new Date(currentReportingPeriod?.endDate || ''),
+                  new Date(currentReportingPeriod?.endDate || new Date()),
                   'd MMM yyyy'
                 )}`}
               />

@@ -1,4 +1,4 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models.Visits;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
@@ -19,44 +19,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
     public class VisitDataStatusMutationExtension
     {
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public bool UpdateVisitDataStatus(
-            [Service] IHttpContextAccessor contextAccessor,
-            [Service] INotificationService notificationService,
-            IGenericRepositoryFactory repoFactory,
-            VisitDataStatusReferral input)
-        {
-            var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
-            var visitDataStatusRepo = repoFactory.CreateGenericRepository<VisitDataStatus>(userContext: applicationUserId);
-
-            foreach (VisitDataStatusModel inputItem in input.Referrals)
-            {
-                var entityToUpdate = visitDataStatusRepo.GetAll().Where(x => x.Id.ToString() == inputItem.Id).OrderBy(x => x.Id).FirstOrDefault();
-                entityToUpdate.UpdatedDate = DateTime.Now;
-                entityToUpdate.UpdatedBy = applicationUserId.ToString();
-                entityToUpdate.IsCompleted = (bool)inputItem.IsCompleted;
-                entityToUpdate.ReferralDateCompleted = (bool)inputItem.IsCompleted ? DateTime.Now : null;
-                visitDataStatusRepo.Update(entityToUpdate);
-
-                //update generated G4/G9  item
-                var otherVisitReferrals = visitDataStatusRepo.GetAll().Where(x => 
-                    x.VisitData.VisitId == entityToUpdate.VisitData.VisitId
-                    && (x.Type.Equals(Constants.GGSettings.visit_data_client_dashboard) || x.Type.Equals(Constants.GGSettings.visit_data_client_summary)))
-                    .ToList();
-
-                foreach (var referral in otherVisitReferrals)
-                {
-                    referral.UpdatedDate = DateTime.Now;
-                    referral.UpdatedBy = applicationUserId.ToString();
-                    referral.IsCompleted = (bool)inputItem.IsCompleted;
-                    referral.ReferralDateCompleted = (bool)inputItem.IsCompleted ? DateTime.Now : null;
-                    visitDataStatusRepo.Update(referral);
-                }
-                //clear notifications
-                notificationService.DeleteAllNotificationsRelatedToEntity(entityToUpdate.Id);
-            }
-
-            return true;
-        }
+        
     }
 }

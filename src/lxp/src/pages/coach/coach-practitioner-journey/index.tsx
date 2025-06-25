@@ -785,10 +785,9 @@ export const CoachPractitionerJourney = () => {
     [userPointsSummaries]
   );
 
-  const pointsMax =
-    practitioner?.isPrincipal || practitioner?.isFundaAppAdmin
-      ? pointsConstants.principalOrAdminYearlyMax
-      : pointsConstants.practitionerYearlyMax;
+  const pointsMax = practitioner?.isPrincipal
+    ? pointsConstants.principalOrAdminYearlyMax
+    : pointsConstants.practitionerYearlyMax;
 
   const percentageScore = (userPointsTotalForYear / pointsMax) * 100;
 

@@ -2,6 +2,7 @@ using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
+using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -188,8 +189,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
                 return usersQuery
                     .Where(u => provinceIds.Contains(u.practitionerObjectData.SiteAddress.ProvinceId ?? Guid.Empty)
-                    || provinceIds.Contains(u.coachObjectData.SiteAddress.ProvinceId ?? Guid.Empty)
-                    || provinceIds.Contains(u.franchisorObjectData.SiteAddress.ProvinceId ?? Guid.Empty));
+                    || provinceIds.Contains(u.coachObjectData.SiteAddress.ProvinceId ?? Guid.Empty));
             }
 
             return usersQuery;
@@ -238,13 +238,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             }
 
             var roles = await (new ObjectTypes.ApplicationUserExtension()).GetRolesAsync(user, roleManager, userManager);
-
-            //Franchisor
-            if (roles.Any(x => x.Name.Contains(Roles.FRANCHISOR)))
-            {
-                var franchisorRepo = repoFactory.CreateGenericRepository<Franchisor>(userContext: user.Id);
-                user.franchisorObjectData = franchisorRepo.GetByUserId(user.Id);
-            }
             //Coach
             if (roles.Any(x => x.Name.Contains(Roles.COACH)))
             {
@@ -262,14 +255,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     {
                         user.practitionerObjectData = null;
                         user.principalObjectData = userData;
-                    }
-                    else if (userData.IsTrainee.HasValue && userData.IsTrainee == true)
-                    {
-                        var traineeRepo = repoFactory.CreateGenericRepository<Trainee>(userContext: user.Id);
-                        var traineeUserData = traineeRepo.GetByUserId(user.Id);
-                        user.practitionerObjectData = null;
-                        user.principalObjectData = null;
-                        user.traineeObjectData = traineeUserData;
                     }
                     else
                     {
@@ -346,5 +331,55 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return shortUrlManager.GetLatestUrlInviteForUser(userId, TemplateTypeConstants.Invitation);
         }
 
+        public UserSyncStatus GetUserSyncStatus(
+           AuthenticationDbContext dbContext,
+           Guid userId, DateTime lastSync, Guid classroomId)
+        {
+            var childrenCount = dbContext.Children.FromSql($@"
+            SELECT c.""Id""
+            FROM ""Child"" c 
+            JOIN ""Practitioner"" p ON c.""Hierarchy"" LIKE p.""Hierarchy"" || '%'
+            WHERE (p.""UserId"" = {userId}::uuid OR p.""PrincipalHierarchy"" = {userId}::uuid)
+            AND c.""IsActive"" IS TRUE 
+            AND c.""UpdatedDate"" > {lastSync}
+            ").Count();
+
+            var classroomCount = dbContext.ClassroomGroups.FromSql($@"
+            SELECT cg.""Id""
+            FROM ""ClassroomGroup"" cg 
+            WHERE cg.""UserId"" = {userId}::uuid 
+            AND cg.""InsertedDate"" > {lastSync}
+            ").Count();
+
+            var pointsCount = dbContext.PointsUserSummary.FromSql($@"
+            SELECT pus.""Id""
+            FROM ""PointsUserSummary"" pus 
+            WHERE pus.""UserId"" = {userId}::uuid 
+            AND pus.""UpdatedDate"" > {lastSync}
+            ").Count();
+
+            var periodCount = dbContext.ChildProgressReportPeriod.FromSql($@"
+            SELECT cprp.""Id""
+            FROM ""ChildProgressReportPeriod"" cprp 
+            WHERE cprp.""ClassroomId"" = {classroomId}::uuid 
+            AND cprp.""InsertedDate"" > {lastSync}
+            ").Count();
+
+            var permissionsCount = dbContext.PointsUserSummary.FromSql($@"
+            SELECT up.""Id""
+            FROM ""UserPermission"" up 
+            WHERE up.""UserId"" = {userId}::uuid 
+            AND up.""UpdatedDate"" > {lastSync}
+            ").Count();
+
+            return new UserSyncStatus
+            {
+                SyncChildren = childrenCount >= 1,
+                SyncClassroom = classroomCount >= 1,
+                SyncReportingPeriods = periodCount >= 1,
+                SyncPoints = pointsCount >= 1,
+                SyncPermissions = permissionsCount >= 1
+            };
+        }
     }
 }

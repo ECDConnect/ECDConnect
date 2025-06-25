@@ -1,14 +1,15 @@
+using EcdLink.Api.CoreApi.GraphApi.Queries;
 using EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.Constants;
+using ECDLink.Api.CoreApi.Services;
 using ECDLink.Core.Helpers;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
-using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Managers;
@@ -51,18 +52,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
             var principalUser = practitionerRepo.GetByUserId(userId);
  
-            if (principalUser != null && (principalUser.IsPrincipal == true || principalUser.IsFundaAppAdmin == true)) //make sure the principal user exists and is a principal or a FAA
+            if (principalUser != null && (principalUser.IsPrincipal == true)) //make sure the principal user exists and is a principal
             {
                 if (practitionerUser != null)
                 {
                     Practitioner practitioner = practitionerRepo.GetByUserId(practitionerUser.Id);
-                    if (practitioner != null && principalUser.UserId != practitioner.UserId) 
+                    if (practitioner != null && principalUser.UserId != practitioner.UserId)
                     {
                         practitioner.DateLinked = DateTime.Now;
                         practitioner.PrincipalHierarchy = principalUser.UserId;
-                        practitioner.IsFundaAppAdmin = false;
                         practitioner.IsPrincipal = false;
                         practitionerRepo.Update(practitioner);
+
+                        // add points for adding practitioner to programme
+                        pointsService.CalculateAddNewPractitionerToPreschool(principalUser.UserId.Value);
 
                         //link the practitioners classroom groups to the correct classroom
                         Classroom principalClassRoom = classroomRepo.GetAll().Where(x => x.UserId == principalUser.UserId).OrderBy(x => x.Id).FirstOrDefault();
@@ -80,13 +83,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                 {
                                     classroom = classroomRepo.GetById(group.ClassroomId);
                                     group.ClassroomId = principalClassRoom.Id;
-                                    if (programmeTypeId != null) {
+                                    if (programmeTypeId != null)
+                                    {
                                         group.ProgrammeTypeId = programmeTypeId;
-                                    }    
+                                    }
                                     classroomGroupRepo.Update(group);
-                                    if (classroom != null) {
+                                    if (classroom != null)
+                                    {
                                         classroomIds.Add(classroom.Id);
-                                    }                                    
+                                    }
                                 }
                             }
                             if (classroomIds != null && classroomIds.Count() > 0 && practitioner.Progress >= 2)
@@ -135,8 +140,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                     notificationService.SendNotificationAsync(null, TemplateTypeConstants.MultipleProgrammeInvitation, DateTime.Now.Date, user, "", MessageStatusConstants.Amber, replacements);
                                 }
                             }
-                            // add points for adding practitioner to programme
-                            pointsService.CalculateAddNewPractitionerToPreschool(uId);
+
                         } else
                         {
                             // send message to principal if preschool code is available
@@ -159,10 +163,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                 notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerJoinedWithPreschoolCode, DateTime.Now.Date, principalUser.User, "", MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7));
                             }
                         }
-
                         return practitioner;
                     }
-                    else return null;
+                    else return null; 
                 }
                 else return null;
             }
@@ -189,19 +192,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             if (user is null || currentUserId is null)
                 throw new QueryException("User not found.");
 
-            //audit user changes
-            List<AuditChanges> auditFields = new List<AuditChanges>();
-
             if (phoneNumber != user.PhoneNumber && !string.IsNullOrWhiteSpace(phoneNumber))
             {
-                auditFields.Add(new AuditChanges() { FieldName = "PhoneNumber", ValueBefore = user.PhoneNumber, ValueAfter = phoneNumber });
                 user.PhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PhoneNumber, phoneNumber));
                 user.PendingPhoneNumber = null;
             }
 
             if (user.Email != email && !string.IsNullOrWhiteSpace(email) && user.Id == currentUserId)
             {
-                auditFields.Add(new AuditChanges() { FieldName = "Email", ValueBefore = user.Email, ValueAfter = email });
                 user.Email = email;
                 user.EmailConfirmed = false;
             }

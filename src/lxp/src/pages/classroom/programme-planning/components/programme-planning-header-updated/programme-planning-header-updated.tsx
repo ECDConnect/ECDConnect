@@ -105,11 +105,20 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
       if (dayNr === 5) {
         // Sat
         setSelectedDate(addDays(selectedDate!, 3));
+        setMonthDropdownLabel(
+          format(new Date(addDays(selectedDate!, 3)), 'MMM yyyy')
+        );
       } else if (dayNr === 6) {
         // Sun
         setSelectedDate(addDays(selectedDate!, 2));
+        setMonthDropdownLabel(
+          format(new Date(addDays(selectedDate!, 2)), 'MMM yyyy')
+        );
       } else {
         setSelectedDate(addDays(selectedDate!, 1));
+        setMonthDropdownLabel(
+          format(new Date(addDays(selectedDate!, 1)), 'MMM yyyy')
+        );
       }
 
       if (holiday.holidays) {
@@ -156,11 +165,20 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
       if (dayNr === 0) {
         // Sat
         setSelectedDate(subDays(selectedDate!, 2));
+        setMonthDropdownLabel(
+          format(new Date(subDays(selectedDate!, 2)), 'MMM yyyy')
+        );
       } else if (dayNr === 1) {
         // Sun
         setSelectedDate(subDays(selectedDate!, 3));
+        setMonthDropdownLabel(
+          format(new Date(subDays(selectedDate!, 3)), 'MMM yyyy')
+        );
       } else {
         setSelectedDate(subDays(selectedDate!, 1));
+        setMonthDropdownLabel(
+          format(new Date(subDays(selectedDate!, 1)), 'MMM yyyy')
+        );
       }
     }
 
