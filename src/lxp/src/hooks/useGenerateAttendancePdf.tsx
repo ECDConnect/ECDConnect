@@ -27,8 +27,6 @@ export const useGenerateAttendancePdf = () => {
     var imgHeight = 8;
     const tablesByType: { [key: string]: AttendanceReportTableDataDto[] } = {};
 
-    console.log('tableBottomContent', tableBottomContent);
-
     tableData.forEach((table, index) => {
       // Step 1: Map the data into the desired format
       const pageData = table.items.map(
