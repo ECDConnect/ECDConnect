@@ -22,8 +22,11 @@ export const useProgressForClassAndAgeGroup = (
     classroomsSelectors.getClassroomGroupById(classroomGroupId)
   );
 
-  const { childReports: allChildReports, currentReportingPeriod } =
-    useProgressForChildren();
+  const {
+    childReports: allChildReports,
+    currentReportingPeriod,
+    currentReportingPeriodForSummary,
+  } = useProgressForChildren();
 
   const childReports = useMemo(() => {
     return allChildReports.filter((report) =>
@@ -79,5 +82,6 @@ export const useProgressForClassAndAgeGroup = (
     childReports,
     reportsSummary,
     ageGroup,
+    currentReportingPeriodForSummary,
   };
 };

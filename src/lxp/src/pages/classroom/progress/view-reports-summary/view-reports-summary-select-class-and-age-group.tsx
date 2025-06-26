@@ -11,7 +11,8 @@ export const ProgressViewReportsSummarySelectClassroomGroupAndAgeGroup: React.FC
   () => {
     const history = useHistory();
 
-    const { children, currentReportingPeriod } = useProgressForChildren();
+    const { children, currentReportingPeriodForSummary } =
+      useProgressForChildren();
     const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
 
     const [step, setStep] = useState(1);
@@ -68,10 +69,14 @@ export const ProgressViewReportsSummarySelectClassroomGroupAndAgeGroup: React.FC
                 type="h4"
                 color="textMid"
                 text={`${format(
-                  new Date(currentReportingPeriod?.startDate || new Date()),
+                  new Date(
+                    currentReportingPeriodForSummary?.startDate || new Date()
+                  ),
                   'd MMM'
                 )} - ${format(
-                  new Date(currentReportingPeriod?.endDate || new Date()),
+                  new Date(
+                    currentReportingPeriodForSummary?.endDate || new Date()
+                  ),
                   'd MMM yyyy'
                 )}`}
               />
