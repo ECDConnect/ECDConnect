@@ -137,5 +137,6 @@ export const getTableData = ({
     tableStyles,
     tableFootStyles,
     footer,
+    tableHeaders,
   };
 };
