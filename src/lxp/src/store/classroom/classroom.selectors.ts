@@ -285,10 +285,18 @@ export const getExpiredProgressReportPeriod = () =>
       const index = currentYearsReportingPeriodsAsc.findIndex(
         (report) => report.id === expiredPeriod.id
       );
+
+      const startDate = new Date(expiredPeriod?.startDate);
+      startDate.setHours(0, 0, 0, 0);
+
+      const endDate = new Date(expiredPeriod?.endDate);
+      endDate.setHours(23, 59, 59, 0);
+
       return {
         reportNumber: index + 1,
         id: expiredPeriod?.id,
-        endDate: expiredPeriod?.endDate.toString(),
+        endDate: endDate,
+        startDate: startDate,
       } as unknown as CompleteReportPeriods;
     }
   );
