@@ -10,7 +10,7 @@ const initialState: SettingsState = {
   childInitialObservationPeriod: 30,
   lastDataSync: format(new Date(), 'MM/dd/yyyy hh:mm aa'),
   lastDataSyncUnformatted: formatISO(new Date()),
-  notificationPollInterval: 1800000,
+  notificationPollInterval: 60000,
   applicationVersion: undefined,
   settings: undefined,
   loginDate: formatISO(new Date()),
@@ -26,6 +26,7 @@ const settingSlice = createSlice({
       state.childInitialObservationPeriod =
         initialState.childInitialObservationPeriod;
       state.settings = initialState.settings;
+      state.notificationPollInterval = initialState.notificationPollInterval;
     },
     setLastDataSync: (state) => {
       state.lastDataSync = format(new Date(), 'MM/dd/yyyy hh:mm aa');
