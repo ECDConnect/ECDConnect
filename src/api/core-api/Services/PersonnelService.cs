@@ -307,6 +307,7 @@ namespace ECDLink.Api.CoreApi.Services
                 {
                     classroomName = classroom.Name;
                     classroom.UserId = practitionerToPromote.UserId;
+                    classroom.Hierarchy = practitionerToPromote.Hierarchy;
                     _classRepo.Update(classroom);
                 }
 
