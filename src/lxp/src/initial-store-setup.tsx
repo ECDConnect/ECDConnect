@@ -64,6 +64,7 @@ import { statementsActions, statementsThunkActions } from '@store/statements';
 import { LocalStorageKeys, RoleSystemNameEnum } from '@ecdlink/core';
 import { communityThunkActions } from './store/community';
 import { ClassroomService } from './services/ClassroomService';
+import { pointsThunkActions } from './store/points';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -211,6 +212,48 @@ const InitialStoreSetup: React.FC = ({ children }) => {
             endDate: new Date(),
           })
         ).unwrap()
+      );
+      promises.push(
+        appDispatch(
+          practitionerThunkActions.getPractitionerPermissions({
+            userId: practitioner?.userId!,
+          })
+        ).unwrap()
+      );
+      promises.push(
+        appDispatch(
+          pointsThunkActions.pointsTodoItems({ userId: userData?.id! })
+        ).unwrap()
+      );
+
+      promises.push(
+        appDispatch(
+          pointsThunkActions.yearPointsView({ userId: userData?.id! })
+        ).unwrap()
+      );
+
+      promises.push(
+        appDispatch(
+          pointsThunkActions.sharedData({
+            userId: userData?.id!,
+            isMonthly: true,
+          })
+        ).unwrap()
+      );
+
+      const currentDate = new Date();
+      const oneYearAgo = new Date();
+      oneYearAgo.setMonth(currentDate.getMonth() - 12);
+
+      promises.push(
+        (async () =>
+          await appDispatch(
+            pointsThunkActions.getPointsSummaryForUser({
+              userId: userData?.id!,
+              startDate: oneYearAgo,
+              endDate: currentDate,
+            })
+          ).unwrap())()
       );
     }
     await Promise.allSettled(promises);
