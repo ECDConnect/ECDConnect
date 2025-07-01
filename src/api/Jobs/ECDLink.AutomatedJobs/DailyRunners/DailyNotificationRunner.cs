@@ -20,17 +20,14 @@ public class DailyNotificationRunner : CronJobService
     {
         var notificationTasks = GetServices<INotificationTask>();
 
-        var runningTasks = new List<Task>();
         foreach (var notificationTask in notificationTasks)
         {
             _logger.Log(LogLevel.Information, $"Running notification task: {notificationTask.GetType().Name}");
 
             if (notificationTask.ShouldRunToday())
             {
-                var task = notificationTask.SendNotifications();
-                runningTasks.Add(task);
+                await notificationTask.SendNotifications();
             }
         }        
-        await Task.WhenAll(runningTasks);
     }
 }

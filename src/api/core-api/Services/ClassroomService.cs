@@ -160,7 +160,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                         x.IsActive
                         && !x.UserId.HasValue
                         && x.Classroom.IsActive
-                        && !x.Classroom.IsDummySchool.Value 
+                        && (!x.Classroom.IsDummySchool.HasValue || !x.Classroom.IsDummySchool.Value)
                         && x.Classroom.UserId.HasValue)
                     .Select(x => new PrincipalClassroomModel(x.Id, x.Name, x.Classroom.User))
                     .Distinct()
