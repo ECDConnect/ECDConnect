@@ -35,8 +35,8 @@ const MessageForm: React.FC<MessageFormProps> = ({
   isView,
 }) => {
   const [provinceData, setProvinceData] = useState<ProvinceDto[]>([]);
-  const [roleData, setRoleData] = useState<MessageRoleDto[]>([]);
-  const [selectedRoles, setSelectedRoles] = useState<MessageRoleDto[]>(ssRoles);
+  const [roleData, setRoleData] = useState<MessageRoleDto[]>(ssRoles);
+  const [selectedRoles, setSelectedRoles] = useState<MessageRoleDto[]>([]);
   const [messageDate, setMessageDate] = useState<Date>(editMessageDate);
   const [messageText, setMessageText] = useState('');
   const [messageTitle, setMessageTitle] = useState('');
