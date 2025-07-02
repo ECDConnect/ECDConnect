@@ -28,6 +28,10 @@ import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import { ClassDashboardRouteState } from '@/pages/business/business.types';
+import {
+  notificationActions,
+  notificationsSelectors,
+} from '@/store/notifications';
 
 export const EditRegistersAttendanceList = ({
   selectedRegister,
@@ -35,6 +39,10 @@ export const EditRegistersAttendanceList = ({
 }: EditRegistersAttendanceListProps) => {
   const [presentChildrenCount, setPresentChildrenCount] = useState<number>(0);
   const [absentChildrenCount, setAbsentChildrenCount] = useState<number>(0);
+
+  const attendanceNotification = useSelector(
+    notificationsSelectors.getAllNotifications
+  ).find((item) => item?.message?.area?.includes('tracking-attendance'));
 
   const [attendanceGroups, setAttendanceGroups] = useState<AttendanceState[]>();
 
@@ -123,6 +131,12 @@ export const EditRegistersAttendanceList = ({
         category: 'Attendance tracking click',
       })
     );
+
+    if (attendanceNotification) {
+      appDispatch(
+        notificationActions.removeNotification(attendanceNotification!)
+      );
+    }
 
     setAttendanceGroups([]);
     showMessage({ message: 'Register saved!', type: 'success' });

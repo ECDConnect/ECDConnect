@@ -29,6 +29,10 @@ import * as styles from './attendance-list.styles';
 import { AttendanceListProps, AttendanceState } from './attendance-list.types';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { childrenSelectors } from '@store/children';
+import {
+  notificationActions,
+  notificationsSelectors,
+} from '@/store/notifications';
 
 export const filterInfo: FilterInfo = {
   filterName: 'Class',
@@ -52,6 +56,10 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   const [selectedClassroomGroups, setSelectedClassroomGroups] = useState<
     ClassroomGroupDto[]
   >([]);
+
+  const attendanceNotification = useSelector(
+    notificationsSelectors.getAllNotifications
+  ).find((item) => item?.message?.area?.includes('tracking-attendance'));
 
   const allLearners = useSelector(
     classroomsSelectors.getClassroomGroupLearners
@@ -265,6 +273,11 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
         category: 'Attendance tracking click',
       })
     );
+    if (attendanceNotification) {
+      appDispatch(
+        notificationActions.removeNotification(attendanceNotification!)
+      );
+    }
 
     onSubmitSuccess({
       attendanceDate,
