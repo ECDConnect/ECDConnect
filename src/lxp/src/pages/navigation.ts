@@ -1,0 +1,35 @@
+export const NavigationNames = {
+  Home: 'Home',
+  Profile: {
+    Profile: 'Profile',
+    Account: 'About me',
+    Preschool: 'Preschool',
+    Journey: 'Journey',
+  },
+  Classroom: {
+    Classroom: 'Classroom',
+    Classes: 'Classes',
+    Attendance: 'Attendance',
+    Progress: 'Progress',
+    Activities: 'Activities',
+    Resources: 'Resources',
+    Practitioners: 'Practitioners',
+    Programme: 'Programme',
+  },
+  Business: {
+    Business: 'Business',
+    Staff: 'Staff',
+    Money: 'Money',
+    Resources: 'Resources',
+  },
+  Community: {
+    Community: 'Community',
+    Resources: 'Resources',
+  },
+  Training: 'Training',
+  Points: 'Points',
+  Messages: 'Messages',
+  Practitioners: 'Practitioners',
+  Calendar: 'Calendar',
+  Logout: 'Log out',
+};

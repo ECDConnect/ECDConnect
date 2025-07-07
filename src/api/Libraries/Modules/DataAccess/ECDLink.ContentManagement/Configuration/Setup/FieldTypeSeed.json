@@ -1,0 +1,52 @@
+{
+  "data": [
+    {
+      "Id": 1,
+      "Name": "Text",
+      "Description": "Textbox for general basic text input",
+      "DataType": "text",
+      "AssemblyDataType": "System.String",
+      "GraphQLDataType": "String"
+    },
+    {
+      "Id": 2,
+      "Name": "Markdown",
+      "Description": "Markdown for general basic text input",
+      "DataType": "markdown",
+      "AssemblyDataType": "System.String",
+      "GraphQLDataType": "String"
+    },
+    {
+      "Id": 3,
+      "Name": "Image",
+      "Description": "Base64 of the image",
+      "DataType": "image",
+      "AssemblyDataType": "System.String",
+      "GraphQLDataType": "String"
+    },
+    {
+      "Id": 4,
+      "Name": "DynamicRelation",
+      "Description": "Linked to another dyanmic object",
+      "DataType": "link",
+      "AssemblyDataType": "System.Int",
+      "GraphQLDataType": "Int"
+    },
+    {
+      "Id": 5,
+      "Name": "StaticRelation",
+      "Description": "Linked to another entityframework entity object",
+      "DataType": "staticLink",
+      "AssemblyDataType": "System.Int",
+      "GraphQLDataType": "Int"
+    },
+    {
+      "Id": 6,
+      "Name": "ColorPicker",
+      "Description": "A control to pick a hex colour",
+      "DataType": "color-picker",
+      "AssemblyDataType": "System.String",
+      "GraphQLDataType": "String"
+    }
+  ]
+}

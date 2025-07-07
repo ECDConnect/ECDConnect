@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="Current">
+  <PropertyGroup>
+	<TargetFramework>net9.0</TargetFramework>
+	<Nullable>disable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Content\**" />
+    <EmbeddedResource Remove="Content\**" />
+    <None Remove="Content\**" />
+    <None Remove="FileSignatures" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Azure.Data.Tables" Version="12.10.0" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.24.0" />
+    <PackageReference Include="FileSignatures" Version="5.1.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Libraries\Modules\ECDLink.Abstractrions\ECDLink.Abstractrions.csproj" />
+    <ProjectReference Include="..\Libraries\Modules\ECDLink.Core\ECDLink.Core.csproj" />
+  </ItemGroup>
+</Project>

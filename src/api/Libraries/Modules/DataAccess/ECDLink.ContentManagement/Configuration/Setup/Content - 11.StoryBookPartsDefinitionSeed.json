@@ -1,0 +1,155 @@
+{
+  "contentDefinition": {
+    "contentName": "StoryBookParts",
+    "description": "Story book parts",
+    "fields": [
+      {
+        "fieldOrder": 1,
+        "fieldName": "Name",
+        "fieldType": "Text",
+        "isRequired": true
+      },
+      {
+        "fieldOrder": 2,
+        "fieldName": "Part",
+        "fieldType": "Text",
+        "isRequired": true
+      },
+      {
+        "fieldOrder": 3,
+        "fieldName": "PartText",
+        "fieldType": "Markdown",
+        "isRequired": true
+      },
+      {
+        "fieldOrder": 4,
+        "fieldName": "StoryBookPartQuestions",
+        "fieldType": "DynamicRelation",
+        "isRequired": false,
+        "dataLink": "StoryBookPartQuestion"
+      }
+    ]
+  },
+  "dataSeed": [
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 115,
+          "Name": "Part 1",
+          "Part": "1",
+          "PartText": "“Wake up sleepy Serapana” calls the sun. “It is a lovely day to work in the garden”",
+          "StoryBookPartQuestions": "125"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 116,
+          "Name": "Part 2",
+          "Part": "2",
+          "PartText": "Serapana and her special friends spend the morning planting vegetables and talking about their favourite food. Rabbit loves to help!",
+          "StoryBookPartQuestions": "126"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 117,
+          "Name": "Part 3",
+          "Part": "3",
+          "PartText": "“Oh no” cries Serapana. “The water is finished and the plants are so thirsty! What are we doing to do?”",
+          "StoryBookPartQuestions": "127"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 118,
+          "Name": "Part 4",
+          "Part": "4",
+          "PartText": "“Follow us,” say her friends. “We know where there’s lots of water.” And off they all go…",
+          "StoryBookPartQuestions": "128"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 119,
+          "Name": "Part 5",
+          "Part": "5",
+          "PartText": "The river is so cool and fresh. “Please can we stay here a while, Serapana?” her friends ask. “It’s too hot to walk back now.”",
+          "StoryBookPartQuestions": "129"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 120,
+          "Name": "Part 6",
+          "Part": "6",
+          "PartText": "Very slowly they walk back to the garden with buckets filled with water. “Squirrel! If you don’t stop skipping there will be no water left for the plants,” says Duck.",
+          "StoryBookPartQuestions": "130"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 121,
+          "Name": "Part 7",
+          "Part": "7",
+          "PartText": "Serapana waters the garden while her friends pick some ripe vegetables to make supper.",
+          "StoryBookPartQuestions": "131"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 122,
+          "Name": "Part 8",
+          "Part": "8",
+          "PartText": "What a perfect end to a happy day! I wonder what will happen tomorrow?",
+          "StoryBookPartQuestions": "132"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 123,
+          "Name": "Part 1",
+          "Part": "1",
+          "PartText": "MARKDOWN - REPLACE",
+          "StoryBookPartQuestions": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 124,
+          "Name": "Part 1",
+          "Part": "1",
+          "PartText": "MARKDOWN - REPLACE",
+          "StoryBookPartQuestions": ""
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "contentDefinition": {
+    "contentName": "ProgrammeRoutineSubItem",
+    "description": "Programme routine sub items",
+    "fields": [
+      {
+        "fieldOrder": 1,
+        "fieldName": "Name",
+        "fieldType": "Text",
+        "isRequired": true
+      },
+      {
+        "fieldOrder": 2,
+        "fieldName": "Description",
+        "fieldType": "Text",
+        "isRequired": true
+      },
+      {
+        "fieldOrder": 3,
+        "fieldName": "TimeSpan",
+        "fieldType": "Text",
+        "isRequired": true
+      },
+      {
+        "fieldOrder": 4,
+        "fieldName": "Image",
+        "fieldType": "Image",
+        "isRequired": true
+      },
+      {
+        "fieldOrder": 5,
+        "fieldName": "ImageBackgroundColor",
+        "fieldType": "ColorPicker",
+        "isRequired": true
+      }
+    ]
+  },
+  "dataSeed": [
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 8,
+          "Name": "Planning time",
+          "Image": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjIiIGhlaWdodD0iMjIiIHZpZXdCb3g9IjAgMCAyMiAyMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTkuOTAwMTkgNS4yODQ1NkM4LjczNzI4IDQuNzE3ODYgNy40MzA4NyA0LjM5OTkgNi4wNTAxOSA0LjM5OTlDNC42Njk1MiA0LjM5OTkgMy4zNjMxMSA0LjcxNzg2IDIuMjAwMiA1LjI4NDU2VjE2LjI4NDZDMy4zNjMxMSAxNS43MTc5IDQuNjY5NTIgMTUuMzk5OSA2LjA1MDE5IDE1LjM5OTlDNy44ODU2NiAxNS4zOTk5IDkuNTg5ODggMTUuOTYxOCAxMS4wMDAyIDE2LjkyMzFDMTIuNDEwNSAxNS45NjE4IDE0LjExNDcgMTUuMzk5OSAxNS45NTAyIDE1LjM5OTlDMTcuMzMwOSAxNS4zOTk5IDE4LjYzNzMgMTUuNzE3OSAxOS44MDAyIDE2LjI4NDZWNS4yODQ1NkMxOC42MzczIDQuNzE3ODYgMTcuMzMwOSA0LjM5OTkgMTUuOTUwMiA0LjM5OTlDMTQuNTY5NSA0LjM5OTkgMTMuMjYzMSA0LjcxNzg2IDEyLjEwMDIgNS4yODQ1NlYxMy4xOTk5QzEyLjEwMDIgMTMuODA3NCAxMS42MDc3IDE0LjI5OTkgMTEuMDAwMiAxNC4yOTk5QzEwLjM5MjcgMTQuMjk5OSA5LjkwMDE5IDEzLjgwNzQgOS45MDAxOSAxMy4xOTk5VjUuMjg0NTZaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K",
+          "ImageBackgroundColor": "#483e63",
+          "TimeSpan": "10 minutes",
+          "Description": "Ask children individually to talk about what they are going to do in play time. Accept their choices. Ask questions to extend their thinking. Use a prop."
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 9,
+          "Name": "Play time",
+          "Image": "data:image/png;base64,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",
+          "ImageBackgroundColor": "#483e63",
+          "TimeSpan": "60 minutes",
+          "Description": "Children choose freely to play in any of the interest areas. Play with them! Ask questions and help those who are struggling."
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 10,
+          "Name": "Clean up time",
+          "Image": "data:image/png;base64,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",
+          "ImageBackgroundColor": "#483e63",
+          "TimeSpan": "10 minutes",
+          "Description": "Children return toys to the correct places. this teaches them to be responsible, and to match things to labels."
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 11,
+          "Name": "Recall time",
+          "Image": "data:image/png;base64,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",
+          "ImageBackgroundColor": "#483e63",
+          "TimeSpan": "10 minutes",
+          "Description": "Bring everyone together. Ask a few children to share what they did during play time. Show interest and involve other children."
+        }
+      ]
+    }
+  ]
+}

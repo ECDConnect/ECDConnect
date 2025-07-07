@@ -1,0 +1,70 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<TargetFramework>net9.0</TargetFramework>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="DotLiquid" Version="2.3.197" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\ECDLink.AzureStorage\ECDLink.AzureStorage.csproj" />
+    <ProjectReference Include="..\..\ECDLink.Abstractrions\ECDLink.Abstractrions.csproj" />
+    <ProjectReference Include="..\..\ECDLink.DataAccessLayer\ECDLink.DataAccessLayer.csproj" />
+    <ProjectReference Include="..\..\ECDLink.GraphQL\ECDLink.EGraphQL.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Configuration\Setup\Content - 14. Consent.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Configuration\Setup\Content - 06.ProgressTrackingLevelDefinitionSeed.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Configuration\Setup\Content - 07.ProgressTrackingSkillDefinitionSeed.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Configuration\Setup\Content - 05.ProgressTrackingSubCategoryDefinitionSeed.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Configuration\Setup\Content - 04.ProgressTrackingCategoryDefinitionSeed.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Configuration\Setup\Content - 12.StoryBookPartQuestionDefinitionSeed.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Configuration\Setup\Content - 11.StoryBookPartsDefinitionSeed.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Configuration\Setup\Content - 10.StoryBookDefinitionSeed.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Configuration\Setup\Content - 09.ThemeDayDefinitionSeed.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Configuration\Setup\Content - 08.ThemeDefinitionSeed.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Configuration\Setup\Content - 13.ActivityDefinitionSeed.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Configuration\Setup\Content - 01.Routine.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Configuration\Setup\Content - 02.RoutineItems.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Configuration\Setup\Content - 03.RoutineSubItems.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Configuration\Setup\FieldTypeSeed.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ProjectExtensions><VisualStudio><UserProperties configuration_4setup_4content_x0020_-_x0020_01_1routine_1json__JsonSchema="https://gitlab.com/-/snippets/2062623/raw/master/foundryvtt_template_schema.json" /></VisualStudio></ProjectExtensions>
+
+</Project>

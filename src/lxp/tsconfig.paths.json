@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./src",
+    "paths": {
+      "@/*": ["./*"],
+      "@enums/*": ["./enums/*"],
+      "@hooks/*": ["./hooks/*"],
+      "@models/*": ["./models/*"],
+      "@pages/*": ["./pages/*"],
+      "@auth-p/*": ["./pages/auth/*"],
+      "@child-p/*": ["./pages/child/*"],
+      "@coach-p/*": ["./pages/coach/*"],
+      "@classroom-p/*": ["./pages/classroom/*"],
+      "@attendance-p/*": ["./pages/classroom/attendance/*"],
+      "@child-list-p/*": ["./pages/classroom/child-list/*"],
+      "@class-dashboard-p/*": ["./pages/classroom/class-dashboard/*"],
+      "@programme-planning-p/*": ["./pages/classroom/programme-planning/*"],
+      "@progress-observation-p/*": ["./pages/classroom/progress-observation/*"],
+      "@dashboard-p/*": ["./pages/dashboard/*"],
+      "@messages-p/*": ["./pages/messages/*"],
+      "@practitioner-p/*": ["./pages/practitioner/*"],
+      "@schemas/*": ["./schemas/*"],
+      "@services/*": ["./services/*"],
+      "@store/*": [
+        "./store/*", "./store"
+      ],
+      "@store": ["./store"],
+      "@utils/*": ["./utils/*"],
+      "@routes/*": ["./routes/*"],
+      "@routes": ["./routes"]
+    }
+  }
+}

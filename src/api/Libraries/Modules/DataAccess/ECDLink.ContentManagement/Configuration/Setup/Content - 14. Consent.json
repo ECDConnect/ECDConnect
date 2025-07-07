@@ -1,0 +1,28 @@
+{
+  "contentDefinition": {
+    "contentName": "Consent",
+    "description": "Consent",
+    "fields": [
+      {
+        "fieldOrder": 1,
+        "fieldName": "Name",
+        "fieldType": "Text",
+        "isRequired": true
+      },
+      {
+        "fieldOrder": 2,
+        "fieldName": "Type",
+        "fieldType": "Text",
+        "isRequired": true
+      },
+      {
+        "fieldOrder": 3,
+        "fieldName": "Description",
+        "fieldType": "Markdown",
+        "isRequired": true
+      }
+    ]
+  },
+  "dataSeed": [   
+  ]
+}

@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<TargetFramework>net9.0</TargetFramework>
+	<!-- Nullable filters through to Entity Framework 7 and makes DB field FKs required -->
+	<Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="HotChocolate.AspNetCore" Version="12.12.1"/>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Libraries\Modules\ECDLink.Abstractrions\ECDLink.Abstractrions.csproj" />
+    <ProjectReference Include="..\Libraries\Modules\ECDLink.Core\ECDLink.Core.csproj" />
+  </ItemGroup>
+
+</Project>

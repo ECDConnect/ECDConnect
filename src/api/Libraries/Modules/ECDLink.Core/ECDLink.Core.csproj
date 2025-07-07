@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="Current">
+  <PropertyGroup>
+	<TargetFramework>net9.0</TargetFramework>
+  <Nullable>disable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="CsvHelper" Version="33.0.1" />
+    <PackageReference Include="MimeTypesMap" Version="1.0.9" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="NPOI" Version="2.7.3" />
+    <PackageReference Include="RestSharp" Version="112.1.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ECDLink.Abstractrions\ECDLink.Abstractrions.csproj" />
+  </ItemGroup>
+</Project>

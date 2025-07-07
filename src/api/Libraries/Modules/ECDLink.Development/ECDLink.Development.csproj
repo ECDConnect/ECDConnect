@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<TargetFramework>net9.0</TargetFramework>
+	<Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ECDLink.Abstractrions\ECDLink.Abstractrions.csproj" />
+    <ProjectReference Include="..\ECDLink.DataAccessLayer\ECDLink.DataAccessLayer.csproj" />
+    <ProjectReference Include="..\ECDLink.Notifications\ECDLink.Notifications.csproj" />
+  </ItemGroup>
+
+</Project>

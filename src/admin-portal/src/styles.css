@@ -1,0 +1,155 @@
+/* You can add global styles to this file, and also import other style files */
+@tailwind base;
+/* Simple reusable components provided by tailwind */
+@tailwind components;
+/* utility classes generated based on our tailwind.config.js */
+@tailwind utilities;
+@import url('https://fonts.googleapis.com/css?family=Quicksand:400,700&display=swap');
+
+div.darkBackground {
+  background-color: #27385a;
+}
+
+a.users-tabs {
+  justify-content: center !important;
+}
+
+a.consent-tabs{
+  width:180px !important;
+  justify-content: center !important;
+}
+
+.h_iframe iframe {
+  width: 100%;
+  height: 100%;
+}
+.h_iframe {
+  height: 100%;
+  width: 100%;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  position: fixed;
+  overflow: hidden;
+  width: 100%;
+  font-family: 'Quicksand', 'sans-serif' !important;
+}
+
+.dashboard-container {
+  height: 77vh;
+}
+
+th.text-base {
+  font-size: 12px !important;
+}
+
+td.truncate {
+  max-width: 10rem !important;
+}
+
+/* Pagination */
+.table-footer .w-full {
+  width: auto !important;
+}
+
+/* .page-numbers,
+.table-footer .w-7.h-7.flex.flex-grow {
+  max-width: 32px !important;
+  width: 30px !important;
+  height: 30px;
+  line-height: 20px !important;
+  padding:18px !important;
+  justify-content: space-around !important;
+  border-radius: 50%;
+  background-color: aqua !important;
+}
+
+.page-numbers.white.text-white {
+  background: #eef2ff !important;
+} */
+
+/* CKEditor */
+
+.ck-content {
+  text-transform: none;
+  border-bottom-left-radius: 8px !important;
+  border-bottom-right-radius: 8px !important;
+  border-color: #d1d5db !important;
+}
+
+.ck-content h1,
+.ck-content h2,
+.ck-content h3,
+.ck-content h4,
+.ck-content h5,
+.ck-content h6 {
+  @apply mb-4;
+}
+
+.ck-content h1 {
+  @apply text-4xl;
+}
+
+.ck-content h2 {
+  @apply text-3xl;
+}
+
+.ck-content h3 {
+  @apply text-2xl;
+}
+
+.ck-content h4 {
+  @apply text-xl;
+}
+
+.ck-content h5 {
+  @apply text-lg;
+}
+
+.ck-content strong,
+.ck-content b {
+  @apply font-bold;
+}
+
+.ck-content u,
+.ck-content a {
+  @apply underline;
+}
+
+.ck-content p {
+  @apply mb-4;
+  font-size: 14px;
+  margin-top: 0;
+}
+
+.ck-content ul,
+.ck-content ol {
+  @apply block;
+  @apply pl-8;
+  margin-top: -1rem;
+}
+
+.ck-content ul {
+  list-style: disc;
+}
+
+.ck-content ol {
+  list-style: decimal;
+}
+
+[type='text'],
+[type='password'],
+select {
+  border-color: transparent;
+}
+
+thead{
+  background-color: red !important;
+}
+
+.bg-logo {
+  background-repeat: no-repeat !important;
+}

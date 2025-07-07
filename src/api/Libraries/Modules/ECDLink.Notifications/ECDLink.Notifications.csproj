@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<TargetFramework>net9.0</TargetFramework>
+	<Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MailKit" Version="4.11.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+	<PackageReference Include="System.Net.Http" Version="4.3.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ECDLink.Abstractrions\ECDLink.Abstractrions.csproj" />
+    <ProjectReference Include="..\ECDLink.Core\ECDLink.Core.csproj" />
+    <ProjectReference Include="..\ECDLink.DataAccessLayer\ECDLink.DataAccessLayer.csproj" />
+    <ProjectReference Include="..\ECDLink.UrlShortner\ECDLink.UrlShortner.csproj" />
+  </ItemGroup>
+
+</Project>

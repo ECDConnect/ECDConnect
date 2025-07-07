@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<TargetFramework>net9.0</TargetFramework>
+	<!-- Nullable filters through to Entity Framework 7 and makes DB field FKs required -->
+	<Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Configuration\**" />
+    <Compile Remove="Entities\Classroom\ProgressTracking\**" />
+    <Compile Remove="Entities\Programme\**" />
+    <Compile Remove="Migrations\**" />
+    <EmbeddedResource Remove="Configuration\**" />
+    <EmbeddedResource Remove="Entities\Classroom\ProgressTracking\**" />
+    <EmbeddedResource Remove="Entities\Programme\**" />
+    <EmbeddedResource Remove="Migrations\**" />
+    <None Remove="Configuration\**" />
+    <None Remove="Entities\Classroom\ProgressTracking\**" />
+    <None Remove="Entities\Programme\**" />
+    <None Remove="Migrations\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Audit.EntityFramework.Core" Version="27.5.2" />
+    <PackageReference Include="Audit.EntityFramework.Identity.Core" Version="27.5.2" />
+    <PackageReference Include="Audit.NET.AzureStorage" Version="27.5.2" />
+    <PackageReference Include="MediatR" Version="12.5.0" />
+    <PackageReference Include="NJsonSchema.CodeGeneration" Version="11.2.0" />
+    <PackageReference Include="NJsonSchema.CodeGeneration.CSharp" Version="11.2.0" />
+    <PackageReference Include="NJsonSchema.CodeGeneration.TypeScript" Version="11.2.0" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\ECDLink.AzureStorage\ECDLink.AzureStorage.csproj" />
+    <ProjectReference Include="..\..\..\ECDLink.Tenancy\ECDLink.Tenancy.csproj" />
+    <ProjectReference Include="..\ECDLink.Abstractrions\ECDLink.Abstractrions.csproj" />
+    <ProjectReference Include="..\ECDLink.Core\ECDLink.Core.csproj" />
+    <ProjectReference Include="..\ECDLink.Security\ECDLink.Security.csproj" />
+  </ItemGroup>
+
+</Project>

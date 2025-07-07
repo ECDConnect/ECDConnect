@@ -1,0 +1,39 @@
+{
+  "name": "lxp",
+  "version": "0.0.15",
+  "private": true,
+  "dependencies": {
+    "@ecdlink/core": "^1.0.0",
+    "@ecdlink/graphql": "^1.0.0",
+    "@ecdlink/ui": "^1.0.0"
+  },
+  "scripts": {
+    "start": "craco start",
+    "start:mocks": "REACT_APP_RUN_MOCKS='run_msw' craco start",
+    "build": "craco build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "description": "An Ionic project",
+  "msw": {
+    "workerDirectory": "public"
+  }
+}

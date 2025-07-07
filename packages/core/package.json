@@ -1,0 +1,15 @@
+{
+  "name": "@ecdlink/core",
+  "version": "1.0.0",
+  "description": "",
+  "main": "lib/index.js",
+  "scripts": {
+    "tsc": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@ecdlink/ui": "^1.0.0"
+  }  
+}

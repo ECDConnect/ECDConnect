@@ -1,0 +1,108 @@
+{
+  "contentDefinition": {
+    "contentName": "StoryBook",
+    "description": "Story books",
+    "fields": [
+      {
+        "fieldOrder": 1,
+        "fieldName": "Name",
+        "fieldType": "Text",
+        "isRequired": true
+      },
+      {
+        "fieldOrder": 2,
+        "fieldName": "Type",
+        "fieldType": "Text",
+        "isRequired": true
+      },
+      {
+        "fieldOrder": 3,
+        "fieldName": "Author",
+        "fieldType": "Text",
+        "isRequired": true
+      },
+      {
+        "fieldOrder": 4,
+        "fieldName": "Illustrator",
+        "fieldType": "Text",
+        "isRequired": true
+      },
+      {
+        "fieldOrder": 5,
+        "fieldName": "BookLocation",
+        "fieldType": "Markdown",
+        "isRequired": true
+      },
+      {
+        "fieldOrder": 6,
+        "fieldName": "StoryBookParts",
+        "fieldType": "DynamicRelation",
+        "isRequired": false,
+        "dataLink": "StoryBookParts"
+      },
+      {
+        "fieldOrder": 7,
+        "fieldName": "Keywords",
+        "fieldType": "Text",
+        "isRequired": false
+      },
+      {
+        "fieldOrder": 8,
+        "fieldName": "AvailableLanguages",
+        "fieldType": "StaticRelation",
+        "isRequired": false,
+        "dataLink": "Language"
+      }
+    ]
+  },
+  "dataSeed": [
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 112,
+          "Name": "Serapana",
+          "Type": "Story book",
+          "Author": "Raisibe Rosina Kekana",
+          "Illustrator": "Astrid Blumer",
+          "BookLocation": "SmartStart playkit",
+          "StoryBookParts": "115,116,117,118,119,120,121,122",
+          "Keywords": "sun, river, plant, cool, vegetables, skipping, thirsty, ripe, bucket, supper",
+          "AvailableLanguages":  ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 113,
+          "Name": "The sky is falling down!",
+          "Type": "Read aloud",
+          "Author": "Wendy Hartmann",
+          "Illustrator": "Astrid Blumer",
+          "BookLocation": "https://www.nalibali.org/story-library/multilingual-stories/the-sky-falling-down ",
+          "StoryBookParts": "123",
+          "Keywords": "",
+          "AvailableLanguages": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 114,
+          "Name": "Make or choose your own story",
+          "Type": "Other",
+          "Author": "",
+          "Illustrator": "",
+          "BookLocation": "",
+          "StoryBookParts": "124",
+          "Keywords": "",
+          "AvailableLanguages": ""
+        }
+      ]
+    }
+  ]
+}

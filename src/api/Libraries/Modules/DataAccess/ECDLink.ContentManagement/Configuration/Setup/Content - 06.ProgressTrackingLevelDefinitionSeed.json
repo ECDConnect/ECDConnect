@@ -1,0 +1,72 @@
+{
+  "contentDefinition": {
+    "contentName": "ProgressTrackingLevel",
+    "description": "Progress tracking levels",
+    "fields": [
+      {
+        "fieldOrder": 1,
+        "fieldName": "Name",
+        "fieldType": "Text",
+        "isRequired": true
+      },
+      {
+        "fieldOrder": 2,
+        "fieldName": "Description",
+        "fieldType": "Markdown",
+        "isRequired": true
+      },
+      {
+        "fieldOrder": 3,
+        "fieldName": "ImageUrl",
+        "fieldType": "Image",
+        "isRequired": true
+      },
+    ]
+  },
+  "dataSeed": [
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 26,
+          "Name": "LEVEL P",
+          "Description": "The child is working towards the skills and behaviours in level 1 but isn't quite there yet.",
+          "ImageUrl": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE2IDFMMjkuODU2NCAyNUgyLjE0MzU5TDE2IDFaIiBmaWxsPSIjRDhFN0ZGIi8+CjxwYXRoIGQ9Ik0xNiAyNUw5LjA3MTggMTNMMjIuOTI4MiAxM0wxNiAyNVoiIGZpbGw9IiMwMEIwRTAiLz4KPC9zdmc+Cg=="
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 27,
+          "Name": "LEVEL 1",
+          "Description": "Three-year-old children will usually be able to do some of the skills and behaviours in level 1.",
+          "ImageUrl": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE2IDFMMjkuODU2NCAyNUgyLjE0MzU5TDE2IDFaIiBmaWxsPSIjRDhFN0ZGIi8+CjxwYXRoIGQ9Ik0yMyAxM0wyOS45MjgyIDI1SDE2LjA3MThMMjMgMTNaIiBmaWxsPSIjMDBCMEUwIi8+CjxwYXRoIGQ9Ik0xNiAyNUw5LjA3MTggMTNMMjIuOTI4MiAxM0wxNiAyNVoiIGZpbGw9IiMwMEIwRTAiLz4KPC9zdmc+Cg=="
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 28,
+          "Name": "LEVEL 2",
+          "Description": "Children will build on the skills in level 1 to move on to the skills in level 2.",
+          "ImageUrl": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE2IDFMMjkuODU2NCAyNUgyLjE0MzU5TDE2IDFaIiBmaWxsPSIjRDhFN0ZGIi8+CjxwYXRoIGQ9Ik05IDEzTDE1LjkyODIgMjVIMi4wNzE4TDkgMTNaIiBmaWxsPSIjMDBCMEUwIi8+CjxwYXRoIGQ9Ik0yMyAxM0wyOS45MjgyIDI1SDE2LjA3MThMMjMgMTNaIiBmaWxsPSIjMDBCMEUwIi8+CjxwYXRoIGQ9Ik0xNiAyNUw5LjA3MTggMTNMMjIuOTI4MiAxM0wxNiAyNVoiIGZpbGw9IiMwMEIwRTAiLz4KPC9zdmc+Cg=="
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 29,
+          "Name": "LEVEL 3",
+          "Description": "By the time they start Grade R, children should be able to do most of the things in level 3.",
+          "ImageUrl": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE2IDFMMjkuODU2NCAyNUgyLjE0MzU5TDE2IDFaIiBmaWxsPSIjRDhFN0ZGIi8+CjxwYXRoIGQ9Ik0xNiAxTDIyLjkyODIgMTNIOS4wNzE4TDE2IDFaIiBmaWxsPSIjMDBCMEUwIi8+CjxwYXRoIGQ9Ik05IDEzTDE1LjkyODIgMjVIMi4wNzE4TDkgMTNaIiBmaWxsPSIjMDBCMEUwIi8+CjxwYXRoIGQ9Ik0yMyAxM0wyOS45MjgyIDI1SDE2LjA3MThMMjMgMTNaIiBmaWxsPSIjMDBCMEUwIi8+CjxwYXRoIGQ9Ik0xNiAyNUw5LjA3MTggMTNMMjIuOTI4MiAxM0wxNiAyNVoiIGZpbGw9IiMwMEIwRTAiLz4KPC9zdmc+Cg=="
+        }
+      ]
+    }
+  ]
+}

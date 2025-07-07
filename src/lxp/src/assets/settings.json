@@ -1,0 +1,5 @@
+{
+  "graphQlApi": "https://ecd-connect-develop-api.azurewebsites.net/graphql/",
+  "authApi": "https://ecd-connect-develop-api.azurewebsites.net",
+  "themeUrl": "https://ecdconnectstoragedev.blob.core.windows.net/theme/ecdconnect.json"
+}

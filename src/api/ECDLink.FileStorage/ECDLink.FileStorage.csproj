@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FileSignatures" Version="5.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ECDLink.Tenancy\ECDLink.Tenancy.csproj" />
+    <ProjectReference Include="..\Libraries\Modules\ECDLink.Abstractrions\ECDLink.Abstractrions.csproj" />
+    <ProjectReference Include="..\Libraries\Modules\ECDLink.Core\ECDLink.Core.csproj" />
+  </ItemGroup>
+
+</Project>

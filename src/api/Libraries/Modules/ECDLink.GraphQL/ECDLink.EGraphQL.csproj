@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="Current">
+  <PropertyGroup>
+	<TargetFramework>net9.0</TargetFramework>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Models\**" />
+    <EmbeddedResource Remove="Models\**" />
+    <None Remove="Models\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.24.0" />
+    <PackageReference Include="Microsoft.NETCore.Targets" Version="5.0.0" />
+    <PackageReference Include="HotChocolate.AspNetCore" Version="12.12.1" />
+    <PackageReference Include="HotChocolate.AspNetCore.Authorization" Version="12.12.1" />
+	<PackageReference Include="HotChocolate.Data.EntityFramework" Version="12.12.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\ECDLink.AzureStorage\ECDLink.AzureStorage.csproj" />
+    <ProjectReference Include="..\..\..\ECDLink.Tenancy\ECDLink.Tenancy.csproj" />
+    <ProjectReference Include="..\ECDLink.Core\ECDLink.Core.csproj" />
+    <ProjectReference Include="..\ECDLink.DataAccessLayer\ECDLink.DataAccessLayer.csproj" />
+    <ProjectReference Include="..\ECDLink.Security\ECDLink.Security.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="ObjectTypes\Input\Enums\" />
+  </ItemGroup>
+</Project>
