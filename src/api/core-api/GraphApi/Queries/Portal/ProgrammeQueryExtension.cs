@@ -458,7 +458,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
             if (natureContentForTenant == null)
             {
                 var natureDefaultContent = contentRepo.ValidateDefaultTemplateByContentTypeId(ContentTypeConstants.ThemeId, englishId, "DefaultNature", null);
-                var natureTheme = contentRepo.GetDefaultTemplateById(natureDefaultContent.ContentId, englishId, natureDefaultContent.TenantId);
+                var natureTheme = contentRepo.GetDefaultTemplateById(natureDefaultContent.ContentId, englishId, null);
                 if (natureTheme != null)
                 {
                     // Adding the theme for the tenant
@@ -469,7 +469,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
             if (animalContentForTenant == null)
             {
                 var animalDefaultContent = contentRepo.ValidateDefaultTemplateByContentTypeId(ContentTypeConstants.ThemeId, englishId, "DefaultAnimal", null);
-                var animalTheme = contentRepo.GetDefaultTemplateById(animalDefaultContent.ContentId, englishId, animalDefaultContent.TenantId);
+                var animalTheme = contentRepo.GetDefaultTemplateById(animalDefaultContent.ContentId, englishId, null);
                 if (animalTheme != null)
                 {
                     // Adding the theme for the tenant
