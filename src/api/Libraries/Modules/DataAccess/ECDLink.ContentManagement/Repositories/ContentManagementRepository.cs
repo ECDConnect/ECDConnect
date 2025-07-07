@@ -811,6 +811,100 @@ namespace ECDLink.ContentManagement.Repositories
             return fileUrl.ToString();
         }
 
+
+        public ContentValue ValidateDefaultTemplateByContentTypeId(int contentTypeId, Guid localeId, string defaultName, Guid? tenantId)
+        {
+            return _context.ContentValues.Where(x => x.TenantId == tenantId
+                                                    && x.Content.ContentTypeId == contentTypeId
+                                                    && x.Value == defaultName
+                                                    && x.LocaleId == localeId
+                                                    ).FirstOrDefault();
+        }
+
+        public object GetDefaultTemplateById(int contentId, Guid localeId, Guid? currentTenant)
+        {
+            object result;
+
+            var key = string.Format("Content.{0}.{1}..Id.{2}", currentTenant, localeId, contentId);
+            if (!_memoryCache.TryGetValue<object>(key, out result))
+            {
+                // Try get tenant data
+                var content = _context.Contents
+                            .Include(i => i.ContentType)
+                            .Include(i => i.ContentValues.Where(x => x.TenantId == currentTenant))
+                                .ThenInclude(ti => ti.ContentTypeField)
+                            .Where(x => x.Id == contentId)
+                            .OrderBy(x => x.Id)
+                            .FirstOrDefault();
+
+                // Use global tenant as a fallback, mostly for static and dynamic links
+                content ??= _context.Contents
+                        .Include(i => i.ContentType)
+                        .Include(i => i.ContentValues.Where(x => x.TenantId == null))
+                            .ThenInclude(ti => ti.ContentTypeField)
+                        .Where(x => x.Id == contentId
+                            && x.IsActive)
+                        .OrderBy(x => x.Id)
+                        .FirstOrDefault();
+
+                // No Content Found
+                if (content == default)
+                {
+                    var errorMessage = "Could not find any 'Content' with Id: {contentId}.";
+                    _logger.LogWarning(errorMessage, contentId);
+                }
+
+                var contentValuesList = content.ContentValues
+                                .Where(x => x.LocaleId == localeId
+                                    && x.TenantId == currentTenant)
+                                .OrderByDescending(x => x.UpdatedDate)
+                                .ThenBy(x => x.ContentTypeField?.FieldOrder)
+                                .ToList();
+          
+                // keep our tenant's content values and fill in the gaps with the global tenant's content values
+                // Get the ContentValues for the current tenant, or the global tenant.
+                var noTenantContenValues = content.ContentValues
+                     .Where(x => x.LocaleId == localeId
+                             && x.ContentTypeField.IsActive == true
+                             && (x.TenantId == null))
+                     .Select(y => new { y.Id, y.ContentTypeField, y.Value, y.ContentId })
+                     .OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId)
+                     .ToList();
+
+                var contentValues = content.ContentValues
+                 .Where(x => x.LocaleId == localeId
+                         && x.ContentTypeField.IsActive == true
+                         && (x.TenantId == TenantExecutionContext.Tenant.Id))
+                 .Select(y => new { y.Id, y.ContentTypeField, y.Value, y.ContentId })
+                 .OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId)
+                 .ToList();
+
+                var mergedContentValues = contentValues.ToDictionary(cv => new { cv.ContentTypeField, cv.ContentId });
+                foreach (var ntcv in noTenantContenValues)
+                {
+                    var ntcvKey = new { ntcv.ContentTypeField, ntcv.ContentId };
+                    if (!mergedContentValues.ContainsKey(ntcvKey))
+                    {
+                        mergedContentValues.Add(ntcvKey, ntcv);
+                    }
+                }
+                contentValues = mergedContentValues.Values.OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId).ToList();
+
+                var dict = contentValues.ToDictionary(k => k.ContentTypeField.FieldName, v => v.Value);
+
+                dict.Add(ObjectFieldConstants.Identifier, content.Id.ToString());
+                if (!dict.ContainsKey("updatedDate"))
+                {
+                    dict.Add("updatedDate", contentValuesList.TryGetAtIndex(0).UpdatedDate.ToString());
+                }
+
+                result = dict.ToObject();
+
+                _memoryCache.Set(key, result, GetCacheOptions());
+            }
+            return result;
+        }
+
         public object Update(int contentId, Guid localeId, IDictionary<string, object> input)
         {
             // Can probably inject Id and fields
@@ -923,17 +1017,18 @@ namespace ECDLink.ContentManagement.Repositories
         public bool Delete(int contentId)
         {
             var content = _context.Contents
-                          .Where(x => x.Id == contentId
-                            && x.TenantId == TenantExecutionContext.Tenant.Id)
-                          .OrderBy(x => x.Id)
-                          .FirstOrDefault();
+                        .Include(c => c.ContentValues.Where(c => c.TenantId == TenantExecutionContext.Tenant.Id))
+                        .Where(x => x.Id == contentId)
+                        .OrderBy(x => x.Id)
+                        .FirstOrDefault();
 
+// I am not sure if default is applicable here!!!!
             // Use global tenant as a fallback, mostly for static and dynamic links            
-            content ??= _context.Contents
-                          .Where(x => x.Id == contentId
-                            && x.TenantId == null)
-                          .OrderBy(x => x.Id)
-                          .FirstOrDefault();
+            // content ??= _context.Contents
+            //               .Where(x => x.Id == contentId
+            //                 && x.TenantId == null)
+            //               .OrderBy(x => x.Id)
+            //               .FirstOrDefault();
 
             // No Content Found
             if (content == default)
