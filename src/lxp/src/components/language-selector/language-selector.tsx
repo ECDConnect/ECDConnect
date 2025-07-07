@@ -95,7 +95,7 @@ export const LanguageSelector = ({
       </label>
       <Dropdown
         fillType="clear"
-        selectedValue={currentLocale ?? locale}
+        selectedValue={locale ?? currentLocale}
         disabled={disabled}
         fillColor="quatenary"
         labelColor="white"
