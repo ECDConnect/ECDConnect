@@ -17,9 +17,6 @@ namespace ECDLink.ContentManagement.Constants
         public const string Activity = "Activity";
         public const string Consent = "Consent";
         public const string MoreInformation = "MoreInformation";
-        public const string HealthPromotion = "HealthPromotion";
-        public const string VisitVideos = "VisitVideos";
-        public const string Infographics = "Infographics";
         public const string IncomeStatements = "IncomeStatements";
         public const string CalendarEventType = "CalendarEventType";
         public const string CoachingCircleTopics = "CoachingCircleTopics";
@@ -46,9 +43,6 @@ namespace ECDLink.ContentManagement.Constants
         public const int ActivityId = 13;
         public const int ConsentId = 14;
         public const int MoreInformationId = 15;
-        public const int HealthPromotionId = 16;
-        public const int VisitVideosId = 17;
-        public const int InfographicsId = 18;
         public const int IncomeStatementsId = 19;
         public const int CalendarEventTypeId = 25;
         public const int CoachingCircleTopicsId = 26;
