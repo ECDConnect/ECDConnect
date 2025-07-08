@@ -68,7 +68,7 @@ export function Settings() {
   const getData = async () => {
     const themeAddress = tenant?.tenant?.blobStorageAddress
       ? tenant?.tenant?.blobStorageAddress + '/theme/ecdconnect.json'
-      : 'https://ecdconnectstoragedev.blob.core.windows.net/theme/ecdconnect.json';
+      : 'https://localhost:5001/storage/theme/ecdconnect.json';
     const data = await fetch(themeAddress, { cache: 'no-store' }).then(
       function (res) {
         return res.json();

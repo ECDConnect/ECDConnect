@@ -7,9 +7,9 @@ export const dummyThemes = [
     name: 'Nature',
     color: '#FFD700',
     imageUrl:
-      'https://ecdconnectstoragestg.blob.core.windows.net/content-image/638821671475485273_imageUrl.png',
+      'https://localhost:5001/storage/content-image/638821671475485273_imageUrl.png',
     themeLogo:
-      'https://ecdconnectstoragestg.blob.core.windows.net/content-image/638821671475840891_themeLogo.png',
+      'https://localhost:5001/storage/content-image/638821671475840891_themeLogo.png',
     themeDays: [],
   },
 ];
@@ -37,7 +37,7 @@ export const dummyRecommendedActivity: RecommendedActivity = {
       {
         id: 0,
         imageUrl:
-          'https://ecdconnectstoragedev.blob.core.windows.net/content-image/638618393267249329_imageUrl.png',
+          'https://localhost:5001/storage/content-image/638618393267249329_imageUrl.png',
         name: 'Social',
         description: '',
         skills: [],
@@ -45,7 +45,7 @@ export const dummyRecommendedActivity: RecommendedActivity = {
       {
         id: 1,
         imageUrl:
-          'https://ecdconnectstoragedev.blob.core.windows.net/content-image/638618397368582224_imageUrl.png',
+          'https://localhost:5001/storage/content-image/638618397368582224_imageUrl.png',
         name: 'Social',
         description: '',
         skills: [],
@@ -155,9 +155,9 @@ export const dummyRoutineItems = [
     description:
       "<p>Welcome children warmly and have activities available for them to do.<br><br>When all the children have arrived, gather around the message board. Talk through each message and involve the children.<br><br>Here are some ideas of messages you can share:<br>- today's weather<br>- an activity, story, or visitor&nbsp;<br>- an event or outing&nbsp;<br>- someone's birthday<br><br>Create pictures or symbols for each message you would like to share.</p>",
     image:
-      'https://ecdconnectstoragedev.blob.core.windows.net/content-image/638179367360308188_image.png',
+      'https://localhost:5001/storage/content-image/638179367360308188_image.png',
     imageBackgroundColor: '#483e63',
-    icon: 'https://ecdconnectstoragedev.blob.core.windows.net/content-image/638179367372891387_icon.svg',
+    icon: 'https://localhost:5001/storage/content-image/638179367372891387_icon.svg',
     iconBackgroundColor: '#583f99',
     alert: '',
     timeSpan: '10-20',
@@ -201,7 +201,7 @@ export const dummyRoutineItems = [
       '<p><strong>Free play (90 mins)</strong><br>Plan-Play-Recall is an important life skill. It helps children to plan their time, and then review how the time was spent.</p><p><strong>Planning time (10 mins)</strong><br>Ask children individually to talk about what they are going to do in play time. Accept their choices. Ask questions to extend their thinking. Use a prop.</p><p><strong>Play time (60 mins)</strong><br>Children choose freely to play in any of the interest areas. Play with them! Ask questions and help those who are struggling.</p><p><strong>Clean up time (10 mins)</strong><br>Children return toys to the correct places. this teaches them to be responsible, and to match things to labels.</p><p><strong>Recall time (10 mins)</strong><br>Bring everyone together. Ask a few children to share what they did during play time. Show interest and involve other children.</p>',
     image: '',
     imageBackgroundColor: '',
-    icon: 'https://ecdconnectstoragedev.blob.core.windows.net/content-image/638179371282140071_icon.svg',
+    icon: 'https://localhost:5001/storage/content-image/638179371282140071_icon.svg',
     iconBackgroundColor: '#583f99',
     alert:
       'Build in toilet time, snack time, and outdoor play (if you have the space). Small and large group activities and free play can be indoors or outdoors.',

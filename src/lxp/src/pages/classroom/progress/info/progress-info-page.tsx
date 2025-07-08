@@ -30,7 +30,7 @@ export const ProgressInfoPage: React.FC<ProgressInfoPageProps> = ({
 
   const onDownloadPdf = () => {
     const pdfUrl =
-      'https://ecdconnectstoragestg.blob.core.windows.net/unknown/979e688f-e372-465b-ace4-5a8769ca3896_TrackProgressReportExample.pdf';
+      'https://localhost:5001/unknown/979e688f-e372-465b-ace4-5a8769ca3896_TrackProgressReportExample.pdf';
     const link = document.createElement('a');
     link.href = pdfUrl;
     link.setAttribute('download', 'TrackProgressReportExample.pdf');

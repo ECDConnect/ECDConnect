@@ -1,0 +1,45 @@
+{
+  "version": 34,
+  "colors": {
+        "primary": "#27385a",
+        "primaryAccent1": "#9484BD",
+        "primaryAccent2": "#D7D1E6",
+        "secondary": "#00B0E0",
+        "secondaryAccent1": "#66D0EC",
+        "secondaryAccent2": "#C2ECF8",
+        "tertiary": "#ED145B",
+        "tertiaryAccent1": "#F4729D",
+        "tertiaryAccent2": "#FBC7D8",
+        "textDark": "#1F192E",
+        "textMid": "#483E63",
+        "textLight": "#9B96A6",
+        "uiMidDark": "#5e557a",
+        "uiMid": "#827c93",
+        "uiLight": "#cac5d8",
+        "uiBg": "#F3F1F9",
+        "modalBg": "#cac5d8",
+        "errorMain": "#ED1414",
+        "errorDark": "#D20000",
+        "errorBg": "#FFEEF6",
+        "alertMain": "#FF5C00",
+        "alertDark": "#E43802",
+        "alertBg": "#FFEEE4",
+        "successMain": "#83BB26",
+        "successDark": "#5A8F02",
+        "successBg": "#E6F1D4",
+        "infoMain": "#1D67D5",
+        "infoDark": "#1752AB",
+        "infoBb": "#EBF3FF"
+  },
+  "fonts": {
+    "fontUrl": "Quicksand, sans-serif",
+    "mainHeadingOverrideFontUrl": "Inter, sans-serif"
+  },
+  "images": {
+    "graphicOverlayUrl": "https://localhost:5001/storage/theme/ecdconnect_overlay.png",
+    "logoUrl": "https://localhost:5001/storage/theme/ecdconnect_logo_long.png",
+    "faviconUrl": "https://localhost:5001/storage/theme/ecdconnect_favicon.ico",
+    "portalLoginLogoUrl": "https://localhost:5001/storage/theme/ecdconnect_logo_sq.png",
+    "portalLoginBackgroundUrl": "https://localhost:5001/storage/theme/ecdconnect_cover_dev.png"
+  }
+}
