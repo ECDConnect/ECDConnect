@@ -5,7 +5,7 @@ import {
   getProgressAgeGroupForChild,
   mapProgressReportDetails,
 } from '@/utils/child/child-progress-report.utils';
-import { differenceInMonths, format, isBefore, isValid } from 'date-fns';
+import { differenceInMonths, format, isBefore } from 'date-fns';
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -20,18 +20,16 @@ export const useProgressForChildren = () => {
     progressTrackingSelectors.getProgressTrackingSkillsWithCategoryInfo()
   );
 
+  const currentReportingPeriodForSummary = useSelector(
+    classroomsSelectors.getExpiredProgressReportPeriod()
+  );
+
   const currentReportingPeriod = useSelector(
     classroomsSelectors.getCurrentProgressReportPeriod()
   );
 
   const isReportWindowSet = useSelector(
     classroomsSelectors.getIsReportingPeriodsSet()
-  );
-
-  const baseReports = useSelector(
-    progressTrackingSelectors.getProgressReportsForReportingPeriod(
-      currentReportingPeriod?.id || ''
-    )
   );
 
   const isWithinReportPeriod = useMemo(() => {
@@ -45,6 +43,22 @@ export const useProgressForChildren = () => {
     );
   }, [currentReportingPeriod]);
 
+  const reportingPeriod = useMemo(() => {
+    return isWithinReportPeriod
+      ? currentReportingPeriod
+      : currentReportingPeriodForSummary;
+  }, [
+    currentReportingPeriod,
+    currentReportingPeriodForSummary,
+    isWithinReportPeriod,
+  ]);
+
+  const baseReports = useSelector(
+    progressTrackingSelectors.getProgressReportsForReportingPeriod(
+      reportingPeriod?.id || ''
+    )
+  );
+
   const children = useMemo(() => {
     return (baseChildren || []).map((child) => ({
       childId: child.id || '',
@@ -57,15 +71,15 @@ export const useProgressForChildren = () => {
         format(new Date(child?.user?.dateOfBirth), 'yyyy') != '0001'
           ? differenceInMonths(new Date(), new Date(child?.user?.dateOfBirth))
           : undefined,
-      ageGroup: !!currentReportingPeriod
+      ageGroup: !!reportingPeriod
         ? getProgressAgeGroupForChild(
-            currentReportingPeriod.endDate,
+            reportingPeriod.endDate,
             child!,
             allAgeGroups
           )
         : undefined,
     }));
-  }, [baseChildren, currentReportingPeriod]);
+  }, [baseChildren, reportingPeriod]);
 
   const childReports = useMemo(() => {
     return (children || [])
@@ -73,7 +87,7 @@ export const useProgressForChildren = () => {
       .map((child) => {
         const childReport = baseReports.find(
           (x) =>
-            x.childProgressReportPeriodId === currentReportingPeriod?.id &&
+            x.childProgressReportPeriodId === reportingPeriod?.id &&
             x.childId === child.childId
         );
 
@@ -87,7 +101,7 @@ export const useProgressForChildren = () => {
           ),
         };
       });
-  }, [baseChildren, baseReports, currentReportingPeriod]);
+  }, [baseChildren, baseReports, reportingPeriod]);
 
   const ageGroupsAvailableForTracking = useMemo(() => {
     return allAgeGroups.filter((x) =>
@@ -116,14 +130,14 @@ export const useProgressForChildren = () => {
   const isAllReportsComplete = useMemo(() => {
     // Report complete, or no age group (so no report can be created)
     return childReports.every((x) => !!x.report?.dateCompleted || !x.ageGroup);
-  }, [baseChildren, currentReportingPeriod, childReports]);
+  }, [baseChildren, reportingPeriod, childReports]);
 
   const isAllObservationsComplete = useMemo(() => {
     // Report complete, or no age group (so no report can be created)
     return childReports.every(
       (x) => !!x.report?.observationsCompleteDate || !x.ageGroup
     );
-  }, [baseChildren, currentReportingPeriod, childReports]);
+  }, [baseChildren, reportingPeriod, childReports]);
 
   return {
     isAllObservationsComplete,
@@ -136,5 +150,6 @@ export const useProgressForChildren = () => {
     percentageReportsCompleted,
     percentageObservationsCompleted,
     ageGroupsAvailableForTracking,
+    currentReportingPeriodForSummary,
   };
 };

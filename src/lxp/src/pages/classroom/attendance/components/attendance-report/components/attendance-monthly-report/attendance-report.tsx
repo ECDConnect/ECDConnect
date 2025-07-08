@@ -149,6 +149,7 @@ export const MonthlyAttendanceReport = () => {
     tableStyles,
     tableTopContent,
     footer,
+    tableHeaders,
   } = getTableData({
     selectedMonth,
     monthlyReport,
@@ -269,12 +270,18 @@ export const MonthlyAttendanceReport = () => {
             text={classroomGroupReport.classroomGroup?.name ?? ''}
             className="mt-6 mb-5"
           />
-          <table className="text-textDark text-left">
-            <tbody>
+          <table className="text-textDark w-full table-fixed text-left">
+            <colgroup>
+              <col style={{ width: '80%' }} />
+              <col style={{ width: '20%' }} />
+            </colgroup>
+            <thead>
               <tr className="bg-uiBg border-quatenary border-b">
                 <th className="py-3 pl-4">CHILD</th>
                 <th>% PRESENT</th>
               </tr>
+            </thead>
+            <tbody>
               {classroomGroupReport.items?.map((report, idx) => {
                 const reportItemColor = getColor(report?.attendancePercentage);
                 const reportItemShape = getShape(report?.attendancePercentage);
@@ -283,7 +290,7 @@ export const MonthlyAttendanceReport = () => {
                   <tr
                     className={`${
                       (idx + 1) % 2 === 0 ? 'bg-uiBg' : 'bg-white'
-                    }`}
+                    } cursor-pointer`}
                     key={`child-attendance-report-month-${idx}`}
                     onClick={() => {
                       history.push(ROUTES.CHILD_ATTENDANCE_REPORT, {
@@ -297,19 +304,27 @@ export const MonthlyAttendanceReport = () => {
                       } as ChildAttendanceReportState);
                     }}
                   >
-                    <td className="py-3 pl-4">{report.childFullName}</td>
-                    <td className="flex items-center gap-2 py-3">
-                      <div
-                        className={getShapeClass(
-                          reportItemShape,
-                          reportItemColor
-                        )}
-                      />
-                      <Typography
-                        type="body"
-                        color={reportItemColor}
-                        text={`${report?.attendancePercentage} %`}
-                      />
+                    <td className="py-3 pl-4">
+                      {report?.childFullName ?? 'N/A'}
+                    </td>
+                    <td className="py-3">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={getShapeClass(
+                            reportItemShape,
+                            reportItemColor
+                          )}
+                        />
+                        <Typography
+                          type="body"
+                          color={reportItemColor}
+                          text={
+                            report?.attendancePercentage != null
+                              ? `${report.attendancePercentage} %`
+                              : 'N/A'
+                          }
+                        />
+                      </div>
                     </td>
                   </tr>
                 );
@@ -341,7 +356,7 @@ export const MonthlyAttendanceReport = () => {
           isLoading={isOnline && isLoadingReportDetails}
           title="Download Register"
           outputName={`${selectedMonth.month}-attendance-report.pdf`}
-          tableData={finalTableData}
+          tableData={reportDataWithClassroomGroup}
           tableFooter={footer}
           content={tableTopContent}
           tableBottomContent={tableBottomContent}
@@ -351,6 +366,7 @@ export const MonthlyAttendanceReport = () => {
           signature={practitioner?.signingSignature ?? ''}
           downloadDate={today.toDateString()}
           numberOfChildren={attendanceSum}
+          tableHeaders={tableHeaders}
         />
       </div>
     </BannerWrapper>

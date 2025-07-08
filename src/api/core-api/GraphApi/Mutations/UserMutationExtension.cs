@@ -19,6 +19,7 @@ using HotChocolate.Execution;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -35,7 +36,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           [Service] IHttpContextAccessor httpContextAccessor,
           [Service] ILogger<UserMutationExtension> _logger,
           [Service] IFileService fileService,
-          IGenericRepositoryFactory repoFactory,
           AuthenticationDbContext dbContext,
           ApplicationUserManager userManager,
           UserModel input)
@@ -387,7 +387,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         [Permission(PermissionGroups.USER, GraphActionEnum.Delete)]
         public async Task<bool> DeleteUser(
           [Service] IHttpContextAccessor httpContextAccessor,
-          IGenericRepositoryFactory repoFactory,
           ApplicationUserManager userManager,
           string id)
         {
@@ -426,8 +425,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public async Task<BulkDeactivateResult> BulkDeleteUser(
             [Service] IHttpContextAccessor httpContextAccessor,
             [Service] ILogger<UserMutationExtension> _logger,
-            IGenericRepositoryFactory repoFactory,
             ApplicationUserManager userManager,
+            AuthenticationDbContext dbContext,
             List<string> ids)
         {
             var currentUserId = httpContextAccessor.HttpContext.GetUser().Id;
@@ -478,6 +477,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         _logger.LogInformation("Roles: Remove {0} from user {1} by {2} [UserMutationExtension.BulkDeleteUser]", role, user.Id, currentUserId);
                         var result = userManager.RemoveFromRoleAsync(user, role).Result;
                     }
+
+                    // Delete Practitioners
+                    dbContext.Database.ExecuteSqlRaw(
+                    $@"
+                        UPDATE ""Practitioner"" SET ""IsActive""=false WHERE ""UserId""='{user.Id}'::uuid;
+                    "
+                    );
+                    // Delete Coaches
+                    dbContext.Database.ExecuteSqlRaw(
+                    $@"
+                        UPDATE ""Coach"" SET ""IsActive""=false WHERE ""UserId""='{user.Id}'::uuid;
+                    "
+                    );
+
 
                     success.Add(user.Id.ToString());
                 }

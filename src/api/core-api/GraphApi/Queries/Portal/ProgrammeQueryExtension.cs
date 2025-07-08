@@ -450,24 +450,50 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
             {
                 return null;
             }
-
             var englishId = new Guid("9688cd08-adef-408c-9d34-5d75ae5c44df");
+
+            var natureContentForTenant = contentRepo.ValidateDefaultTemplateByContentTypeId(ContentTypeConstants.ThemeId, englishId, "DefaultNature", TenantExecutionContext.Tenant.Id);
+            var animalContentForTenant = contentRepo.ValidateDefaultTemplateByContentTypeId(ContentTypeConstants.ThemeId, englishId, "DefaultAnimal", TenantExecutionContext.Tenant.Id);
+
+            if (natureContentForTenant == null)
+            {
+                var natureDefaultContent = contentRepo.ValidateDefaultTemplateByContentTypeId(ContentTypeConstants.ThemeId, englishId, "DefaultNature", null);
+                var natureTheme = contentRepo.GetDefaultTemplateById(natureDefaultContent.ContentId, englishId, null);
+                if (natureTheme != null)
+                {
+                    // Adding the theme for the tenant
+                    var item = (IDictionary<string, object>)natureTheme;
+                    contentRepo.Create(ContentTypeConstants.ThemeId, englishId, item);
+                }
+            }
+            if (animalContentForTenant == null)
+            {
+                var animalDefaultContent = contentRepo.ValidateDefaultTemplateByContentTypeId(ContentTypeConstants.ThemeId, englishId, "DefaultAnimal", null);
+                var animalTheme = contentRepo.GetDefaultTemplateById(animalDefaultContent.ContentId, englishId, null);
+                if (animalTheme != null)
+                {
+                    // Adding the theme for the tenant
+                    var item = (IDictionary<string, object>)animalTheme;
+                    contentRepo.Create(ContentTypeConstants.ThemeId, englishId, item);
+                }
+            }
+
             var records = contentRepo.GetAll(ContentTypeConstants.ThemeId, englishId)
                                      .Select(x => new ThemeViewModel(x, englishId))
                                      .Where(x => x.TenantId.ToString() == TenantExecutionContext.Tenant.Id.ToString())
                                      .ToList();
-
+                                     
             if (records.Any())
             {
                 if (string.IsNullOrEmpty(search)
-                    && startDate == null 
+                    && startDate == null
                     && endDate == null
                     && shareContent.Count == 0)
                 {
                     return records
                         .OrderByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Year : d.InsertedDate.Value.Year)
-                        .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
-                        .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
+                        .ThenByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
+                        .ThenByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
                         .ToList();
                 }
                 else
@@ -543,8 +569,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     }
                     return filteredRecords
                             .OrderByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Year : d.InsertedDate.Value.Year)
-                            .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
-                            .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
+                            .ThenByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
+                            .ThenByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
                             .ToList();
                 }
             }

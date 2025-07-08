@@ -98,7 +98,7 @@ export default function MessagePanel() {
   const [isLoading, setIsLoading] = useState(false);
   const [messageStatus, setMessageStatus] = useState('');
   const [userCount, setUserCount] = useState(0);
-  const [selectedRoles, setSelectedRoles] = useState<MessageRoleDto[]>(ssRoles);
+  const [selectedRoles, setSelectedRoles] = useState<MessageRoleDto[]>([]);
   const [authenticatedUser, setAuthenticatedUser] = useState<AuthUser>();
   const [currentMessage, setCurrentMessage] = useState<MessageLogDto>();
   const [wardData, setWardData] = useState<WardDto[]>([]);
@@ -117,13 +117,9 @@ export default function MessagePanel() {
     }
   }, [user]);
 
-  // useEffect(() => {
-  //   if (tenant.isCHWConnect) {
-  //     setRoleData(ggRoles);
-  //   } else {
-  //     setRoleData(ssRoles);
-  //   }
-  // }, [tenant]);
+  useEffect(() => {
+    setRoleData(ssRoles);
+  }, [tenant]);
 
   useEffect(() => {
     if (wards) {

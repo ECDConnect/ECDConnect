@@ -61,7 +61,7 @@ export class UserLastLoginNotificationValidator
 
                  your profile`,
       dateCreated: new Date().toISOString(),
-      priority: NotificationPriority.higher,
+      priority: NotificationPriority.highest,
       viewOnDashboard: true,
       isFromBackend: false,
       area: 'data-sync',

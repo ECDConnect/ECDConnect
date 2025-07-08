@@ -29,14 +29,13 @@ export const ConfirmPlayGroupListItem: React.FC<
       practitioners?.find((item) => item?.user?.id === playGroup?.userId)?.user
         ?.firstName ||
       practitioners?.find((item) => item?.user?.id === playGroup?.userId)?.user
-        ?.userName;
+        ?.userName ||
+      (practitioner?.userId === playGroup?.userId &&
+        practitioner?.user?.firstName);
 
-    const classPractitionerUserName = practitioners?.find(
-      (item) => item?.user?.id === playGroup?.userId
-    )?.user?.userName;
     return classPractitionerName
       ? `${classPractitionerName}; `
-      : `${practitioner?.user?.firstName || practitioner?.user?.userName}; `;
+      : `No practitioner assigned `;
   };
 
   return (
