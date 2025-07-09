@@ -242,7 +242,7 @@ export class ChildProgressReportNotificationValidator
     const reference = `${currentUser?.id}-${currentMonth}-${currentYear}-report-periods`;
 
     if (
-      today === februaryFirstDay &&
+      //  today === februaryFirstDay &&
       !classroomState?.classroom?.childProgressReportPeriods
     ) {
       notifications?.push({
