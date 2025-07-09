@@ -434,6 +434,8 @@ export const Dashboard: React.FC = () => {
   };
 
   const onNavigation = (navItem: any) => {
+    console.log('onNavigation.navItem', navItem);
+
     if (navItem.href.includes('community') && !isOnline) {
       history.push(ROUTES.DASHBOARD);
       offlineCommunity();
@@ -919,39 +921,16 @@ export const Dashboard: React.FC = () => {
     history.push(profileRoute);
   };
 
-  // const goToClassroom = () => {
-  //   if (
-  //     (classroom &&
-  //       !!classroom.id &&
-  //       classroomGroups &&
-  //       classroomGroups.length > 0) ||
-  //     (practitioner?.progress === 2 && classroom && classroom?.name) ||
-  //     (classroomGroups &&
-  //       classroomGroups.length > 0 &&
-  //       !!classroom?.id &&
-  //       isRegistered &&
-  //       isProgress &&
-  //       isProgress > 0 &&
-  //       hasConsent &&
-  //       !missingProgramme) ||
-  //     isTrialPeriod
-  //   ) {
-  //     history.push(ROUTES.CLASSROOM.ROOT, {
-  //       activeTabIndex: TabsItems.CLASSES,
-  //     });
-  //   } else if (
-  //     (missingProgramme && isWhiteLabel) ||
-  //     wlNotAcceptThePrincipalInvite
-  //   ) {
-  //     showCompleteProfileBlockingDialog();
-  //   }
-  // };
-
   const goToClassroom = () => {
     if (
-      (classroom && classroom.id) ||
+      (classroom &&
+        !!classroom.id &&
+        classroomGroups &&
+        classroomGroups.length > 0) ||
       (practitioner?.progress === 2 && classroom && classroom?.name) ||
-      (classroom?.id &&
+      (classroomGroups &&
+        classroomGroups.length > 0 &&
+        !!classroom?.id &&
         isRegistered &&
         isProgress &&
         isProgress > 0 &&
