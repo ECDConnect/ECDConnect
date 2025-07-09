@@ -434,8 +434,6 @@ export const Dashboard: React.FC = () => {
   };
 
   const onNavigation = (navItem: any) => {
-    console.log('onNavigation.navItem', navItem);
-
     if (navItem.href.includes('community') && !isOnline) {
       history.push(ROUTES.DASHBOARD);
       offlineCommunity();
