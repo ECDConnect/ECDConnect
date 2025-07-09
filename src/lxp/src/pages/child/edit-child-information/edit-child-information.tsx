@@ -58,7 +58,10 @@ import { userSelectors } from '@store/user';
 import ROUTES from '../../../../src/routes/routes';
 import { UNSURE_CLASS } from '@/constants/classroom';
 import { disableBackendNotification } from '@/store/notifications/notifications.actions';
-import { notificationsSelectors } from '@/store/notifications';
+import {
+  notificationActions,
+  notificationsSelectors,
+} from '@/store/notifications';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { getClassroomGroupByChildUserId } from '@/store/classroom/classroom.selectors';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
@@ -178,11 +181,14 @@ export const EditChildInformation: React.FC = () => {
   const removeNotifications = async () => {
     if (assignToClassNotifications && assignToClassNotifications?.length > 0) {
       assignToClassNotifications.map((notification) => {
-        appDispatch(
-          disableBackendNotification({
-            notificationId: notification.message.reference ?? '',
-          })
-        );
+        if (notification.message?.isFromBackend) {
+          appDispatch(
+            disableBackendNotification({
+              notificationId: notification.message.reference ?? '',
+            })
+          );
+        }
+        appDispatch(notificationActions.removeNotification(notification!));
       });
     }
   };
@@ -488,8 +494,6 @@ export const EditChildInformation: React.FC = () => {
       // They should always be in a classroom group though
       if (!!currentChildClassroomGroup) {
         // Deactivate old learner record
-        removeNotifications();
-
         appDispatch(
           classroomsActions.deactivateLearner({
             childUserId: child.userId!,
@@ -497,6 +501,8 @@ export const EditChildInformation: React.FC = () => {
           })
         );
       }
+
+      removeNotifications();
 
       appDispatch(
         classroomsActions.createLearner({
