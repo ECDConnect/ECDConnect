@@ -101,7 +101,7 @@ namespace ECDLink.Security.Api
 
             var tenantData = TenantExecutionContext.Tenant;
             var organisationName = tenantData.OrganisationName;
-            var callCenterNumber = "0800 014 817"; // TODO: Callcenter number should be in the tenant config?
+            var callCenterNumber = ""; // TODO: Callcenter number should be in the tenant config?
 
             //exclude funny script attempts
             if ((login?.Password?.StartsWith('<') ?? true)

@@ -86,9 +86,9 @@ The platform is built as a Progressive Web Application with offline first capabi
 
 *   [Node](https://nodejs.org/en/download/) version ^20.19.2 or up
 *   [Lerna](https://lerna.js.org/) installed for multiple package management,  
-    `npm install --global lerna`
+    `npm install --global lerna@4.0.0`
 *   [Yarn](https://yarnpkg.com/) as an optional alternative to NPM,  
-    `npm install --global yarn`
+    `npm install --global yarn@1.22.22`
 *   [.NET 9.0](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
 *   [PostgreSQL Server](https://www.postgresql.org/) - version 13 or later.
 *   [Visual Studio Code](https://code.visualstudio.com/) for frontend development.
@@ -101,8 +101,8 @@ The platform is built as a Progressive Web Application with offline first capabi
 2.  Clone the repo.
 3.  Install node 20.19.2 or later.
 4.  In the **root folder**:   
-    `npm install --global lerna`   
-    `npm install --global yarn`
+    `npm install --global lerna@4.0.0`   
+    `npm install --global yarn@1.22.22`
 5.  Run `yarn` to update/install the packages.
 6.  Run `yarn fixmodules` to correct modules using unsupported syntax
 7.  Run `yarn bootstrap`.  This will install all packages for the sub packages and src projects.  After that it will  build the packages for use and add them to the node modules of the projects have them as dependencies.
@@ -117,7 +117,7 @@ The platform is built as a Progressive Web Application with offline first capabi
 
 ### Backend
 *   Start the PostgreSQL server
-*   Using VS Studio run the solution. Verify that the browser page opens with the GraphQL schema.
+*   Using Visual Studio run the solution. Verify that the browser page opens with the GraphQL schema.
 
 ### Frontend PWA
 
@@ -128,9 +128,12 @@ The platform is built as a Progressive Web Application with offline first capabi
 
 *   Ensure the backend is running
 *   `yarn portal` to run the Admin Portal
+*   Default username is *Admin* and password is *Pass@123*
 
 
-## Blob Storage
+## System Configuration
+
+### Blob Storage
 
 There are currently two storage types: Azure Blob Storage or File System.  
 This is specified in the /src/api/core-api/appsettings.json file:  
@@ -171,11 +174,11 @@ Make sure that all references for the storage url are correct:
     Make sure all urls to other files in the theme are correct.
 
 
-## SMS Configuration
+### SMS Sending
 
 The platform sends smses for certain notifications.  To configure SMS capability values in the SystemSetting table need to be set.
 
-### BulkSMS
+#### BulkSMS
 *  Update `Notifications.SMSProviders.Sms.Provider` to `Notifications.SMSProviders.BulkSms`
 *  Update the following rows:  
 `Notifications.SMSProviders.BulkSms.BasicAuthToken`  
@@ -183,29 +186,135 @@ The platform sends smses for certain notifications.  To configure SMS capability
 `Notifications.SMSProviders.BulkSms.TokenId`  
 `Notifications.SMSProviders.BulkSms.TokenSecret`  
 
-### SMSPortal
+#### SMSPortal
 *  Update `Notifications.SMSProviders.Sms.Provider` to `Notifications.SMSProviders.SMSPortal`
 *  Update the following rows:  
 `Notifications.SMSProviders.SMSPortal.ApiKey`
 `Notifications.SMSProviders.SMSPortal.ApiSecret`
 
-### iTouch
+#### iTouch
 *  Update `Notifications.SMSProviders.Sms.Provider` to `Notifications.SMSProviders.iTouch`
 *  Update the following rows:  
 `Notifications.SMSProviders.iTouch.Password`
 `Notifications.SMSProviders.iTouch.Username`
 
 
-## SMTP Configuration
+### SMTP Email Sending
 To configure the system to allow for the sending of emails, edit the `Notifications.EmailProviders.Smtp.%` rows in SystemSetting table as required.
 
 
-# Setting up the system in Azure
-TODO
+# Setting up a basic system in Azure
+
+* Create a Resource Group, e.g. rg-myapp
+
+* Create a Storage Account resource, e.g. stgmyapp, in rg-myapp.
+   * Allow Blob anonymous access: Enabled
+   * Allow storage account key access: Enabled
+   * Blob access tier: Hot
+   * Setup CORS to allow GET for Blob service.
+
+* Upload data to stgmyapp storage account.
+   * Create a *content-image* container with Anonymous access Level = Blob
+   Upload all the files in *src/api/core-api/_Storage/content-image* to the container
+   * Create a *theme*  container with Anonymous access Level = Blob
+   Upload all the files, sub folders included, in *src/api/core-api/_Storage/theme* to the container
+
+   
+* Create a PostgreSQL Flexible Server resource, e.g. sql-myapp, in rg-myapp.
+   * Add a database.
+   * Use pgAdmin or another tool to restore the database using your own backup or sqlscripts/database.sql.
+
+* Create an App Service Plan, e.g. asp-myapp, in rg-myapp.
+   * Operating System: Linux
+   * Pricing Plan: For dev/test B1 should be sufficient initially.
+
+* Create backend App Service (Web App), e.g. api-myapp, in rg-myapp.
+   * Basics: 
+      * Publish: Code
+      * Runtime Stack: .NET 9
+      * Linux Plan: select your app service plan created above, asp-myapp
+   * Deployment:
+      * Select options to suit your requirements
+   * Networking:
+      * Enable public access: On
+      * Enable virtual network integration: Off
+   * Monitor & Secure:
+      * Enable Application Insights: Yes
+
+* Configure api-myapp:
+   * Settings - Environment Variables
+      * DOTNET_ENVIRONMENT = Development (or as required)
+   * Settings - Configuration
+      * Always on: On
+   * API - Cors
+      * Enable Access-Control-Allow-Credentials: Yes
+      * Allowed Origins: http://localhost:3000, http://localhost:3003, https://*.azurewebsites.net
+   * Monitoring - App Service logs
+      * Application Logging: File System
+      * Quote: 100
+      * Retention Period: 7
+
+* Create portal App Service (Web App), e.g. portal-myapp, in rg-myapp
+   * Basics: 
+      * Publish: Code
+      * Runtime Stack: Node 22
+      * Linux Plan: select your app service plan created above, asp-myapp
+   * Deployment:
+      * Select options to suit your requirements
+   * Networking:
+      * Enable public access: On
+      * Enable virtual network integration: Off
+   * Monitor & Secure:
+      * Enable Application Insights: No
+
+* Configure portal-myapp:
+   * Settings - Configuration
+      * Startup Command: `npm i -g http-server && node --max-http-header-size=80000 /usr/local/lib/node_modules/http-server/bin/http-server --proxy http://127.0.0.1:8080?`
+
+* Create PWA app App Service (Web App), e.g. app-myapp, in rg-myapp
+   * Basics: 
+      * Publish: Code
+      * Runtime Stack: Node 22
+      * Linux Plan: select your app service plan created above, asp-myapp
+   * Deployment:
+      * Select options to suit your requirements
+   * Networking:
+      * Enable public access: On
+      * Enable virtual network integration: Off
+   * Monitor & Secure:
+      * Enable Application Insights: No
+
+* Configure app-myapp:
+   * Settings - Configuration
+      * Startup Command: `npm i -g http-server && node --max-http-header-size=80000 /usr/local/lib/node_modules/http-server/bin/http-server --proxy http://127.0.0.1:8080?`
+
+* Database Configuration
+   * Tenant table:
+      * Where SiteAddress = localhost:3000, update as follows:
+        * SiteAddress = https://app-myapp.azurewebsites.net
+        * AdminSiteAddress = https://portal-myapp.azurewebsites.net
+        * BlobStorageAddress = https://stgmyapp.blob.core.windows.net
+      * Where SiteAddress = localhost:5001:
+        * SiteAddress = https://api-myapp.azurewebsites.net
+        * BlobStorageAddress = https://stgmyapp.blob.core.windows.net
+   * SystemSetting table:
+      * Where FullPath = General.Azure.BlobStorageConnection
+        * Value = *set to the connection string from the storage account > Security + networking > Access keys*
+      * Run the following script, updating the values as required:  
+      `UPDATE "SystemSetting" SET "Value" = REPLACE("Value",'http://localhost:3000','https://app-myapp.azurewebsites.net') WHERE "Value" ILIKE '%http://localhost:3000%';`  
+      `UPDATE "SystemSetting" SET "Value" = REPLACE("Value",'http://localhost:3003','https://portal-myapp.azurewebsites.net') WHERE "Value" ILIKE '%http://localhost:3000%';`
+
+* Deploy Code  
+Deploy the code for the backend, portal, and app to the respective app services.  
+   * When deploying the backend remember to update/replace values in appsettings.json as required, e.g. database connection string.
+   * When deploying the portal and app, remember to update all the settings.json files:
+      * graphQlApi = https://api-myapp.azurewebsites.net/graphql/
+      * authApi = https://api-myapp.azurewebsites.net
+      * themeUrl = https://stgmyapp.blob.core.windows.net/....
+
+* Is it running?
+  * backend - navigate to https://api-myapp.azurewebsites.net/graphql.  If you're shown the GraphQL Playground and shown the schema then all is running fine.
+  * app & portal - should be shown the login screen.  View the network calls to confirm requests to the backend are succeeding.  There will be an "onlinecheck" call every few minutes.
+
 
 # Using the System
-## Creating practitioner?
-TODO
-
-## Creating principal?
-TODO
