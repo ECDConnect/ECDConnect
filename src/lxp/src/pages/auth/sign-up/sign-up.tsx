@@ -263,6 +263,22 @@ export const SignUp: React.FC = () => {
     }
   }, [userAgent]);
 
+  // Function for cellphone number preventing characters
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+    const allowedKeys = [
+      'Backspace',
+      'Delete',
+      'ArrowLeft',
+      'ArrowRight',
+      'Tab',
+      '+',
+    ];
+
+    if (!/^[0-9+]$/.test(e.key) && !allowedKeys.includes(e.key)) {
+      e.preventDefault();
+    }
+  };
+
   return (
     <div className={styles.wrapper}>
       <BannerWrapper
@@ -323,6 +339,7 @@ export const SignUp: React.FC = () => {
             visible={true}
             type={'number'}
             register={signUpRegister}
+            onKeyDown={handleKeyDown}
             error={errors?.cellphone}
           />
 

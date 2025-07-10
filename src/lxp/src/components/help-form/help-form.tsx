@@ -47,48 +47,6 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction }) => {
 
   const helpService = new HelpService(Config.authApi);
 
-  // const sendHelpMessage = async () => {
-  //   const input: HelpFormModel = {
-  //     subject: helpType,
-  //     description: problemValue,
-  //     cellNumber: isPhoneSelected ? contactValue : '',
-  //     email: isPhoneSelected === false ? contactValue : '',
-  //     isLoggedIn: false,
-  //     contactPreference: isPhoneSelected ? 'phoneNumber' : 'email',
-  //     userId: null,
-  //   };
-
-  //   console.time('SendHelp API Call');
-  //   setIsLoading(true);
-
-  //   try {
-  //     const message = await new HelpService(Config.authApi).SendHelp(input);
-  //     console.timeEnd('SendHelp API Call');
-
-  //     if (message) {
-  //       setNotification({
-  //         title: `Message sent!`,
-  //         variant: NOTIFICATION.SUCCESS,
-  //       });
-  //     } else {
-  //       setNotification({
-  //         title: `Message not sent!`,
-  //         variant: NOTIFICATION.ERROR,
-  //       });
-  //     }
-  //   } catch (error) {
-  //     console.timeEnd('SendHelp API Call');
-  //     console.error('SendHelp error:', error);
-  //     setNotification({
-  //       title: `Failed to send the message!`,
-  //       variant: NOTIFICATION.ERROR,
-  //     });
-  //   }
-
-  //   setIsLoading(false);
-  //   closeAction && closeAction(false);
-  // };
-
   const sendHelpMessage = async () => {
     const input: HelpFormModel = {
       subject: helpType,
@@ -154,6 +112,22 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction }) => {
 
     if (isValid) {
       setContactValue(inputValue);
+    }
+  };
+
+  // Function for cellphone number preventing characters
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+    const allowedKeys = [
+      'Backspace',
+      'Delete',
+      'ArrowLeft',
+      'ArrowRight',
+      'Tab',
+      '+',
+    ];
+
+    if (!/^[0-9+]$/.test(e.key) && !allowedKeys.includes(e.key)) {
+      e.preventDefault();
     }
   };
 
@@ -223,6 +197,7 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction }) => {
                 className="bg-adminPortalBg mb-1"
                 value={cellphone}
                 onChange={(e) => handleCellphoneChange(e)}
+                onKeyDown={handleKeyDown}
                 textInputType="input"
                 placeholder={contactPlaceholder}
                 type="number"
