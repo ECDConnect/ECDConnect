@@ -477,8 +477,6 @@ export const updateClassroomPractitionerPermissions = createAsyncThunk<
     try {
       let promises: Promise<any>[] = [];
       if (!!userAuth && !!userAuth?.auth_token) {
-        console.log('hier is auth');
-
         const service = new PermissionsService(userAuth?.auth_token);
         promises = classroomPractitioners.map(async (e) => {
           return await service.UpdateUserPermission(e);
