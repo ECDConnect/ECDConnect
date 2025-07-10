@@ -227,6 +227,22 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
     setIsValidPhoneNumber(isValid);
   };
 
+  // Function for cellphone number preventing characters
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+    const allowedKeys = [
+      'Backspace',
+      'Delete',
+      'ArrowLeft',
+      'ArrowRight',
+      'Tab',
+      '+',
+    ];
+
+    if (!/^[0-9+]$/.test(e.key) && !allowedKeys.includes(e.key)) {
+      e.preventDefault();
+    }
+  };
+
   return (
     <BannerWrapper
       size="small"
@@ -272,6 +288,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
               label={'Cellphone number'}
               nameProp={'phoneNumber'}
               placeholder="e.g 0123456789"
+              onKeyDown={handleKeyDown}
               onChange={(e) => {
                 handleCellphoneChange(e);
                 setPhoneMessageError('');
