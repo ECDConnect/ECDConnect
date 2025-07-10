@@ -63,7 +63,7 @@ export const Rent: React.FC<AddExpenseState> = ({
   const [photoActionBarVisible, setPhotoActionBarVisible] =
     useState<boolean>(false);
   const [registrationFormPhotoUrl, setRegistrationFormPhotoUrl] =
-    useState<string>();
+    useState<string>(expenseItem?.photoProof!);
 
   const viewTitle = 'Rent';
 
@@ -227,7 +227,7 @@ export const Rent: React.FC<AddExpenseState> = ({
               registrationFormPhotoUrl
                 ? () => {
                     setFormValue('photoProof', '');
-                    setRegistrationFormPhotoUrl(undefined);
+                    setRegistrationFormPhotoUrl('');
                     setPhotoActionBarVisible(false);
                   }
                 : undefined
