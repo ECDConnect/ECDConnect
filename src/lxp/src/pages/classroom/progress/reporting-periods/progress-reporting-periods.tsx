@@ -22,6 +22,7 @@ import ROUTES from '@/routes/routes';
 import { TabsItems } from '../../class-dashboard/class-dashboard.types';
 import { getAllNotifications } from '@/store/notifications/notifications.selectors';
 import { notificationActions } from '@/store/notifications';
+import { disableBackendNotification } from '@/store/notifications/notifications.actions';
 
 export type ProgressReportingPeriodsRouteState = {
   messageReference: string;
@@ -105,12 +106,21 @@ export const ProgressReportingPeriods: React.FC = () => {
         })
       );
 
-    const hasNotification = notifications?.find(
+    const notificationsToRemove = notifications?.filter(
       (item) => item?.message?.reference === messageReference
     );
 
-    if (hasNotification) {
-      appDispatch(notificationActions.removeNotification(hasNotification!));
+    if (notificationsToRemove && notificationsToRemove?.length > 0) {
+      notificationsToRemove.map((notification) => {
+        if (notification.message?.isFromBackend) {
+          appDispatch(
+            disableBackendNotification({
+              notificationId: notification.message.reference ?? '',
+            })
+          );
+        }
+        appDispatch(notificationActions.removeNotification(notification!));
+      });
     }
 
     save();
