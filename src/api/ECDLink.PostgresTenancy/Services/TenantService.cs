@@ -77,7 +77,7 @@ namespace ECDLink.PostgresTenancy.Services
                             if (item.NormalizedName == "PROGRESS") tenant.Modules.ProgressEnabled = true;
                             if (item.NormalizedName == "ATTENDANCE") tenant.Modules.AttendanceEnabled = true;
                             if (item.NormalizedName == "CALENDAR") tenant.Modules.CalendarEnabled = true;
-                            if (item.NormalizedName == "TRAINING") tenant.Modules.TrainingEnabled = true;
+                            if (item.NormalizedName == "TRAINING") tenant.Modules.TrainingEnabled = !string.IsNullOrEmpty(tenant.MoodleConfig) && !string.IsNullOrEmpty(tenant.MoodleUrl);
                             if (item.NormalizedName == "BUSINESS") tenant.Modules.BusinessEnabled = true;
                         }
                     }
