@@ -55,13 +55,12 @@ export const principalActivitiesItems: pointActivitiesDto[] = [
     icon: 'ShareIcon',
     href: ROUTES.COMMUNITY.WELCOME,
   },
-  // Training is currently switched off
-  // {
-  //   activity: 'Training courses completed',
-  //   missingActivityText: 'Complete an online training',
-  //   icon: 'AcademicCapIcon',
-  //   href: ROUTES.TRAINING,
-  // },
+  {
+    activity: 'Training courses completed',
+    missingActivityText: 'Complete an online training',
+    icon: 'AcademicCapIcon',
+    href: ROUTES.TRAINING,
+  },
 ];
 
 export const practitionerActivitiesItems: pointActivitiesDto[] = [
@@ -85,11 +84,10 @@ export const practitionerActivitiesItems: pointActivitiesDto[] = [
     icon: 'ShareIcon',
     href: ROUTES.COMMUNITY.WELCOME,
   },
-  // Training is currently switched off
-  // {
-  //   activity: 'Training courses completed',
-  //   missingActivityText: 'Complete an online training',
-  //   icon: 'AcademicCapIcon',
-  //   href: ROUTES.TRAINING,
-  // },
+  {
+    activity: 'Training courses completed',
+    missingActivityText: 'Complete an online training',
+    icon: 'AcademicCapIcon',
+    href: ROUTES.TRAINING,
+  },
 ];

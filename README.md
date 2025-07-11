@@ -15,8 +15,10 @@ The platform is built as a Progressive Web Application with offline first capabi
 *   **Admin Portal Website**: React and Apollo Client
 *   **Backend**: .NET 9 Core, GraphQL (Hot Chocolate), Entity Framework, PostgreSQL.
 
+
 ## 3rd Party Integrations
 
+*   Training: [Moodle](https://moodle.org/) - see below for details on the training module
 *   SMS Sending: [BulkSMS](https://www.bulksms.com/), [iTouch](https://itouch.co.za/), or [SMSPortal] (https://smsportal.com/)
 *   Holidays: [RapidAPI](https://rapidapi.com/) - an API to get the South African Holidays for attendance tracking purposes etc
 *   Analytics: [Google Analytics](https://analytics.google.com/),  [Google Tag Manager](https://tagmanager.google.com/) and [Google Data Studio](https://datastudio.google.com/) - for analytics, event tracking and reporting
@@ -82,6 +84,21 @@ The platform is built as a Progressive Web Application with offline first capabi
 *   SSL certificates are recommended for the respective, frontend, Admin Portal and API url's
 *   [JWT](https://jwt.io/) tokens for authorisation with refresh endpoints
 
+## Training
+*Please note this is not a requirement to run the system.*  
+The app has a training module that can display Moodle training courses within an iframe.  
+In order to enable this functionality, the requirements are:
+*   Moodle 4.9.4 or later
+*   Cohort enrolment enabled
+*   The Moodle database must be on PostgreSQL 13 or later
+*   The Moodle database must be accessible from the backend with read/insert/delete permission
+*   The Moodle UI theme needs to be as minimal as possible as it will be displayed within an iframe
+
+When the Training module of the frontend is accessed, the backend is queried to create/update the current user in the Moodle database and enroll the user, using cohort enrolment, in the courses.
+The frontend then logs into Moodle in the iframe using the user's Moodle credentials and the courses assigned to the user will be display on the Moodle landing page.
+
+Configuration of the backend for Moodle is discussed below.
+
 ## Project Requirements
 
 *   [Node](https://nodejs.org/en/download/) version ^20.19.2 or up
@@ -136,7 +153,7 @@ The platform is built as a Progressive Web Application with offline first capabi
 ### Blob Storage
 
 There are currently two storage types: Azure Blob Storage or File System.  
-This is specified in the /src/api/core-api/appsettings.json file:  
+This is specified in the */src/api/core-api/appsettings.json* file:  
 
     "Storage": {  
       "Type": "FileSystem",  
@@ -173,6 +190,27 @@ Make sure that all references for the storage url are correct:
 *   Theme file  
     Make sure all urls to other files in the theme are correct.
 
+### Moodle (optional)
+Make the following changes if you will be using Moodle:
+*   Tenant table
+    *   MoodleUrl = the url for the Moodle instance, e.g. https://moodle.mydomain.co.za
+    *   MoodleConfig = json string as below, replacing as required:
+        ```json
+        {   
+            "userTypes": [{
+               "userType": "*",
+               "cohorts": ["course cohort name", "ui cohort name"]
+            }],
+            "database": {
+               "type": "postgres",
+               "connectionString": "Server=myserver.com;Database=moodle;Port=5432;User Id=admin@myserver;Password=123456;Ssl Mode=VerifyFull;"
+            },
+            "site": {
+               "address": "https://moodle.mydomain.co.za",
+               "defaultPassword": "abc@1234",
+               "emailFormatString": "{0}@mydomain.co.za"
+            }
+         }
 
 ### SMS Sending
 

@@ -62,6 +62,8 @@ namespace EcdLink.Moodle.Services
 
         public async Task<bool> CreateUserAsync(ApplicationIdentityUser _user)
         {
+            if (!Enabled) return false;
+
             var user = new MoodleUser()
             {
                 UserName = _user.Id.ToString(),
@@ -69,7 +71,7 @@ namespace EcdLink.Moodle.Services
                 IdNumber = _user.IdNumber ?? "",
                 Firstname = _user.FirstName ?? " ",
                 Lastname = _user.Surname ?? " ",
-                Email = $"{_user.Id.ToString()}@ecdconnect.co.za",
+                Email = string.Format(_config.Site.EmailFormatString, _user.Id, _user.FirstName, _user.Surname),
                 Phone1 = _user.PhoneNumber ?? ""
             };
 
@@ -124,50 +126,6 @@ namespace EcdLink.Moodle.Services
 
             return true;
         }
-
-        /*
-        public async Task<string> CreateUserSessionAsync(string userName)
-        {
-            await using var conn = new NpgsqlConnection(GetConnectionString());
-            await conn.OpenAsync();
-
-            long userId = await GetMoodleUserId(conn, userName);
-            if (userId == -1) return "";
-
-            string dbSessionId = await GetMoodleSessionId(conn, userId);
-
-            var sessionId = Guid.NewGuid().ToString();
-            if (userId >= 0 && dbSessionId == "")
-            {
-                DateTimeOffset dto = new DateTimeOffset(DateTime.Now);
-                var unixTimeStamp = dto.ToUnixTimeSeconds();
-
-                await using var cmd = new NpgsqlCommand("INSERT INTO public.mdl_sessions" +
-                    "(sid, userid, timecreated, timemodified)" +
-                    "VALUES((@sessionId),(@userId),(@unixTimeStamp),(@unixTimeStamp))" +
-                    "RETURNING sid",
-                    conn)
-                {
-                    Parameters =
-                    {
-                        new NpgsqlParameter("sessionId", sessionId),
-                        new NpgsqlParameter("userId", userId),
-                        new NpgsqlParameter("unixTimeStamp", unixTimeStamp),
-                    }
-                };
-
-                await cmd.ExecuteNonQueryAsync();
-            }
-            else
-            {
-                sessionId = dbSessionId;
-            }
-
-            conn.Close();
-
-            return sessionId;
-        }
-        */
 
         private string GetConnectionString()
         {
