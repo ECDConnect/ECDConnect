@@ -81,9 +81,6 @@ export const DashboardItems: React.FC<DashboardItemsProps> = ({
 
     if (
       notification.message?.cta?.includes(
-        notificationTagConfig?.TrackIncome?.cta ?? ''
-      ) ||
-      notification.message?.cta?.includes(
         notificationTagConfig?.ProgressSummary?.cta ?? ''
       ) ||
       notification.message?.cta?.includes(
