@@ -16,6 +16,7 @@ import {
 } from '@ecdlink/ui';
 import { useWatch } from 'react-hook-form';
 import { LanguageId } from '../../../../../../constants/language';
+import { isValidUrl } from '../../../../../../utils/url-utils/url-utils';
 
 export interface CreateResourceFormProps {
   template: DynamicFormTemplate;
@@ -26,7 +27,6 @@ export interface CreateResourceFormProps {
   formType?: string;
   choosedSectionTitle: string;
   getValues?: any;
-  urlRegex: any;
 }
 
 const contentWrapper = '';
@@ -65,7 +65,6 @@ const CreateResourceForm: React.FC<CreateResourceFormProps> = ({
   selectedLanguageId,
   choosedSectionTitle,
   getValues,
-  urlRegex,
 }) => {
   const { register, control, errors } = handleform;
   const formValues = getValues();
@@ -310,7 +309,7 @@ const CreateResourceForm: React.FC<CreateResourceFormProps> = ({
                 />
 
                 {formValues[propName] !== '' &&
-                  !urlRegex.test(formValues[propName]) && (
+                  !isValidUrl(formValues[propName]) && (
                     <Typography
                       type="help"
                       color="errorMain"

@@ -28,6 +28,7 @@ import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
 import CreateResourceForm from './create-resource-form';
 import { GetResources, UpdateResourceTypesAndDataFree } from '@ecdlink/graphql';
 import { LanguageId } from '../../../../../../constants/language';
+import { isValidUrl } from '../../../../../../utils/url-utils/url-utils';
 
 export interface ContentViewProps {
   content: any;
@@ -64,9 +65,6 @@ export default function CreateResource({
   };
 
   const { type: formType } = useWatch({ control });
-
-  const urlRegex =
-    /^(https?|ftp):\/\/(([a-z\d]([a-z\d-]*[a-z\d])?\.)+[a-z]{2,}|localhost)(\/[-a-z\d%_.~+]*)*(\?[;&a-z\d%_.~+=-]*)?(\#[-a-z\d_]*)?$/i;
 
   const updateMutationName = `update${contentType?.name}`;
   const creationMutationName = `create${contentType?.name}`;
@@ -285,13 +283,13 @@ export default function CreateResource({
         !formValues?.shortDescription ||
         !formValues?.longDescription ||
         !formValues?.link ||
-        !urlRegex.test(formValues?.link) ||
+        !isValidUrl(formValues?.link) ||
         !formValues?.dataFree
       : !formValues?.title ||
         !formValues?.shortDescription ||
         !formValues?.longDescription ||
         !formValues?.link ||
-        !urlRegex.test(formValues?.link);
+        !isValidUrl(formValues?.link);
 
   const disbleButtonStyles = `bg-secondary ${
     disableForm ? 'opacity-25' : ''
@@ -359,7 +357,6 @@ export default function CreateResource({
             choosedSectionTitle={choosedSectionTitle}
             formType={formType}
             getValues={getValues}
-            urlRegex={urlRegex}
           />
         </div>
 
