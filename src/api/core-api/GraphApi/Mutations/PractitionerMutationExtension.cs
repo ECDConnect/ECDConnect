@@ -1,13 +1,12 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Managers.Notifications;
-using EcdLink.Api.CoreApi.Managers.Users;
-using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Api.CoreApi.Services;
 using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Core.Services.Interfaces;
+using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Notifications;
@@ -56,10 +55,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     practitioner.IsActive = input.IsActive;
                     if (input.AttendanceRegisterLink != null) practitioner.AttendanceRegisterLink = input.AttendanceRegisterLink;
                     if (input.IsPrincipal != null) practitioner.IsPrincipal = input.IsPrincipal;
-                    if (input.PrincipalHierarchy != null) practitioner.PrincipalHierarchy = input.PrincipalHierarchy;                    
+                    if (input.PrincipalHierarchy != null) practitioner.PrincipalHierarchy = input.PrincipalHierarchy;
                     if (input.SigningSignature != null) practitioner.SigningSignature = input.SigningSignature;
                     if (input.StartDate != null) practitioner.StartDate = input.StartDate;
-             
+
                     if (input.SiteAddress != null && input.SiteAddressId.HasValue)
                     {
                         var addressRepo = repoFactory.CreateGenericRepository<SiteAddress>(userContext: uId);
@@ -255,10 +254,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             [Service] IReassignmentService reassignmentService,
             [Service] PersonnelService personnelService,
             ApplicationUserManager userManager,
-            string practitionerUserId, 
-            string reasonForPractitionerLeavingId, 
-            string reasonDetails, 
-            string newPrincipalId, 
+            string practitionerUserId,
+            string reasonForPractitionerLeavingId,
+            string reasonDetails,
+            string newPrincipalId,
             List<ClassroomGroupReassignments> classroomGroupReassignments)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -276,9 +275,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 if (reassignment.ClassroomGroupId != null || reassignment.PractitionerId != null)
                 {
                     reassignmentService.AddReassignmentForPractitioner(practitioner.UserId.ToString(), reassignment.PractitionerId, "Practitioner removed by coach", DateTime.Now, uId.ToString(), reassignment.ClassroomGroupId, true);
-                }               
+                }
             }
-           
+
             return await personnelService.DeActivatePractitionerAsync(practitionerUserId, "Practitioner removed by coach", reasonForPractitionerLeavingId, reasonDetails);
         }
 
@@ -293,11 +292,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             [Service] IAbsenteeService absenteeService,
             [Service] INotificationService notificationService,
             ApplicationUserManager userManager,
-            string practitionerUserId, 
-            string classroomId, 
-            string reasonForPractitionerLeavingProgrammeId, 
-            string reasonDetails, 
-            DateTime dateOfRemoval, 
+            string practitionerUserId,
+            string classroomId,
+            string reasonForPractitionerLeavingProgrammeId,
+            string reasonDetails,
+            DateTime dateOfRemoval,
             List<ClassroomGroupReassignments> classroomGroupReassignments)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -350,7 +349,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerRemovedFromProgramme, DateTime.Now.Date, principalUser, "", MessageStatusConstants.Red, new List<TagsReplacements>() { new TagsReplacements() { FindValue = "PractitionerName", ReplacementValue = userToSend.FirstName } }, DateTime.Now.AddDays(7), false, true, null,
                         relatedEntities: new List<RelatedEntity> { new RelatedEntity(Guid.Parse(practitionerUserId), "ApplicationUser") });
                 }
-                notificationService.SendNotificationAsync(null, TemplateTypeConstants.RemovedFromProgramme, dateOfRemoval.Date, userToSend, "", MessageStatusConstants.Red, replacements, dateOfRemoval.AddDays(7), false,true,null,
+                notificationService.SendNotificationAsync(null, TemplateTypeConstants.RemovedFromProgramme, dateOfRemoval.Date, userToSend, "", MessageStatusConstants.Red, replacements, dateOfRemoval.AddDays(7), false, true, null,
                     relatedEntities: new List<RelatedEntity> { new RelatedEntity(Guid.Parse(practitionerUserId), "ApplicationUser") });
             }
 
@@ -383,9 +382,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     return false;
                 }
 
-                if(reassignment.Id == null)
+                if (reassignment.Id == null)
                 {
-                    absenteeService.AddAbsenteeForPractitioner(removal.UserId.ToString(), reassignment.PractitionerId, "Practitioner removed from programme", dateOfRemoval, uId.ToString(), reassignment.ClassroomGroupId, null, false,null,null,null, removal.Id);
+                    absenteeService.AddAbsenteeForPractitioner(removal.UserId.ToString(), reassignment.PractitionerId, "Practitioner removed from programme", dateOfRemoval, uId.ToString(), reassignment.ClassroomGroupId, null, false, null, null, null, removal.Id);
                 }
                 else
                 {
