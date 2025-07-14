@@ -127,10 +127,13 @@ namespace ECDLink.Core.Services
 
         public void ExpireRelationshipLinks()
         {
+            DateTime today = DateTime.Today;
+            var sevenDaysBack = today.AddDays(-7).Date;
             var practiRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
             var pracsToExpire = practiRepo.GetAll()
-                                        .Where(x => x.IsLeaving == true)
-                                        .Where(x => x.DateToBeRemoved != null)
+                                        .Where(x => (x.IsLeaving == true && x.DateToBeRemoved.HasValue && x.DateToBeRemoved.Value.Date < today.Date) ||
+                                        (!x.DateAccepted.HasValue && x.DateLinked.HasValue && x.DateLinked.Value.Date < sevenDaysBack.Date))
+                                        .OrderBy(x => x.InsertedDate)
                                         .ToList();
 
             if (pracsToExpire.Count > 0)
