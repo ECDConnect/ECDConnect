@@ -1,0 +1,1 @@
+update "MessageTemplate" set "Message" = 'You have been removed from [[ApplicationName]]. If you are still an ECD practitioner, you can check out this app: [[OASignup]]' where "TemplateType" = 'coach-remove-practitioner' and "Protocol" = 'sms';
