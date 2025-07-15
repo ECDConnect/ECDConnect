@@ -17,15 +17,17 @@ import { cloneDeep } from '@apollo/client/utilities';
 import { useAppDispatch } from '@/store';
 import TransparentLayer from '../../../../assets/TransparentLayer.png';
 
+interface ShareSomeDetailsProps {
+  onNext?: () => void;
+  setIsNotPrincipal?: (value: boolean) => void;
+  setShareSomeDetails: (value: boolean) => void;
+}
+
 export const ShareSomeDetails = ({
   onNext,
   setIsNotPrincipal,
   setShareSomeDetails,
-}: {
-  onNext?: () => void;
-  setIsNotPrincipal?: (item: boolean) => void;
-  setShareSomeDetails?: (item: boolean) => void;
-}) => {
+}: ShareSomeDetailsProps) => {
   const { theme } = useTheme();
   const appDispatch = useAppDispatch();
   const [idFieldVisible, setIdFieldVisible] = useState(true);
@@ -66,7 +68,11 @@ export const ShareSomeDetails = ({
     }
     setIsLoading(false);
     onNext && onNext();
-    setShareSomeDetails && setShareSomeDetails(false);
+    setShareSomeDetailsHandler();
+  };
+
+  const setShareSomeDetailsHandler = () => {
+    setShareSomeDetails(false);
   };
 
   return (
@@ -77,7 +83,7 @@ export const ShareSomeDetails = ({
           renderBorder={true}
           showBackground={true}
           title={'Edit Profile'}
-          onBack={() => setShareSomeDetails && setShareSomeDetails(false)}
+          onBack={() => setShareSomeDetailsHandler()}
           backgroundColour={'white'}
           className={'relative'}
           backgroundUrl={TransparentLayer}
