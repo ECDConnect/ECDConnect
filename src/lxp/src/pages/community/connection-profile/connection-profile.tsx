@@ -24,6 +24,7 @@ import { useEffect, useState } from 'react';
 import { ConnectionContactDetails } from './connection-contact-details/connection-contact-details';
 import { AcceptRejectCommunityRequestsInputModelInput } from '@ecdlink/graphql';
 import TransparentLayer from '../../../assets/TransparentLayer.png';
+import { communityUserGreetingName } from '@/utils/user/user-name-greeting.utils';
 
 export const ConnectionProfile = () => {
   const { isOnline } = useOnlineStatus();
@@ -457,7 +458,10 @@ export const ConnectionProfile = () => {
             connectionProfile={true}
           />
           <ProfileSkills
-            userName={communityProfile?.communityUser?.fullName!}
+            userName={communityUserGreetingName(
+              communityProfile?.communityUser!,
+              ''
+            )}
             skills={communityProfile?.profileSkills!}
             connectionProfile={true}
           />
