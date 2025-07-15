@@ -83,7 +83,7 @@ export class PointsNotificationValidator implements NotificationValidator {
       //   },
       // });
     } else if (
-      today === firstDecDayDate &&
+      //     today === firstDecDayDate &&
       yearpointsTotal &&
       yearpointsTotal > 0
     ) {
