@@ -673,8 +673,9 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
               }
 
               if (contentView?.content && disableActivitiesInputs) {
-                const valueFormattedToArray =
-                  initialValues[propName]?.split(',');
+                const valueFormattedToArray = initialValues[propName]
+                  ?.split(',')
+                  .filter((x) => x !== '');
                 setSmallLargeGroupsSkills(valueFormattedToArray);
                 return (
                   <div key={propName} className={contentWrapper}>
@@ -721,7 +722,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                 );
               }
               const skills = initialValues[propName];
-              const skillsArray = skills?.split(',');
+              const skillsArray = skills?.split(',').filter((x) => x !== '');
               setSmallLargeGroupsSkills(skillsArray);
               return (
                 <div key={propName} className={contentWrapper}>
