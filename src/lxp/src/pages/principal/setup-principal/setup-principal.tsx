@@ -505,7 +505,7 @@ export const SetupPrincipal: React.FC = () => {
         );
 
       case PractitionerSetupSteps.SELECT_PRACTITIONER_ROLE:
-        return isNotPrincipal ? (
+        return isNotPrincipal && user?.idNumber && user?.firstName ? (
           <PreschoolCodeCheck
             onNext={setPage}
             onPreschoolNext={handlePreschoolData}
