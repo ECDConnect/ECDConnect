@@ -25,6 +25,7 @@ import { CommunityBasicInfo } from './components/community-basic-info/community-
 import { BasicInfoItems } from '../community.types';
 import ROUTES from '@/routes/routes';
 import TransparentLayer from '../../../assets/TransparentLayer.png';
+import { userGreetingName } from '@/utils/user/user-name-greeting.utils';
 
 export interface CommunityProfileRouteState {
   isFromAddMoreDetails: boolean;
@@ -154,7 +155,7 @@ export const CommunityProfile = () => {
             action={setOpenAboutDescription}
           />
           <ProfileSkills
-            userName={user?.firstName!}
+            userName={userGreetingName(user!, '')}
             skills={communityProfile?.profileSkills!}
             action={setOpenEditCommunitySkills}
           />
