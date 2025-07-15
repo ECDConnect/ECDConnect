@@ -245,8 +245,8 @@ export class ChildProgressReportNotificationValidator
       classroomState?.classroom?.childProgressReportPeriods!;
 
     if (
-      (today === februaryFirstDay && !reportingPeriods) ||
-      reportingPeriods.length === 0
+      today === februaryFirstDay &&
+      (!reportingPeriods || reportingPeriods.length === 0)
     ) {
       notifications?.push({
         reference,
