@@ -658,11 +658,15 @@ export default function ActivityList({
     return 'No entries found';
   }, [isFilterActive]);
 
+  const selectedActivityIds = selectedActivities
+    ?.filter((item) => item?.isInUse === false && item?.id)
+    .map((item) => item.id);
+
   const [deactivateActivities, { loading: deactivating }] = useMutation(
     DeleteMultipleActivities,
     {
       variables: {
-        contentIds: selectedActivities?.map((item) => item?.id),
+        contentIds: selectedActivityIds,
       },
       fetchPolicy: 'network-only',
     }
@@ -671,9 +675,9 @@ export default function ActivityList({
   const deactivateRecords = useCallback(() => {
     deactivateActivities({
       variables: {
-        contentIds: selectedActivities?.map(
-          (item) => item?.id && item?.isInUse === false
-        ), // exclude ids which is in use
+        contentIds: selectedActivities
+          ?.filter((item) => item?.isInUse === false && item?.id)
+          .map((item) => item.id), // exclude ids which is in use
       },
     })
       .then((res) => {

@@ -267,7 +267,9 @@ export default function ContentEdit({
   const disbleButtonStyles =
     choosedSectionTitle === ActivitiesTitles.SmallLargeGroupActivities
       ? `bg-secondary ${
-          disableButton?.length > 0 && smallLargeGroupsSkills?.length < 2
+          disableButton?.length > 0 ||
+          !smallLargeGroupsSkills ||
+          smallLargeGroupsSkills.length < 2
             ? 'opacity-25'
             : ''
         } hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`
@@ -601,8 +603,9 @@ export default function ContentEdit({
               disabled={
                 choosedSectionTitle ===
                 ActivitiesTitles.SmallLargeGroupActivities
-                  ? disableButton?.length > 0 &&
-                    smallLargeGroupsSkills?.length < 2
+                  ? disableButton?.length > 0 ||
+                    !smallLargeGroupsSkills ||
+                    smallLargeGroupsSkills.length < 2
                   : disableButton?.length > 0
               }
             >
