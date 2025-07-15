@@ -23,6 +23,7 @@ import { useHistory } from 'react-router';
 import AlienImage from '@/assets/ECD_Connect_alien2.svg';
 import { CommunityCoachProfile } from './components/community-coach-profile/community-coach-profile';
 import { BellIcon } from '@heroicons/react/solid';
+import { communityUserGreetingName } from '@/utils/user/user-name-greeting.utils';
 
 export const CommunityDashboard = () => {
   const dispatch = useAppDispatch();
@@ -139,7 +140,10 @@ export const CommunityDashboard = () => {
     } else {
       return (
         <EmptyPage
-          title={`Hi ${communityProfile?.communityUser?.fullName}, you don’t have any connections yet!`}
+          title={`${communityUserGreetingName(
+            communityProfile?.communityUser!,
+            'Hi'
+          )}, you don’t have any connections yet!`}
           subTitle="Tap “See ECD Heroes” to get started!"
           image={AlienImage}
         />
