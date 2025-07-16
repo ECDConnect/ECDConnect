@@ -62,10 +62,11 @@ import { activityThunkActions } from '@store/content/activity';
 import { authSelectors } from '@store/auth';
 import { statementsActions, statementsThunkActions } from '@store/statements';
 import { LocalStorageKeys, RoleSystemNameEnum } from '@ecdlink/core';
-import { communityThunkActions } from './store/community';
+import { communityActions, communityThunkActions } from './store/community';
 import { ClassroomService } from './services/ClassroomService';
-import { pointsThunkActions } from './store/points';
+import { pointsActions, pointsThunkActions } from './store/points';
 import { notificationActions } from './store/notifications';
+import { pqaActions } from './store/pqa';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -123,38 +124,41 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   };
 
   const resetStaticStoreSetup = async () => {
-    appDispatch(staticDataActions.resetStaticDataState());
-    appDispatch(progressTrackingActions.resetProgressTrackingState());
-    appDispatch(programmeRoutineActions.resetProgrammeRoutineState());
     appDispatch(activityActions.resetActivityState());
-    appDispatch(storyBookActions.resetStoryBookState());
-    appDispatch(programmeThemeActions.resetProgrammeThemeState());
-    appDispatch(contentConsentActions.resetContentConsentState());
-    appDispatch(settingActions.resetSettingsState());
     appDispatch(analyticsActions.resetAnalyticsState());
-    appDispatch(programmeActions.resetProgrammeState());
+    appDispatch(contentConsentActions.resetContentConsentState());
+    appDispatch(programmeRoutineActions.resetProgrammeRoutineState());
+    appDispatch(programmeThemeActions.resetProgrammeThemeState());
+    appDispatch(settingActions.resetSettingsState());
+    appDispatch(staticDataActions.resetHolidayState()); // we only reset the holidays - rest of static data can stay
     appDispatch(statementsActions.resetStatementsStaticState());
+    appDispatch(storyBookActions.resetStoryBookState());
   };
 
   const resetAdditionalStoreSetup = async (isSync?: boolean) => {
     if (!isSync) {
       appDispatch(userActions.resetUserState());
     }
-    appDispatch(notesActions.resetNotesState());
+    appDispatch(attendanceActions.resetAttendanceState());
+    appDispatch(calendarActions.resetCalendarState());
+    appDispatch(caregiverActions.resetCaregiverState());
+    appDispatch(childrenActions.resetChildrenState());
     appDispatch(classroomsActions.resetClassroomState());
     appDispatch(classroomsForCoachActions.resetClassroomState());
     appDispatch(coachActions.resetCoachState());
-    appDispatch(practitionerActions.resetPractitionerState());
-    appDispatch(practitionerForCoachActions.resetPractitionerState());
-    appDispatch(childrenActions.resetChildrenState());
-    appDispatch(caregiverActions.resetCaregiverState());
-    appDispatch(documentActions.resetDocumentsState());
-    appDispatch(attendanceActions.resetAttendanceState());
+    appDispatch(communityActions.resetCommunityConnectState());
     appDispatch(contentReportActions.resetContentReportState());
-    appDispatch(statementsActions.resetStatementsState());
-    appDispatch(calendarActions.resetCalendarState());
+    appDispatch(documentActions.resetDocumentsState());
+    appDispatch(notesActions.resetNotesState());
     appDispatch(notificationActions.resetNotificationState());
     appDispatch(notificationActions.resetFrontendNotificationState());
+    appDispatch(pointsActions.resetPointsState());
+    appDispatch(pqaActions.resetPQAState());
+    appDispatch(practitionerActions.resetPractitionerState());
+    appDispatch(practitionerForCoachActions.resetPractitionerState());
+    appDispatch(programmeActions.resetProgrammeState());
+    appDispatch(progressTrackingActions.resetProgressTrackingState());
+    appDispatch(statementsActions.resetStatementsState());
   };
 
   const initStoreSetup = useCallback(async () => {
@@ -523,7 +527,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   }, [practitioner?.principalHierarchy, userAuth?.auth_token]);
 
   useEffect(() => {
-    if (practitioner?.principalHierarchy && !classroomForUser)
+    if (userData && practitioner?.principalHierarchy && !classroomForUser)
       handleNoClassroomForInvitedUser();
   }, [
     classroomForUser,
