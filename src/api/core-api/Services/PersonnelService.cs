@@ -603,6 +603,8 @@ namespace ECDLink.Api.CoreApi.Services
                     _logger.LogInformation("Roles: Remove {0} from user {1} by {2} [PersonnelService.DeActivatePractitionerAsync]", role, user.Id, _applicationUserId);
                     var result = _userManager.RemoveFromRoleAsync(user, role).Result;
                 }
+
+                var oaSiteAddress = _dbContext.Tenants.Where(x => x.TenantTypeId == ECDLink.Tenancy.Enums.TenantType.OpenAccess).Select(x => x.SiteAddress).FirstOrDefault();
         
                 // Send notification to practitioner
                 var replacements = new List<TagsReplacements>
@@ -615,7 +617,7 @@ namespace ECDLink.Api.CoreApi.Services
                      new TagsReplacements()
                      {
                          FindValue = "OASignup",
-                         ReplacementValue = "https://" + TenantExecutionContext.Tenant.SiteAddress +"/oa-sign-up-or-login"
+                         ReplacementValue = "https://" + oaSiteAddress +"/oa-sign-up-or-login"
                      }
                  };
                 await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachRemovePractitioner, DateTime.Now.Date, user, "", "", replacements, null, false, false, null);
