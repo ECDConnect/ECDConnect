@@ -292,7 +292,7 @@ export const Table = forwardRef<TableRefMethods, TableProps>(
                   // @ts-ignore
                   color="secondary"
                   textColor="white"
-                  className="hover:bg-secondaryGG mt-1 h-11 w-full rounded-md px-2 py-0 lg:w-auto"
+                  className="mt-1 h-11 w-full rounded-md px-2 py-0 hover:bg-gray-300 lg:w-auto"
                   {...(actionButton as ButtonProps)}
                 />
               )}
@@ -339,7 +339,7 @@ export const Table = forwardRef<TableRefMethods, TableProps>(
               <Button
                 type="filled"
                 color="transparent"
-                className="text-secondary hover:text-secondaryGG mt-1 w-36 rounded-xl p-2 shadow-none"
+                className="text-secondary mt-1 w-36 rounded-xl p-2 shadow-none hover:bg-gray-300"
                 onClick={onClearFilters}
               >
                 Clear all
