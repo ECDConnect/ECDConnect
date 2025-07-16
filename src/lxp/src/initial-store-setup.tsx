@@ -65,12 +65,14 @@ import { LocalStorageKeys, RoleSystemNameEnum } from '@ecdlink/core';
 import { communityThunkActions } from './store/community';
 import { ClassroomService } from './services/ClassroomService';
 import { pointsThunkActions } from './store/points';
+import { notificationActions } from './store/notifications';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
   initStoreSetup: () => Promise<void>;
   resetAppStore: (showLoading?: boolean, isSync?: boolean) => Promise<void>;
   resetAuth: () => Promise<void>;
+  resetUser: () => Promise<void>;
   getLoadingMessage: () => string;
   syncClassroom: () => Promise<void>;
   refreshClassroom: () => Promise<void>;
@@ -103,6 +105,10 @@ const InitialStoreSetup: React.FC = ({ children }) => {
 
   const resetAuth = async () => {
     appDispatch(authActions.resetAuthState());
+  };
+
+  const resetUser = async () => {
+    appDispatch(userActions.resetUserState());
   };
 
   const resetAppStore = async (showLoading = true, isSync = false) => {
@@ -147,6 +153,8 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     appDispatch(contentReportActions.resetContentReportState());
     appDispatch(statementsActions.resetStatementsState());
     appDispatch(calendarActions.resetCalendarState());
+    appDispatch(notificationActions.resetNotificationState());
+    appDispatch(notificationActions.resetFrontendNotificationState());
   };
 
   const initStoreSetup = useCallback(async () => {
@@ -399,6 +407,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     initStoreSetup,
     resetAppStore,
     resetAuth,
+    resetUser,
     getLoadingMessage,
     syncClassroom,
     refreshClassroom,
