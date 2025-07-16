@@ -116,18 +116,25 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction }) => {
   };
 
   // Function for cellphone number preventing characters
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
+    const inputEvent = event as React.KeyboardEvent<HTMLInputElement>;
     const allowedKeys = [
       'Backspace',
       'Delete',
+      'Tab',
       'ArrowLeft',
       'ArrowRight',
-      'Tab',
-      '+',
+      'Home',
+      'End',
     ];
 
-    if (!/^[0-9+]$/.test(e.key) && !allowedKeys.includes(e.key)) {
-      e.preventDefault();
+    // Allow numbers, plus sign, and control keys
+    if (
+      !/[0-9+]/.test(event.key) &&
+      !allowedKeys.includes(event.key) &&
+      !(event.ctrlKey || event.metaKey)
+    ) {
+      event.preventDefault();
     }
   };
 
