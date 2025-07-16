@@ -12,7 +12,7 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 export const Logout: React.FC = () => {
   const { isOnline } = useOnlineStatus();
 
-  const { resetAuth, resetAppStore } = useStoreSetup();
+  const { resetAuth, resetAppStore, resetUser } = useStoreSetup();
   const history = useHistory();
   const dispatch = useAppDispatch();
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
@@ -31,6 +31,7 @@ export const Logout: React.FC = () => {
       await sync();
       await resetAppStore();
       await resetAuth();
+      await resetUser();
       history.push('/');
     } else {
       history.push(ROUTES.LOGIN);
