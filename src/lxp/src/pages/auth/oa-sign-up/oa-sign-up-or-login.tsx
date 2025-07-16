@@ -38,7 +38,7 @@ export const OASignUpOrLogin: React.FC = () => {
   const appDispatch = useAppDispatch();
   const [openOaAgreements, setOpenOaAgreements] = useState(false);
 
-  const { resetAppStore, resetAuth } = useStoreSetup();
+  const { resetAppStore, resetAuth, resetUser } = useStoreSetup();
   const history = useHistory();
   const { theme } = useTheme();
   const { isOnline } = useOnlineStatus();
@@ -64,6 +64,7 @@ export const OASignUpOrLogin: React.FC = () => {
       if (resetAppStore) {
         await resetAppStore(false);
         await resetAuth();
+        await resetUser();
       }
 
       await appDispatch(staticDataThunkActions.getOpenLanguages({})).unwrap();
