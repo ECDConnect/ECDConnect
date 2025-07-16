@@ -65,7 +65,7 @@ export const SignUp: React.FC = () => {
     mode: 'onChange',
   });
   const { errors } = useFormState({ control });
-  const { resetAppStore, resetAuth } = useStoreSetup();
+  const { resetAppStore, resetAuth, resetUser } = useStoreSetup();
   const [preferId, setPreferId] = useState<boolean>(true);
   const [contentConsentTypeEnum, setContentConsentTypeEnum] =
     useState<ContentConsentTypeEnum>();
@@ -92,6 +92,7 @@ export const SignUp: React.FC = () => {
       if (resetAppStore) {
         await resetAppStore(false);
         await resetAuth();
+        await resetUser();
       }
 
       await appDispatch(staticDataThunkActions.getOpenLanguages({})).unwrap();
