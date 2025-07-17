@@ -10,6 +10,7 @@ interface NotificationTagConfigParams {
   ProgressSummary: Partial<Message>;
   SeeClasses: Partial<Message>;
   GetFeedback: Partial<Message>;
+  SeePractitioners: Partial<Message>;
 }
 export const notificationTagConfig: NotificationTagConfigParams = {
   AddedToProgramme: {
@@ -47,6 +48,9 @@ export const notificationTagConfig: NotificationTagConfigParams = {
   },
   GetFeedback: {
     cta: '[[ShareFeedback]]',
+  },
+  SeePractitioners: {
+    cta: '[[SeePractitioners]]',
   },
 };
 
