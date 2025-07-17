@@ -19,7 +19,10 @@ import {
   useNotifications,
 } from '@ecdlink/core';
 import { HelpService } from '@/services/HelpService';
+import { useHistory } from 'react-router-dom';
 import { isEmail } from '@/utils/common/string.utils';
+import { useRemoveNotifications } from '@/hooks/useRemoveNotifications';
+import { notificationTagConfig } from '@/constants/notifications';
 
 interface HelpFormProps {
   closeAction?: (item: boolean) => void;
@@ -44,8 +47,13 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction }) => {
   const [cellphone, setCellphone] = useState('');
   const [isValidCellphone, setIsValidCellphone] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const history = useHistory();
 
   const helpService = new HelpService(Config.authApi);
+
+  const removeNotifications = useRemoveNotifications({
+    cta: notificationTagConfig?.GetFeedback?.cta ?? '',
+  });
 
   const sendHelpMessage = async () => {
     const input: HelpFormModel = {
@@ -82,8 +90,9 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction }) => {
       });
     }
 
+    removeNotifications();
     setIsLoading(false);
-    closeAction && closeAction(false);
+    closeAction ? closeAction(false) : history.push('/');
   };
 
   const handleEmailChange = (
