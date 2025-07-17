@@ -173,13 +173,6 @@ export const PasswordInput = <T extends FieldValues>({
     return defaultReturnValue;
   };
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
-    const inputEvent = event as React.KeyboardEvent<HTMLInputElement>;
-    if (inputEvent.key === ' ' || inputEvent.code === 'Space') {
-      inputEvent.preventDefault(); // silently block space key
-    }
-  };
-
   return (
     <>
       <label
@@ -244,7 +237,15 @@ export const PasswordInput = <T extends FieldValues>({
           suffixIconAction={() => {
             updateIcon(inputType);
           }}
-          onKeyDown={handleKeyDown}
+          onChange={(e) => {
+            // Clean the input value
+            let cleanedValue = e.target.value
+              .replace(/ /g, '') // Remove all spaces
+              .replace(/\. $/, ''); // Remove trailing ". "
+
+            // Set the cleaned value back into the field
+            e.target.value = cleanedValue;
+          }}
         ></FormInput>
         {strengthMeterVisible &&
           passwordMeterVisibility &&
