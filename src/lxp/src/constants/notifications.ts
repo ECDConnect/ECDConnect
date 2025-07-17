@@ -9,6 +9,7 @@ interface NotificationTagConfigParams {
   TrackIncome: Partial<Message>;
   ProgressSummary: Partial<Message>;
   SeeClasses: Partial<Message>;
+  GetFeedback: Partial<Message>;
 }
 export const notificationTagConfig: NotificationTagConfigParams = {
   AddedToProgramme: {
@@ -43,6 +44,9 @@ export const notificationTagConfig: NotificationTagConfigParams = {
   },
   SeeClasses: {
     cta: '[[SeeClasses]]',
+  },
+  GetFeedback: {
+    cta: '[[ShareFeedback]]',
   },
 };
 
