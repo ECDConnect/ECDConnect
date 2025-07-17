@@ -152,7 +152,7 @@ packages/*/node_modules
 /libpeerconnection.log
 npm-debug.log
 yarn-error.log
-yarn.lock
+#yarn.lock
 testem.log
 /typings
 .dccache
