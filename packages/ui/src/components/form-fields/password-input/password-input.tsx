@@ -25,6 +25,7 @@ interface PasswordInputProps<T extends FieldValues> extends ComponentBaseProps {
   value: string;
   strengthMeterVisible?: boolean;
   register?: UseFormRegister<T>;
+  validatePasswordInput?: boolean;
 }
 
 interface PasswordChangedEvent {
@@ -52,6 +53,7 @@ export const PasswordInput = <T extends FieldValues>({
   sufficIconColor,
   error,
   strengthMeterVisible = false,
+  validatePasswordInput = false,
 }: PasswordInputProps<T>) => {
   const [inputType, setInputType] = useState<FormFieldType>('password');
   const [suffixIcon, setSuffixIcon] = useState<string>('EyeIcon');
@@ -233,15 +235,17 @@ export const PasswordInput = <T extends FieldValues>({
           suffixIconAction={() => {
             updateIcon(inputType);
           }}
-          onChange={(e) => {
-            // Clean the input value
-            let cleanedValue = e.target.value
-              .replace(/ /g, '') // Remove all spaces
-              .replace(/\. $/, ''); // Remove trailing ". "
+          // onChange={(e) => {
+          //   if (validatePasswordInput) {
+          //     // Clean the input value
+          //     let cleanedValue = e.target.value
+          //       .replace(/ /g, '') // Remove all spaces
+          //       .replace(/\. $/, ''); // Remove trailing ". "
 
-            // Set the cleaned value back into the field
-            e.target.value = cleanedValue;
-          }}
+          //     // Set the cleaned value back into the field
+          //     e.target.value = cleanedValue;
+          //   }
+          // }}
         ></FormInput>
         {strengthMeterVisible &&
           passwordMeterVisibility &&
