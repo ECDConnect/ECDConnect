@@ -70,9 +70,11 @@ export const SideMenu: React.FC<SideMenuProps> = ({
                   </button>
                 </div>
               </Transition.Child>
-              <div className="px-18 flex flex-shrink-0 items-center">
-                <img className="h-8 w-auto" src={logoUrl} />
+
+              <div className="px-18 aspect-image w-1/2">
+                <img src={logoUrl} className="h-full w-full object-cover" />
               </div>
+
               <div className="mt-5 flex h-0 flex-1 flex-col justify-between overflow-y-auto">
                 <nav className="px-18 space-y-1.5">
                   {navigation.map((item) =>
