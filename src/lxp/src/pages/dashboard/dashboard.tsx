@@ -52,7 +52,6 @@ import { ReactComponent as EmojiBlueSmile } from '../../assets/neutral_blue_emot
 import { ReactComponent as EmojiOrangeSmile } from '../../assets/mehFace.svg';
 import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
 import { syncThunkActions } from '@store/sync';
-import { settingActions } from '@/store/settings';
 
 import {
   TabsItemForPrincipal,
@@ -92,6 +91,7 @@ export const Dashboard: React.FC = () => {
     calendarEnabled,
     classroomActivitiesEnabled,
     progressEnabled,
+    trainingEnabled,
   } = useTenantModules();
 
   const appName = tenant?.tenant?.applicationName;
@@ -630,14 +630,14 @@ export const Dashboard: React.FC = () => {
           },
         ]
       : []),
-    // {
-    //   name: NavigationNames.Training,
-    //   href: ROUTES.TRAINING,
-    //   icon: styles.trainingIconName,
-    //   current: false,
-    //   showDivider: true,
-    //   hideItem: !trainingEnabled && isWhiteLabel,
-    // },
+    {
+      name: NavigationNames.Training,
+      href: ROUTES.TRAINING,
+      icon: styles.trainingIconName,
+      current: false,
+      showDivider: true,
+      hideItem: !trainingEnabled && isWhiteLabel,
+    },
     {
       name: NavigationNames.Points,
       href: ROUTES.PRACTITIONER.POINTS.SUMMARY,
@@ -694,14 +694,14 @@ export const Dashboard: React.FC = () => {
       current: false,
       href: ROUTES.COACH.PRACTITIONERS,
     },
-    // {
-    //   name: NavigationNames.Training,
-    //   href: ROUTES.TRAINING,
-    //   icon: styles.trainingIconName,
-    //   current: false,
-    //   showDivider: true,
-    //   hideItem: !trainingEnabled && isWhiteLabel,
-    // },
+    {
+      name: NavigationNames.Training,
+      href: ROUTES.TRAINING,
+      icon: styles.trainingIconName,
+      current: false,
+      showDivider: true,
+      hideItem: !trainingEnabled && isWhiteLabel,
+    },
     {
       name: NavigationNames.Calendar,
       href: ROUTES.CALENDAR,
@@ -776,16 +776,16 @@ export const Dashboard: React.FC = () => {
     });
   }
 
-  // if ((trainingEnabled && isWhiteLabel) || isOpenAccess)
-  //   dashboardItems.splice(4, 0, {
-  //     title: NavigationNames.Training,
-  //     titleIcon: 'PresentationChartBarIcon',
-  //     titleIconClassName: styles.trainingIcon,
-  //     onActionClick: !isOnline
-  //       ? () => offlineCommunity()
-  //       : () => goToTraining(),
-  //     classNames: 'bg-tertiaryAccent2',
-  //   });
+  if ((trainingEnabled && isWhiteLabel) || isOpenAccess)
+    dashboardItems.splice(4, 0, {
+      title: NavigationNames.Training,
+      titleIcon: 'PresentationChartBarIcon',
+      titleIconClassName: styles.trainingIcon,
+      onActionClick: !isOnline
+        ? () => offlineCommunity()
+        : () => goToTraining(),
+      classNames: 'bg-tertiaryAccent2',
+    });
 
   // const goToCommunity = () => {
   //   if (
