@@ -1,5 +1,4 @@
 import {
-  useTheme,
   LoginRequestModel,
   Config,
   LocalStorageKeys,
@@ -270,37 +269,6 @@ export const OaLogin: React.FC = () => {
         </Dialog>
         <form>
           <div>
-            {/* <div>
-              <Button
-                className={'mt-3 w-full rounded-xl'}
-                type="filled"
-                color="infoMain"
-                onClick={() => {}}
-                textColor="white"
-              >
-                <img
-                  src={facebookLogo}
-                  alt="facebook"
-                  className="relative mr-2 h-5 w-5"
-                />
-                <Typography
-                  type={'h4'}
-                  text={'Log in with Facebook'}
-                  className={'text-sm font-normal'}
-                  color={'white'}
-                />
-              </Button>
-            </div>
-            <div className="my-8 flex flex-row items-center gap-2">
-              <Divider className="absolute w-6/12" />
-              <Typography
-                type={'h4'}
-                text={'OR'}
-                className={'text-sm font-normal'}
-                color={'textMid'}
-              />
-              <Divider className="absolute w-6/12" />
-            </div> */}
             <FormInput<OaLoginModel>
               label={'Username or email'}
               visible={true}
