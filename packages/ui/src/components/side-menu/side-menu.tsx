@@ -71,7 +71,7 @@ export const SideMenu: React.FC<SideMenuProps> = ({
                 </div>
               </Transition.Child>
 
-              <div className="px-18 aspect-image w-1/2">
+              <div className="px-18 aspect-image w-3/4">
                 <img src={logoUrl} className="h-full w-full object-cover" />
               </div>
 
