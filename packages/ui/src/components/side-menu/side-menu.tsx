@@ -72,10 +72,8 @@ export const SideMenu: React.FC<SideMenuProps> = ({
               </Transition.Child>
 
               <div className="flex justify-center px-4 py-0 md:justify-start">
-                <div className="w-28 flex-shrink-0 md:w-40 lg:w-48">
+                <div className="w-32 flex-shrink-0 md:w-40 lg:w-48">
                   <div className="relative" style={{ paddingTop: '75%' }}>
-                    {' '}
-                    {/* 3:4 ratio */}
                     <img
                       src={logoUrl}
                       alt="Company Logo"
