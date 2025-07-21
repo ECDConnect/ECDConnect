@@ -3,6 +3,7 @@
 ECD Connect supports practitioners and organizations to scale and deliver professional, high quality services to young children and caregivers in their communities.
 
 ECD Connect is a license-free, customisable digital application designed with the support of behavioural scientists and ECD gurus.  
+
 It is a crucial tool for the scale-up early childhood development programmers as per the government's stated goal of achieving universal access by 2030. The platform supports ECD practitioners in navigating some of the more cumbersome aspects of their jobs as identified by them through user research.
 
 It can be used by independent, stand alone early childhood education practitioners and principals, or by organizations working in the broader ECD sector.
@@ -74,14 +75,25 @@ The platform is built as a Progressive Web Application with offline first capabi
 -   [Tailwind UI](https://tailwindui.com/)  for Form layouts, tables, modal windows for clean & modern look
 -   [heroicons](https://heroicons.com/)  for SVG icons
 
-## Hosting - Azure
+## Hosting
 
--   Can be hosted with Azure using: PostgreSQL Flexible Server, Web Apps, Storage Accounts (Blob) and Application Insights.
--   Frontend, Admin Portal and API are all hosted as separate  [Azure Web Apps](https://azure.microsoft.com/en-us/services/app-service/web/)
+### Azure
+The system was developed making use of Azure hosting.
+Azure resources that are used:
+-   [PostgreSQL Flexible Server](https://learn.microsoft.com/en-us/azure/postgresql/)
+-   [Web Apps](https://azure.microsoft.com/en-us/services/app-service/web/)
+-   [Storage Accounts (Blob)](https://learn.microsoft.com/en-us/azure/storage/common/storage-account-overview)
+-   [Application Insights](https://learn.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview)
 
-## Hosting - On-prem
+The Frontend, Admin Portal and API are all hosted on separate [Azure Web Apps](https://azure.microsoft.com/en-us/services/app-service/web/).   
+More details about the Azure setup can be found further below in the [example setup](#setting-up-a-basic-system-in-azure).
 
--   Can be hosted on-prem using PostgreSQL, IIS or Apache, File system for storage
+### Other Cloud Providers, e.g. Amazon Web Services (AWS), Google Cloud Platform (GCP)
+The system can be hosted in other cloud providers as long as they provide PostgreSQL resources and the capability of running .NET code on Linux.
+Both AWS and GCP are capable.  Currently the file storage for the system makes use of file system or Azure Storage.  There isn't provision for AWS S3 or GCP storage but it is a relatively simple task to extend the system to support one or both of them.
+
+### On-Prem
+The system can be hosted on-prem using PostgreSQL, IIS or Apache, and file system for storage.
 
 ## Security
 
@@ -90,6 +102,7 @@ The platform is built as a Progressive Web Application with offline first capabi
 
 ## Training
 *Please note this is not a requirement to run the system.*  
+
 The app has a training module that can display Moodle training courses within an iframe.  
 In order to enable this functionality, the requirements are:
 -   Moodle 4.9.4 or later
