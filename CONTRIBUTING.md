@@ -77,4 +77,4 @@ By contributing, you agree that your contributions will be licensed under the GN
 
 ---
 
-We appreciate your interest in this project. As we do not actively maintain this repository or accept contributions, we encourage you to use this codebase for your own purposes via forking, in accordance with the AGPL-3.0 license. Issues and pull requests will not receive responses or reviews.
+We appreciate your interest in this project. As we do not actively maintain this repository or accept contributions, we encourage you to use this codebase for your own purposes via forking, in accordance with the AGPL-3.0 license. Issues and pull requests may not receive responses or reviews.
