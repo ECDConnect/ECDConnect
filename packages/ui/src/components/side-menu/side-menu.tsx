@@ -71,11 +71,18 @@ export const SideMenu: React.FC<SideMenuProps> = ({
                 </div>
               </Transition.Child>
 
-              <div className="px-18 aspect-image w-3/4">
-                <img src={logoUrl} className="h-full w-full object-cover" />
+              <div className="flex justify-center px-4 py-0 md:justify-start">
+                <div className="aspect-[2/1] relative w-28 flex-shrink-0 md:w-40 lg:w-48">
+                  <img
+                    src={logoUrl}
+                    alt="Company Logo"
+                    className="h-full w-full object-contain"
+                    loading="lazy"
+                  />
+                </div>
               </div>
 
-              <div className="mt-5 flex h-0 flex-1 flex-col justify-between overflow-y-auto">
+              <div className="mt-2 flex h-0 flex-1 flex-col justify-between overflow-y-auto">
                 <nav className="px-18 space-y-1.5">
                   {navigation.map((item) =>
                     item.nestedChildren ? (
