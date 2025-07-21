@@ -71,8 +71,12 @@ export const SideMenu: React.FC<SideMenuProps> = ({
                 </div>
               </Transition.Child>
 
-              <div className="flex justify-center px-4 py-0 md:justify-start">
-                <div className="w-32 flex-shrink-0 md:w-40 lg:w-48">
+              <div className="px-18 aspect-image w-3/4">
+                <img src={logoUrl} className="h-full w-full object-cover" />
+              </div>
+
+              {/* <div className="flex justify-left px-4 py-4 md:justify-start">
+                <div className="w-38 flex-shrink-0 md:w-40 lg:w-48">
                   <div className="relative" style={{ paddingTop: '75%' }}>
                     <img
                       src={logoUrl}
@@ -82,7 +86,7 @@ export const SideMenu: React.FC<SideMenuProps> = ({
                     />
                   </div>
                 </div>
-              </div>
+              </div> */}
 
               <div className="mt-2 flex h-0 flex-1 flex-col justify-between overflow-y-auto">
                 <nav className="px-18 space-y-1.5">
