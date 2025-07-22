@@ -36,6 +36,24 @@ const pqaSlice = createSlice({
   name: 'pqa',
   initialState,
   reducers: {
+    resetPQAState: (state) => {
+      state.coachPractitionersTimeline = [];
+      state.prePqaFormData = [];
+      state.prePqaPreviousFormData = [];
+      state.pqaPreviousFormData = [];
+      state.pqaFollowUpPreviousFormData = [];
+      state.reAccreditationPreviousFormData = [];
+      state.supportVisitPreviousFormData = [];
+      state.reAccreditationFollowUpVisitPreviousFormData = [];
+      state.pqaFormData = [];
+      state.reAccreditationFormData = [];
+      state.supportVisitFormData = [];
+      state.requestedSupportVisitFormData = [];
+      state.followUpVisitFormData = [];
+      state.reAccreditationFollowUpVisitFormData = [];
+      state.selfAssessmentFormData = [];
+      state.selfAssessmentPreviousFormData = [];
+    },
     updateVisitPlannedVisitDate: (
       state,
       action: PayloadAction<UpdateVisitPlannedVisitDateModelInput>

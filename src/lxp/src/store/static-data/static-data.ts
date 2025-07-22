@@ -72,6 +72,9 @@ const staticDataSlice = createSlice({
       state.roles = initialState.roles;
       state.communitySkills = initialState.communitySkills;
     },
+    resetHolidayState: (state) => {
+      state.holidays = initialState.holidays;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(getRelations.fulfilled, (state, action) => {

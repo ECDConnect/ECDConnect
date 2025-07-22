@@ -55,15 +55,19 @@ namespace EcdLink.Api.CoreApi.Services.Notifications.Portal
         public async Task SendNotifications()
         {
             var today = DateTime.Now;
-            var sixtyDaysBack = today.AddDays(-60);
-            var thirtyDaysBack = today.AddDays(-30);
-            var oneTwentyDaysBack = today.AddDays(-120);
+            var sixtyDaysBack = today.AddDays(-60).Date;
+            var thirtyDaysBack = today.AddDays(-30).Date;
+           var oneTwentyDaysBack = today.AddDays(-120).Date;
 
             var allPrincipalsForBothPeriods = _practitionerRepo.GetAll()
                                                 .Where(x => x.IsActive == true &&
                                                             x.IsRegistered == true &&
                                                             x.IsPrincipal == true &&
-                                                            x.StartDate.HasValue).ToList();
+                                                            x.StartDate.HasValue &&
+                                                            (x.StartDate.Value.Date == oneTwentyDaysBack
+                                                            || x.StartDate.Value.Date == sixtyDaysBack
+                                                            || x.StartDate.Value.Date == thirtyDaysBack )).ToList();
+
             var allPrincipalUserIds = allPrincipalsForBothPeriods.Select(x => x.UserId).ToList();
             var allPrincipalStatements = _statementsRepo.GetAll()
                                             .Where(x => x.Year >= sixtyDaysBack.Year &&
@@ -125,10 +129,7 @@ namespace EcdLink.Api.CoreApi.Services.Notifications.Portal
                 {
                     foreach (var practitioner in usersToGetNotifications)
                     {
-                        // remove previous notification for user, before adding a new one
-                        _notificationService.DeleteGroupNotifications(TemplateTypeConstants.Statements60DaysNotification,  practitioner.Id);
-
-                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.Statements60DaysNotification, DateTime.Now.Date, practitioner.User, "", MessageStatusConstants.Blue, null, DateTime.Now.Date.AddDays(7),
+                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.Statements60DaysNotification, DateTime.Now.Date, practitioner.User, "", MessageStatusConstants.Blue, null, DateTime.Now.Date.AddDays(7), true, false, null,
                                                                         relatedEntities: new List<RelatedEntity> { new RelatedEntity(practitioner.Id, "Practitioner") });
                     }
                 }

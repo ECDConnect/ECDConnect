@@ -6,8 +6,7 @@ import {
   containsNumericRegex,
   containsUpperCaseRegex,
 } from '../../../models';
-import { useEffect } from 'react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FieldError, FieldValues } from 'react-hook-form';
 import { Path, UseFormRegister } from 'react-hook-form';
 import { PasswordStrength } from '../../password-strength-meter/models/PasswordStrength';
@@ -25,6 +24,7 @@ interface PasswordInputProps<T extends FieldValues> extends ComponentBaseProps {
   value: string;
   strengthMeterVisible?: boolean;
   register?: UseFormRegister<T>;
+  validatePasswordInput?: boolean;
 }
 
 interface PasswordChangedEvent {
@@ -169,6 +169,54 @@ export const PasswordInput = <T extends FieldValues>({
     return defaultReturnValue;
   };
 
+  const previousKeyIsSpace = useRef(false);
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+    const target = e.currentTarget as HTMLInputElement;
+    const allowedKeys = [
+      'Backspace',
+      'Delete',
+      'Tab',
+      'ArrowLeft',
+      'ArrowRight',
+      'Home',
+      'End',
+      'MetaLeft',
+    ];
+
+    // Allow all navigation and editing keys
+    if (allowedKeys.includes(e.code) || e.ctrlKey || e.metaKey) {
+      previousKeyIsSpace.current = false;
+      return;
+    }
+
+    if (e.code === 'Space') {
+      e.preventDefault();
+    }
+
+    // Double space creates a period - handle this behavior
+    if (e.code === 'Space' && previousKeyIsSpace.current) {
+      e.preventDefault();
+
+      // Replace the previous space with a period and space
+      const cursorPos = target.selectionStart || 0;
+      const currentValue = target.value;
+      const cleanedValue = currentValue.replace(/\. $/, ''); // Remove trailing ". "
+
+      target.value = cleanedValue;
+      target.setSelectionRange(cursorPos + 1, cursorPos + 1);
+
+      // Trigger input event to notify React of the change
+      const inputEvent = new Event('input', { bubbles: true });
+      target.dispatchEvent(inputEvent);
+
+      previousKeyIsSpace.current = false;
+      return;
+    }
+
+    // Update the ref for the next key press
+    previousKeyIsSpace.current = e.code === 'Space';
+  };
+
   return (
     <>
       <label
@@ -233,6 +281,7 @@ export const PasswordInput = <T extends FieldValues>({
           suffixIconAction={() => {
             updateIcon(inputType);
           }}
+          onKeyDown={handleKeyDown}
         ></FormInput>
         {strengthMeterVisible &&
           passwordMeterVisibility &&

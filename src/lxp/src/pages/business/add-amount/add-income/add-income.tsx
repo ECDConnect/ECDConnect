@@ -21,29 +21,24 @@ import { statementsActions } from '@/store/statements';
 import { IncomeItemDto } from '@ecdlink/core';
 import DbeSubsidy from './components/dbe-subsidy/dbe-subsidy';
 import { BusinessTabItems } from '../../business.types';
+import { notificationTagConfig } from '@/constants/notifications';
+import { useRemoveNotifications } from '@/hooks/useRemoveNotifications';
 
 export const AddIncome: React.FC = () => {
   const history = useHistory();
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
-
-  // useEffect(() => {
-  //   if (!isOnline) {
-  //     appDispatch(
-  //       analyticsActions.createViewTracking({
-  //         pageView: window.location.pathname,
-  //         title: 'Practitioner About',
-  //       })
-  //     );
-  //   }
-  // }, [appDispatch, isOnline]);
-
   const [type, setType] = useState('');
+
+  const removeNotifications = useRemoveNotifications({
+    cta: notificationTagConfig?.TrackIncome?.cta ?? '',
+  });
 
   const onSubmit = useCallback((incomeItem: IncomeItemDto) => {
     appDispatch(
       statementsActions.addOrUpdateIncomeItems({ incomeItems: [incomeItem] })
     );
+    removeNotifications();
     history.push(ROUTES.BUSINESS, {
       activeTabIndex: BusinessTabItems.MONEY,
     });

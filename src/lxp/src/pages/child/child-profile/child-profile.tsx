@@ -250,7 +250,7 @@ export const ChildProfile: React.FC = () => {
           authUser?.auth_token ?? ''
         ).getChildAttendanceRecords(
           child?.userId ?? child?.user?.id ?? '',
-          classroomGroup?.id ?? '',
+          classroomGroup?.id ?? childId,
           startOfISOWeekYear(new Date()),
           currentDate
         );
@@ -610,7 +610,7 @@ export const ChildProfile: React.FC = () => {
       {
         key: 'class',
         title: 'Class',
-        subTitle: `${classroomGroup?.name}`,
+        subTitle: `${classroomGroup?.name || 'No class assigned'}`,
         buttonType: 'filled',
         buttonIcon: 'PencilIcon',
         buttonText: 'Edit',

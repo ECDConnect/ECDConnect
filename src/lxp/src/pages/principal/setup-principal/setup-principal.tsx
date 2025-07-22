@@ -53,7 +53,6 @@ import { PrincipalInviteDto } from '@/models/practitioner/PrincipalInvite.dto';
 
 export const SetupPrincipal: React.FC = () => {
   const history = useHistory();
-  const { theme } = useTheme();
   const appDispatch = useAppDispatch();
   const dialog = useDialog();
   const { isOnline } = useOnlineStatus();
@@ -430,9 +429,9 @@ export const SetupPrincipal: React.FC = () => {
       ...classroom,
     } as SimpleClassroomDto;
     classroomInputModel.preschoolCode = '';
-    classroomInputModel.name = `${
-      practitioner?.user?.userName + "'s testing pre-school"
-    }`;
+    classroomInputModel.name = tenant.isOpenAccess
+      ? `${practitioner?.user?.userName + "'s testing pre-school"}`
+      : 'N/A';
     classroomInputModel.isDummySchool = true;
     await appDispatch(classroomsActions.updateClassroom(classroomInputModel));
     // clear linked practitioners and classes
@@ -506,7 +505,7 @@ export const SetupPrincipal: React.FC = () => {
         );
 
       case PractitionerSetupSteps.SELECT_PRACTITIONER_ROLE:
-        return isNotPrincipal ? (
+        return isNotPrincipal && user?.idNumber && user?.firstName ? (
           <PreschoolCodeCheck
             onNext={setPage}
             onPreschoolNext={handlePreschoolData}

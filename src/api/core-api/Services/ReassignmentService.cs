@@ -127,10 +127,13 @@ namespace ECDLink.Core.Services
 
         public void ExpireRelationshipLinks()
         {
+            DateTime today = DateTime.Today;
+            var sevenDaysBack = today.AddDays(-7).Date;
             var practiRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
             var pracsToExpire = practiRepo.GetAll()
-                                        .Where(x => x.IsLeaving == true)
-                                        .Where(x => x.DateToBeRemoved != null)
+                                        .Where(x => (x.IsLeaving == true && x.DateToBeRemoved.HasValue && x.DateToBeRemoved.Value.Date < today.Date) ||
+                                        (!x.DateAccepted.HasValue && x.DateLinked.HasValue && x.DateLinked.Value.Date < sevenDaysBack.Date))
+                                        .OrderBy(x => x.InsertedDate)
                                         .ToList();
 
             if (pracsToExpire.Count > 0)
@@ -340,7 +343,7 @@ namespace ECDLink.Core.Services
             return isReassigned;
         }
 
-        public ClassReassignmentHistory ProcessReassignments(Guid reassignmentId, bool reassignBack = false)
+        public bool ProcessReassignments(Guid reassignmentId, bool reassignBack = false)
         {
             if (reassignmentId != Guid.Empty)
             {
@@ -386,7 +389,8 @@ namespace ECDLink.Core.Services
                                 }
                             }
                         }
-                    } else if (reassignBack) //only back assignments its the end due date of the reassignment to end and everything needs to be shifted back to before the reassignment/absentee)
+                    }
+                    else if (reassignBack) //only back assignments its the end due date of the reassignment to end and everything needs to be shifted back to before the reassignment/absentee)
                     {
 
                         if (reassignment.ReassignedBackToDate == null) //hasnt been processed yet
@@ -404,12 +408,12 @@ namespace ECDLink.Core.Services
                                     if (reassignment.AssignedRole == Roles.PRINCIPAL && reassignment.ReassignedRoleBack == Roles.PRACTITIONER)
                                     {
                                         //swap ids for reassigning back
-                                        _personnelService.SwitchPrincipal(reassignment.ReassignedBackToUserId.ToString(),reassignment.UserId.ToString());
+                                        _personnelService.SwitchPrincipal(reassignment.ReassignedBackToUserId.ToString(), reassignment.UserId.ToString());
 
                                     }
                                     if (reassignment.AssignedRole == Roles.PRACTITIONER && reassignment.ReassignedRoleBack == Roles.PRINCIPAL)
                                     {
-                                        _personnelService.SwitchPrincipal(reassignment.UserId.ToString(),reassignment.ReassignedBackToUserId.ToString());
+                                        _personnelService.SwitchPrincipal(reassignment.UserId.ToString(), reassignment.ReassignedBackToUserId.ToString());
 
                                     }
                                     reassignment.AssignedRoleDate = DateTime.Now;
@@ -423,15 +427,17 @@ namespace ECDLink.Core.Services
 
                     //remove all notifications for the users
                     _notificationService.ExpireNotificationsTypesForUser(reassignment.UserId.ToString(), TemplateTypeConstants.PractitionerMarkedAbsent);
-                    if (reassignment.ReassignedBackToUserId.ToString() != "") {
+                    if (reassignment.ReassignedBackToUserId.ToString() != "")
+                    {
                         _notificationService.ExpireNotificationsTypesForUser(reassignment.ReassignedBackToUserId.ToString(), TemplateTypeConstants.PractitionerMarkedAbsent);
                         _notificationService.ExpireNotificationsTypesForUser(reassignment.ReassignedBackToUserId.ToString(), TemplateTypeConstants.PrincipalMarkedOnLeave);
                         _notificationService.ExpireNotificationsTypesForUser(reassignment.ReassignedBackToUserId.ToString(), TemplateTypeConstants.PractitionerMarkedOnLeave);
 
                     }
                 }
-                return reassignment;
-            } else { return null; }
+                return true;
+            }
+            else { return false; }
 
         }
 
@@ -565,6 +571,7 @@ namespace ECDLink.Core.Services
                     Child children = childRepo.GetByUserId(learnerId);
                     if (children != null)
                     {
+                        childrenReassigned.Add(children.UserId.ToString());
                         string childNewHierarchy = "";
                         UserHierarchyEntity childHierarchy = staticHierarchyRepo.GetAll().Where(x => x.UserId == children.UserId.Value).FirstOrDefault();
 

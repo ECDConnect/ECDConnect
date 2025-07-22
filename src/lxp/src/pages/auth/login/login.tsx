@@ -56,7 +56,7 @@ export const Login: React.FC = () => {
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
-  const { resetAppStore, resetAuth } = useStoreSetup();
+  const { resetAppStore, resetAuth, resetUser } = useStoreSetup();
 
   useEffect(() => {
     resetAppStore();
@@ -132,6 +132,7 @@ export const Login: React.FC = () => {
 
       await resetAppStore();
       await resetAuth();
+      await resetUser();
     }
   };
 

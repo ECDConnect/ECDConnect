@@ -70,9 +70,9 @@ export const PreviousStatementsList: React.FC<PreviousStatementsListProps> = ({
           color="textDark"
           text={'Choose a statement to view and download'}
         />
-        {groupedStatements.map((yearSummary) => {
+        {groupedStatements.map((yearSummary, index) => {
           return (
-            <div className="mt-5">
+            <div className="mt-5" key={index}>
               <Typography
                 type="h2"
                 weight="bold"

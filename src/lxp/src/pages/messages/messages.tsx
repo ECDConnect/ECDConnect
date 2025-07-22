@@ -96,13 +96,13 @@ export const Messages: React.FC = () => {
 
     if (
       notification.message?.cta?.includes(
-        notificationTagConfig?.TrackIncome?.cta ?? ''
-      ) ||
-      notification.message?.cta?.includes(
         notificationTagConfig?.ProgressSummary?.cta ?? ''
       ) ||
       notification.message?.cta?.includes(
         notificationTagConfig?.SeeClasses?.cta ?? ''
+      ) ||
+      notification.message?.cta?.includes(
+        notificationTagConfig?.SeePractitioners?.cta ?? ''
       )
     ) {
       appDispatch(notificationActions.removeNotification(notification!));
