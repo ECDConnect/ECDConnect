@@ -11,6 +11,7 @@ const ROUTES = {
   SIGN_UP: '/sign-up',
   CREATE_USERNAME: '/create-username',
   VERIFY_PHONE: '/verify-phone',
+  HELP: '/help',
   CHILD_REGISTRATION_LANDING: '/child-registration-landing',
   PROGRAMMES: addPrefix('/programmes', {
     THEME: '/theme',

@@ -65,7 +65,7 @@ export const SignUp: React.FC = () => {
     mode: 'onChange',
   });
   const { errors } = useFormState({ control });
-  const { resetAppStore, resetAuth } = useStoreSetup();
+  const { resetAppStore, resetAuth, resetUser } = useStoreSetup();
   const [preferId, setPreferId] = useState<boolean>(true);
   const [contentConsentTypeEnum, setContentConsentTypeEnum] =
     useState<ContentConsentTypeEnum>();
@@ -92,6 +92,7 @@ export const SignUp: React.FC = () => {
       if (resetAppStore) {
         await resetAppStore(false);
         await resetAuth();
+        await resetUser();
       }
 
       await appDispatch(staticDataThunkActions.getOpenLanguages({})).unwrap();
@@ -263,6 +264,29 @@ export const SignUp: React.FC = () => {
     }
   }, [userAgent]);
 
+  // Function for cellphone number preventing characters
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
+    const inputEvent = event as React.KeyboardEvent<HTMLInputElement>;
+    const allowedKeys = [
+      'Backspace',
+      'Delete',
+      'Tab',
+      'ArrowLeft',
+      'ArrowRight',
+      'Home',
+      'End',
+    ];
+
+    // Allow numbers, plus sign, and control keys
+    if (
+      !/[0-9+]/.test(event.key) &&
+      !allowedKeys.includes(event.key) &&
+      !(event.ctrlKey || event.metaKey)
+    ) {
+      event.preventDefault();
+    }
+  };
+
   return (
     <div className={styles.wrapper}>
       <BannerWrapper
@@ -323,6 +347,7 @@ export const SignUp: React.FC = () => {
             visible={true}
             type={'number'}
             register={signUpRegister}
+            onKeyDown={handleKeyDown}
             error={errors?.cellphone}
           />
 

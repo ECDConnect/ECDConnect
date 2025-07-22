@@ -181,7 +181,7 @@ export default function MessageList() {
               <button
                 onClick={() => displayMessagePanel(null)}
                 type="button"
-                className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                className="bg-secondary focus:outline-none inline-flex rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-gray-300 focus:ring-2 focus:ring-offset-2"
               >
                 <MailIcon className="mr-4 h-5 w-5"></MailIcon> Send a new
                 message

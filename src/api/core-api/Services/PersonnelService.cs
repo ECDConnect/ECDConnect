@@ -604,8 +604,8 @@ namespace ECDLink.Api.CoreApi.Services
                     var result = _userManager.RemoveFromRoleAsync(user, role).Result;
                 }
 
-                // Use dbContext to get signup
                 var oaSiteAddress = _dbContext.Tenants.Where(x => x.TenantTypeId == ECDLink.Tenancy.Enums.TenantType.OpenAccess).Select(x => x.SiteAddress).FirstOrDefault();
+        
                 // Send notification to practitioner
                 var replacements = new List<TagsReplacements>
                  {

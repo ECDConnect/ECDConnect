@@ -16,7 +16,6 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { LogoutModal } from '../../../modals';
 import { useAppDispatch } from '@store';
 import { classroomsSelectors } from '@store/classroom';
-import { settingSelectors } from '@store/settings';
 import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import ROUTES from '@routes/routes';
@@ -30,7 +29,6 @@ import { NavigationNames } from '@/pages/navigation';
 import { JoinOrAddPreschoolModal } from '@/components/join-or-add-preschool-modal/join-or-add-preschool-modal';
 import { useTenant } from '@/hooks/useTenant';
 import { ReassignClassPageState } from '@/pages/classroom/class-dashboard/practitioners/reassign-class/reassign-class.types';
-import { usePractitionerAbsentees } from '@/hooks/usePractitionerAbsentees';
 import { AbsenceCard } from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-profile/components/absence-card/absence-card';
 
 export const PractitionerProfile: React.FC = () => {

@@ -218,13 +218,36 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
   const handleCellphoneChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    const inputValue = e.target.value;
+    const inputValue = e.target.value.replace(/[^0-9+]/g, '');
     setPhoneNumber(inputValue);
 
     // Regular expression for South African cellphone number validation
     const cellphonePattern = SA_CELL_REGEX;
     const isValid = cellphonePattern.test(inputValue);
     setIsValidPhoneNumber(isValid);
+  };
+
+  // Function for cellphone number preventing characters
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
+    const inputEvent = event as React.KeyboardEvent<HTMLInputElement>;
+    const allowedKeys = [
+      'Backspace',
+      'Delete',
+      'Tab',
+      'ArrowLeft',
+      'ArrowRight',
+      'Home',
+      'End',
+    ];
+
+    // Allow numbers, plus sign, and control keys
+    if (
+      !/[0-9+]/.test(event.key) &&
+      !allowedKeys.includes(event.key) &&
+      !(event.ctrlKey || event.metaKey)
+    ) {
+      event.preventDefault();
+    }
   };
 
   return (
@@ -272,6 +295,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
               label={'Cellphone number'}
               nameProp={'phoneNumber'}
               placeholder="e.g 0123456789"
+              onKeyDown={handleKeyDown}
               onChange={(e) => {
                 handleCellphoneChange(e);
                 setPhoneMessageError('');

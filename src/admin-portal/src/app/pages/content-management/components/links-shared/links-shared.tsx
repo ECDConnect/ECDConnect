@@ -6,6 +6,7 @@ import { LanguageId } from '../../../../constants/language';
 import ContentLoader from '../../../../components/content-loader/content-loader';
 import { useDialog } from '@ecdlink/core';
 import AlertModal from '../../../../components/dialog-alert/dialog-alert';
+import { isValidUrl } from '../../../../utils/url-utils/url-utils';
 
 export const LinksShared = ({
   contentType,
@@ -14,8 +15,6 @@ export const LinksShared = ({
   const [connectItems, setResourcesLinks] = useState<ConnectItem[]>([]);
   const [isSubmitButtonClicked, setIsSubmitButtonClicked] = useState(false);
   const dialog = useDialog();
-  const urlRegex =
-    /^(https?|ftp):\/\/(([a-z\d]([a-z\d-]*[a-z\d])?\.)+[a-z]{2,}|localhost)(\/[-a-z\d%_.~+]*)*(\?[;&a-z\d%_.~+=-]*)?(\#[-a-z\d_]*)?$/i;
 
   const getAllCall = `GetAll${contentType.name}`;
 
@@ -96,7 +95,7 @@ export const LinksShared = ({
     index: number,
     fieldType: 'text' | 'link'
   ) => {
-    if (!isToCheck) return false;
+    // if (!isToCheck) return false;
 
     let hasEmptyField =
       !connectItems[index]?.[fieldType] &&
@@ -104,7 +103,7 @@ export const LinksShared = ({
         !!connectItems[index]?.[fieldType === 'text' ? 'link' : 'text']);
 
     if (fieldType === 'link' && connectItems[index].link !== '') {
-      hasEmptyField = !urlRegex.test(connectItems[index].link);
+      return !isValidUrl(connectItems[index].link);
     }
 
     return hasEmptyField;
@@ -129,8 +128,8 @@ export const LinksShared = ({
     setIsSubmitButtonClicked(true);
     const hasEmptyField = connectItems.some((link, index) =>
       index === 0
-        ? !link.text || !link.link || !urlRegex.test(link.link)
-        : !link.text !== !link.link || (link.link && !urlRegex.test(link.link))
+        ? !link.text || !link.link || !isValidUrl(link.link)
+        : !link.text !== !link.link || (link.link && !isValidUrl(link.link))
     );
 
     if (hasEmptyField) return;
@@ -173,13 +172,13 @@ export const LinksShared = ({
     if (index === 0) {
       if (connectItem.link === '') {
         return 'This field is required.';
-      } else if (!urlRegex.test(connectItem.link)) {
+      } else if (!isValidUrl(connectItem.link)) {
         return 'Please add a valid link.';
       }
     } else {
       if (connectItem.link === '') {
         return 'You must add a link for the filled button text.';
-      } else if (!urlRegex.test(connectItem.link)) {
+      } else if (!isValidUrl(connectItem.link)) {
         return 'Please add a valid link.';
       }
     }
@@ -196,6 +195,7 @@ export const LinksShared = ({
           <Typography
             type="h3"
             color="textDark"
+            className="pb-3 pt-3"
             text="Social media links for practitioners & coaches"
           />
         </div>

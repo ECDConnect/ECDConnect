@@ -19,7 +19,10 @@ import {
   useNotifications,
 } from '@ecdlink/core';
 import { HelpService } from '@/services/HelpService';
+import { useHistory } from 'react-router-dom';
 import { isEmail } from '@/utils/common/string.utils';
+import { useRemoveNotifications } from '@/hooks/useRemoveNotifications';
+import { notificationTagConfig } from '@/constants/notifications';
 
 interface HelpFormProps {
   closeAction?: (item: boolean) => void;
@@ -44,50 +47,13 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction }) => {
   const [cellphone, setCellphone] = useState('');
   const [isValidCellphone, setIsValidCellphone] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const history = useHistory();
 
   const helpService = new HelpService(Config.authApi);
 
-  // const sendHelpMessage = async () => {
-  //   const input: HelpFormModel = {
-  //     subject: helpType,
-  //     description: problemValue,
-  //     cellNumber: isPhoneSelected ? contactValue : '',
-  //     email: isPhoneSelected === false ? contactValue : '',
-  //     isLoggedIn: false,
-  //     contactPreference: isPhoneSelected ? 'phoneNumber' : 'email',
-  //     userId: null,
-  //   };
-
-  //   console.time('SendHelp API Call');
-  //   setIsLoading(true);
-
-  //   try {
-  //     const message = await new HelpService(Config.authApi).SendHelp(input);
-  //     console.timeEnd('SendHelp API Call');
-
-  //     if (message) {
-  //       setNotification({
-  //         title: `Message sent!`,
-  //         variant: NOTIFICATION.SUCCESS,
-  //       });
-  //     } else {
-  //       setNotification({
-  //         title: `Message not sent!`,
-  //         variant: NOTIFICATION.ERROR,
-  //       });
-  //     }
-  //   } catch (error) {
-  //     console.timeEnd('SendHelp API Call');
-  //     console.error('SendHelp error:', error);
-  //     setNotification({
-  //       title: `Failed to send the message!`,
-  //       variant: NOTIFICATION.ERROR,
-  //     });
-  //   }
-
-  //   setIsLoading(false);
-  //   closeAction && closeAction(false);
-  // };
+  const removeNotifications = useRemoveNotifications({
+    cta: notificationTagConfig?.GetFeedback?.cta ?? '',
+  });
 
   const sendHelpMessage = async () => {
     const input: HelpFormModel = {
@@ -124,8 +90,9 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction }) => {
       });
     }
 
+    removeNotifications();
     setIsLoading(false);
-    closeAction && closeAction(false);
+    closeAction ? closeAction(false) : history.push('/');
   };
 
   const handleEmailChange = (
@@ -154,6 +121,29 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction }) => {
 
     if (isValid) {
       setContactValue(inputValue);
+    }
+  };
+
+  // Function for cellphone number preventing characters
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
+    const inputEvent = event as React.KeyboardEvent<HTMLInputElement>;
+    const allowedKeys = [
+      'Backspace',
+      'Delete',
+      'Tab',
+      'ArrowLeft',
+      'ArrowRight',
+      'Home',
+      'End',
+    ];
+
+    // Allow numbers, plus sign, and control keys
+    if (
+      !/[0-9+]/.test(event.key) &&
+      !allowedKeys.includes(event.key) &&
+      !(event.ctrlKey || event.metaKey)
+    ) {
+      event.preventDefault();
     }
   };
 
@@ -223,6 +213,7 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction }) => {
                 className="bg-adminPortalBg mb-1"
                 value={cellphone}
                 onChange={(e) => handleCellphoneChange(e)}
+                onKeyDown={handleKeyDown}
                 textInputType="input"
                 placeholder={contactPlaceholder}
                 type="number"
