@@ -119,9 +119,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             if (practitioner.IsPrincipalOrAdmin())
             {
                 return _classroomGroupRepo.GetAll()
-                    .Include(x => x.Learners
-                        .Where(y => y.IsActive 
-                            && (!y.StoppedAttendance.HasValue || y.StoppedAttendance > DateTime.Now)))
+                    .Include(x => x.Learners)
                     .Include(x => x.Classroom)
                     .Where(x =>
                         x.IsActive

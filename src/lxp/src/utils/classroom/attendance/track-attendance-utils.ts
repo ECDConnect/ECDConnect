@@ -200,7 +200,7 @@ export const getMissedClassAttendance = (
 
   if (last30DaysProgrammes)
     for (const day of last30DaysProgrammes) {
-      const programme = day.programme!;
+      const programme = day.programme;
       const missedDayDate = new Date(day.date.setHours(0, 0, 0, 0));
 
       const classGroups = classroomGroups.filter((x) => {
@@ -214,19 +214,28 @@ export const getMissedClassAttendance = (
             isValidAttendableDate(missedDayDate, meetingDays || [], []) &&
             checkEndOfDay.getTime() >= new Date(x.startedAttendance).getTime();
 
-          return isValidDay && !Boolean(x.stoppedAttendance);
+          return (
+            isValidDay &&
+            (!x.stoppedAttendance ||
+              new Date(x.stoppedAttendance).getTime() > missedDayDate.getTime())
+          );
         });
-      if (classLearners && classLearners.length && classLearners.length > 0) {
-        if (
-          !attendance.some(
+
+      if (classLearners?.length > 0) {
+        const hasNoLearnerAttendance = !classLearners.every((learner) =>
+          attendance.some(
             (att) =>
               att.attendanceDate &&
-              att.classroomProgrammeId === programme.id &&
               missedDayDate.getTime() ===
                 new Date(
                   new Date(att.attendanceDate).setHours(0, 0, 0, 0)
                 ).getTime()
           )
+        );
+
+        if (
+          hasNoLearnerAttendance &&
+          !returnProgrammes.some((p) => p.id === programme.id)
         ) {
           returnProgrammes.push({ ...programme, missedDate: missedDayDate });
         }
@@ -538,6 +547,22 @@ export const getPlaygroup = (
       (x) =>
         x.meetingDay === getDay(date) &&
         x.classroomGroupId === selectedclassroomGroupId
+    );
+  }
+};
+
+export const getPlaygroups = (
+  classProgrammes: ClassProgrammeDto[],
+  date: Date,
+  selectedClassroomGroupIds?: string[]
+) => {
+  if (!selectedClassroomGroupIds || selectedClassroomGroupIds.length === 0) {
+    return classProgrammes?.filter((x) => x.meetingDay === getDay(date));
+  } else {
+    return classProgrammes?.filter(
+      (x) =>
+        x.meetingDay === getDay(date) &&
+        selectedClassroomGroupIds.includes(x.classroomGroupId)
     );
   }
 };
