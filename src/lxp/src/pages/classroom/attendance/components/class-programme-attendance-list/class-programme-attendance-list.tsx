@@ -41,8 +41,8 @@ export const ClassProgrammeAttendanceList: React.FC<
       const child = children?.find((c) => c.userId === x.childUserId);
 
       return (
-        x.isActive &&
-        !x.stoppedAttendance &&
+        (!x.stoppedAttendance ||
+          new Date(x.stoppedAttendance).getTime() > attendanceDate.getTime()) &&
         attendanceDate.getTime() >= new Date(startedAttendance).getTime()
       );
     });

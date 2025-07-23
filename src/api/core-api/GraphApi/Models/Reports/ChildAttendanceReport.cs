@@ -40,7 +40,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
 
             //retrieve only groups the user is allowed to see
             var classroomGroups = _attendanceService.GetUserClassroomGroups(userId);
-            //var validClassDays = GetDayRangeWithoutHolidays(startMonth, endMonth);
 
             foreach (var classroomGroup in classroomGroups.Where(x => classroomGroups.Select(y => y.UserId).Contains(x.UserId)))
             {
@@ -59,15 +58,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
                         for (DateTime dt = startMonth; dt <= endMonth; dt = dt.AddMonths(1))
                         {
                             var attendance = new List<Tuple<int, int>>();
-                            foreach (var programme in learner.ClassroomGroup.ClassProgrammes)
+                            foreach (var programme in classroomGroup.ClassProgrammes)
                             {
-                                //var daysOfClass = CalculateDaysOfClassForMonth(dt, (int)programme.MeetingDay, validClassDays, programme.ProgrammeStartDate.Date, endMonth.Date);
                                 var daysOfClass = attendanceForPeriod.Where(x => x.UserId == learner.UserId
                                              && x.ClassroomProgrammeId == programme.Id
                                              && x.MonthOfYear == dt.Month
                                              && x.Year == dt.Year);
 
-                                if (daysOfClass.Count() > 0)
+                                if (daysOfClass.Any())
                                 {
                                     var attendedClasses = attendanceForPeriod
                                                             .Where(x => x.UserId == learner.UserId
@@ -120,7 +118,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
                                     totalAttendance[attendance.AttendanceDate.Day] = (attendance.Attended ? 1 : 0);
                                 }
 
-                                if (classReports.Where(x => x.ChildUserId == learner.UserId.ToString() && x.Month == report.MonthNumber && x.Year == report.Year).FirstOrDefault() != null)
+                                if (classReports.Where(x => x.ChildUserId == learner.UserId.ToString() && x.Month == report.MonthNumber && x.Year == report.Year && x.ClassgroupId == learner.ClassroomGroupId).FirstOrDefault() != null)
                                 {
                                     //append to existing report and not add if child already exists in report list based on different classes child may be in
                                     var existingReport = classReports.Where(x => x.ChildUserId == learner.UserId.ToString() && x.Month == report.MonthNumber && x.Year == report.Year).FirstOrDefault();

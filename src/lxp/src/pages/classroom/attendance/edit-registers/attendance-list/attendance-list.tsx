@@ -86,45 +86,44 @@ export const EditRegistersAttendanceList = ({
   };
 
   const handleFormSubmit = async () => {
-    const attendanceGroup = attendanceGroups?.[0];
+    if (attendanceGroups) {
+      for (const element of attendanceGroups) {
+        const attendanceGroupList = element.list;
 
-    if (!attendanceGroup) return;
+        const allAttendedChildren: ChildAttendance[] =
+          attendanceGroupList?.map((x) => ({
+            userId: x.attenendeeId,
+            attended: x.status === AttendanceStatus.Present,
+          })) || [];
 
-    const currentProgramme = getPlaygroup(
-      classProgrammes,
-      attendanceDate,
-      classroomGroupId
-    );
+        const currentProgramme = getPlaygroup(
+          classProgrammes,
+          attendanceDate,
+          element.cacheId
+        );
 
-    if (!currentProgramme) return;
+        if (!currentProgramme) return;
 
-    const attendanceGroupList = attendanceGroup.list;
+        const trackAttendanceInput = mapTrackAttendance(
+          user?.id || '',
+          allAttendedChildren,
+          new Date(
+            attendanceDate.getFullYear(),
+            attendanceDate.getMonth(),
+            attendanceDate.getDate(),
+            12,
+            0,
+            0
+          ).toISOString(),
+          currentProgramme.id ?? ''
+        );
 
-    const allAttendedChildren: ChildAttendance[] =
-      attendanceGroupList?.map((x) => ({
-        userId: x.attenendeeId,
-        attended: x.status === AttendanceStatus.Present,
-      })) || [];
-
-    const trackAttendanceInput = mapTrackAttendance(
-      user?.id || '',
-      allAttendedChildren,
-      new Date(
-        attendanceDate.getFullYear(),
-        attendanceDate.getMonth(),
-        attendanceDate.getDate(),
-        12,
-        0,
-        0
-      ).toISOString(),
-      currentProgramme.id ?? ''
-    );
-
-    appDispatch(attendanceActions.trackAttendance(trackAttendanceInput));
-    appDispatch(
-      attendanceThunkActions.trackAttendanceSync(trackAttendanceInput)
-    );
-
+        appDispatch(attendanceActions.trackAttendance(trackAttendanceInput));
+        appDispatch(
+          attendanceThunkActions.trackAttendanceSync(trackAttendanceInput)
+        );
+      }
+    }
     appDispatch(
       analyticsActions.createEventTracking({
         action: 'Attendance tracking click',

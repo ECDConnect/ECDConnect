@@ -105,7 +105,7 @@ export class ChildProgressReportNotificationValidator
       ) || [];
     const learners = classroomGroups.flatMap((cg) => cg.learners);
     const children = childrenState.childData.children.filter((c) =>
-      learners.some((l) => c.userId === l.childUserId)
+      learners.some((l) => c.userId === l.childUserId && l.isActive)
     );
 
     return children;
