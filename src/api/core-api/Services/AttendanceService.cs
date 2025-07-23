@@ -67,7 +67,7 @@ namespace ECDLink.Api.CoreApi.Services
         {
             var learners = from learner in _dbContext.Learners
                            join child in _dbContext.Children on learner.UserId equals child.UserId
-                           where learner.IsActive && child.IsActive && learner.ClassroomGroupId == classgroupId
+                           where child.IsActive && learner.ClassroomGroupId == classgroupId
                            select learner;
 
             return learners
@@ -185,7 +185,7 @@ namespace ECDLink.Api.CoreApi.Services
 
         public ChildAttendanceReportModel GetChildAttendance(Guid classgroupId, string userId, DateTime startMonth, DateTime endMonth)
         {
-            var learners = GetAllLearnerInstances(userId, classgroupId);
+            var learners = GetAllLearnerInstances(userId, default(Guid));
 
             if (!learners.Any())
             {

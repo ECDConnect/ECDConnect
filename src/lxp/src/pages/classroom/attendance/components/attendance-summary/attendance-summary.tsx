@@ -49,7 +49,11 @@ import { usePrevious } from '@ecdlink/core/lib/hooks/usePrevious';
 import { AttendanceSummaryState } from './attendance-summary.types';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { useHistory, useLocation } from 'react-router';
-import { ClassDashboardRouteState } from '@/pages/classroom/class-dashboard/class-dashboard.types';
+import {
+  ClassDashboardRouteState,
+  TabsItems,
+} from '@/pages/classroom/class-dashboard/class-dashboard.types';
+import ROUTES from '@/routes/routes';
 
 export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
   hidePopup,
@@ -352,10 +356,10 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
 
   const closeEditAttendanceRegister = () => {
     setEditAttendanceRegisterVisible(false);
-    history.replace(location.pathname, {
-      ...location.state,
+    history.push(ROUTES.CLASSROOM.ROOT, {
+      activeTabIndex: TabsItems.ATTENDANCE,
       classroomGroupIdFromClassTab: undefined,
-    });
+    } as ClassDashboardRouteState);
   };
 
   const closeNotification = () => {
