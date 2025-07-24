@@ -27,9 +27,8 @@ import {
   renderIcon,
   DatePicker,
 } from '@ecdlink/ui';
-import { addMilliseconds, format, sub, subMilliseconds } from 'date-fns';
+import { addMilliseconds, format, subMilliseconds } from 'date-fns';
 import { newGuid } from '@/utils/common/uuid.utils';
-// import DatePicker from 'react-datepicker';
 import { calendarSelectors, calendarThunkActions } from '@/store/calendar';
 import {
   CalendarEventModel,
@@ -53,7 +52,6 @@ import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { CalendarActions } from '@/store/calendar/calendar.actions';
 import { useWindowSize } from '@reach/window-size';
 import FormField from '@/components/form-field/form-field';
-import { useTenant } from '@/hooks/useTenant';
 
 export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
   event: eventProps,
@@ -65,7 +63,6 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
   onCancel,
 }) => {
   const [model, setModel] = useState<CalendarEventModel>();
-  const tenant = useTenant();
 
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
@@ -153,6 +150,21 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
   const maxDate = !!eventProps?.maxDate
     ? new Date(eventProps.maxDate)
     : undefined;
+
+  const formatTime = (time: string | Date | undefined): string => {
+    if (!time) return '';
+    if (typeof time === 'string') {
+      // Validate or parse if time is in a different format
+      try {
+        const date = new Date(time);
+        return format(date, 'HH:mm');
+      } catch {
+        return time; // Assume it's already in HH:mm format
+      }
+    }
+    return format(time, 'HH:mm');
+  };
+
   const defaultValues: CalendarAddEventFormModel = {
     name: event.name || '',
     start: event.allDay
@@ -166,7 +178,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
           0
         )
       : startDate,
-    startTime: '',
+    startTime: event.startTime || formatTime(startDate),
     end: event.allDay
       ? new Date(
           endDate.getFullYear(),
@@ -178,7 +190,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
           0
         )
       : endDate,
-    endTime: '',
+    endTime: event.endTime || formatTime(endDate),
     allDay: event.allDay,
     description: event.description || '',
     eventType: !event.eventType ? undefined : event.eventType,
@@ -491,20 +503,19 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
             />
           </div>
           {!getEventFormValues().allDay && (
-            <>
-              <div>
-                <label className="text-md text-textDark mb-1 block font-semibold">
-                  {`Start time`}
-                </label>
-                <FormField
-                  label={''}
-                  nameProp={'startTime'}
-                  type="time"
-                  register={eventFormRegister}
-                  placeholder="hh:mm"
-                />
-              </div>
-            </>
+            <div>
+              <label className="text-md text-textDark mb-1 block font-semibold">
+                {`Start time`}
+              </label>
+              <FormField<CalendarAddEventFormModel>
+                label={''}
+                nameProp={'startTime'}
+                type="time"
+                register={eventFormRegister}
+                placeholder="hh:mm"
+                defaultValue={getEventFormValues().startTime}
+              />
+            </div>
           )}
         </div>
         <div className="mb-4 flex gap-4">
@@ -529,20 +540,19 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
           </div>
 
           {!getEventFormValues().allDay && (
-            <>
-              <div>
-                <label className="text-md text-textDark block font-semibold">
-                  {`End time`}
-                </label>
-                <FormField
-                  label={''}
-                  nameProp={'endTime'}
-                  type="time"
-                  register={eventFormRegister}
-                  placeholder="hh:mm"
-                />
-              </div>
-            </>
+            <div>
+              <label className="text-md text-textDark block font-semibold">
+                {`End time`}
+              </label>
+              <FormField<CalendarAddEventFormModel>
+                label={''}
+                nameProp={'endTime'}
+                type="time"
+                register={eventFormRegister}
+                placeholder="hh:mm"
+                defaultValue={getEventFormValues().endTime}
+              />
+            </div>
           )}
         </div>
         <div className="mb-4">
