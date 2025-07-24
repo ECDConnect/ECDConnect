@@ -115,7 +115,7 @@ export default function Shell() {
         NavbarTypes.CMS,
         // [NavbarTypes.Reporting],
         NavbarTypes.Messaging,
-        NavbarTypes.SiteData,
+        isSuperAdmin && [NavbarTypes.SiteData],
         isSuperAdmin && [NavbarTypes.Settings],
         NavbarTypes.Notifications,
       ];
