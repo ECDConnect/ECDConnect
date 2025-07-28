@@ -44,7 +44,7 @@ export const Login: React.FC = () => {
   const history = useHistory();
   const dialog = useDialog();
   const [displayError, setDisplayError] = useState(false);
-  const displayMessage = 'Password or ID incorrect. Please try again';
+  const displayMessage = 'Password or username incorrect. Please try again';
   const [displayWrongUserError, setDisplayWrongUserError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [idFieldVisible, setIdFieldVisible] = useState(true);
