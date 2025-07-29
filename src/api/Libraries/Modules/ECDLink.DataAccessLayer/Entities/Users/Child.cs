@@ -65,6 +65,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public string InactiveReason { get; set; }
         public DateTime? InactiveDate { get; set; }
         public string InactivityComments { get; set; }
+        public bool? IsAddedByCaregiver { get; set; } = false;
     }
 
     public interface ChildJoin<TKey>
