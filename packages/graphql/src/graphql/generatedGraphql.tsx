@@ -212,6 +212,7 @@ export type AddChildCaregiverTokenModelInput = {
   emergencyContactPhoneNumber?: InputMaybe<Scalars['String']>;
   emergencyContactSurname?: InputMaybe<Scalars['String']>;
   firstName?: InputMaybe<Scalars['String']>;
+  grantIds?: InputMaybe<Array<Scalars['UUID']>>;
   idNumber?: InputMaybe<Scalars['String']>;
   joinReferencePanel: Scalars['Boolean'];
   phoneNumber?: InputMaybe<Scalars['String']>;
@@ -1789,12 +1790,12 @@ export type ClassroomGroupInput = {
 
 export type ClassroomGroupModel = {
   __typename?: 'ClassroomGroupModel';
-  classProgrammes?: Maybe<Array<Maybe<ClassProgramme>>>;
+  classProgrammes?: Maybe<Array<ClassProgramme>>;
   classroomId: Scalars['UUID'];
   id: Scalars['UUID'];
-  learners?: Maybe<Array<Maybe<BaseLearnerModel>>>;
+  learners?: Maybe<Array<BaseLearnerModel>>;
   name?: Maybe<Scalars['String']>;
-  userId: Scalars['UUID'];
+  userId?: Maybe<Scalars['UUID']>;
 };
 
 export type ClassroomGroupReassignmentsInput = {
@@ -12888,6 +12889,7 @@ export enum TenantType {
 export type Theme = {
   __typename?: 'Theme';
   color?: Maybe<Scalars['String']>;
+  defaultName?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
   imageUrl?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
@@ -12923,6 +12925,7 @@ export type ThemeDayInput = {
 
 export type ThemeInput = {
   color?: InputMaybe<Scalars['String']>;
+  defaultName?: InputMaybe<Scalars['String']>;
   imageUrl?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   shareContent?: InputMaybe<Scalars['String']>;

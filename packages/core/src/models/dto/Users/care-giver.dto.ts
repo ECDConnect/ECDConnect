@@ -24,7 +24,7 @@ export interface CaregiverDto extends EntityBase {
   additionalPhoneNumber?: string;
   joinReferencePanel?: boolean;
   contribution?: boolean;
-  grants?: string[] | undefined;
+  grantIds?: string[] | undefined;
   isOnline?: boolean;
   isAllowedCustody?: boolean;
 }
