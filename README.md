@@ -18,7 +18,7 @@ The platform is built as a Progressive Web Application with offline first capabi
 
 ## 3rd Party Integrations
 
--   Training: [Moodle](https://moodle.org/) - see below for details on the training module
+-   Training: [Moodle](https://moodle.org/) - [see below for details on the training module](#training)
 -   SMS Sending:  [BulkSMS](https://www.bulksms.com/),  [iTouch](https://itouch.co.za/), or [SMSPortal] ([https://smsportal.com/](https://smsportal.com/))
 -   Holidays:  [RapidAPI](https://rapidapi.com/)  - an API to get the South African Holidays for attendance tracking purposes etc
 -   Analytics:  [Google Analytics](https://analytics.google.com/),  [Google Tag Manager](https://tagmanager.google.com/)  and  [Google Data Studio](https://datastudio.google.com/)  - for analytics, event tracking and reporting
@@ -42,6 +42,12 @@ The platform is built as a Progressive Web Application with offline first capabi
 -   White labelling and Theming
 -   Multi-Language Content Management
 -   Document Management
+-   Send messages via WhatsApp
+
+## Reporting
+
+Grafana has been used but any reporting tool that can connect to a PostgreSQL database will work.
+Currently there is no integration with any reporting tool, i.e. single sign-on or permissioning.
 
 ## Frontend PWA - Practitioner logins
 
@@ -101,11 +107,11 @@ The system can be hosted on-prem using PostgreSQL, IIS or Apache, and file syste
 -   [JWT](https://jwt.io/)  tokens for authorisation with refresh endpoints
 
 ## Training
-*Please note this is not a requirement to run the system.*  
+*Please note this is not a requirement to run the system.  If the Moodle configuration in the system is not setup, the Training tab will not be available.*  
 
 The app has a training module that can display Moodle training courses within an iframe.  
 In order to enable this functionality, the requirements are:
--   Moodle 4.9.4 or later
+-   Moodle 4.0 or later
 -   Cohort enrolment enabled
 -   The Moodle database must be on PostgreSQL 13 or later
 -   The Moodle database must be accessible from the backend with read/insert/delete permission
@@ -114,7 +120,11 @@ In order to enable this functionality, the requirements are:
 When the Training module of the frontend is accessed, the backend is queried to create/update the current user in the Moodle database and enroll the user, using cohort enrolment, in the courses.
 The frontend then logs into Moodle in the iframe using the user's Moodle credentials and the courses assigned to the user will be display on the Moodle landing page.
 
-Configuration of the backend for Moodle is discussed below.
+Configuration of the backend for Moodle is discussed [below](#moodle-optional).
+
+If further assistance for setup of Moodle is required consider contacting a Moodle partner, e.g. [Limina Education Services](https://limina.co.za)
+
+Training courses have been developed for the ECD Connect Open Access offering.  Email open@ecdconnect.org.za to find out more.
 
 ## Project Requirements
 
