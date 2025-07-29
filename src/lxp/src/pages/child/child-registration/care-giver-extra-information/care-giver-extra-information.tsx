@@ -48,8 +48,19 @@ export const CareGiverExtraInformationForm: React.FC<
   };
 
   const handleFamilyGrantSelection = (familyGrants: string[]) => {
-    setSelectedFamilyGrants(familyGrants);
-    setCareGiverExtraInformationFormValue('familyGrants', familyGrants);
+    const noneGrant = grants.find((grant) => grant.description === 'None');
+    const noneGrantId = noneGrant?.id;
+
+    let updatedGrants: string[];
+
+    if (noneGrantId && familyGrants.includes(noneGrantId)) {
+      updatedGrants = [noneGrantId];
+    } else {
+      updatedGrants = familyGrants.filter((id) => id !== noneGrantId);
+    }
+
+    setSelectedFamilyGrants(updatedGrants);
+    setCareGiverExtraInformationFormValue('familyGrants', updatedGrants);
     updateFormValidity();
   };
 

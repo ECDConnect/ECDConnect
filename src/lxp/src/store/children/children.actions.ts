@@ -494,7 +494,7 @@ const mapCaregiver = (x: Partial<CaregiverDto>): ChildCaregiverInput => ({
   joinReferencePanel: x.joinReferencePanel || false,
   contribution: x.contribution || false,
   isAllowedCustody: x.isAllowedCustody ?? false,
-  grantIds: x.grants,
+  grantIds: x.grantIds,
 });
 
 const mapSiteAddress = (
