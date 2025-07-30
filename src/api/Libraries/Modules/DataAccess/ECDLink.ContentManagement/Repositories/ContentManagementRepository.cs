@@ -23,7 +23,7 @@ namespace ECDLink.ContentManagement.Repositories
     public class ContentManagementRepository
     {
         private readonly ContentManagementDbContext _context;
-        private AuthenticationDbContext _dbContext;
+        private readonly AuthenticationDbContext _dbContext;
         private readonly IFileService _fileService;
         private readonly ILogger<ContentManagementRepository> _logger;
         private readonly IMemoryCache _memoryCache;
@@ -193,23 +193,24 @@ namespace ECDLink.ContentManagement.Repositories
             return results;
         }
 
-        public object GetById(int contentId, Guid localeId)
+        public object GetById(int contentId, Guid localeId, Guid? tenantId = null)
         {
-            var currentTenant = TenantExecutionContext.Tenant.Id;
-
+            if (tenantId == null)
+            {
+                tenantId = TenantExecutionContext.Tenant.Id;
+            }
             object result;
 
-            var key = string.Format("Content.{0}.{1}..Id.{2}", currentTenant, localeId, contentId);
+            var key = string.Format("Content.{0}.{1}..Id.{2}", tenantId, localeId, contentId);
             if (!_memoryCache.TryGetValue<object>(key, out result))
             {
                 // Try get tenant data
                 var content = _context.Contents
                             .Include(i => i.ContentType)
-                            .Include(i => i.ContentValues)
+                            .Include(c => c.ContentValues.Where(c => c.LocaleId == localeId && (c.TenantId == tenantId || c.TenantId == null)))
                                 .ThenInclude(ti => ti.ContentTypeField)
                             .Where(x => x.Id == contentId
-                                    && x.IsActive
-                                    && x.TenantId == currentTenant)
+                                    && x.IsActive)
                             .OrderBy(x => x.Id)
                             .FirstOrDefault();
 
@@ -233,7 +234,7 @@ namespace ECDLink.ContentManagement.Repositories
 
                 var contentValuesList = content.ContentValues
                                 .Where(x => x.LocaleId == localeId
-                                    && x.TenantId == currentTenant)
+                                    && x.TenantId == tenantId)
                                 .OrderByDescending(x => x.UpdatedDate)
                                 .ThenBy(x => x.ContentTypeField?.FieldOrder)
                                 .ToList();
@@ -242,7 +243,7 @@ namespace ECDLink.ContentManagement.Repositories
                 // Get the ContentValues for the current tenant, or the global tenant.
                 var noTenantContenValues = content.ContentValues
                      .Where(x => x.LocaleId == localeId
-                             && x.ContentTypeField.IsActive == true
+                             && x.ContentTypeField.IsActive
                              && (x.TenantId == null))
                      .Select(y => new { y.Id, y.ContentTypeField, y.Value, y.ContentId })
                      .OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId)
@@ -250,8 +251,8 @@ namespace ECDLink.ContentManagement.Repositories
 
                 var contentValues = content.ContentValues
                  .Where(x => x.LocaleId == localeId
-                         && x.ContentTypeField.IsActive == true
-                         && (x.TenantId == TenantExecutionContext.Tenant.Id))
+                         && x.ContentTypeField.IsActive
+                         && (x.TenantId == tenantId))
                  .Select(y => new { y.Id, y.ContentTypeField, y.Value, y.ContentId })
                  .OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId)
                  .ToList();
@@ -423,20 +424,32 @@ namespace ECDLink.ContentManagement.Repositories
             }
             return results;
         }
-
-        public IEnumerable<object> GetByValueKey(string contentType, string key, string value, Guid localeId)
+        
+        public IEnumerable<object> GetByValueKey(string contentType, string key, string value, Guid localeId, Guid? tenantId = null)
         {
+            var organisationName = TenantExecutionContext.Tenant.OrganisationName;
+            var applicationName = TenantExecutionContext.Tenant.ApplicationName;
+            if (tenantId == null)
+            {
+                tenantId = TenantExecutionContext.Tenant.Id;
+            }
+            else
+            {
+                var argumentTenant = _dbContext.Tenants.FirstOrDefault(x => x.Id == tenantId);
+                organisationName = argumentTenant.OrganisationName;
+                applicationName = argumentTenant.ApplicationName;
+            }
+            
             var content = _context.Contents
                     .Include(i => i.ContentType)
                     .Include(i => i.ContentValues)
                         .ThenInclude(ti => ti.ContentTypeField)
-                    .Where(x => x.TenantId == TenantExecutionContext.Tenant.Id
-                            && x.ContentType.Name == contentType
+                    .Where(x =>  x.ContentType.Name == contentType
                             && x.IsActive
                             && x.ContentValues.Any(y => y.LocaleId == localeId)
                             && x.ContentValues.Any(y => y.ContentTypeField.FieldName == key)
                             && x.ContentValues.Any(y => y.Value == value)
-                            && x.ContentValues.Any(y => y.TenantId == TenantExecutionContext.Tenant.Id)
+                            && x.ContentValues.Any(y => y.TenantId == tenantId || y.TenantId == null)
                             )
                     .ToList();
 
@@ -452,7 +465,7 @@ namespace ECDLink.ContentManagement.Repositories
                                 && x.ContentValues.Any(y => y.LocaleId == localeId)
                                 && x.ContentValues.Any(y => y.ContentTypeField.FieldName == key)
                                 && x.ContentValues.Any(y => y.Value == value)
-                                && x.ContentValues.Any(y => y.TenantId == TenantExecutionContext.Tenant.Id)
+                                && x.ContentValues.Any(y => y.TenantId == tenantId)
                                 )
                         .ToList();
 
@@ -469,15 +482,14 @@ namespace ECDLink.ContentManagement.Repositories
             {
                 var contentValues = item.ContentValues
                     .Where(x => x.LocaleId == localeId
-                            && x.ContentTypeField.IsActive == true
-                            && (x.TenantId == TenantExecutionContext.Tenant.Id))
+                            && x.ContentTypeField.IsActive && (x.TenantId == tenantId))
                     .OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId)
                     .ToList();
-                if (contentValues.Count == 0) {
+                if (contentValues.Count == 0)
+                {
                     contentValues = item.ContentValues
                     .Where(x => x.LocaleId == localeId
-                            && x.ContentTypeField.IsActive == true
-                            && (x.TenantId == null))
+                            && x.ContentTypeField.IsActive && (x.TenantId == null))
                     .OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId)
                     .ToList();
                 }
@@ -503,19 +515,19 @@ namespace ECDLink.ContentManagement.Repositories
                     //update with fulllist
                     contentFieldValuePairs["availableLanguages"] = string.Join(",", langsList);
                 }
-                if ((contentType == ContentTypeConstants.Consent || contentType == ContentTypeConstants.MoreInformation) && 
+                if ((contentType == ContentTypeConstants.Consent || contentType == ContentTypeConstants.MoreInformation) &&
                     (contentFieldValuePairs.ContainsKey("description")) || contentFieldValuePairs.ContainsKey("descriptionA")
                     )
                 {
                     if (contentFieldValuePairs.ContainsKey("description"))
                     {
-                        contentFieldValuePairs["description"] = contentFieldValuePairs["description"].Replace("[organisationName]", TenantExecutionContext.Tenant.OrganisationName);
-                        contentFieldValuePairs["description"] = contentFieldValuePairs["description"].Replace("[applicationName]", TenantExecutionContext.Tenant.ApplicationName);
+                        contentFieldValuePairs["description"] = contentFieldValuePairs["description"].Replace("[organisationName]", organisationName);
+                        contentFieldValuePairs["description"] = contentFieldValuePairs["description"].Replace("[applicationName]", applicationName);
                     }
                     if (contentFieldValuePairs.ContainsKey("descriptionA"))
                     {
-                        contentFieldValuePairs["descriptionA"] = contentFieldValuePairs["descriptionA"].Replace("[organisationName]", TenantExecutionContext.Tenant.OrganisationName);
-                        contentFieldValuePairs["descriptionA"] = contentFieldValuePairs["descriptionA"].Replace("[applicationName]", TenantExecutionContext.Tenant.ApplicationName);
+                        contentFieldValuePairs["descriptionA"] = contentFieldValuePairs["descriptionA"].Replace("[organisationName]", organisationName);
+                        contentFieldValuePairs["descriptionA"] = contentFieldValuePairs["descriptionA"].Replace("[applicationName]", applicationName);
                     }
                 }
                 if (!contentFieldValuePairs.ContainsKey("insertedDate"))
@@ -581,7 +593,6 @@ namespace ECDLink.ContentManagement.Repositories
 
             return allContentValuePairs;
         }
-
 
         public IEnumerable<object> GetContentByTitleAndSection(string contentType, string section, Guid localeId, string title)
         {
@@ -810,8 +821,6 @@ namespace ECDLink.ContentManagement.Repositories
 
             return fileUrl.ToString();
         }
-
-
         public ContentValue ValidateDefaultTemplateByContentTypeId(int contentTypeId, Guid localeId, string defaultName, Guid? tenantId)
         {
             return _context.ContentValues.Where(x => x.TenantId == tenantId
