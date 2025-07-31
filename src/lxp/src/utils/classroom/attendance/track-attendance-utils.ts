@@ -206,6 +206,10 @@ export const getMissedClassAttendance = (
       const classGroups = classroomGroups.filter((x) => {
         return x.id === programme?.classroomGroupId;
       });
+
+      const programmeAttendance = attendance.filter((x) => {
+        return x.classroomProgrammeId === programme.id;
+      });
       const classLearners = classGroups
         .flatMap((x) => x.learners)
         .filter((x) => {
@@ -223,7 +227,7 @@ export const getMissedClassAttendance = (
 
       if (classLearners?.length > 0) {
         const hasNoLearnerAttendance = !classLearners.every((learner) =>
-          attendance.some(
+          programmeAttendance.some(
             (att) =>
               att.attendanceDate &&
               missedDayDate.getTime() ===
