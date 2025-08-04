@@ -124,8 +124,8 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
         return (
           child &&
           !!child.caregiverId &&
-          (x.isActive ||
-            endOfDay.getTime() >= new Date(x.startedAttendance).getTime())
+          (!x.stoppedAttendance ||
+            new Date(x.stoppedAttendance).getTime() >= endOfDay.getTime())
         );
       });
 
