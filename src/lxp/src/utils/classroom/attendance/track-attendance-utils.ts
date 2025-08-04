@@ -222,7 +222,7 @@ export const getMissedClassAttendance = (
             isValidDay &&
             (!x.stoppedAttendance ||
               new Date(x.stoppedAttendance).getTime() >=
-                missedDayDate.getTime())
+                checkEndOfDay.getTime())
           );
         });
 
