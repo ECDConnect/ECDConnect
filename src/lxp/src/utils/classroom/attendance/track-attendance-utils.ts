@@ -221,7 +221,8 @@ export const getMissedClassAttendance = (
           return (
             isValidDay &&
             (!x.stoppedAttendance ||
-              new Date(x.stoppedAttendance).getTime() > missedDayDate.getTime())
+              new Date(x.stoppedAttendance).getTime() >=
+                missedDayDate.getTime())
           );
         });
 
@@ -233,7 +234,8 @@ export const getMissedClassAttendance = (
               missedDayDate.getTime() ===
                 new Date(
                   new Date(att.attendanceDate).setHours(0, 0, 0, 0)
-                ).getTime()
+                ).getTime() &&
+              att.userId === learner.childUserId
           )
         );
 
