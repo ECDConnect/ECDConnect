@@ -9,6 +9,7 @@ using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -80,6 +81,7 @@ namespace EcdLink.Api.CoreApi.Services
         {
             var child = _childRepo.GetById(input.Id);
             var isActive = child.IsActive && child.User.IsActive && input.IsActive;
+            var tenantId = TenantExecutionContext.Tenant.Id;
 
             // Update child fields
             child.IsActive = isActive;
@@ -160,7 +162,7 @@ namespace EcdLink.Api.CoreApi.Services
             // Add new grants
             if (input.Caregiver != null && input.Caregiver.GrantIds != null)
             {
-                UpdateCaregiverGrants(child.UserId.Value, input.Caregiver.GrantIds);
+                UpdateCaregiverGrants(child.UserId.Value, input.Caregiver.GrantIds, tenantId);
             }
 
             // If child is deactivated, ensure all learner records are also disabled
@@ -190,7 +192,7 @@ namespace EcdLink.Api.CoreApi.Services
             }
         }
 
-        public void UpdateCaregiverGrants(Guid childUserId, List<Guid> grantIds)
+        public void UpdateCaregiverGrants(Guid childUserId, List<Guid> grantIds, Guid tenantId)
         {
             if (grantIds == null || !grantIds.Any())
             {
@@ -199,8 +201,10 @@ namespace EcdLink.Api.CoreApi.Services
 
             var grantsToAdd = grantIds.Select(x => new UserGrant
             {
+                Id = Guid.NewGuid(),
                 GrantId = x,
                 UserId = childUserId,
+                TenantId = tenantId
             });
 
             var existingGrants = _dbContext.UserGrants

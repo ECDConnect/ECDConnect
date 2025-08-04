@@ -240,7 +240,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             {displayError && (
               <Alert
                 className={'mt-5 mb-3'}
-                message={'Password or ID incorrect. Please try again'}
+                message={'Password or username incorrect. Please try again'}
                 type={'error'}
               />
             )}

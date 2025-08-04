@@ -141,6 +141,13 @@ export const getClassroomGroupLearners = (state: RootState): LearnerDto[] =>
     .flatMap((x) => x.learners)
     ?.filter((x) => x.isActive);
 
+export const getClassroomGroupLearnersForAttendance = (
+  state: RootState
+): LearnerDto[] =>
+  state.classroomData.classroomGroupData.classroomGroups.flatMap(
+    (x) => x.learners
+  );
+
 export const getChildLearnerByClassroomGroup = (
   classroomGroupId: string,
   childUserId?: string
