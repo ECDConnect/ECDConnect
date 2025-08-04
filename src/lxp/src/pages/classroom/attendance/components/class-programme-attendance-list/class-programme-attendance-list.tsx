@@ -38,11 +38,9 @@ export const ClassProgrammeAttendanceList: React.FC<
     const classroomGroupLearners = classroomGroup.learners.filter((x) => {
       const startedAttendance = new Date(x.startedAttendance);
       startedAttendance.setHours(0, 0, 0, 0);
-      const child = children?.find((c) => c.userId === x.childUserId);
-
       return (
-        x.isActive &&
-        !x.stoppedAttendance &&
+        (!x.stoppedAttendance ||
+          new Date(x.stoppedAttendance).getTime() > attendanceDate.getTime()) &&
         attendanceDate.getTime() >= new Date(startedAttendance).getTime()
       );
     });
@@ -69,7 +67,7 @@ export const ClassProgrammeAttendanceList: React.FC<
         !!child.user &&
         !!child.user.firstName &&
         !!child.user.surname &&
-        !!child.caregiverId
+        !!child.caregiver
       ) {
         filteredLearners.push(learner);
       }

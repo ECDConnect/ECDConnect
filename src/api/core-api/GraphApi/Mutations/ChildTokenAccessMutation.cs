@@ -1,6 +1,8 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.AccessValidators;
 using EcdLink.Api.CoreApi.GraphApi.Models.Users;
 using EcdLink.Api.CoreApi.Security.Managers;
+using EcdLink.Api.CoreApi.Services;
+using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
@@ -150,7 +152,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             AddChildTokenModel child,
             AddChildRegistrationTokenModel registration,
             AddChildUserConsentTokenModel consent,
-            [Service] INotificationService notificationService)
+           [Service] IChildService childService)
         {
             var tokenModel = JsonConvert.DeserializeObject<ChildTokenWrapperModel>(TokenHelper.DecodeToken(token));
 
@@ -163,7 +165,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             using var scope = dbFactory.CreateDbContext();
-
+            var tenantId = TenantExecutionContext.Tenant.Id;
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var childRepo = repoFactory.CreateRepository<Child>(scope, tokenModel.AddedByUserId);
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(scope, tokenModel.AddedByUserId);
@@ -181,6 +183,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 childEntity.LanguageId = child.LanguageId;
                 childEntity.OtherHealthConditions = child.OtherHealthConditions;
                 childEntity.WorkflowStatusId = child.WorkflowStatusId;
+                childEntity.IsAddedByCaregiver = true;
 
                 childEntity.Caregiver = new Caregiver
                 {
@@ -214,6 +217,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                 childRepo.Update(childEntity);
 
+                if (caregiver != null && caregiver.GrantIds != null)
+                {
+                    childService.UpdateCaregiverGrants(childEntity.UserId.Value, caregiver.GrantIds, tenantId);
+                }
 
                 appUser.GenderId = child.GenderId;
                 appUser.DateOfBirth = child.DateOfBirth;

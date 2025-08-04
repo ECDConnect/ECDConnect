@@ -199,14 +199,10 @@ export const mapCaregiverDto = (
   caregiver?: CaregiverDto
 ): CaregiverDto => {
   if (caregiver) {
-    const { fullName, siteAddressId, isActive, grants, ...restCaregiver } =
+    const { fullName, siteAddressId, isActive, grantIds, ...restCaregiver } =
       caregiver;
     return {
       ...restCaregiver,
-      // idNumber:
-      //   caregiverInformationForm?.careGiverIdField ??
-      //   caregiverInformationForm?.careGiverPassportField ??
-      //   '',
       firstName: caregiverInformationForm?.firstname ?? '',
       surname: caregiverInformationForm?.surname ?? '',
       relationId: caregiverInformationForm?.relationId,
@@ -278,6 +274,7 @@ export const mapAddChildCaregiverTokenModelInput = (
     surname: caregiverInformationForm?.surname ?? '',
     relationId: caregiverInformationForm?.relationId,
     educationId: childCareGiverExtraInformationForm?.highestEducationId,
+    grantIds: childCareGiverExtraInformationForm?.familyGrants,
     emergencyContactFirstName: childEmergencyContactForm?.firstname ?? '',
     emergencyContactSurname: childEmergencyContactForm?.surname ?? '',
     emergencyContactPhoneNumber: childEmergencyContactForm?.phoneNumber ?? '',

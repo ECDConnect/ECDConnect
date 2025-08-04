@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models.Users
 {
@@ -87,6 +88,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Users
         public bool JoinReferencePanel { get; set; }
 
         public bool Contribution { get; set; }
+
+        public List<Guid> GrantIds { get; set; }
     }
 
     public class AddChildRegistrationTokenModel
