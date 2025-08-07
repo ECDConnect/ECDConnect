@@ -56,9 +56,6 @@ export class NotificationService {
       this.user
     );
 
-    const backendNotifications = await backendValidator.getNotifications();
-    notifications.push(...(backendNotifications ?? []));
-
     for (let validator of this.validators) {
       const differenceInMs = differenceInMilliseconds(
         new Date(),
@@ -73,12 +70,15 @@ export class NotificationService {
       validator.lastCheckTimestamp = new Date().valueOf();
     }
 
+    const backendNotifications = await backendValidator.getNotifications();
+    notifications.push(...(backendNotifications ?? []));
+
     return notifications;
   };
 
   registerValidators = (
     store: EnhancedStore<RootState, any>,
-    applicationName: String
+    applicationName: string
   ) => {
     const isCoach = this.user?.roles?.some(
       (role) => role.systemName === RoleSystemNameEnum.Coach
