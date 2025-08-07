@@ -15,13 +15,13 @@ export class UserLastLoginNotificationValidator
   lastCheckTimestamp: number;
   store: EnhancedStore<RootState, any>;
   currentDate: Date;
-  applicationName: String;
+  applicationName: string;
   isCoach: boolean;
 
   constructor(
     store: EnhancedStore<RootState, any>,
     currentDate: Date,
-    applicationName: String,
+    applicationName: string,
     isCoach: boolean
   ) {
     this.store = store;
@@ -35,7 +35,7 @@ export class UserLastLoginNotificationValidator
   getNotifications = (): Message[] => {
     const { settings: settingsState } = this.store.getState();
 
-    if (!settingsState || !settingsState.lastDataSync) return [];
+    if (!settingsState?.lastDataSync) return [];
 
     const lastSyncDate = new Date(
       settingsState.lastDataSync || this.currentDate
