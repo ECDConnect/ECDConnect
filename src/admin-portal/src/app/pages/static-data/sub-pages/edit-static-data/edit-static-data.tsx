@@ -380,10 +380,8 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
         ? dataValues?.filter((o1) => {
             return data?.[key].every(
               (o2) =>
-                (o2.description !== o1.description &&
-                  o1?.description !== '' &&
-                  o2.locale !== o1.locale &&
-                  o1?.locale !== '') ||
+                (o2.description !== o1.description && o1?.description !== '') ||
+                (o2.locale !== o1.locale && o1?.locale !== '') ||
                 (o1?.description === '' && o1?.id)
             );
           })
@@ -561,6 +559,7 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
                         : ('' as any)
                     }
                     maxCharacters={24}
+                    maxLength={24}
                   />
 
                   <FormInput
@@ -571,6 +570,7 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
                     textInputType="input"
                     placeholder={'Add a code...'}
                     maxCharacters={24}
+                    maxLength={24}
                   />
                 </div>
                 {dataValuesDescriptionLength?.length === 0 && idx === 0 && (
