@@ -90,13 +90,13 @@ export const TenantThemeProvider: React.FC<TenantThemeProviderProps> = (
 ) => {
   const tenant = useTenant();
 
-  // const themeUrl =
-  //   !!tenant && !!tenant.tenant && !!tenant.tenant.themePath
-  //     ? tenant.tenant.themePath
-  //     : props.defaultThemeUrl;
+  const themeUrl =
+    !!tenant && !!tenant.tenant && !!tenant.tenant.themePath
+      ? tenant.tenant.themePath
+      : props.defaultThemeUrl;
 
   return (
-    <ThemeProvider themeEndPoint={props.defaultThemeUrl} overRideCache={true}>
+    <ThemeProvider themeEndPoint={themeUrl} overRideCache={true}>
       {props.children}
     </ThemeProvider>
   );
