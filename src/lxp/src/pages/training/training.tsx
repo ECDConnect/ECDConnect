@@ -9,6 +9,7 @@ import React from 'react';
 import { userSelectors } from '@store/user';
 import { PractitionerService } from '@/services/PractitionerService';
 import { useTenant } from '@/hooks/useTenant';
+import ROUTES from '@/routes/routes';
 
 export const Training: React.FC = () => {
   const { isOnline } = useOnlineStatus();
@@ -60,6 +61,7 @@ export const Training: React.FC = () => {
       title="Training"
       backgroundColour="white"
       displayOffline={!isOnline}
+      onClose={() => history.push(ROUTES.DASHBOARD)}
     >
       {!loginPosted && (
         <div className="divide-uiLight divide-y-2 divide-dashed">
