@@ -94,9 +94,9 @@ module.exports = {
         secondaryMain: 'var(--secondaryMain)',
         quinary: 'var(--quinary)',
       },
-            backgroundImage: (theme) => ({
-        logo: "url('./assets/logo.svg')",
-        bannerx2: "url('./assets/bannerx2.png')",
+       backgroundImage: (theme) => ({
+        logo: "var(--logo)",
+        bannerx2: "var(--banner)",
       }),      
       animation: {
         spinner: 'spin 1.5s linear infinite',
