@@ -96,7 +96,7 @@ namespace EcdLink.Moodle.Services
             await conn.OpenAsync();
 
             // First see if record already exists
-            long moodleUserId = await GetMoodleUserId(conn, user.UserName);
+            long moodleUserId = await GetMoodleUserId(conn, moodleUser.UserName);
 
             DateTimeOffset dto = new(DateTime.Now);
             long timestamp = dto.ToUnixTimeSeconds();
