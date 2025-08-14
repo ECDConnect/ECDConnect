@@ -126,9 +126,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 ClassroomGroupId = classgroupId,
                 ChildId = newChild.Id,
                 ChildUserId = child.UserId.Value,
-                CaregiverRegistrationUrl = shortUrlManager.GetUrlToken(
+                CaregiverRegistrationUrl = await shortUrlManager.GetUrlToken(
                     registrationUrl,
-                    child.User,
+                    child.User.Id,
                     "ChildRegistration"),
             };
 
@@ -455,9 +455,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 ClassroomGroupId = classgroupId,
                 ChildId = child.Id,
                 ChildUserId = child.UserId.Value,
-                CaregiverRegistrationUrl = shortUrlManager.GetUrlToken(
+                CaregiverRegistrationUrl = await shortUrlManager.GetUrlToken(
                     registrationUrl,
-                    child.User,
+                    child.User.Id,
                     "ChildRegistration"),
             };
 

@@ -2,6 +2,7 @@ using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Notifications.Model;
 using ECDLink.UrlShortner.Managers;
 using System;
+using System.Threading.Tasks;
 
 namespace ECDLink.Notifications.Templates
 {
@@ -14,9 +15,9 @@ namespace ECDLink.Notifications.Templates
             _shortenManager = shortenManager;
         }
 
-        public Action<ITemplateOverrideModel> ShortenUrl(ApplicationUser user, string messageType)
+        public Func<ITemplateOverrideModel, Task> ShortenUrl(ApplicationUser user, string messageType, Guid? messageLogId)
         {
-            return (model =>
+            return (async model =>
             {
                 Uri uriResult;
                 bool isCreated = Uri.TryCreate(model.Value, UriKind.Absolute, out uriResult);
@@ -31,16 +32,15 @@ namespace ECDLink.Notifications.Templates
                     return;
                 }
 
-                var token = _shortenManager.GetUrlToken(model.Value, user, messageType);
+                var token = await _shortenManager.GetUrlToken(model.Value, user.Id, messageType, messageLogId);
 
                 model.Value = token;
             });
-
         }
 
-        public Action<ITemplateOverrideModel> ReplaceValue(string replaceValue)
+        public Func<ITemplateOverrideModel, Task> ReplaceValue(string replaceValue)
         {
-            return (s) =>
+            return async (s) =>
             {
                 s.Value = replaceValue;
             };
