@@ -12,25 +12,23 @@ namespace ECDLink.Notifications.MessageLogs
 {
     internal class SmsMessageLogger : IMessageLogger<BulkSmsMessage>
     {
-        private readonly AuthenticationDbContext _context;
-        private readonly DbSet<MessageLog> _messageLog;
-        private ILogger<SmsMessageLogger> _logger;
+        private readonly AuthenticationDbContext _dbContext;
+        private readonly ILogger<SmsMessageLogger> _logger;
 
         public SmsMessageLogger(IDbContextFactory<AuthenticationDbContext> dbContextFactory, ILogger<SmsMessageLogger> logger)
         {
-            _context = dbContextFactory.CreateDbContext();
-            _messageLog = _context.Set<MessageLog>();
+            _dbContext = dbContextFactory.CreateDbContext();
             _logger = logger;
         }
 
-        public bool Log(BulkSmsMessage message, string messageTemplateType)
+        public Guid? Log(BulkSmsMessage message, string messageTemplateType, Guid? messageLogId = null)
         {
-            int result = 0;
+            Guid id = messageLogId ?? Guid.NewGuid();
             try
             {
-                _messageLog.Add(new MessageLog()
+                _dbContext.MessageLogs.Add(new MessageLog()
                 {
-                    Id = Guid.NewGuid(),
+                    Id = id,
                     MessageTemplateType = messageTemplateType,
                     MessageProtocol = MessageTypeConstants.SMS,
                     From = "System",
@@ -43,23 +41,24 @@ namespace ECDLink.Notifications.MessageLogs
                     TenantId = TenantExecutionContext.Tenant.Id
                 });
                 
-                result = _context.SaveChanges();
+                _dbContext.SaveChanges();
+                return id;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Could not log message data.");
             }
-
-            return result == 1;
+            return null;
         }
 
-        public async Task<bool> LogAsync(BulkSmsMessage message, string messageTemplateType)
+        public async Task<Guid?> LogAsync(BulkSmsMessage message, string messageTemplateType, Guid? messageLogId)
         {
-            int result = 0;
+            Guid id = messageLogId ?? Guid.NewGuid();
             try
             {
-                _messageLog.Add(new MessageLog()
+                _dbContext.MessageLogs.Add(new MessageLog()
                 {
+                    Id = id,
                     MessageTemplateType = messageTemplateType,
                     MessageProtocol = MessageTypeConstants.SMS,
                     From = "System",
@@ -71,14 +70,15 @@ namespace ECDLink.Notifications.MessageLogs
                     SentByUserId = Guid.Empty,
                     TenantId = TenantExecutionContext.Tenant.Id
                 });
-                result = await _context.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync();
+                return id;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Could not log message data.");
             }
 
-            return result == 1;
+            return null;
         }
     }
 }

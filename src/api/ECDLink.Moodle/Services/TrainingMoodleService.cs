@@ -1,5 +1,5 @@
-﻿using ECDLink.Core.Models;
-using ECDLink.Core.Services.Interfaces;
+﻿using ECDLink.Core.Services.Interfaces;
+using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Training;
 using ECDLink.DataAccessLayer.Hierarchy;
@@ -8,11 +8,13 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Moodle.Models;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Npgsql;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,14 +25,15 @@ namespace EcdLink.Moodle.Services
     {
         private readonly IConfiguration _configuration;
         private readonly MoodleConfig _config;
+        private readonly AuthenticationDbContext _dbContext;
         private readonly IGenericRepositoryFactory _repoFactory;
-        private readonly HierarchyEngine _hierarchyEngine;
         private readonly Guid _adminUserId;
         private readonly ApplicationUserManager _userManager;
         private readonly ILogger<TrainingMoodleService> _logger;
         private readonly IPointsService _pointsService;
 
         public TrainingMoodleService(IConfiguration configuration, 
+            AuthenticationDbContext dbContext,
             IGenericRepositoryFactory repoFactory, 
             HierarchyEngine hierarchyEngine, 
             ApplicationUserManager userManager, 
@@ -38,9 +41,9 @@ namespace EcdLink.Moodle.Services
             [Service] IPointsService pointsService)
         {
             _configuration = configuration;
+            _dbContext = dbContext;
             _repoFactory = repoFactory;
-            _hierarchyEngine = hierarchyEngine;
-            _adminUserId = _hierarchyEngine.GetAdminUserId().GetValueOrDefault();
+            _adminUserId = hierarchyEngine.GetAdminUserId().GetValueOrDefault();
             _userManager = userManager;
             _logger = logger;
             _pointsService = pointsService;
@@ -60,28 +63,29 @@ namespace EcdLink.Moodle.Services
             }
         }
 
-        public async Task<bool> CreateUserAsync(ApplicationIdentityUser _user)
+        public async Task<bool> CreateUserAsync(Guid userId)
         {
             if (!Enabled) 
                 return false;
 
-            var user = new MoodleUser()
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                return false;
+
+            var moodleUser = new MoodleUser()
             {
-                UserName = _user.Id.ToString(),
+                UserName = user.Id.ToString(),
                 Password = _config.Site.DefaultPassword,
-                IdNumber = _user.IdNumber ?? "",
-                Firstname = _user.FirstName ?? " ",
-                Lastname = _user.Surname ?? " ",
-                Email = string.Format(_config.Site.EmailFormatString, _user.Id, _user.FirstName, _user.Surname),
-                Phone1 = _user.PhoneNumber ?? ""
+                IdNumber = user.IdNumber ?? "",
+                Firstname = user.FirstName ?? " ",
+                Lastname = user.Surname ?? " ",
+                Email = string.Format(_config.Site.EmailFormatString, user.Id, user.FirstName, user.Surname),
+                Phone1 = user.PhoneNumber ?? ""
             };
 
-            var cohorts = new List<string>();
-            var allCohorts = _config.UserTypes.First(x => x.UserType == "*").Cohorts;
-            foreach (var cohort in allCohorts)
-            {
-                cohorts.Add(cohort);
-            }
+            var roles = await _userManager.GetRolesAsync(user);
+
+            var cohorts = _config.UserTypes.Where(x => x.UserType == "*" || roles.Contains(x.UserType)).SelectMany(x => x.Cohorts).Distinct().ToList();
 
             if (cohorts.Count == 0)
             {
@@ -92,15 +96,15 @@ namespace EcdLink.Moodle.Services
             await conn.OpenAsync();
 
             // First see if record already exists
-            long userId = await GetMoodleUserId(conn, user.UserName);
+            long moodleUserId = await GetMoodleUserId(conn, user.UserName);
 
-            DateTimeOffset dto = new DateTimeOffset(DateTime.Now);
+            DateTimeOffset dto = new(DateTime.Now);
             long timestamp = dto.ToUnixTimeSeconds();
 
             // Add if new user
-            if (userId == -1)
+            if (moodleUserId == -1)
             {
-                userId = await InsertMoodleUserId(conn, user);
+                moodleUserId = await InsertMoodleUserId(conn, moodleUser);
             }
 
             foreach (var cohortName in cohorts)
@@ -109,21 +113,21 @@ namespace EcdLink.Moodle.Services
                 long cohortId = await GetMoodleCohortId(conn, cohortName);
                 if (cohortId == -1) continue;
 
-                long cohortMemberId = await GetMoodleCohortMemberId(conn, cohortId, userId, timestamp);
+                long cohortMemberId = await GetMoodleCohortMemberId(conn, cohortId, moodleUserId);
 
                 // Add the cohort member record if not existed
                 if (cohortMemberId == -1)
                 {
-                    await InsertMoodleCohortMemberId(conn, userId, cohortId, timestamp);
+                    await InsertMoodleCohortMemberId(conn, moodleUserId, cohortId, timestamp);
                 }
             }
 
             if (cohorts.Count > 0)
             {
-                await EnrolUserToCohortCourses(conn, userId, timestamp);
+                await EnrolUserToCohortCourses(conn, moodleUserId, timestamp);
             }
 
-            conn.Close();
+            await conn.CloseAsync();
 
             return true;
         }
@@ -136,7 +140,7 @@ namespace EcdLink.Moodle.Services
             return connectionString;
         }
 
-        private async Task<long> GetMoodleUserId(NpgsqlConnection conn, string name)
+        private static async Task<long> GetMoodleUserId(NpgsqlConnection conn, string name)
         {
             await using var cmd = new NpgsqlCommand("SELECT id FROM public.mdl_user where userName = (@userName)", conn)
             {
@@ -149,13 +153,13 @@ namespace EcdLink.Moodle.Services
             {
                 userId = reader.GetInt64(0);
             }
-            reader.Close();
+            await reader.CloseAsync();
             return userId;
         }
 
-        private async Task<long> InsertMoodleUserId(NpgsqlConnection conn, MoodleUser user)
+        private static async Task<long> InsertMoodleUserId(NpgsqlConnection conn, MoodleUser user)
         {
-            DateTimeOffset dto = new DateTimeOffset(DateTime.Now);
+            DateTimeOffset dto = new(DateTime.Now);
             var unixTimeStamp = dto.ToUnixTimeSeconds();
 
             await using var cmd = new NpgsqlCommand("INSERT INTO public.mdl_user" +
@@ -186,7 +190,7 @@ namespace EcdLink.Moodle.Services
             return userId;
         }
 
-        private async Task<long> GetMoodleCohortId(NpgsqlConnection conn, string name)
+        private static async Task<long> GetMoodleCohortId(NpgsqlConnection conn, string name)
         {
             await using var cmd = new NpgsqlCommand("SELECT id FROM public.mdl_cohort where name = (@cohortName) or idnumber = (@cohortName)", conn)
             {
@@ -199,16 +203,16 @@ namespace EcdLink.Moodle.Services
             {
                 cohortId = reader.GetInt64(0);
             }
-            reader.Close();
+            await reader.CloseAsync();
 
             return cohortId;
         }
 
-        private async Task InsertMoodleCohortMemberId(NpgsqlConnection conn, long userId, long cohortId, long timestamp = 0)
+        private static async Task InsertMoodleCohortMemberId(NpgsqlConnection conn, long userId, long cohortId, long timestamp = 0)
         {
             if (timestamp == 0)
             {
-                DateTimeOffset dto = new DateTimeOffset(DateTime.Now);
+                DateTimeOffset dto = new(DateTime.Now);
                 timestamp = dto.ToUnixTimeSeconds();
             }
 
@@ -228,14 +232,8 @@ namespace EcdLink.Moodle.Services
             await cmd.ExecuteNonQueryAsync();
         }
 
-        private async Task<long> GetMoodleCohortMemberId(NpgsqlConnection conn, long cohortId, long userId, long timestamp = 0)
+        private static async Task<long> GetMoodleCohortMemberId(NpgsqlConnection conn, long cohortId, long userId)
         {
-            if (timestamp == 0)
-            {
-                DateTimeOffset dto = new DateTimeOffset(DateTime.Now);
-                timestamp = dto.ToUnixTimeSeconds();
-            }
-
             await using var cmd = new NpgsqlCommand("SELECT id FROM public.mdl_cohort_members where cohortid = (@cohortId) and userid = (@userId)", conn)
             {
                 Parameters = {
@@ -251,16 +249,16 @@ namespace EcdLink.Moodle.Services
             {
                 cohortMemberId = reader.GetInt64(0);
             }
-            reader.Close();
+            await reader.CloseAsync();
 
             return cohortMemberId;
         }
 
-        private async Task EnrolUserToCohortCourses(NpgsqlConnection conn, long userId, long timestamp = 0)
+        private static async Task EnrolUserToCohortCourses(NpgsqlConnection conn, long userId, long timestamp = 0)
         {
             if (timestamp == 0)
             {
-                DateTimeOffset dto = new DateTimeOffset(DateTime.Now);
+                DateTimeOffset dto = new(DateTime.Now);
                 timestamp = dto.ToUnixTimeSeconds();
             }
 
@@ -287,158 +285,190 @@ where mu.id = @userId
             await cmd.ExecuteNonQueryAsync();
         }
 
-        private async Task<string> GetMoodleSessionId(NpgsqlConnection conn, long userId)
-        {
-            await using var cmd = new NpgsqlCommand("SELECT sid FROM public.mdl_sessions where userid = (@userId)", conn)
-            {
-                Parameters = { new NpgsqlParameter("userId", userId) }
-            };
-            await using var reader = await cmd.ExecuteReaderAsync();
-
-            string dbSessionId = "";
-            while (await reader.ReadAsync())
-            {
-                dbSessionId = reader.GetString(0);
-            }
-            reader.Close();
-
-            return dbSessionId;
-        }
-
         public async Task SyncCompletedCourses()
         {
-            if (!Enabled) return;
-            if (TenantExecutionContext.Tenant.TenantType == ECDLink.Tenancy.Enums.TenantType.CHWConnect) return;
+            if (!Enabled)
+            {
+                _logger.LogInformation("Moodle Course sync disabled.");
+                return;
+            }
+
+            if (TenantExecutionContext.Tenant.TenantType == ECDLink.Tenancy.Enums.TenantType.CHWConnect)
+            {
+                _logger.LogInformation("Moodle Course sync skipped for CHWConnect tenant.");
+                return;
+            }
 
             try
             {
-                var userMap = new Dictionary<string, Guid?>();
-
-                var userTrainingCourseRepo = _repoFactory.CreateGenericRepository<UserTrainingCourse>(userContext: _adminUserId);
-
-                DateTime lastInserted = userTrainingCourseRepo.GetAll().OrderByDescending(x => x.CompletedDate).Select(x => x.CompletedDate).FirstOrDefault();
-                var fromCompletedDate = lastInserted == DateTime.MinValue ? new DateTime(2023, 1, 1) : lastInserted;
-                long fromCompleted = new DateTimeOffset(fromCompletedDate).ToUnixTimeSeconds();
-                _logger.LogInformation("Fetching moodle completed course info from '{0}' {1}", fromCompletedDate, fromCompleted);
-
-                var cohorts = _config.UserTypes.First(x => x.UserType == "*").Cohorts.Where(x => !x.Contains("-ui")).ToList();
-                if (cohorts.Count > 1)
+                var cohorts = _config.UserTypes.SelectMany(x => x.Cohorts).Where(x => !x.EndsWith("-ui")).Distinct().ToArray();
+                if (cohorts.Length == 0)
                 {
-                    // remove the OA cohort for a WL tenant
-                    cohorts = cohorts.Where(x => x != "ecd-connect").ToList();
+                    _logger.LogInformation("No cohorts found for {Tenant}", TenantExecutionContext.Tenant.Id);
+                    return;
                 }
-                if (cohorts.Count == 0) return;
 
-                var cohort = cohorts.First();
+                var userMap = new ConcurrentDictionary<string, Guid?>();
 
-                await using var conn = new NpgsqlConnection(GetConnectionString());
-                await conn.OpenAsync();
+                var fromCompletedDate = await GetLastCompletedDateAsync();
+                //long fromCompleted = new DateTimeOffset(fromCompletedDate).ToUnixTimeSeconds();
+                _logger.LogInformation("Fetching Moodle completed courses since {FromCompletedDate}", fromCompletedDate);
 
-                await using var cmd = new NpgsqlCommand($@"
-select mc.name cohort, mu.username, mu.email, course.fullname course, compl.timeenrolled, compl.timestarted, compl.timecompleted
-from mdl_course_completions compl
-join mdl_course course on compl.course = course.id
-join mdl_user mu on compl.userid = mu.id 
-join mdl_cohort_members mcm on mu.id = mcm.userid 
-join mdl_cohort mc on mcm.cohortid = mc.id 
-where (mc.idnumber = '{cohort}' or mc.name = '{cohort}')
-    and compl.timecompleted > (@fromCompleted)
-	and compl.timecompleted is not null
-    and mc.idnumber not ilike '%-ui'
-order by compl.timecompleted;
-"
-                    , conn)
-                    {
-                        Parameters = { new NpgsqlParameter("fromCompleted", fromCompleted) }
-                    };
-                ;
-                await using var reader = await cmd.ExecuteReaderAsync();
+                var records = await FetchCompletedCoursesAsync(cohorts, fromCompletedDate);
+                long rows = await ProcessCourseRecordsAsync(records, userMap);
 
-                long rows = 0;
-                while (await reader.ReadAsync())
-                {
-                    //var cohort = reader.GetString(0);
-                    var username = reader.GetString(1);
-                    var email = reader.GetString(2);
-                    var course = reader.GetString(3);
-                    Int64? uxTimeCompleted = reader.IsDBNull(6) ? null : reader.GetInt64(6);
-                    DateTime? timeCompleted = null;
-                    if (uxTimeCompleted.HasValue)
-                    {
-                        timeCompleted = DateTimeOffset.FromUnixTimeSeconds(uxTimeCompleted.Value).UtcDateTime;
-                    }
-
-                    if (!timeCompleted.HasValue) timeCompleted = DateTime.Now;
-
-                    Guid? userId = null;
-                    if (!userMap.ContainsKey(username))
-                    {
-                        Guid testUserId;
-                        ApplicationUser user = null;
-                        if (Guid.TryParse(username, out testUserId))
-                        {
-                            user = await _userManager.FindByIdAsync(testUserId);
-                        }
-                        else
-                        {
-                            user = await _userManager.FindByNameAsync(username);
-                        }
-                        if (user != null) userId = user.Id;
-                        userMap.Add(username, userId);
-                    }
-                    else
-                    {
-                        userId = userMap[username];
-                    }
-
-                    if (userId.HasValue)
-                    {
-                        var userTrainingCourse = new UserTrainingCourse()
-                        {
-                            Id = Guid.NewGuid(),
-                            UserId = userId.Value,
-                            CourseName = course,
-                            CompletedDate = timeCompleted.Value,
-                            UpdatedBy = _adminUserId.ToString()
-                        };
-                        userTrainingCourseRepo.Insert(userTrainingCourse);
-                        rows++;
-                    }
-                }
-                reader.Close();
-
-                await conn.CloseAsync();
-
-                _logger.LogInformation("Records inserted {0}", rows);
+                _logger.LogInformation("Inserted {Rows} user training course records.", rows);
 
                 var pointsCalculated = 0;
                 foreach (var userId in userMap.Values)
                 {
                     if (!userId.HasValue) continue;
-                    _pointsService.CalculateCompleteOnlineTrainingCourse(userId.Value);
+                    await _pointsService.CalculateCompleteOnlineTrainingCourse(userId.Value);
                     pointsCalculated++;
                 }
-                _logger.LogInformation("Points calculated for {0} users", pointsCalculated);
+                _logger.LogInformation("Calculated points for {PointsCalculated} users.", pointsCalculated);
             }
             catch (Exception ex) 
             {
                 _logger.LogError(ex, ex.Message);
             }
-            finally
-            {
-            }
-
-            return;
         }
 
         public async Task<IEnumerable<object>> GetUserCompletedCourses(Guid userId)
         {
             var userTrainingCourseRepo = _repoFactory.CreateGenericRepository<UserTrainingCourse>(userContext: _adminUserId);
-            var list = userTrainingCourseRepo
+            var list = await userTrainingCourseRepo
                 .GetAll()
                 .Where(x => x.UserId == userId)
-                .ToList();
+                .ToListAsync();
             return list;
+        }
+
+        private async Task<DateTime> GetLastCompletedDateAsync()
+        {
+            var lastCompleted = await _dbContext.UserTrainingCourses
+                .Where(x => x.TenantId == TenantExecutionContext.Tenant.Id && x.IsActive)
+                .OrderByDescending(x => x.CompletedDate)
+                .Select(x => x.CompletedDate)
+                .FirstOrDefaultAsync();
+
+            return lastCompleted == DateTime.MinValue
+                ? new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+                : lastCompleted;
+        }
+
+        private async Task<List<(string Username, string Course, DateTime CompletedDate)>> FetchCompletedCoursesAsync(string[] cohorts, DateTime fromCompleted)
+        {
+            var records = new List<(string, string, DateTime)>();
+            await using var conn = new NpgsqlConnection(GetConnectionString());
+            await conn.OpenAsync();
+
+            string query = @"
+            SELECT DISTINCT mu.username, course.fullname AS course, to_timestamp(compl.timecompleted) timecompleted, to_timestamp(compl.timeenrolled) timeenrolled
+            FROM mdl_course_completions compl
+            JOIN mdl_course course ON compl.course = course.id
+            JOIN mdl_user mu ON compl.userid = mu.id 
+            JOIN mdl_cohort_members mcm ON mu.id = mcm.userid 
+            JOIN mdl_cohort mc ON mcm.cohortid = mc.id 
+            WHERE (mc.idnumber = ANY(@cohorts) OR mc.name = ANY(@cohorts))
+                AND to_timestamp(compl.timecompleted) > @fromCompleted
+                AND compl.timecompleted IS NOT NULL
+                AND mc.idnumber NOT ILIKE '%-ui'
+            ORDER BY timeenrolled DESC";
+
+            await using var cmd = new NpgsqlCommand(query, conn)
+            {
+                Parameters = {
+                new NpgsqlParameter("cohorts", cohorts),
+                new NpgsqlParameter("fromCompleted", fromCompleted)
+            }
+            };
+
+            await using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                var username = reader.GetString(0);
+                var course = reader.GetString(1);
+                //var timeCompleted = DateTimeOffset.FromUnixTimeSeconds(reader.GetInt64(2)).UtcDateTime;
+                var timeCompleted = reader.GetDateTime(2);
+                records.Add((username, course, timeCompleted));
+            }
+
+            return records;
+        }
+
+        private async Task<long> ProcessCourseRecordsAsync(
+               List<(string Username, string Course, DateTime CompletedDate)> records,
+               ConcurrentDictionary<string, Guid?> userMap)
+        {
+            long rows = 0;
+            var batch = new List<UserTrainingCourse>();
+
+            foreach (var (username, course, completedDate) in records)
+            {
+                var userId = await GetUserIdAsync(username, userMap);
+                if (!userId.HasValue)
+                {
+                    _logger.LogWarning("No user ID found for username {Username}. Skipping record.", username);
+                    continue;
+                }
+
+                var userTrainingCourse = new UserTrainingCourse
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = userId.Value,
+                    CourseName = course,
+                    CompletedDate = completedDate,
+                    UpdatedBy = _adminUserId.ToString(),
+                    TenantId = TenantExecutionContext.Tenant.Id,
+                    InsertedDate = DateTime.Now,
+                    UpdatedDate = DateTime.Now,
+                    IsActive = true
+                };
+
+                batch.Add(userTrainingCourse);
+                rows++;
+
+                // Batch insert every 100 records to balance memory and performance
+                if (batch.Count >= 100)
+                {
+                    _dbContext.UserTrainingCourses.AddRange(batch);
+                    await _dbContext.SaveChangesAsync();
+                    batch.Clear();
+                }
+            }
+
+            // Insert remaining records
+            if (batch.Count > 0)
+            {
+                _dbContext.UserTrainingCourses.AddRange(batch);
+                await _dbContext.SaveChangesAsync();
+            }
+
+            return rows;
+        }
+
+        private async Task<Guid?> GetUserIdAsync(string username, ConcurrentDictionary<string, Guid?> userMap)
+        {
+            if (string.IsNullOrEmpty(username))
+            {
+                return null;
+            }
+
+            if (userMap.TryGetValue(username, out Guid? userId))
+            {
+                return userId;
+            }
+
+            var isId = Guid.TryParse(username, out Guid parsedId);
+            userId = await (from u in _dbContext.Users
+                        where u.TenantId == TenantExecutionContext.Tenant.Id
+                            && ((isId && u.Id == parsedId) || (!isId && u.UserName == username))
+                        select new Guid?(u.Id)
+                       ).FirstOrDefaultAsync();
+
+            userMap.TryAdd(username, userId);
+            return userId;
         }
     }
 }
