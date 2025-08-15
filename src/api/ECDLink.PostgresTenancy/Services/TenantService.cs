@@ -50,7 +50,10 @@ namespace ECDLink.PostgresTenancy.Services
                 tenants = tenantQuery.ToList();
                 if (includeModules)
                 {
-                    tenantModulesQuery = tenantModulesQuery.Where(x => x.TenantId == tenantId.Value);
+                    if (tenantId.HasValue)
+                    {
+                        tenantModulesQuery = tenantModulesQuery.Where(x => x.TenantId == tenantId.Value);
+                    }
                     tenantModules = tenantModulesQuery.ToList();
                 }
             }
