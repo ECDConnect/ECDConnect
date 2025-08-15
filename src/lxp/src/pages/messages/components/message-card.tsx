@@ -75,6 +75,7 @@ export const MessageCard: React.FC<MessageCardProps> = ({
           fontSize="14"
           weight="normal"
           text={message}
+          autoLink={true}
         />
 
         {actionText && (
