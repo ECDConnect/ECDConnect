@@ -89,7 +89,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
   const [isLoading, setIsLoading] = useState(true);
 
   const classroomGroupLearners = useSelector(
-    classroomsSelectors.getClassroomGroupLearners
+    classroomsSelectors.getClassroomGroupLearnersForAttendance
   );
 
   const classProgrammes = classroomGroups

@@ -65,7 +65,9 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
 
   const publicHolidays = useSelector(staticDataSelectors.getHolidays);
   const attendance = useSelector(attendanceSelectors.getAttendance);
-  const learners = useSelector(classroomsSelectors.getClassroomGroupLearners);
+  const learners = useSelector(
+    classroomsSelectors.getClassroomGroupLearnersForAttendance
+  );
   const holidays = useSelector(staticDataSelectors.getHolidays);
   const [currentDate] = useState(new Date());
   const isTrialPeriod = useIsTrialPeriod();
