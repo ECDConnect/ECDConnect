@@ -235,8 +235,20 @@ export default function MessagePanel() {
     if (message !== 'null') {
       const parsedMessage = JSON.parse(message);
       const messageDate = new Date(parsedMessage.messageDate);
-      setIsView(messageDate < new Date() ? true : false);
-      setMessageStatus(messageDate < new Date() ? 'completed' : 'pending');
+      setMessageStatus(
+        parsedMessage.status === 'Scheduled'
+          ? 'pending'
+          : messageDate < new Date()
+          ? 'completed'
+          : 'pending'
+      );
+      setIsView(
+        parsedMessage.status === 'Scheduled'
+          ? false
+          : messageDate < new Date()
+          ? true
+          : false
+      );
       setCurrentMessage(parsedMessage);
     }
   }, [message]);
@@ -390,8 +402,11 @@ export default function MessagePanel() {
   const getTitle = () => {
     if (currentMessage) {
       const messageDate = new Date(currentMessage.messageDate);
-
-      return messageDate < new Date() ? 'View message' : 'Edit message';
+      return messageStatus === 'pending'
+        ? 'Edit message'
+        : messageDate < new Date()
+        ? 'View message'
+        : 'Edit message';
     }
     return 'Send a message';
   };

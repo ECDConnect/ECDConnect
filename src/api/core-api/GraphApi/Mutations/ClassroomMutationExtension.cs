@@ -104,23 +104,31 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     // only send to practitioner and not principal
                     if (practitioner != null && !practitioner.IsPrincipalOrAdmin())
                     {
-                        var classroom = schoolRepo.GetById(input.ClassroomId);
-                        var principalToSend = userManager.FindByIdAsync(classroom.UserId.Value.ToString()).Result;
-                        var userToSend = userManager.FindByIdAsync(input.UserId.Value.ToString()).Result;
-                        List<TagsReplacements> replacements = new List<TagsReplacements>
+                        var startDate = practitioner.StartDate.Value.Date;
+                        var endDate = DateTime.Today;
+                        var trailPeriodDays = (endDate - startDate).TotalDays;
+                        if (trailPeriodDays >= 31)
                         {
-                            new TagsReplacements()
+                            var classroom = schoolRepo.GetById(input.ClassroomId);
+                            var principalToSend = userManager.FindByIdAsync(classroom.UserId.Value.ToString()).Result;
+                            var userToSend = userManager.FindByIdAsync(input.UserId.Value.ToString()).Result;
+                            if (classroom.UserId.Value.ToString() != input.UserId.Value.ToString()) {
+                                List<TagsReplacements> replacements = new List<TagsReplacements>
                             {
-                                FindValue = "ClassName",
-                                ReplacementValue = input.Name
-                            },
-                            new TagsReplacements()
-                            {
-                                FindValue = "PrincipalName",
-                                ReplacementValue = principalToSend.FirstName + " " + principalToSend.Surname
+                                new TagsReplacements()
+                                {
+                                    FindValue = "ClassName",
+                                    ReplacementValue = input.Name
+                                },
+                                new TagsReplacements()
+                                {
+                                    FindValue = "PrincipalName",
+                                    ReplacementValue = principalToSend.FirstName + " " + principalToSend.Surname
+                                }
+                            };
+                                notificationService.SendNotificationAsync(null, TemplateTypeConstants.ReassignedToNewClass, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null, new List<RelatedEntity> { new RelatedEntity(newClassRoomGroup.Id, "ClassRoomGroup") });
                             }
-                        };
-                        notificationService.SendNotificationAsync(null, TemplateTypeConstants.ReassignedToNewClass, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null, new List<RelatedEntity> { new RelatedEntity(newClassRoomGroup.Id, "ClassRoomGroup") });
+                        }
                     }
 
                     // add points for adding a new class for the principal
@@ -173,9 +181,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     // only send to practitioner and not principal
                     if (practitioner != null && !practitioner.IsPrincipalOrAdmin())
                     {
-                        var principalToSend = userManager.FindByIdAsync(classRoomGroup.Classroom.UserId.Value.ToString()).Result;
-                        var userToSend = userManager.FindByIdAsync(input.UserId.Value.ToString()).Result;
-                        List<TagsReplacements> replacements = new List<TagsReplacements>
+                        var startDate = practitioner.StartDate.Value.Date;
+                        var endDate = DateTime.Today;
+                        var trailPeriodDays = (endDate - startDate).TotalDays;
+                        var isTrialPeriod = trailPeriodDays < 31;
+                        if (trailPeriodDays >= 31)
+                        {
+                            var principalToSend = userManager.FindByIdAsync(classRoomGroup.Classroom.UserId.Value.ToString()).Result;
+                            var userToSend = userManager.FindByIdAsync(input.UserId.Value.ToString()).Result;
+                            if (classRoomGroup.Classroom.UserId.Value.ToString() != input.UserId.Value.ToString())
+                            {
+                                List<TagsReplacements> replacements = new List<TagsReplacements>
                         {
                             new TagsReplacements()
                             {
@@ -188,7 +204,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                 ReplacementValue = principalToSend.FirstName + " " + principalToSend.Surname
                             }
                         };
-                        notificationService.SendNotificationAsync(null, TemplateTypeConstants.ReassignedToNewClass, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null, new List<RelatedEntity> { new RelatedEntity(classRoomGroup.Id, "ClassRoomGroup") });
+                                notificationService.SendNotificationAsync(null, TemplateTypeConstants.ReassignedToNewClass, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null, new List<RelatedEntity> { new RelatedEntity(classRoomGroup.Id, "ClassRoomGroup") });
+                            }
+                        }
                     }
 
                     // if the user has changed, we need to disable notification for previous user.
