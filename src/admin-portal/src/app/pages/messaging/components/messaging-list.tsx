@@ -63,8 +63,7 @@ export default function MessageList() {
   }, [messages, getAllMessageLogsForAdmin]);
 
   const getFormattedDate = (mDate: Date) => {
-    const date = new Date(mDate);
-    return new Date(date.toISOString());
+    return new Date(mDate);
   };
 
   const getFormattedDateString = (mDate: Date) => {
@@ -85,7 +84,7 @@ export default function MessageList() {
               ? getFormattedDateString(item.messageDate)
               : '',
           status:
-            item.messageDate.getTime() > new Date().getTime()
+            getFormattedDate(item.messageDate) > new Date()
               ? 'Scheduled'
               : 'Sent',
           id: index.toString(),
