@@ -64,7 +64,6 @@ export default function MessageList() {
 
   const getFormattedDate = (mDate: Date) => {
     const date = new Date(mDate);
-    console.log('Message date : ' + mDate + ', now : ' + new Date());
     return new Date(date.toISOString());
   };
 
@@ -85,7 +84,10 @@ export default function MessageList() {
             item.messageDate !== null
               ? getFormattedDateString(item.messageDate)
               : '',
-          status: item.messageDate > new Date() ? 'Scheduled' : 'Sent',
+          status:
+            getFormattedDate(item.messageDate) > new Date()
+              ? 'Scheduled'
+              : 'Sent',
           id: index.toString(),
         })
       );
