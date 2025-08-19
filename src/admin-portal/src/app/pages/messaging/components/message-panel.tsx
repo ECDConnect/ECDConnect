@@ -50,7 +50,6 @@ export default function MessagePanel() {
         function (value) {
           const { messageDate } = this.parent;
           if (!value || !messageDate) return true;
-          console.log('validating time selected: ' + value);
           const now = new Date();
           if (messageDate.toDateString() === new Date().toDateString()) {
             const selectedTime = new Date();
