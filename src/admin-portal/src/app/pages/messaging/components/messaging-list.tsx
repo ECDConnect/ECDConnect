@@ -85,7 +85,7 @@ export default function MessageList() {
               ? getFormattedDateString(item.messageDate)
               : '',
           status:
-            getFormattedDate(item.messageDate) > new Date()
+            getFormattedDate(item.messageDate).getTime() > new Date().getTime()
               ? 'Scheduled'
               : 'Sent',
           id: index.toString(),
