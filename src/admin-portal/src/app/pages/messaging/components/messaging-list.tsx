@@ -63,7 +63,8 @@ export default function MessageList() {
   }, [messages, getAllMessageLogsForAdmin]);
 
   const getFormattedDate = (mDate: Date) => {
-    return new Date(mDate);
+    const date = new Date(mDate);
+    return new Date(date.toISOString());
   };
 
   const getFormattedDateString = (mDate: Date) => {
