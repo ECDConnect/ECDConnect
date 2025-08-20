@@ -2,12 +2,11 @@ import { useEffect, useState } from 'react';
 import { LocalStorageKeys, AuthUser, MessageLogDto } from '@ecdlink/core';
 import { MailIcon, SearchIcon } from '@heroicons/react/solid';
 import debounce from 'lodash.debounce';
-import { isAfter } from 'date-fns';
+import { format, subDays } from 'date-fns';
 
 import { GetAllMessageLogsForAdmin } from '@ecdlink/graphql';
 import { useLazyQuery } from '@apollo/client';
 import { SearchDropDown, SearchDropDownOption, Dropdown } from '@ecdlink/ui';
-import { subDays } from 'date-fns';
 import CustomDateRangePicker from '../../../components/date-picker';
 import NavigationTable from '../../../components/navigation-table';
 import { useHistory } from 'react-router';
@@ -20,7 +19,7 @@ export default function MessageList() {
   const [tableData, setTableData] = useState<any[]>([]);
   const [authenticatedUser, setAuthenticatedUser] = useState<AuthUser>();
   const [searchValue, setSearchValue] = useState('');
-  const [roleData, setRoleData] = useState<MessageRoleDto[]>([]);
+  const [roleData] = useState<MessageRoleDto[]>([]);
   const [showFilter, setShowFilter] = useState(false);
   const [statusFilter, setStatusFilter] = useState('');
   const [selectedRoles, setSelectedRoles] = useState<MessageRoleDto[]>(ssRoles);
@@ -68,8 +67,8 @@ export default function MessageList() {
     messageDate: string | null | undefined
   ): string => {
     if (!messageDate) return '';
-    const dateItems = messageDate.split('T');
-    return dateItems[0] + '  ' + dateItems[1].slice(0, 5);
+    const date = new Date(messageDate);
+    return format(date, 'yyyy-MM-dd HH:mm');
   };
 
   const getMessageStatus = (messageDate: string | null | undefined): string => {
