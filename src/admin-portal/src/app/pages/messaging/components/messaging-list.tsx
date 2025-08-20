@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { LocalStorageKeys, AuthUser, MessageLogDto } from '@ecdlink/core';
 import { MailIcon, SearchIcon } from '@heroicons/react/solid';
 import debounce from 'lodash.debounce';
+import { isAfter } from 'date-fns';
 
 import { GetAllMessageLogsForAdmin } from '@ecdlink/graphql';
 import { useLazyQuery } from '@apollo/client';
@@ -30,6 +31,7 @@ export default function MessageList() {
   const currentDate = new Date();
   const startDate = subDays(currentDate, 30);
   const endDate = currentDate;
+  const now = new Date();
 
   const [selectedRange, setSelectedRange] = useState<Date[]>([
     startDate,
@@ -64,7 +66,7 @@ export default function MessageList() {
 
   const getFormattedDate = (mDate: Date) => {
     const date = new Date(mDate);
-    return new Date(date.toISOString());
+    return date.toString();
   };
 
   const getFormattedDateString = (mDate: Date) => {
@@ -76,20 +78,20 @@ export default function MessageList() {
   useEffect(() => {
     if (messages) {
       const copyItems = messages.allMessageLogsForAdmin.map(
-        (item: MessageLogDto, index: number) => ({
-          ...item,
-          message: item.message,
-          subject: item.subject,
-          messageDate:
-            item.messageDate !== null
-              ? getFormattedDateString(item.messageDate)
-              : '',
-          status:
-            getFormattedDate(item.messageDate) > new Date()
-              ? 'Scheduled'
-              : 'Sent',
-          id: index.toString(),
-        })
+        (item: MessageLogDto, index: number) => {
+          console.log('messageDate: ' + item.messageDate + ', now : ' + now);
+          return {
+            ...item,
+            message: item.message,
+            subject: item.subject,
+            messageDate:
+              item.messageDate !== null
+                ? getFormattedDateString(item.messageDate)
+                : '',
+            status: isAfter(item.messageDate, now) ? 'Scheduled' : 'Sent',
+            id: index.toString(),
+          };
+        }
       );
       setTableData(copyItems);
     }
