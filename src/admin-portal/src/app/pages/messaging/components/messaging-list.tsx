@@ -64,31 +64,32 @@ export default function MessageList() {
     }
   }, [messages, getAllMessageLogsForAdmin]);
 
-  const getFormattedDate = (mDate: Date) => {
-    const date = new Date(mDate);
-    return date.toString();
+  const getMessageFormattedDateString = (
+    messageDate: string | null | undefined
+  ): string => {
+    if (!messageDate) return '';
+    const dateItems = messageDate.split('T');
+    return dateItems[0] + '  ' + dateItems[1].slice(0, 5);
   };
 
-  const getFormattedDateString = (mDate: Date) => {
-    const date = new Date(mDate).toISOString();
-    const dateItems = date.split('T');
-    return dateItems[0] + '  ' + dateItems[1].slice(0, 5);
+  const getMessageStatus = (messageDate: string | null | undefined): string => {
+    if (!messageDate) return '';
+    const date = new Date(messageDate);
+    return date > now ? 'Scheduled' : 'Sent';
   };
 
   useEffect(() => {
     if (messages) {
       const copyItems = messages.allMessageLogsForAdmin.map(
         (item: MessageLogDto, index: number) => {
-          console.log('messageDate: ' + item.messageDate + ', now : ' + now);
           return {
             ...item,
             message: item.message,
             subject: item.subject,
-            messageDate:
-              item.messageDate !== null
-                ? getFormattedDateString(item.messageDate)
-                : '',
-            status: isAfter(item.messageDate, now) ? 'Scheduled' : 'Sent',
+            messageDate: getMessageFormattedDateString(
+              item.messageDate as any as string
+            ),
+            status: getMessageStatus(item.messageDate as any as string),
             id: index.toString(),
           };
         }
