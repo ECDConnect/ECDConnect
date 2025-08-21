@@ -39,7 +39,7 @@ namespace ECDLink.Development.Notifications
             _messageLogger = messageLogger;
         }
 
-        public Task SendMessageAsync(CancellationToken cancellationToken = default)
+        public async Task SendMessageAsync(CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(_dropModel["To"]))
             {
@@ -51,7 +51,7 @@ namespace ECDLink.Development.Notifications
                 throw new KeyNotFoundException("No message template found");
             }
 
-            _dropModel["Body"] = _templateProcessor
+            _dropModel["Body"] = await _templateProcessor
                                         .SetUserContext(_model)
                                         .SetMessageTemplate(_messageTemplate)
                                         .SetMessageBody(_dropModel["Body"])
@@ -59,7 +59,7 @@ namespace ECDLink.Development.Notifications
                                         .ProcessBody();
 
             if (cancellationToken.IsCancellationRequested)
-                return Task.CompletedTask;
+                return;
 
             SmtpClient client = new SmtpClient();
             client.DeliveryMethod = SmtpDeliveryMethod.SpecifiedPickupDirectory;
@@ -104,7 +104,7 @@ namespace ECDLink.Development.Notifications
                 string userState = "test message1";
 
                 client.SendAsync(message, userState);
-                _messageLogger.Log(new EmailMessage()
+                await _messageLogger.LogAsync(new EmailMessage()
                 {
                     From = "System",
                     FromDisplayName = "System",
@@ -113,10 +113,10 @@ namespace ECDLink.Development.Notifications
                     Cc = "",
                     Bcc = "",
                     Subject = _dropModel.ContainsKey("Subject") ? _dropModel["Subject"] : "",
-                MessageBody = _dropModel["Body"]
+                    MessageBody = _dropModel["Body"]
                 },
                 _messageTemplate?.TemplateType);
-                return Task.CompletedTask;
+                return;
             }
         }
 
