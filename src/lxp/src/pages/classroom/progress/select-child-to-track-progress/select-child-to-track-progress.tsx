@@ -70,20 +70,22 @@ export const SelectChildToTrack: React.FC = () => {
   }, [filteredReports]);
 
   const childListWithoutReport = useMemo(() => {
-    return children.map((child) => ({
-      id: child.childId,
-      profileDataUrl: child.childProfileImageUrl,
-      profileText: child.childFirstName,
-      avatarColor: getAvatarColor() || '',
-      title: child.childFirstName,
-      subTitle: 'Not started',
-      alertSeverity: 'error',
-      onActionClick: () =>
-        history.push(ROUTES.PROGRESS_REPORT_LIST, {
-          childId: child.childId,
-        }),
-    }));
-  }, [filteredReports]);
+    return children
+      .filter((child) => (child.ageInMonths ?? 0) < 61)
+      .map((child) => ({
+        id: child.childId,
+        profileDataUrl: child.childProfileImageUrl,
+        profileText: child.childFirstName,
+        avatarColor: getAvatarColor() || '',
+        title: child.childFirstName,
+        subTitle: 'Not started',
+        alertSeverity: 'error',
+        onActionClick: () =>
+          history.push(ROUTES.PROGRESS_REPORT_LIST, {
+            childId: child.childId,
+          }),
+      }));
+  }, [children, history]);
 
   // we need to find the children over 5 from the original list and not filtered
   const anyChildrenOver5 = children.some(
