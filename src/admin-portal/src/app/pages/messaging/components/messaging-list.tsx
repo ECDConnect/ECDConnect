@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react';
 import { LocalStorageKeys, AuthUser, MessageLogDto } from '@ecdlink/core';
 import { MailIcon, SearchIcon } from '@heroicons/react/solid';
 import debounce from 'lodash.debounce';
+import { format, subDays } from 'date-fns';
 
 import { GetAllMessageLogsForAdmin } from '@ecdlink/graphql';
 import { useLazyQuery } from '@apollo/client';
 import { SearchDropDown, SearchDropDownOption, Dropdown } from '@ecdlink/ui';
-import { subDays } from 'date-fns';
 import CustomDateRangePicker from '../../../components/date-picker';
 import NavigationTable from '../../../components/navigation-table';
 import { useHistory } from 'react-router';
@@ -19,7 +19,7 @@ export default function MessageList() {
   const [tableData, setTableData] = useState<any[]>([]);
   const [authenticatedUser, setAuthenticatedUser] = useState<AuthUser>();
   const [searchValue, setSearchValue] = useState('');
-  const [roleData, setRoleData] = useState<MessageRoleDto[]>([]);
+  const [roleData] = useState<MessageRoleDto[]>([]);
   const [showFilter, setShowFilter] = useState(false);
   const [statusFilter, setStatusFilter] = useState('');
   const [selectedRoles, setSelectedRoles] = useState<MessageRoleDto[]>(ssRoles);
@@ -30,6 +30,7 @@ export default function MessageList() {
   const currentDate = new Date();
   const startDate = subDays(currentDate, 30);
   const endDate = currentDate;
+  const now = new Date();
 
   const [selectedRange, setSelectedRange] = useState<Date[]>([
     startDate,
@@ -62,34 +63,35 @@ export default function MessageList() {
     }
   }, [messages, getAllMessageLogsForAdmin]);
 
-  const getFormattedDate = (mDate: Date) => {
-    const date = new Date(mDate);
-    return new Date(date.toISOString());
+  const getMessageFormattedDateString = (
+    messageDate: string | null | undefined
+  ): string => {
+    if (!messageDate) return '';
+    const date = new Date(messageDate);
+    return format(date, 'yyyy-MM-dd HH:mm');
   };
 
-  const getFormattedDateString = (mDate: Date) => {
-    const date = new Date(mDate).toISOString();
-    const dateItems = date.split('T');
-    return dateItems[0] + '  ' + dateItems[1].slice(0, 5);
+  const getMessageStatus = (messageDate: string | null | undefined): string => {
+    if (!messageDate) return '';
+    const date = new Date(messageDate);
+    return date > now ? 'Scheduled' : 'Sent';
   };
 
   useEffect(() => {
     if (messages) {
       const copyItems = messages.allMessageLogsForAdmin.map(
-        (item: MessageLogDto, index: number) => ({
-          ...item,
-          message: item.message,
-          subject: item.subject,
-          messageDate:
-            item.messageDate !== null
-              ? getFormattedDateString(item.messageDate)
-              : '',
-          status:
-            getFormattedDate(item.messageDate) > new Date()
-              ? 'Scheduled'
-              : 'Sent',
-          id: index.toString(),
-        })
+        (item: MessageLogDto, index: number) => {
+          return {
+            ...item,
+            message: item.message,
+            subject: item.subject,
+            messageDate: getMessageFormattedDateString(
+              item.messageDate as any as string
+            ),
+            status: getMessageStatus(item.messageDate as any as string),
+            id: index.toString(),
+          };
+        }
       );
       setTableData(copyItems);
     }

@@ -2,13 +2,14 @@ using ECDLink.Abstractrions.Notifications.Message;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.Notifications.Managers;
-using ECDLink.Notifications.MessageLogs;
 using ECDLink.Notifications.Sms;
 using ECDLink.Notifications.Templates;
 using ECDLink.Security.Api.Constants;
 using ECDLink.UrlShortner.Managers;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,7 +19,7 @@ namespace ECDLink.Notifications.iTouch
     public class SmsSender : SmsSenderBase
     {
         private HttpClient _smsClient;
-        private ISystemSetting<iTouchOptions> _smsOptions;
+        private readonly ISystemSetting<iTouchOptions> _smsOptions;
         private readonly ShortUrlManager _shortUrlManager;
         private readonly MessageLogManager _messageLogManager;
 
@@ -65,11 +66,12 @@ namespace ECDLink.Notifications.iTouch
             if (cancellationToken.IsCancellationRequested)
                 return;
 
-            _message.MessageBody = _templateProcessor
+            var messageLogId = Guid.NewGuid();
+            _message.MessageBody = await _templateProcessor
                                         .SetUserContext(_model)
                                         .SetMessageBody(_message.MessageBody)
                                         .SetMessageTemplate(_messageTemplate)
-                                        .ParseMessageFilters(_fieldTransform)
+                                        .ParseMessageFilters(_fieldTransform, messageLogId)
                                         .ProcessBody();
 
             var requestContent = new FormUrlEncodedContent(new[]
@@ -86,43 +88,31 @@ namespace ECDLink.Notifications.iTouch
                 requestContent,
                 cancellationToken);
 
-            var responseContentAsString = "";
-            var success = false;
-            var parts = new string[1];
-            if (response.IsSuccessStatusCode)
+            var responseContentAsString = (await response.Content.ReadAsStringAsync()).TrimEnd('\n');
+            var parts = !string.IsNullOrEmpty(responseContentAsString) ? responseContentAsString.Split("&") : [];
+            int notificationResult = NotificationsConstants.FAILED_OPTED_OUT;
+            if (response.IsSuccessStatusCode && parts.Contains("Success"))
             {
-                responseContentAsString = (await response.Content.ReadAsStringAsync()).TrimEnd('\n');
-                parts = responseContentAsString.Split("&");
-                if (parts.Length >= 1 && parts[0] == "Success")
+                notificationResult = NotificationsConstants.SUCCESS;
+            }
+            else if (parts.Length >= 1 && parts[0] == NotificationsConstants.ITOUCH_ERROR)
+            {
+                if (parts[1] == NotificationsConstants.ITOUCH_ERROR_CODE_3)
                 {
-                    success = true;
+                    notificationResult = NotificationsConstants.FAILED_AUTHENTICATION;
                 }
-            }
-            if (success)
-            {
-                _shortUrlManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.SUCCESS);
-                _messageLogManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.SUCCESS);
-                _logger.LogInformation("{0}: {1}", requestContentAsString, responseContentAsString);
-            }
-            else
-            {
-                if (parts.Length >= 1 && parts[0] == NotificationsConstants.ITOUCH_ERROR)
+                else if (parts[1] == NotificationsConstants.ITOUCH_ERROR_CODE_8)
                 {
-                    if (parts[1] == NotificationsConstants.ITOUCH_ERROR_CODE_3)
-                    {
-                        _shortUrlManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.FAILED_AUTHENTICATION);
-                        _messageLogManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.FAILED_AUTHENTICATION);
-                    }
-                    else if (parts[1] == NotificationsConstants.ITOUCH_ERROR_CODE_8)
-                    {
-                        _shortUrlManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.FAILED_INSUFFICIENT_CREDITS);
-                        _messageLogManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.FAILED_INSUFFICIENT_CREDITS);
-                    }
+                    notificationResult = NotificationsConstants.FAILED_INSUFFICIENT_CREDITS;
                 }
                 _logger.LogError("{0}: {1}", requestContentAsString, responseContentAsString);
+            }
+            await _shortUrlManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, notificationResult, messageLogId);
+            await _messageLogManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, notificationResult, ((int)response.StatusCode).ToString(), responseContentAsString, messageLogId);
+            if (notificationResult != NotificationsConstants.SUCCESS)
+            {
                 throw new HttpRequestException();
             }
-           
         }
     }
 }

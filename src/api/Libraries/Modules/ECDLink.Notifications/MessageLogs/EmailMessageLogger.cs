@@ -1,8 +1,6 @@
 ﻿using ECDLink.Abstractrions.Constants;
-using ECDLink.Abstractrions.Notifications.Message;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Notifications;
-using ECDLink.Notifications.BulkSms;
 using ECDLink.Notifications.Model;
 using ECDLink.Tenancy.Context;
 using Microsoft.EntityFrameworkCore;
@@ -14,25 +12,23 @@ namespace ECDLink.Notifications.MessageLogs
 {
     internal class EmailMessageLogger : IMessageLogger<IEmailMessage>
     {
-        private readonly AuthenticationDbContext _context;
-        private readonly DbSet<MessageLog> _messageLog;
-        private ILogger<EmailMessageLogger> _logger;
+        private readonly AuthenticationDbContext _dbContext;
+        private readonly ILogger<EmailMessageLogger> _logger;
 
         public EmailMessageLogger(IDbContextFactory<AuthenticationDbContext> dbContextFactory, ILogger<EmailMessageLogger> logger)
         {
-            _context = dbContextFactory.CreateDbContext();
-            _messageLog = _context.Set<MessageLog>();
+            _dbContext = dbContextFactory.CreateDbContext();
             _logger = logger;
         }
 
-        public bool Log(IEmailMessage message, string messageTemplateType)
+        public Guid? Log(IEmailMessage message, string messageTemplateType, Guid? messageLogId = null)
         {
-            int result = 0;
+            Guid id = messageLogId ?? Guid.NewGuid();
             try
             {
-                _messageLog.Add(new MessageLog()
+                _dbContext.MessageLogs.Add(new MessageLog()
                 {
-                    Id = Guid.NewGuid(),
+                    Id = id,
                     MessageTemplateType = messageTemplateType,
                     MessageProtocol = MessageTypeConstants.SMS,
                     From = "System",
@@ -45,23 +41,25 @@ namespace ECDLink.Notifications.MessageLogs
                     TenantId = TenantExecutionContext.Tenant.Id
                 });
 
-                result = _context.SaveChanges();
+                _dbContext.SaveChanges();
+                return id;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Could not log message data.");
             }
 
-            return result == 1;
+            return null;
         }
 
-        public async Task<bool> LogAsync(IEmailMessage message, string messageTemplateType)
+        public async Task<Guid?> LogAsync(IEmailMessage message, string messageTemplateType, Guid? messageLogId = null)
         {
-            int result = 0;
+            Guid id = messageLogId ?? Guid.NewGuid();
             try
             {
-                _messageLog.Add(new MessageLog()
+                _dbContext.MessageLogs.Add(new MessageLog()
                 {
+                    Id = id,
                     MessageTemplateType = messageTemplateType,
                     MessageProtocol = MessageTypeConstants.SMS,
                     From = "System",
@@ -73,14 +71,15 @@ namespace ECDLink.Notifications.MessageLogs
                     SentByUserId = Guid.Empty,
                     TenantId = TenantExecutionContext.Tenant.Id
                 });
-                result = await _context.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync();
+                return id;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Could not log message data.");
             }
 
-            return result == 1;
+            return null;
         }
     }
 }
