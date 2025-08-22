@@ -18,13 +18,14 @@ export const useGenerateAttendancePdf = () => {
     tableStyles?: UserOptions['styles'],
     tableFootStyles?: UserOptions['footStyles'],
     pageOriantations?: jsPDFOptions['orientation'],
-    tableHeaders?: any[]
+    tableHeaders?: any[],
+    outputName?: string
   ) => {
     //make landscape document
     const doc = new jsPDF(pageOriantations ?? 'landscape');
     let startY = 30; // initial startY value
-    var imgWidth = 45;
-    var imgHeight = 8;
+    const imgWidth = 45;
+    const imgHeight = 8;
     const tablesByType: { [key: string]: AttendanceReportTableDataDto[] } = {};
 
     tableData.forEach((table, index) => {
@@ -247,7 +248,16 @@ export const useGenerateAttendancePdf = () => {
     });
 
     const pdfBlobUrl = doc.output('bloburl');
-    window.open(pdfBlobUrl, '_blank');
+    if (!outputName) {
+      window.open(pdfBlobUrl, '_blank');
+    } else {
+      const link = document.createElement('a');
+      link.href = pdfBlobUrl.toString();
+      link.download = outputName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
   };
   return { generateReport };
 };
