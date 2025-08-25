@@ -97,7 +97,10 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   );
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
   const classroomForUser = useSelector(classroomsSelectors.getClassroom);
-  const isPrincipal = practitioner?.isPrincipal;
+  const isPrincipal = userData?.roles?.some(
+    (role) => role.systemName === RoleSystemNameEnum.Principal
+  );
+
   const [otherLoading, setOtherLoading] = useState(false);
 
   const [shouldSaveStateHash, setShouldSaveStateHash] = useState(false);
@@ -183,7 +186,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     setOtherLoading(true);
 
     const promises: Promise<any>[] = [
-      appDispatch(childrenThunkActions.getChildren({})).unwrap(),
       appDispatch(practitionerThunkActions.getAllPractitioners({})).unwrap(),
       appDispatch(documentThunkActions.getDocuments({})).unwrap(),
       appDispatch(staticDataThunkActions.getRoles({})).unwrap(),
@@ -200,6 +202,17 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       ),
     ];
 
+    if (isPrincipal) {
+      promises.push(
+        appDispatch(
+          childrenThunkActions.getChildrenForClassroom({
+            userId: userData?.id!,
+          })
+        ).unwrap()
+      );
+    } else {
+      promises.push(appDispatch(childrenThunkActions.getChildren({})).unwrap());
+    }
     if (!isCoach) {
       promises.push(
         appDispatch(classroomsThunkActions.getClassroom({})).unwrap()
@@ -358,6 +371,15 @@ const InitialStoreSetup: React.FC = ({ children }) => {
 
   const refreshChildren = async () => {
     appDispatch(settingActions.setLastDataSync());
+    if (isPrincipal) {
+      appDispatch(
+        childrenThunkActions.getChildrenForClassroom({ userId: userData?.id! })
+      ).unwrap();
+    } else {
+      appDispatch(
+        childrenThunkActions.getChildren({ overrideCache: true })
+      ).unwrap();
+    }
     appDispatch(
       childrenThunkActions.getChildren({ overrideCache: true })
     ).unwrap();
