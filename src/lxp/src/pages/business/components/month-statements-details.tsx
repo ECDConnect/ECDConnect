@@ -392,7 +392,7 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
                 text={'Total expenses'}
                 type="body"
                 color={'white'}
-                className="w-9/12"
+                className="w-6/12"
               />
               <Typography
                 text={`R ${formatCurrency(totalExpenses)}`}
