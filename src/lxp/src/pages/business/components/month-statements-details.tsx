@@ -398,7 +398,7 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
                 text={`R ${formatCurrency(totalExpenses)}`}
                 color={'white'}
                 type="h4"
-                className="mr-12 w-4/12 text-right"
+                className="w-8/12 text-right"
               />
             </Card>
           </>
