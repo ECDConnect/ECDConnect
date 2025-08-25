@@ -23,6 +23,7 @@ import { RetrieveFromCache } from '@/models/sync/retrieve-from-cache';
 export const ChildrenActions = {
   GET_CHILDREN: 'getChildren',
   GET_CHILDREN_CLASS_GROUP: 'getChildrenForClassroomGroup',
+  GET_CHILDREN_CLASSROOM: 'getChildrenForClassroom',
   UPDATE_CHILD: 'updateChild',
   UPSERT_CHILDREN: 'upsertChildren',
   FIND_CREATED_CHILD: 'findCreatedChild',
@@ -152,6 +153,40 @@ export const getChildrenForClassroomGroup = createAsyncThunk<
         childrenTest,
         retrievedFromCache: false,
         classroomGroupId,
+      };
+    } catch (err) {
+      return rejectWithValue(
+        err instanceof Error ? err.message : 'Error fetching children'
+      );
+    }
+  }
+);
+
+export const getChildrenForClassroom = createAsyncThunk<
+  { children: ChildDto[] } & RetrieveFromCache,
+  { userId: string } & OverrideCache,
+  ThunkApiType<RootState>
+>(
+  ChildrenActions.GET_CHILDREN_CLASSROOM,
+  async ({ userId, overrideCache }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      // children: { childData: childDataCache },
+    } = getState();
+
+    if (!userAuth?.auth_token) {
+      return rejectWithValue('No access token, profile check required');
+    }
+
+    try {
+      const children = await new ChildService(
+        userAuth.auth_token
+      ).getChildrenForClassroom(userId);
+
+      return {
+        children,
+        retrievedFromCache: false,
+        userId,
       };
     } catch (err) {
       return rejectWithValue(
