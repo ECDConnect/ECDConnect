@@ -254,14 +254,19 @@ export const OaLogin: React.FC = () => {
     }
   }, [userAgent]);
 
+  const backToPromptScreen = () => {
+    history.push('/');
+  };
+
   return (
     <BannerWrapper
       showBackground={false}
       backgroundImageColour={'primary'}
       color="primary"
-      size="sub-normal"
+      size={tenant.isOpenAccess ? 'small' : 'sub-normal'}
       renderBorder={false}
       displayOffline={!isOnline}
+      onBack={tenant.isOpenAccess ? backToPromptScreen : undefined}
     >
       <div className={styles.loginContainer}>
         <Dialog fullScreen visible={errorMessage} position={DialogPosition.Top}>
