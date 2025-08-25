@@ -100,5 +100,29 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return children.ToList();
 
         }
+
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
+        public List<Child> GetChildrenForClassroom(
+            [Service] IChildService childService,
+            [Service] IClassroomService classroomService,
+            Guid userId)
+        {
+            var classroom = classroomService.GetClassroomForUser(userId);
+
+            if (classroom == null)
+            {
+                return null;
+            }
+
+            var children = childService.GetChildrenForClassroom(classroom.Id);
+
+            if (children == null)
+            {
+                return null;
+            }
+
+            return children.ToList();
+
+        }
     }
 }

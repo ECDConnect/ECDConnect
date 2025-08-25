@@ -227,21 +227,27 @@ export const getMissedClassAttendance = (
         });
 
       if (classLearners?.length > 0) {
-        const hasNoLearnerAttendance = !classLearners.every((learner) =>
-          programmeAttendance.some(
-            (att) =>
-              att.attendanceDate &&
-              missedDayDate.getTime() ===
+        const hasNoLearnerAttendance = !classLearners.every((learner) => {
+          const hasAttendance = programmeAttendance.some((att) => {
+            if (att.attendanceDate && att.userId === learner.childUserId) {
+              const isMatch =
+                missedDayDate.getTime() ===
                 new Date(
                   new Date(att.attendanceDate).setHours(0, 0, 0, 0)
-                ).getTime() &&
-              att.userId === learner.childUserId
-          )
-        );
+                ).getTime();
+              return isMatch;
+            } else {
+              return false;
+            }
+          });
+          return hasAttendance;
+        });
 
         if (
           hasNoLearnerAttendance &&
-          !returnProgrammes.some((p) => p.id === programme.id)
+          !returnProgrammes.some(
+            (p) => p.id === programme.id && p.missedDate === missedDayDate
+          )
         ) {
           returnProgrammes.push({ ...programme, missedDate: missedDayDate });
         }
