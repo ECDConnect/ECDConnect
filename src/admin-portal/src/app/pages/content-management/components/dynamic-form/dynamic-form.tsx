@@ -39,6 +39,7 @@ export interface DynamicFormProps {
   handleform: any;
   setValue: any;
   defaultLanguageId: string;
+  selectedLanguageId: string;
   acceptedFileFormats?: string[];
   allowedFileSize?: number;
   formType?: string;
@@ -59,6 +60,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   handleform,
   setValue,
   defaultLanguageId,
+  selectedLanguageId,
   acceptedFileFormats,
   allowedFileSize,
   formType,
@@ -387,7 +389,10 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             isSmallLargeGroup &&
             template?.title === ContentForms.ACTIVITY_FROM
           ) {
-            if (isEdit || disableActivitiesInputs) {
+            if (
+              (isEdit && selectedLanguageId !== defaultLanguageId) ||
+              disableActivitiesInputs
+            ) {
               return null;
             }
 

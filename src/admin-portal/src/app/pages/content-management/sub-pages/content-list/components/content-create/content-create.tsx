@@ -171,6 +171,7 @@ export default function ContentCreate({
               handleform={handleform}
               setValue={setValue}
               defaultLanguageId={defaultLanguageId}
+              selectedLanguageId={selectedLanguageId}
               acceptedFileFormats={acceptedFileFormats}
               requiredMessage={requiredMessage}
             />
