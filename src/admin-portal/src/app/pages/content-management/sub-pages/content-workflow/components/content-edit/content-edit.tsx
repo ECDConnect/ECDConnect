@@ -583,6 +583,7 @@ export default function ContentEdit({
               handleform={handleform}
               setValue={setValue}
               defaultLanguageId={defaultLanguageId}
+              selectedLanguageId={selectedLanguageId}
               acceptedFileFormats={acceptedFileFormats}
               allowedFileSize={allowedFileSize}
               formType={formType}
