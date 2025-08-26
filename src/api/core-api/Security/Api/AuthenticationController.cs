@@ -25,6 +25,7 @@ using HotChocolate;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
@@ -46,11 +47,10 @@ namespace ECDLink.Security.Api
         private readonly IPasswordManager<ApplicationUser> _passwordManager;
         private readonly PersonnelService _personnelService;
         private readonly AuthenticationDbContext _dbContext;
-        private readonly INotificationService _notificationService;
         private readonly TenantService _tenantService;
         private readonly Guid _applicationUserId;
         private readonly IGenericRepository<UserHelp, Guid> _userHelpRepo;
-        private readonly ILogger<AuthenticationController> _logger;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
         public AuthenticationController(
             ITokenManager<ApplicationUser, SecurityCodeTokenManager> securityCodeManager,
@@ -64,8 +64,7 @@ namespace ECDLink.Security.Api
             TenantService tenantService,
             HierarchyEngine hierarchyEngine,
             AuthenticationDbContext dbContext,
-            [Service] INotificationService notificationService,
-            [Service] ILogger<AuthenticationController> logger)
+            IServiceScopeFactory serviceScopeFactory)
         {
             _applicationUserId = contextAccessor.HttpContext != null && contextAccessor.HttpContext.GetUser() != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();
 
@@ -78,9 +77,8 @@ namespace ECDLink.Security.Api
             _notificationManager = notificationManager;
             _securityCodeManager = securityCodeManager;
             _dbContext = dbContext;
-            _notificationService = notificationService;
             _tenantService = tenantService;
-            _logger = logger;
+            _serviceScopeFactory = serviceScopeFactory;
         }
 
         // POST api/auth/login
@@ -122,7 +120,7 @@ namespace ECDLink.Security.Api
                         var tenantId = user.TenantId;
                         var tenants = _tenantService.GetTenantById((Guid)tenantId);
                         TenantExecutionContext.SetTenant(null, true);
-                        TenantExecutionContext.SetTenant((Tenancy.Model.TenantInternalModel)tenants.First());
+                        TenantExecutionContext.SetTenant(tenants.First());
                         await _userManager.SetObjectDataAsync(user, tenantId);
                     }
                 }
@@ -133,7 +131,7 @@ namespace ECDLink.Security.Api
                 user = await _securityManager.LogInWithPhoneNumberAsync(normalizePhoneNumber, login.Password);
             }
 
-            if (user == null || (user.LockoutEnabled == true && user.LockoutEnd > DateTime.Now))
+            if (user == null || (user.LockoutEnabled && user.LockoutEnd > DateTime.Now))
             {
                 return Unauthorized(new { Error = $"Some of the information you have entered is incorrect. Please contact the {organisationName} call centre to find out more: {callCenterNumber}" });
             }
@@ -181,7 +179,7 @@ namespace ECDLink.Security.Api
 
         private static bool ValidateTenantForUser(Guid? userTenantId, Guid? tenantId) 
         {
-            return userTenantId == null || tenantId == null ? false : userTenantId == tenantId;
+            return userTenantId != null && tenantId != null && userTenantId == tenantId;
         }
 
         private static bool CheckHostUrlForAdminPortal(string adminSiteAddress, string testAdminSiteAddress, string hostAddress)
@@ -526,8 +524,6 @@ namespace ECDLink.Security.Api
         [HttpPost]
         public async Task<IActionResult> UpdateOAPractitioner([FromBody] OAPractitionerModel input)
         {
-            Guid tenantId = TenantExecutionContext.Tenant.Id;
-
             if (string.IsNullOrEmpty(input.Username))
             {
                 return BadRequest(new FailedVerificationModel
@@ -629,31 +625,51 @@ namespace ECDLink.Security.Api
                 });
             }
 
+            _ = Task.Run(async () => {
+                await SubmitUserHelpFormBackground(
+                   _serviceScopeFactory, _applicationUserId, newRecord
+                );
+                });
+
+            return Ok();
+        }
+
+        private async static Task SubmitUserHelpFormBackground(IServiceScopeFactory serviceScopeFactory, 
+            Guid applicationUserId,
+            UserHelp userHelp)
+        {
+            using var scope = serviceScopeFactory.CreateScope();
+            ILogger<AuthenticationController> logger = null;
             try
             {
-                await _notificationManager.SendHelpFormSubmissionToAdministratorAsync(newRecord);
-                await _notificationService.ExpireNotificationsTypesForUser(_applicationUserId.ToString(), TemplateTypeConstants.FeedbackNotification);
+                logger = scope.ServiceProvider.GetRequiredService<ILogger<AuthenticationController>>();
+                var notificationManager = scope.ServiceProvider.GetRequiredService<SecurityNotificationManager>();
+                var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
+                var userManager = scope.ServiceProvider.GetRequiredService<ApplicationUserManager>();
+
+                await notificationManager.SendHelpFormSubmissionToAdministratorAsync(userHelp);
+                await notificationService.ExpireNotificationsTypesForUser(applicationUserId.ToString(), TemplateTypeConstants.FeedbackNotification);
 
                 var affectedUserFullName = "anonymous";
-                if (newRecord.UserId != null)
+                if (userHelp.UserId != null)
                 {
-                    var user = await _userManager.FindByIdAsync(newRecord.UserId);
+                    var user = await userManager.FindByIdAsync(userHelp.UserId);
                     affectedUserFullName = user?.FullName ?? "anonymous";
                 }
 
                 var replacements = new List<TagsReplacements>
                 {
-                    new TagsReplacements() { FindValue = "AffectedUserFullName", ReplacementValue = affectedUserFullName },
-                    new TagsReplacements() { FindValue = "ApplicationName", ReplacementValue = TenantExecutionContext.Tenant.ApplicationName },
-                    new TagsReplacements() { FindValue = "HelpContactDetail", ReplacementValue = newRecord.ContactPreference == "email" ? newRecord.Email : newRecord.CellNumber },
-                    new TagsReplacements() { FindValue = "HelpCategory", ReplacementValue = newRecord.Subject },
-                    new TagsReplacements() { FindValue = "HelpDescription", ReplacementValue = newRecord.Description },
-                    new TagsReplacements() { FindValue = "HelpLoginStatus", ReplacementValue = newRecord.IsLoggedIn ? "Yes" : "No" },
-                    new TagsReplacements() { FindValue = "OrganisationName", ReplacementValue = TenantExecutionContext.Tenant.OrganisationName },
+                    new () { FindValue = "AffectedUserFullName", ReplacementValue = affectedUserFullName },
+                    new () { FindValue = "ApplicationName", ReplacementValue = TenantExecutionContext.Tenant.ApplicationName },
+                    new () { FindValue = "HelpContactDetail", ReplacementValue = userHelp.ContactPreference == "email" ? userHelp.Email : userHelp.CellNumber },
+                    new () { FindValue = "HelpCategory", ReplacementValue = userHelp.Subject },
+                    new () { FindValue = "HelpDescription", ReplacementValue = userHelp.Description },
+                    new () { FindValue = "HelpLoginStatus", ReplacementValue = userHelp.IsLoggedIn ? "Yes" : "No" },
+                    new () { FindValue = "OrganisationName", ReplacementValue = TenantExecutionContext.Tenant.OrganisationName },
                 };
 
-                var userToSend = await _userManager.FindByIdAsync(_applicationUserId);
-                await _notificationService.SendNotificationAsync(
+                var userToSend = await userManager.FindByIdAsync(applicationUserId);
+                await notificationService.SendNotificationAsync(
                     null,
                     TemplateTypeConstants.AdminUserHelpForm,
                     DateTime.Now,
@@ -669,16 +685,11 @@ namespace ECDLink.Security.Api
                     null,
                     "portal"
                 );
-                return Ok();
+                logger.LogInformation("Help request logged {UserHelpId}", userHelp.Id);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ex.Message);
-                return BadRequest(new FailedVerificationModel
-                {
-                    ErrorCode = 1,
-                    Error = "Submit of help form failure"
-                });
+                logger?.LogInformation(ex, ex.Message);
             }
         }
 
