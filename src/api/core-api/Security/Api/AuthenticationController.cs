@@ -25,6 +25,8 @@ using HotChocolate;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -45,13 +47,10 @@ namespace ECDLink.Security.Api
         private readonly IPasswordManager<ApplicationUser> _passwordManager;
         private readonly PersonnelService _personnelService;
         private readonly AuthenticationDbContext _dbContext;
-        private readonly INotificationService _notificationService;
         private readonly TenantService _tenantService;
-
-        private IHttpContextAccessor _contextAccessor;
-        private IGenericRepositoryFactory _repoFactory;
-        private Guid? _applicationUserId;
-        private IGenericRepository<UserHelp, Guid> _userHelpRepo;
+        private readonly Guid _applicationUserId;
+        private readonly IGenericRepository<UserHelp, Guid> _userHelpRepo;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
         public AuthenticationController(
             ITokenManager<ApplicationUser, SecurityCodeTokenManager> securityCodeManager,
@@ -65,13 +64,11 @@ namespace ECDLink.Security.Api
             TenantService tenantService,
             HierarchyEngine hierarchyEngine,
             AuthenticationDbContext dbContext,
-            [Service] INotificationService notificationService)
+            IServiceScopeFactory serviceScopeFactory)
         {
-            _contextAccessor = contextAccessor;
-            _repoFactory = repoFactory;
-            _applicationUserId = _contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();
+            _applicationUserId = contextAccessor.HttpContext != null && contextAccessor.HttpContext.GetUser() != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();
 
-            _userHelpRepo = _repoFactory.CreateGenericRepository<UserHelp>(userContext: _applicationUserId);
+            _userHelpRepo = repoFactory.CreateGenericRepository<UserHelp>(userContext: _applicationUserId);
 
             _securityManager = securityManager;
             _userManager = userManager;
@@ -80,8 +77,8 @@ namespace ECDLink.Security.Api
             _notificationManager = notificationManager;
             _securityCodeManager = securityCodeManager;
             _dbContext = dbContext;
-            _notificationService = notificationService;
             _tenantService = tenantService;
+            _serviceScopeFactory = serviceScopeFactory;
         }
 
         // POST api/auth/login
@@ -118,12 +115,12 @@ namespace ECDLink.Security.Api
                 user = await _securityManager.GetUsernameAsync(login.Username, login.Password);
                 if (user != null)
                 {
-                    if (validateTenantForUser(user.TenantId, tenantData.Id))
+                    if (ValidateTenantForUser(user.TenantId, tenantData.Id))
                     {
                         var tenantId = user.TenantId;
                         var tenants = _tenantService.GetTenantById((Guid)tenantId);
                         TenantExecutionContext.SetTenant(null, true);
-                        TenantExecutionContext.SetTenant((Tenancy.Model.TenantInternalModel)tenants.First());
+                        TenantExecutionContext.SetTenant(tenants.First());
                         await _userManager.SetObjectDataAsync(user, tenantId);
                     }
                 }
@@ -134,18 +131,18 @@ namespace ECDLink.Security.Api
                 user = await _securityManager.LogInWithPhoneNumberAsync(normalizePhoneNumber, login.Password);
             }
 
-            if (user == null || (user.LockoutEnabled == true && user.LockoutEnd > DateTime.Now))
+            if (user == null || (user.LockoutEnabled && user.LockoutEnd > DateTime.Now))
             {
                 return Unauthorized(new { Error = $"Some of the information you have entered is incorrect. Please contact the {organisationName} call centre to find out more: {callCenterNumber}" });
             }
 
-            if (!validateTenantForUser(user.TenantId, tenantData.Id))
+            if (!ValidateTenantForUser(user.TenantId, tenantData.Id))
             {
                 return Unauthorized(new { Error = $"You do not have access. Please contact the {organisationName} call centre to find out more: {callCenterNumber}" });
             }
 
             // Check if logging into admin portal and deny non "administrators" or "Coaches" access.
-            var isAdminPortal = checkHostUrlForAdminPortal(
+            var isAdminPortal = CheckHostUrlForAdminPortal(
                 TenantExecutionContext.Tenant.AdminSiteAddress,
                 TenantExecutionContext.Tenant.AdminTestSiteAddress,
                 _httpContextAccessor.HttpContext?.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri ?? (_httpContextAccessor.HttpContext?.Request.Host.Value ?? String.Empty));
@@ -180,12 +177,12 @@ namespace ECDLink.Security.Api
             return package;
         }
 
-        private bool validateTenantForUser(Guid? userTenantId, Guid? tenantId) 
+        private static bool ValidateTenantForUser(Guid? userTenantId, Guid? tenantId) 
         {
-            return userTenantId == null || tenantId == null ? false : userTenantId == tenantId;
+            return userTenantId != null && tenantId != null && userTenantId == tenantId;
         }
 
-        private bool checkHostUrlForAdminPortal(string adminSiteAddress, string testAdminSiteAddress, string hostAddress)
+        private static bool CheckHostUrlForAdminPortal(string adminSiteAddress, string testAdminSiteAddress, string hostAddress)
         {
             return hostAddress.Contains(adminSiteAddress) || hostAddress.Contains(testAdminSiteAddress);
         }
@@ -278,14 +275,6 @@ namespace ECDLink.Security.Api
             return package;
         }
 
-        //[Route("online-check")]
-        //[AllowAnonymous]
-        //[HttpGet]
-        //public async ValueTask<IActionResult> OnlineCheckAsync()
-        //{
-        //    return Ok();
-        //}
-
         [Route("verify-email-address")]
         [AllowAnonymous]
         [HttpGet]
@@ -301,7 +290,7 @@ namespace ECDLink.Security.Api
 
             //RequestVerifyEmailAsync
             var changeResult = await _securityManager.ChangeEmailAddressAsync(user, token);
-            if (changeResult == true)
+            if (changeResult)
                 return new OkObjectResult(user.PendingEmail);
 
             return Ok(changeResult);
@@ -535,8 +524,6 @@ namespace ECDLink.Security.Api
         [HttpPost]
         public async Task<IActionResult> UpdateOAPractitioner([FromBody] OAPractitionerModel input)
         {
-            Guid tenantId = TenantExecutionContext.Tenant.Id;
-
             if (string.IsNullOrEmpty(input.Username))
             {
                 return BadRequest(new FailedVerificationModel
@@ -638,58 +625,72 @@ namespace ECDLink.Security.Api
                 });
             }
 
-            // 🔥 Fire and forget background task for notifications
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    await _notificationManager.SendHelpFormSubmissionToAdministratorAsync((Guid)_applicationUserId, newRecord);
-                    await _notificationService.ExpireNotificationsTypesForUser(_applicationUserId.ToString(), TemplateTypeConstants.FeedbackNotification);
+            _ = Task.Run(async () => {
+                await SubmitUserHelpFormBackground(
+                   _serviceScopeFactory, _applicationUserId, newRecord
+                );
+                });
 
-                    var affectedUserFullName = "anonymous";
-                    if (newRecord.UserId != null)
-                    {
-                        var user = await _userManager.FindByIdAsync(newRecord.UserId);
-                        affectedUserFullName = user?.FullName ?? "anonymous";
-                    }
-
-                    var replacements = new List<TagsReplacements>
-                    {
-                        new TagsReplacements() { FindValue = "AffectedUserFullName", ReplacementValue = affectedUserFullName },
-                        new TagsReplacements() { FindValue = "ApplicationName", ReplacementValue = TenantExecutionContext.Tenant.ApplicationName },
-                        new TagsReplacements() { FindValue = "HelpContactDetail", ReplacementValue = newRecord.ContactPreference == "email" ? newRecord.Email : newRecord.CellNumber },
-                        new TagsReplacements() { FindValue = "HelpCategory", ReplacementValue = newRecord.Subject },
-                        new TagsReplacements() { FindValue = "HelpDescription", ReplacementValue = newRecord.Description },
-                        new TagsReplacements() { FindValue = "HelpLoginStatus", ReplacementValue = newRecord.IsLoggedIn ? "Yes" : "No" },
-                        new TagsReplacements() { FindValue = "OrganisationName", ReplacementValue = TenantExecutionContext.Tenant.OrganisationName },
-                    };
-
-                    var userToSend = await _userManager.FindByIdAsync(_applicationUserId);
-                    await _notificationService.SendNotificationAsync(
-                        null,
-                        TemplateTypeConstants.AdminUserHelpForm,
-                        DateTime.Now,
-                        userToSend,
-                        "",
-                        MessageStatusConstants.Blue,
-                        replacements,
-                        null,
-                        false,
-                        true,
-                        null,
-                        null,
-                        null,
-                        "portal"
-                    );
-                }
-                catch (Exception ex)
-                {
-                    // Fail silently
-                }
-            });
-
-            // ✅ Return immediately
             return Ok();
+        }
+
+        private async static Task SubmitUserHelpFormBackground(IServiceScopeFactory serviceScopeFactory, 
+            Guid applicationUserId,
+            UserHelp userHelp)
+        {
+            using var scope = serviceScopeFactory.CreateScope();
+            ILogger<AuthenticationController> logger = null;
+            try
+            {
+                logger = scope.ServiceProvider.GetRequiredService<ILogger<AuthenticationController>>();
+                var notificationManager = scope.ServiceProvider.GetRequiredService<SecurityNotificationManager>();
+                var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
+                var userManager = scope.ServiceProvider.GetRequiredService<ApplicationUserManager>();
+
+                await notificationManager.SendHelpFormSubmissionToAdministratorAsync(userHelp);
+                await notificationService.ExpireNotificationsTypesForUser(applicationUserId.ToString(), TemplateTypeConstants.FeedbackNotification);
+
+                var affectedUserFullName = "anonymous";
+                if (userHelp.UserId != null)
+                {
+                    var user = await userManager.FindByIdAsync(userHelp.UserId);
+                    affectedUserFullName = user?.FullName ?? "anonymous";
+                }
+
+                var replacements = new List<TagsReplacements>
+                {
+                    new () { FindValue = "AffectedUserFullName", ReplacementValue = affectedUserFullName },
+                    new () { FindValue = "ApplicationName", ReplacementValue = TenantExecutionContext.Tenant.ApplicationName },
+                    new () { FindValue = "HelpContactDetail", ReplacementValue = userHelp.ContactPreference == "email" ? userHelp.Email : userHelp.CellNumber },
+                    new () { FindValue = "HelpCategory", ReplacementValue = userHelp.Subject },
+                    new () { FindValue = "HelpDescription", ReplacementValue = userHelp.Description },
+                    new () { FindValue = "HelpLoginStatus", ReplacementValue = userHelp.IsLoggedIn ? "Yes" : "No" },
+                    new () { FindValue = "OrganisationName", ReplacementValue = TenantExecutionContext.Tenant.OrganisationName },
+                };
+
+                var userToSend = await userManager.FindByIdAsync(applicationUserId);
+                await notificationService.SendNotificationAsync(
+                    null,
+                    TemplateTypeConstants.AdminUserHelpForm,
+                    DateTime.Now,
+                    userToSend,
+                    "",
+                    MessageStatusConstants.Blue,
+                    replacements,
+                    null,
+                    false,
+                    true,
+                    null,
+                    null,
+                    null,
+                    "portal"
+                );
+                logger.LogInformation("Help request logged {UserHelpId}", userHelp.Id);
+            }
+            catch (Exception ex)
+            {
+                logger?.LogInformation(ex, ex.Message);
+            }
         }
 
 
