@@ -86,7 +86,8 @@ const GeneratePdfReportButton = ({
                 tableStyles,
                 tableFootStyles,
                 pageOriantations,
-                tableHeaders
+                tableHeaders,
+                outputName
               );
             }
       }
