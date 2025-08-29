@@ -506,6 +506,7 @@ export const SignUp: React.FC = () => {
             isLoading={isLoading}
             disabled={!isOnline || isLoading}
             onClick={handleSubmit(submitForm)}
+            icon="ArrowCircleRightIcon"
           >
             <Typography type="help" color="white" text={'Next'}></Typography>
           </Button>
