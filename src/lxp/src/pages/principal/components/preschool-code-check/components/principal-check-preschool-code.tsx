@@ -22,14 +22,15 @@ export const PrincipalCheckPreschoolCode: React.FC<{
       <div className="h-screen overscroll-y-auto p-4">
         <Typography
           color={'primary'}
-          type={'h3'}
+          type={'body'}
           text={`Where your principal can find the preschool code:`}
+          className="my-6 text-xl font-semibold"
         />
         <Typography
           color={'primary'}
-          type={'h3'}
+          type="body"
           text={`Step 1: Ask the principal log in to ${appName} & tap the profile button in the top right:`}
-          className="my-6"
+          className="my-6 text-lg"
         />
         <div className="flex w-full justify-center">
           <img
@@ -40,9 +41,9 @@ export const PrincipalCheckPreschoolCode: React.FC<{
         </div>
         <Typography
           color={'primary'}
-          type={'h3'}
+          type={'body'}
           text={`Step 2: Ask them to tap “Preschool”:`}
-          className="my-6"
+          className="my-6 text-lg"
         />
         <div className="flex w-full justify-center">
           <img

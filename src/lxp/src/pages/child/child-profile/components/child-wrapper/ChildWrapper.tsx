@@ -108,6 +108,7 @@ export default function ChildWrapper() {
                 color="primary"
                 className={'ml-10 w-6/12'}
                 onClick={() => {}}
+                icon={isLastStep ? 'XIcon' : 'ArrowCircleRightIcon'}
               >
                 <Typography
                   type="body"
