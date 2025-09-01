@@ -336,25 +336,25 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return practitionerColleagues;
         }
 
-        public int GetPractitionerInviteCount(
+        public async Task<int> GetPractitionerInviteCount(
             [Service] ShortUrlManager shortUrlManager,
             string userId)
         {
-            return shortUrlManager.GetMessageCountForUser(Guid.Parse(userId), TemplateTypeConstants.Invitation);
+            return await shortUrlManager.GetMessageCountForUser(Guid.Parse(userId), TemplateTypeConstants.Invitation);
         }
 
-        public string GetLastPractitionerInviteDate(
+        public async Task<string> GetLastPractitionerInviteDate(
             [Service] ShortUrlManager shortUrlManager,
             string userId)
         {
-            return shortUrlManager.GetLastMessageDateForUser(Guid.Parse(userId), TemplateTypeConstants.Invitation);
+            return await shortUrlManager.GetLastMessageDateForUser(Guid.Parse(userId), TemplateTypeConstants.Invitation);
         }
 
-        public List<System.DateTime> GetAllPractitionerInvites(
+        public async Task<List<DateTime>> GetAllPractitionerInvites(
             [Service] ShortUrlManager shortUrlManager,
             string userId)
         {
-            return shortUrlManager.GetAllMessageInvitesForUser(Guid.Parse(userId), TemplateTypeConstants.Invitation);
+            return await shortUrlManager.GetAllMessageInvitesForUser(Guid.Parse(userId), TemplateTypeConstants.Invitation);
         }
 
         public List<Visit> GetPractitionerVisits([Service] VisitManager visitManager, string userId)

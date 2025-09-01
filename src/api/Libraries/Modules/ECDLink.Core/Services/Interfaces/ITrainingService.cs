@@ -1,5 +1,4 @@
-﻿using ECDLink.Core.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -9,9 +8,7 @@ namespace ECDLink.Core.Services.Interfaces
     {
         bool Enabled { get; }
 
-        Task<bool> CreateUserAsync(ApplicationIdentityUser user);
-
-        //Task<string> CreateUserSessionAsync(string userName);
+        Task<bool> CreateUserAsync(Guid userId);
 
         Task SyncCompletedCourses();
 

@@ -202,7 +202,10 @@ export default function ProgrammeWrapper() {
                     color="white"
                     text={isLastStep ? 'Close' : 'Next'}
                   />
-                  {renderIcon('ArrowRightIcon', `w-5 h-5 text-white text-lg`)}
+                  {renderIcon(
+                    'ArrowCircleRightIcon',
+                    `w-5 h-5 text-white text-lg`
+                  )}
                 </Button>
               </div>
             )}

@@ -80,7 +80,7 @@ export default function Shell() {
       inApp: false,
       protocol: 'portal',
     },
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: 'network-only',
   });
 
   const notifications = notificationsData?.allNotifications;

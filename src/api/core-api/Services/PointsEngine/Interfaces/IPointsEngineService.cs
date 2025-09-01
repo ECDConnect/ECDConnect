@@ -2,6 +2,7 @@ using EcdLink.Api.CoreApi.GraphApi.Models.Points;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace ECDLink.Core.Services.Interfaces
 {
@@ -25,7 +26,7 @@ namespace ECDLink.Core.Services.Interfaces
         void CalculateCompleteChildProgressObservations(Guid userId);
         void CalculateCreateChildProgressReport(Guid userId);
         void CalculateDownloadPreschoolOrClassProgressSummary(Guid userId);
-        void CalculateCompleteOnlineTrainingCourse(Guid userId);
+        Task CalculateCompleteOnlineTrainingCourse(Guid userId);
         void CalculateAddingShortDescription(Guid userId);
         void CalculateCompleteCommunityProfile(Guid userId);
         void CalculateConnectWithAnotherUser(Guid userId);

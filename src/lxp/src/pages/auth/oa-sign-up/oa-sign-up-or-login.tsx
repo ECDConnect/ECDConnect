@@ -132,7 +132,7 @@ export const OASignUpOrLogin: React.FC = () => {
         size={'signup'}
         renderBorder={false}
         renderOverflow={false}
-        onBack={() => history?.push(ROUTES.ROOT)}
+        // onBack={() => history?.push(ROUTES.ROOT)}
       >
         <div>
           <HeaderSlider

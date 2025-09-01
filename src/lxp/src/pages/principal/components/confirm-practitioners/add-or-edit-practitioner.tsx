@@ -754,7 +754,7 @@ export const AddOrEditPractitioner = ({
         className="w-full"
         stretch
       >
-        <HelpForm closeAction={setOpenHelp} />
+        <HelpForm closeAction={setOpenHelp} userId={user?.id} />
       </Dialog>
     </div>
   );

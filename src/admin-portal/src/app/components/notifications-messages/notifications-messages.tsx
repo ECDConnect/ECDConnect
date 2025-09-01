@@ -8,7 +8,9 @@ import { useCallback } from 'react';
 import {
   MessageStatusConstants,
   NotificationsCTAText,
+  MessageActionConfig,
 } from './notifications-messages.types';
+import { useHistory } from 'react-router';
 import { useMutation } from '@apollo/client';
 import { DisableNotification, MarkAsReadNotification } from '@ecdlink/graphql';
 import { classNames } from '../../pages/users/components/users';
@@ -19,7 +21,7 @@ interface NotificationsMessagesProps {
   subject: string;
   statusColor: string;
   ctaText: string;
-  action?: string;
+  onAction?: string;
   cTA: string;
   readDate?: string;
   id: string;
@@ -34,7 +36,7 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
   subject,
   statusColor,
   ctaText,
-  action,
+  onAction,
   cTA,
   readDate,
   id,
@@ -47,11 +49,12 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
   refetchNotification,
 }) => {
   const [markAsRead] = useMutation(MarkAsReadNotification);
-
+  const history = useHistory();
   const [disableNotification, { loading: loadingDisableNotification }] =
     useMutation(DisableNotification);
 
-  const isToShowDismissButton = [].includes(cTA as NotificationsCTAText);
+  const isToShowDismissButton =
+    [].includes(cTA as NotificationsCTAText) || !ctaText;
 
   const handleIcon = (type: string) => {
     switch (type) {
@@ -74,16 +77,31 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
     }
   };
 
-  const handleRedirectURL = useCallback((value: string) => {
-    // TODO: Add more switch cases accordingly with the BE types
-    switch (value) {
-      default:
-        return null;
+  const handleRedirectURL = useCallback((value: string, onAction: string) => {
+    if (onAction) {
+      const action = JSON.parse(onAction) as MessageActionConfig;
+
+      if (action.state?.activeTabIndex) {
+        return (
+          action?.url &&
+          history.push({
+            pathname: action.url,
+            state: {
+              activeTabIndex: Number(action.state.activeTabIndex),
+            },
+          })
+        );
+      } else {
+        return (
+          action?.url &&
+          history.push({ pathname: action.url, state: action.state })
+        );
+      }
     }
   }, []);
 
   const handleNotificationClick = useCallback(() => {
-    handleRedirectURL(cTA);
+    handleRedirectURL(cTA, onAction);
     if (!readDate) {
       markAsRead({
         variables: {
@@ -121,30 +139,30 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
           color={'textMid'}
           weight="bold"
         />
-        <Typography type={'body'} text={subject} color={'textLight'} />
+        <Typography type={'markdown'} text={subject} color={'textLight'} />
         <div className="flex gap-3">
-          <Button
-            className="mt-2 rounded-xl px-4 shadow-none hover:opacity-80"
-            disabled={loadingDisableNotification}
-            isLoading={loadingDisableNotification}
-            text={ctaText}
-            type="filled"
-            color="secondary"
-            textColor="white"
-            onClick={handleNotificationClick}
-          />
-          {isToShowDismissButton && (
+          {ctaText && (
             <Button
+              className="mt-2 rounded-xl px-4 shadow-none hover:opacity-80"
               disabled={loadingDisableNotification}
               isLoading={loadingDisableNotification}
-              className="mt-2 rounded-xl px-4 shadow-none hover:opacity-80"
-              text="Dismiss"
-              type="outlined"
-              color="tertiary"
-              textColor="tertiary"
-              onClick={onDismiss}
+              text={ctaText}
+              type="filled"
+              color="secondary"
+              textColor="white"
+              onClick={handleNotificationClick}
             />
           )}
+          <Button
+            disabled={loadingDisableNotification}
+            isLoading={loadingDisableNotification}
+            className="mt-2 rounded-xl px-4 shadow-none hover:opacity-80"
+            text="Dismiss"
+            type="outlined"
+            color="tertiary"
+            textColor="tertiary"
+            onClick={onDismiss}
+          />
         </div>
       </div>
     </Card>

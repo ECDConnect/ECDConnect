@@ -42,12 +42,29 @@ export default function MessagePanel() {
       .required('Message text is required')
       .max(160, 'Message text too long'),
     messageDate: Yup.date().required('Message date is required'),
-    messageTime: Yup.string().required('Message time is required'),
+    messageTime: Yup.string()
+      .required('Time is required') // Simplified: always require time
+      .test(
+        'is-valid-time',
+        'Time cannot be in the past for today',
+        function (value) {
+          const { messageDate } = this.parent;
+          if (!value || !messageDate) return true;
+          const now = new Date();
+          if (messageDate.toDateString() === new Date().toDateString()) {
+            const selectedTime = new Date();
+            const [hours, minutes] = value.split(':').map(Number);
+            selectedTime.setHours(hours, minutes, 0, 0);
+            return selectedTime >= now || false;
+          }
+          return true;
+        }
+      ),
     roleIds: Yup.array()
       .min(1, 'Choose at least 1 role')
       .required('Roles are required'),
-    provinceId: Yup.string(),
-    wardName: Yup.string(),
+    provinceId: Yup.string().nullable(),
+    wardName: Yup.string().nullable(),
   });
 
   const roleIds: string[] = [];
@@ -56,7 +73,7 @@ export default function MessagePanel() {
     subject: '',
     message: '',
     messageDate: undefined,
-    messageTime: '',
+    messageTime: new Date().toTimeString().slice(0, 5),
     toGroups: '',
     provinceId: '',
     wardName: '',
@@ -71,20 +88,15 @@ export default function MessagePanel() {
   // FORMS
   const {
     register: messageRegister,
-    formState: messageFormState,
+    formState: { errors: messageFormErrors, isValid: isMessageValid, isDirty },
     getValues: messageGetValues,
     setValue: messageSetValue,
+    trigger,
   } = useForm({
     resolver: yupResolver(messageSchema),
     defaultValues: initialMessageValues,
     mode: 'onBlur',
   });
-
-  const {
-    errors: messageFormErrors,
-    isValid: isMessageValid,
-    isDirty,
-  } = messageFormState;
 
   const history = useHistory();
   const user = localStorage.getItem(LocalStorageKeys.user);
@@ -170,20 +182,17 @@ export default function MessagePanel() {
       if (currentMessage.messageDate != null) {
         setIsEdit(true);
         const messageDate = new Date(currentMessage.messageDate);
-        const messageHours =
-          (messageDate.getHours() < 10 ? '0' : '') + messageDate.getHours();
-        const messageMinute =
-          (messageDate.getMinutes() < 10 ? '0' : '') + messageDate.getMinutes();
-        messageSetValue('messageTime', messageHours + ':' + messageMinute, {
+        const messageHours = messageDate.getHours().toString().padStart(2, '0');
+        const messageMinutes = messageDate
+          .getMinutes()
+          .toString()
+          .padStart(2, '0');
+        messageSetValue('messageTime', `${messageHours}:${messageMinutes}`, {
           shouldValidate: true,
         });
-        messageSetValue(
-          'messageDate',
-          new Date(currentMessage.messageDate) ?? undefined,
-          {
-            shouldValidate: false,
-          }
-        );
+        messageSetValue('messageDate', new Date(currentMessage.messageDate), {
+          shouldValidate: true,
+        });
       }
 
       messageSetValue('provinceId', currentMessage.provinceId ?? '', {
@@ -256,11 +265,14 @@ export default function MessagePanel() {
   const [saveBulkMessagesForAdmin] = useMutation(SaveBulkMessagesForAdmin);
   const messageForm = messageGetValues();
 
-  const onShowDialog = () => {
-    setUserCount(0);
-    setIsLoading(true);
-    setShowLoadingDialog(true);
-    getUserCountForMessageCriteria();
+  const onShowDialog = async () => {
+    const isValid = await trigger(); // Validate all fields
+    if (isValid) {
+      setUserCount(0);
+      setIsLoading(true);
+      setShowLoadingDialog(true);
+      getUserCountForMessageCriteria();
+    }
   };
 
   const onShowSavingDialog = () => {
@@ -347,7 +359,7 @@ export default function MessagePanel() {
   };
 
   const panelSetDate = async (date: Date) => {
-    messageSetValue('messageDate', date);
+    messageSetValue('messageDate', date, { shouldValidate: true });
   };
 
   useEffect(() => {
@@ -364,20 +376,17 @@ export default function MessagePanel() {
   }, [messageForm, messageGetValues, wardData]);
 
   const getIsValid = () => {
-    return isMessageValid ? true : false;
+    return isMessageValid;
   };
 
   const getFormattedDate = () => {
-    if (messageGetValues('messageDate') !== undefined) {
-      return (
-        `Schedule message for ` +
-        format(messageGetValues('messageDate'), 'dd MMMM') +
-        ` at ` +
-        messageGetValues('messageTime') +
-        ` ?`
-      );
+    const messageDate = messageGetValues('messageDate');
+    if (messageDate) {
+      return `Schedule message for ${format(
+        messageDate,
+        'dd MMMM'
+      )} at ${messageGetValues('messageTime')}?`;
     }
-
     return '';
   };
 
@@ -464,6 +473,7 @@ export default function MessagePanel() {
             editRoles={selectedRoles}
             wardData={wardData}
             isView={isView}
+            trigger={trigger}
           />
 
           <Button

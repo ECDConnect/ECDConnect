@@ -234,7 +234,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
          [Service] ShortUrlManager shortUrlManager,
          string userId)
         {
-            var inviteCount = shortUrlManager.GetMessageCountForUser(Guid.Parse(userId), TemplateTypeConstants.Invitation);
+            var inviteCount = await shortUrlManager.GetMessageCountForUser(Guid.Parse(userId), TemplateTypeConstants.Invitation);
 
             // TODO: Do we need this arbitrary check?
             if (inviteCount < 6)

@@ -37,10 +37,13 @@ export class IncompleteTrackAttendanceNotificationValidator
 
     const appName = tenantState.tenant?.applicationName || 'this application';
 
-    const hasPermission = practitionerState.practitioner?.permissions?.some(
-      (permission) =>
-        permission?.permissionName === 'take_attendance' && permission?.isActive
-    );
+    const hasPermission =
+      practitionerState.practitioner?.isPrincipal ||
+      practitionerState.practitioner?.permissions?.some(
+        (permission) =>
+          permission?.permissionName === 'take_attendance' &&
+          permission?.isActive
+      );
 
     if (!hasPermission) return [];
 
@@ -65,7 +68,7 @@ export class IncompleteTrackAttendanceNotificationValidator
     );
     lastFridayOfMonth.setHours(0, 0, 0, 0);
 
-    if (this.currentDate.getDate() <= lastFridayOfMonth.getDate()) {
+    if (this.currentDate.getTime() <= lastFridayOfMonth.getTime()) {
       return [];
     }
     // 4pm

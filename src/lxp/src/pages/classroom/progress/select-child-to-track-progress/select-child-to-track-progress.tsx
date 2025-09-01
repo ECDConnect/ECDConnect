@@ -69,6 +69,24 @@ export const SelectChildToTrack: React.FC = () => {
     }));
   }, [filteredReports]);
 
+  const childListWithoutReport = useMemo(() => {
+    return children
+      .filter((child) => (child.ageInMonths ?? 0) < 61)
+      .map((child) => ({
+        id: child.childId,
+        profileDataUrl: child.childProfileImageUrl,
+        profileText: child.childFirstName,
+        avatarColor: getAvatarColor() || '',
+        title: child.childFirstName,
+        subTitle: 'Not started',
+        alertSeverity: 'error',
+        onActionClick: () =>
+          history.push(ROUTES.PROGRESS_REPORT_LIST, {
+            childId: child.childId,
+          }),
+      }));
+  }, [children, history]);
+
   // we need to find the children over 5 from the original list and not filtered
   const anyChildrenOver5 = children.some(
     (x) => x.ageInMonths && x.ageInMonths > 60
@@ -117,7 +135,7 @@ export const SelectChildToTrack: React.FC = () => {
         </div>
         <StackedList
           className={'mt-4 flex flex-col gap-1'}
-          listItems={childList}
+          listItems={childList.length != 0 ? childList : childListWithoutReport}
           type={'UserAlertList'}
         />
         {anyChildrenOver5 && (
