@@ -24,6 +24,7 @@ import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { HelpForm } from '@/components/help-form/help-form';
 import { BusinessTabItems } from '@/pages/business/business.types';
 import { useWindowSize } from '@reach/window-size';
+import { userSelectors } from '@/store/user';
 
 export interface PractitionerNotRegisterProps {
   practitioner: PractitionerDto;
@@ -39,6 +40,7 @@ export const PractitionerNotRegistered: React.FC<
   const { isOnline } = useOnlineStatus();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const appDispatch = useAppDispatch();
+  const user = useSelector(userSelectors.getUser);
 
   const removePractitioner = async () => {
     await new PractitionerService(
@@ -288,7 +290,7 @@ export const PractitionerNotRegistered: React.FC<
           className="w-full"
           stretch
         >
-          <HelpForm closeAction={setShowHelp} />
+          <HelpForm closeAction={setShowHelp} userId={user?.id} />
         </Dialog>
       </BannerWrapper>
     </div>
