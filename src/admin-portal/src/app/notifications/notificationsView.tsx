@@ -12,8 +12,10 @@ export const NotificationsView = () => {
   }>(GetAllNotifications, {
     variables: {
       userId: user?.id,
+      inApp: false,
+      protocol: 'portal',
     },
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: 'network-only',
   });
 
   const notifications = notificationsData?.allNotifications;
@@ -33,18 +35,19 @@ export const NotificationsView = () => {
       {notifications?.length > 0 &&
         notifications?.map((item) => (
           <NotificationsMessages
+            key={`message-card-${item?.id}`}
             className="mb-4"
             refetchNotification={refetchNotification}
             ctaText={item?.cTAText}
             date={format(new Date(item?.messageDate), 'd MMMM y')}
             statusColor={item?.status}
-            subject={item?.subject}
-            title={item?.message}
-            action={item?.action}
+            subject={item?.message}
+            title={item?.subject}
             cTA={item?.cTA}
             id={item?.id}
             relatedToUserId={item?.relatedToUserId}
             readDate={item?.readDate}
+            onAction={item?.action}
           />
         ))}
     </div>

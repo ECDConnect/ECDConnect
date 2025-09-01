@@ -8,6 +8,7 @@ using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
+using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
@@ -15,6 +16,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace EcdLink.Api.CoreApi.Services
@@ -95,12 +97,13 @@ namespace EcdLink.Api.CoreApi.Services
 
             if (coachFeedback != null )
             {
+                List<String> feedbackTypes = new List<String>();
                 var coachFeedBackTypes = new List<CoachFeedbackType>();
                 if (input.FeedbackTypeIds.Count > 0)
                 {
                     foreach (var item in input.FeedbackTypeIds)
                     {
-                        coachFeedBackTypes.Add(new CoachFeedbackType() 
+                        coachFeedBackTypes.Add(new CoachFeedbackType()
                         {
                             Id = Guid.NewGuid(),
                             InsertedDate = DateTime.Now,
@@ -110,29 +113,33 @@ namespace EcdLink.Api.CoreApi.Services
                             CoachFeedbackId = coachFeedback.Id,
                             FeedbackTypeId = item
                         });
+                        feedbackTypes.Add(_feedbackTypeRepo.GetAll().Where(x => x.Id == item).FirstOrDefault().Name + " ");
                     }
                     _coachFeedbackTypeRepo.InsertMany(coachFeedBackTypes);
                 }
 
-                var userToSend = _userManager.FindByIdAsync(input.FromUserId).Result;
+                var supportRating = _supportRatingRepo.GetAll().Where(x => x.Id == input.SupportRatingId).FirstOrDefault();
+                var practitioner = _userManager.FindByIdAsync(_applicationUserId).Result;
                 var coach = _userManager.FindByIdAsync(coachFeedback.ToUserId).Result;
+                var adminUsers = _userManager.GetUsersInRoleAsync(Roles.ADMINISTRATOR).Result;
 
                 List<TagsReplacements> replacements = new List<TagsReplacements>()
                 {
-                    new TagsReplacements()
-                    {
-                        FindValue = "FirstName",
-                        ReplacementValue = coach.FullName
-                    },
-                    new TagsReplacements()
-                    {
-                        FindValue = "OrganisationName",
-                        ReplacementValue = TenantExecutionContext.Tenant.OrganisationName
-                    }
+                    new TagsReplacements() { FindValue = "UserFullName", ReplacementValue = practitioner.FullName },
+                    new TagsReplacements() { FindValue = "Username", ReplacementValue = practitioner.UserName },
+                    new TagsReplacements() { FindValue = "DateSubmitted", ReplacementValue = DateTime.Now.ToString("dd", CultureInfo.InvariantCulture) + " " + DateTime.Now.ToString("MMMM", CultureInfo.InvariantCulture) + " " + DateTime.Now.ToString("yyyy", CultureInfo.InvariantCulture) },
+                    new TagsReplacements() { FindValue = "CoachFullName", ReplacementValue = coach.FullName },
+                    new TagsReplacements() { FindValue = "CoachUserName", ReplacementValue = coach.UserName },
+                    new TagsReplacements() { FindValue = "Feelings", ReplacementValue = supportRating.Name },
+                    new TagsReplacements() { FindValue = "FeedbackList", ReplacementValue = feedbackTypes.ToString() },
+                    new TagsReplacements() { FindValue = "Details", ReplacementValue = input.FeedbackDetails }
                 };
 
-                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.NotifyAdminOnCoachFeedback, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Blue, replacements, null, false, true, null,
-                        relatedEntities: new List<RelatedEntity> { new RelatedEntity(coachFeedback.Id, "CoachFeedback") });
+                foreach (var user in adminUsers)
+                {
+                    _notificationService.SendNotificationAsync(null, TemplateTypeConstants.NotifyAdminOnCoachFeedback, DateTime.Now.Date, user, "", MessageStatusConstants.Blue, replacements, null, false, true, null,
+                            relatedEntities: new List<RelatedEntity> { new RelatedEntity(coachFeedback.Id, "CoachFeedback") });
+                }
             }
             else
             {
