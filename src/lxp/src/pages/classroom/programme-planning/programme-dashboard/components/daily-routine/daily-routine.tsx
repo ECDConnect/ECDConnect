@@ -95,7 +95,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const programmeRoutineById = useSelector(
-    programmeRoutineSelectors.getProgrammeRoutineById(1)
+    programmeRoutineSelectors.getProgrammeRoutineItem()
   );
 
   const programmeRoutine = isWalkthrough
