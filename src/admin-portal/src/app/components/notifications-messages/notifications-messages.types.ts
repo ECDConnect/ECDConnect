@@ -8,3 +8,15 @@ export const enum MessageStatusConstants {
 export const enum NotificationsCTAText {
   AddMeetingReport = '[[AddMeetingReport]]',
 }
+
+export type MessageRouteConfig = {
+  route: string;
+  params?: any;
+};
+
+export interface MessageActionConfig {
+  buttonName: string;
+  buttonIcon?: string;
+  url: string;
+  state?: any;
+}
