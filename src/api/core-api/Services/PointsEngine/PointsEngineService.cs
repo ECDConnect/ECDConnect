@@ -22,6 +22,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using static EcdLink.Api.CoreApi.Constants;
 
 namespace EcdLink.Api.CoreApi.Services
@@ -1037,18 +1038,18 @@ namespace EcdLink.Api.CoreApi.Services
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
-        public void CalculateCompleteOnlineTrainingCourse(Guid userId)
+        public async Task CalculateCompleteOnlineTrainingCourse(Guid userId)
         {
             if (TenantExecutionContext.Tenant.Modules != null && TenantExecutionContext.Tenant.Modules.TrainingEnabled)
             {
                 var today = DateTime.Now;
-                var trainingCoursesCount = _userTrainingCourseRepo.GetAll().Where(x => x.IsActive 
+                var trainingCoursesCount = await _userTrainingCourseRepo.GetAll().Where(x => x.IsActive 
                                                                                     && x.UserId == userId 
                                                                                     && x.CompletedDate.Year == today.Year
-                                                                                    && x.CompletedDate.Month == today.Month).Count();
+                                                                                    && x.CompletedDate.Month == today.Month).CountAsync();
                 if (trainingCoursesCount > 0)
                 {
-                    var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.CompleteOnlineTrainingCourseId);
+                    var activity = await _pointsActivityRepo.GetAll().SingleAsync(x => x.Id == PointsActivityConstants.CompleteOnlineTrainingCourseId);
                     //var yearPoints = _pointsUserSummaryRepo.GetAll().Where(x =>
                     //                       x.UserId == userId
                     //                       && x.PointsActivityId == activity.Id

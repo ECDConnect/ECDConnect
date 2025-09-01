@@ -6,7 +6,7 @@ namespace ECDLink.Notifications.MessageLogs
 {
     public interface IMessageLogger<TMessage>
     {
-        public bool Log(TMessage message, string messageTemplateType);
-        public Task<bool> LogAsync(TMessage message, string messageTemplateType);
+        public Guid? Log(TMessage message, string messageTemplateType, Guid? messageLogId = null);
+        public Task<Guid?> LogAsync(TMessage message, string messageTemplateType, Guid? messageLogId = null);
     }
 }

@@ -23,7 +23,7 @@ namespace ECDLink.Notifications.BulkSms
     {
         private readonly IMessageLogger<BulkSmsMessage> _messageLogger;
         private HttpClient _smsClient;
-        private ISystemSetting<BulkSmsOptions> _smsOptions;
+        private readonly ISystemSetting<BulkSmsOptions> _smsOptions;
         private readonly ShortUrlManager _shortUrlManager;
         private readonly MessageLogManager _messageLogManager;
 
@@ -86,11 +86,12 @@ namespace ECDLink.Notifications.BulkSms
             if (cancellationToken.IsCancellationRequested)
                 return;
 
-            _message.MessageBody = _templateProcessor
+            var messageLogId = Guid.NewGuid();
+            _message.MessageBody = await _templateProcessor
                                         .SetUserContext(_model)
                                         .SetMessageBody(_message.MessageBody)
                                         .SetMessageTemplate(_messageTemplate)
-                                        .ParseMessageFilters(_fieldTransform)
+                                        .ParseMessageFilters(_fieldTransform, messageLogId)
                                         .ProcessBody();
 
             // build the request based on the supplied settings
@@ -101,42 +102,42 @@ namespace ECDLink.Notifications.BulkSms
             request.Content = requestContent;
 
             var response = await GetSmsClient.SendAsync(request, cancellationToken);
-            
-            _messageLogger.Log(_message as BulkSmsMessage, _messageTemplate.TemplateType);
+            await _messageLogger.LogAsync(_message as BulkSmsMessage, _messageTemplate.TemplateType, messageLogId);
+            var responseContentAsString = await response.Content.ReadAsStringAsync();
 
+            int notificationResult;
             if (response.IsSuccessStatusCode)
             {
-                _shortUrlManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.SUCCESS);
-                _messageLogManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.SUCCESS);
-                _logger.LogInformation("{0}", requestContentAsString);
+                notificationResult = NotificationsConstants.SUCCESS;
             }
             else
             {
-                var responseContentAsString = await response.Content.ReadAsStringAsync();
                 var resultModel = JsonConvert.DeserializeObject<BulkSMSResultWrapperModel>(responseContentAsString);
 
-                if (resultModel.Status.StartsWith("5")) 
+                if (resultModel.Status.StartsWith("5"))
                 {
-                    _shortUrlManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.FAILED_CONNECTION);
-                    _messageLogManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.FAILED_CONNECTION);
-                } 
+                    notificationResult = NotificationsConstants.FAILED_CONNECTION;
+                }
                 else if (resultModel.Title == NotificationsConstants.BULKSMS_AUTH)
                 {
-                    _shortUrlManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.FAILED_AUTHENTICATION);
-                    _messageLogManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.FAILED_AUTHENTICATION);
-                } 
+                    notificationResult = NotificationsConstants.FAILED_AUTHENTICATION;
+                }
                 else if (resultModel.Title == NotificationsConstants.BULKSMS_CREDITS)
                 {
-                    _shortUrlManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.FAILED_INSUFFICIENT_CREDITS);
-                    _messageLogManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.FAILED_INSUFFICIENT_CREDITS);
-                } 
+                    notificationResult = NotificationsConstants.FAILED_INSUFFICIENT_CREDITS;
+                }
                 else
                 {
-                    _shortUrlManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.FAILED_OPTED_OUT);
-                    _messageLogManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.FAILED_OPTED_OUT);
+                    notificationResult = NotificationsConstants.FAILED_OPTED_OUT;
                 }
-                
+
                 _logger.LogError("{0}: {1}", requestContentAsString, responseContentAsString);
+            }
+            await _shortUrlManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, notificationResult, messageLogId);
+            await _messageLogManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, notificationResult, ((int)response.StatusCode).ToString(), responseContentAsString, messageLogId);
+
+            if (notificationResult != NotificationsConstants.SUCCESS)
+            {
                 throw new HttpRequestException();
             }
         }

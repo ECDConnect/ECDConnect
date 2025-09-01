@@ -117,7 +117,7 @@ namespace EcdLink.Api.CoreApi.Services
             List<TagsReplacements> replacements = null, 
             DateTime? messageEndDate = null, 
             bool expireOldMessagesOfType = false, 
-            bool dontSendIfExists = false, 
+            bool excludeDates = false, 
             string searchCriteria = null, 
             List<RelatedEntity> relatedEntities = null,
             Guid? groupingId = null,
@@ -145,7 +145,7 @@ namespace EcdLink.Api.CoreApi.Services
                             MessageProtocol = item.Protocol,
                             Message = !string.IsNullOrWhiteSpace(message) ? message : templateItem.Message,
                             Subject = templateItem.Subject,
-                            MessageDate = messageDate.Date,
+                            MessageDate = protocol == "portal" ? messageDate : messageDate.Date,
                             FromUserId = _uId,
                             MessageTemplateType = item.TemplateType,
                             MessageTemplate = item,
@@ -161,10 +161,8 @@ namespace EcdLink.Api.CoreApi.Services
                         {
                             notification.MessageEndDate = messageEndDate.Value.AddDays(1).Date;
                         }
-                        //skip if the enotification exists already for same date and person and template and protocol
-                        var isAvailable = await NotificationExists(notification, dontSendIfExists, searchCriteria);
 
-                        if (!await NotificationExists(notification, dontSendIfExists, searchCriteria))
+                        if (!await NotificationExists(notification, excludeDates, searchCriteria))
                         {
                             switch (item.Protocol)
                             {

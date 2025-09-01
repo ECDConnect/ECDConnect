@@ -661,7 +661,7 @@ export const AddPractitioner = ({
         className="w-full"
         stretch
       >
-        <HelpForm closeAction={setOpenHelp} />
+        <HelpForm closeAction={setOpenHelp} userId={user?.id} />
       </Dialog>
     </div>
   );

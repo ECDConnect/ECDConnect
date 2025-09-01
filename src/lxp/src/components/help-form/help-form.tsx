@@ -26,9 +26,10 @@ import { notificationTagConfig } from '@/constants/notifications';
 
 interface HelpFormProps {
   closeAction?: (item: boolean) => void;
+  userId?: string;
 }
 
-export const HelpForm: React.FC<HelpFormProps> = ({ closeAction }) => {
+export const HelpForm: React.FC<HelpFormProps> = ({ closeAction, userId }) => {
   const { isOnline } = useOnlineStatus();
   const { setNotification } = useNotifications();
   const [helpType, setHelpType] = useState('');
@@ -61,9 +62,9 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction }) => {
       description: problemValue,
       cellNumber: isPhoneSelected ? contactValue : '',
       email: isPhoneSelected === false ? contactValue : '',
-      isLoggedIn: false,
+      isLoggedIn: !!userId,
       contactPreference: isPhoneSelected ? 'phoneNumber' : 'email',
-      userId: null,
+      userId: userId,
     };
 
     setIsLoading(true);

@@ -88,7 +88,7 @@ export const SideMenu: React.FC<SideMenuProps> = ({
                 </div>
               </div> */}
 
-              <div className="mt-5 flex h-0 flex-1 flex-col justify-between overflow-y-auto">
+              <div className="mt-2 flex h-0 flex-1 flex-col justify-between overflow-y-auto">
                 <nav className="px-18 space-y-1.5">
                   {navigation.map((item) =>
                     item.nestedChildren ? (
