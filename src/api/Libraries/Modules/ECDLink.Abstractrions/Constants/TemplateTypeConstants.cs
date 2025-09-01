@@ -23,6 +23,8 @@ namespace ECDLink.Abstractrions.Constants
         // Community to portal notification 
         public const string NotifyAdminOnCoachFeedback = "notify-admin-on-coach-feedback";
 
+        public const string NotifyAdminOnPractitionerRemoved = "notify-admin-on-practitioner-removed";
+
         // sheet
         // https://docs.google.com/spreadsheets/d/1X7dypn21NyxGwYHjnqbDebhmTPokV4x3LY_KjNdPi5g/edit?gid=1532194419#gid=1532194419
 

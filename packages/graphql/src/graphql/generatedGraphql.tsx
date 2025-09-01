@@ -1048,6 +1048,7 @@ export type Child = {
   insertedBy?: Maybe<Scalars['String']>;
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
+  isAddedByCaregiver?: Maybe<Scalars['Boolean']>;
   language?: Maybe<Language>;
   languageId?: Maybe<Scalars['UUID']>;
   otherHealthConditions?: Maybe<Scalars['String']>;
@@ -1137,6 +1138,7 @@ export type ChildFilterInput = {
   insertedBy?: InputMaybe<StringOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
+  isAddedByCaregiver?: InputMaybe<BooleanOperationFilterInput>;
   language?: InputMaybe<LanguageFilterInput>;
   languageId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   or?: InputMaybe<Array<ChildFilterInput>>;
@@ -1177,6 +1179,7 @@ export type ChildInput = {
   InactivityComments?: InputMaybe<Scalars['String']>;
   InsertedBy?: InputMaybe<Scalars['String']>;
   IsActive: Scalars['Boolean'];
+  IsAddedByCaregiver?: InputMaybe<Scalars['Boolean']>;
   Language?: InputMaybe<LanguageInput>;
   LanguageId?: InputMaybe<Scalars['UUID']>;
   OtherHealthConditions?: InputMaybe<Scalars['String']>;
@@ -1399,6 +1402,7 @@ export type ChildSortInput = {
   insertedBy?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
+  isAddedByCaregiver?: InputMaybe<SortEnumType>;
   language?: InputMaybe<LanguageSortInput>;
   languageId?: InputMaybe<SortEnumType>;
   otherHealthConditions?: InputMaybe<SortEnumType>;
@@ -3898,6 +3902,8 @@ export type MessageLog = {
   messageTemplate?: Maybe<MessageTemplate>;
   messageTemplateType?: Maybe<Scalars['String']>;
   notificationResult?: Maybe<Scalars['Int']>;
+  notificationResultProviderCode?: Maybe<Scalars['String']>;
+  notificationResultProviderMessage?: Maybe<Scalars['String']>;
   readDate?: Maybe<Scalars['DateTime']>;
   sentByUserId: Scalars['UUID'];
   status?: Maybe<Scalars['String']>;
@@ -3927,6 +3933,8 @@ export type MessageLogFilterInput = {
   messageTemplate?: InputMaybe<MessageTemplateFilterInput>;
   messageTemplateType?: InputMaybe<StringOperationFilterInput>;
   notificationResult?: InputMaybe<ComparableNullableOfInt32OperationFilterInput>;
+  notificationResultProviderCode?: InputMaybe<StringOperationFilterInput>;
+  notificationResultProviderMessage?: InputMaybe<StringOperationFilterInput>;
   or?: InputMaybe<Array<MessageLogFilterInput>>;
   readDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   sentByUserId?: InputMaybe<ComparableGuidOperationFilterInput>;
@@ -3957,6 +3965,8 @@ export type MessageLogInput = {
   MessageTemplate?: InputMaybe<MessageTemplateInput>;
   MessageTemplateType?: InputMaybe<Scalars['String']>;
   NotificationResult?: InputMaybe<Scalars['Int']>;
+  NotificationResultProviderCode?: InputMaybe<Scalars['String']>;
+  NotificationResultProviderMessage?: InputMaybe<Scalars['String']>;
   ReadDate?: InputMaybe<Scalars['DateTime']>;
   SentByUserId: Scalars['UUID'];
   Status?: InputMaybe<Scalars['String']>;
@@ -4039,6 +4049,8 @@ export type MessageLogSortInput = {
   messageTemplate?: InputMaybe<MessageTemplateSortInput>;
   messageTemplateType?: InputMaybe<SortEnumType>;
   notificationResult?: InputMaybe<SortEnumType>;
+  notificationResultProviderCode?: InputMaybe<SortEnumType>;
+  notificationResultProviderMessage?: InputMaybe<SortEnumType>;
   readDate?: InputMaybe<SortEnumType>;
   sentByUserId?: InputMaybe<SortEnumType>;
   status?: InputMaybe<SortEnumType>;
@@ -4346,6 +4358,7 @@ export type Mutation = {
   createThemeDay?: Maybe<Scalars['String']>;
   createTopic?: Maybe<Scalars['String']>;
   createUserConsent?: Maybe<UserConsent>;
+  createUserGrant?: Maybe<UserGrant>;
   createUserHelp?: Maybe<UserHelp>;
   createUserHierarchyEntity?: Maybe<UserHierarchyEntity>;
   createUserPermission?: Maybe<UserPermission>;
@@ -4464,6 +4477,7 @@ export type Mutation = {
   deleteTopic?: Maybe<Scalars['Boolean']>;
   deleteUser: Scalars['Boolean'];
   deleteUserConsent?: Maybe<Scalars['Boolean']>;
+  deleteUserGrant?: Maybe<Scalars['Boolean']>;
   deleteUserHelp?: Maybe<Scalars['Boolean']>;
   deleteUserHierarchyEntity?: Maybe<Scalars['Boolean']>;
   deleteUserPermission?: Maybe<Scalars['Boolean']>;
@@ -4651,6 +4665,7 @@ export type Mutation = {
   updateUser?: Maybe<ApplicationUser>;
   updateUserConsent?: Maybe<UserConsent>;
   updateUserContactStatusForStatement?: Maybe<StatementsIncomeStatement>;
+  updateUserGrant?: Maybe<UserGrant>;
   updateUserHelp?: Maybe<UserHelp>;
   updateUserHierarchyEntity?: Maybe<UserHierarchyEntity>;
   updateUserPermission?: Maybe<Array<Maybe<UserPermissionModel>>>;
@@ -5321,6 +5336,10 @@ export type MutationCreateUserConsentArgs = {
   input?: InputMaybe<UserConsentInput>;
 };
 
+export type MutationCreateUserGrantArgs = {
+  input?: InputMaybe<UserGrantInput>;
+};
+
 export type MutationCreateUserHelpArgs = {
   input?: InputMaybe<UserHelpInput>;
 };
@@ -5850,6 +5869,10 @@ export type MutationDeleteUserArgs = {
 };
 
 export type MutationDeleteUserConsentArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDeleteUserGrantArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
 
@@ -6816,6 +6839,11 @@ export type MutationUpdateUserConsentArgs = {
 
 export type MutationUpdateUserContactStatusForStatementArgs = {
   statementId: Scalars['UUID'];
+};
+
+export type MutationUpdateUserGrantArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  input?: InputMaybe<UserGrantInput>;
 };
 
 export type MutationUpdateUserHelpArgs = {
@@ -8935,6 +8963,7 @@ export type Query = {
   GetAllThemeDay: Array<Maybe<ThemeDay>>;
   GetAllTopic: Array<Maybe<Topic>>;
   GetAllUserConsent?: Maybe<Array<Maybe<UserConsent>>>;
+  GetAllUserGrant?: Maybe<Array<Maybe<UserGrant>>>;
   GetAllUserHelp?: Maybe<Array<Maybe<UserHelp>>>;
   GetAllUserHierarchyEntity?: Maybe<Array<Maybe<UserHierarchyEntity>>>;
   GetAllUserPermission?: Maybe<Array<Maybe<UserPermission>>>;
@@ -9041,6 +9070,7 @@ export type Query = {
   GetThemeDayById: Array<Maybe<ThemeDay>>;
   GetTopicById: Array<Maybe<Topic>>;
   GetUserConsentById?: Maybe<UserConsent>;
+  GetUserGrantById?: Maybe<UserGrant>;
   GetUserHelpById?: Maybe<UserHelp>;
   GetUserHierarchyEntityById?: Maybe<UserHierarchyEntity>;
   GetUserPermissionById?: Maybe<UserPermission>;
@@ -9095,6 +9125,7 @@ export type Query = {
   childProgressReportsForUser?: Maybe<Array<Maybe<ChildProgressReportModel>>>;
   childProgressReportsStatus?: Maybe<ChildProgressReportsStatus>;
   childrenAttendedVsAbsentMetrics?: Maybe<Array<Maybe<MetricReportStatItem>>>;
+  childrenForClassroom?: Maybe<Array<Maybe<Child>>>;
   childrenForClassroomGroup?: Maybe<Array<Maybe<Child>>>;
   childrenMetrics?: Maybe<ChildrenMetricReport>;
   classAttendanceByUser?: Maybe<Array<Maybe<ClassroomMetricReport>>>;
@@ -9187,6 +9218,7 @@ export type Query = {
   countSystemSetting?: Maybe<Scalars['Int']>;
   countTenantSetupInfo?: Maybe<Scalars['Int']>;
   countUserConsent?: Maybe<Scalars['Int']>;
+  countUserGrant?: Maybe<Scalars['Int']>;
   countUserHelp?: Maybe<Scalars['Int']>;
   countUserHierarchyEntity?: Maybe<Scalars['Int']>;
   countUserPermission?: Maybe<Scalars['Int']>;
@@ -9852,6 +9884,12 @@ export type QueryGetAllUserConsentArgs = {
   where?: InputMaybe<UserConsentFilterInput>;
 };
 
+export type QueryGetAllUserGrantArgs = {
+  order?: InputMaybe<Array<UserGrantSortInput>>;
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<UserGrantFilterInput>;
+};
+
 export type QueryGetAllUserHelpArgs = {
   order?: InputMaybe<Array<UserHelpSortInput>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
@@ -10418,6 +10456,11 @@ export type QueryGetUserConsentByIdArgs = {
   where?: InputMaybe<UserConsentFilterInput>;
 };
 
+export type QueryGetUserGrantByIdArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  where?: InputMaybe<UserGrantFilterInput>;
+};
+
 export type QueryGetUserHelpByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<UserHelpFilterInput>;
@@ -10658,6 +10701,10 @@ export type QueryChildProgressReportsStatusArgs = {
 export type QueryChildrenAttendedVsAbsentMetricsArgs = {
   fromDate: Scalars['DateTime'];
   toDate: Scalars['DateTime'];
+};
+
+export type QueryChildrenForClassroomArgs = {
+  userId: Scalars['UUID'];
 };
 
 export type QueryChildrenForClassroomGroupArgs = {
@@ -11100,6 +11147,11 @@ export type QueryCountTenantSetupInfoArgs = {
 };
 
 export type QueryCountUserConsentArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountUserGrantArgs = {
   pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ComparableInt32OperationFilterInput>;
 };
@@ -11762,6 +11814,7 @@ export type Setting_InvitationCutoffDelay = {
 export type Setting_Invitations = {
   __typename?: 'Setting_Invitations';
   AdminSignup: Scalars['String'];
+  PreSchoolInvitation: Scalars['String'];
   PrincipalSignup: Scalars['String'];
   Signup: Scalars['String'];
 };
@@ -11877,6 +11930,7 @@ export type ShortenUrlEntity = {
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
+  messageLogId?: Maybe<Scalars['UUID']>;
   messageType?: Maybe<Scalars['String']>;
   notificationResult?: Maybe<Scalars['Int']>;
   uRL?: Maybe<Scalars['String']>;
@@ -11891,6 +11945,7 @@ export type ShortenUrlEntityFilterInput = {
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
+  messageLogId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   messageType?: InputMaybe<StringOperationFilterInput>;
   notificationResult?: InputMaybe<ComparableNullableOfInt32OperationFilterInput>;
   or?: InputMaybe<Array<ShortenUrlEntityFilterInput>>;
@@ -11904,6 +11959,7 @@ export type ShortenUrlEntityInput = {
   Clicked: Scalars['Int'];
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
+  MessageLogId?: InputMaybe<Scalars['UUID']>;
   MessageType?: InputMaybe<Scalars['String']>;
   NotificationResult?: InputMaybe<Scalars['Int']>;
   URL?: InputMaybe<Scalars['String']>;
@@ -11916,6 +11972,7 @@ export type ShortenUrlEntitySortInput = {
   id?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
+  messageLogId?: InputMaybe<SortEnumType>;
   messageType?: InputMaybe<SortEnumType>;
   notificationResult?: InputMaybe<SortEnumType>;
   uRL?: InputMaybe<SortEnumType>;
@@ -13107,15 +13164,45 @@ export type UserGrant = {
   __typename?: 'UserGrant';
   grant?: Maybe<Grant>;
   grantId: Scalars['UUID'];
-  tenantId: Scalars['UUID'];
+  id: Scalars['UUID'];
+  insertedDate: Scalars['DateTime'];
+  isActive: Scalars['Boolean'];
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
   userId?: Maybe<Scalars['UUID']>;
 };
 
+export type UserGrantFilterInput = {
+  and?: InputMaybe<Array<UserGrantFilterInput>>;
+  grant?: InputMaybe<GrantFilterInput>;
+  grantId?: InputMaybe<ComparableGuidOperationFilterInput>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  or?: InputMaybe<Array<UserGrantFilterInput>>;
+  updatedBy?: InputMaybe<StringOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  userId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+};
+
 export type UserGrantInput = {
-  grant?: InputMaybe<GrantInput>;
-  grantId: Scalars['UUID'];
-  tenantId: Scalars['UUID'];
-  userId?: InputMaybe<Scalars['UUID']>;
+  Grant?: InputMaybe<GrantInput>;
+  GrantId: Scalars['UUID'];
+  Id?: InputMaybe<Scalars['UUID']>;
+  IsActive: Scalars['Boolean'];
+  UpdatedBy?: InputMaybe<Scalars['String']>;
+  UserId?: InputMaybe<Scalars['UUID']>;
+};
+
+export type UserGrantSortInput = {
+  grant?: InputMaybe<GrantSortInput>;
+  grantId?: InputMaybe<SortEnumType>;
+  id?: InputMaybe<SortEnumType>;
+  insertedDate?: InputMaybe<SortEnumType>;
+  isActive?: InputMaybe<SortEnumType>;
+  updatedBy?: InputMaybe<SortEnumType>;
+  updatedDate?: InputMaybe<SortEnumType>;
+  userId?: InputMaybe<SortEnumType>;
 };
 
 export type UserHelp = {

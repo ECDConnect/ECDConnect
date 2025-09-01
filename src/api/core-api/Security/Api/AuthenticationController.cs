@@ -51,6 +51,7 @@ namespace ECDLink.Security.Api
         private readonly Guid _applicationUserId;
         private readonly IGenericRepository<UserHelp, Guid> _userHelpRepo;
         private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly INotificationService _notificationService;
 
         public AuthenticationController(
             ITokenManager<ApplicationUser, SecurityCodeTokenManager> securityCodeManager,
@@ -64,7 +65,8 @@ namespace ECDLink.Security.Api
             TenantService tenantService,
             HierarchyEngine hierarchyEngine,
             AuthenticationDbContext dbContext,
-            IServiceScopeFactory serviceScopeFactory)
+            IServiceScopeFactory serviceScopeFactory,
+            [Service] INotificationService notificationService)
         {
             _applicationUserId = contextAccessor.HttpContext != null && contextAccessor.HttpContext.GetUser() != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();
 
@@ -79,6 +81,7 @@ namespace ECDLink.Security.Api
             _dbContext = dbContext;
             _tenantService = tenantService;
             _serviceScopeFactory = serviceScopeFactory;
+            _notificationService = notificationService;
         }
 
         // POST api/auth/login
@@ -177,7 +180,7 @@ namespace ECDLink.Security.Api
             return package;
         }
 
-        private static bool ValidateTenantForUser(Guid? userTenantId, Guid? tenantId) 
+        private static bool ValidateTenantForUser(Guid? userTenantId, Guid? tenantId)
         {
             return userTenantId != null && tenantId != null && userTenantId == tenantId;
         }
@@ -629,17 +632,18 @@ namespace ECDLink.Security.Api
                 await SubmitUserHelpFormBackground(
                    _serviceScopeFactory, _applicationUserId, newRecord
                 );
-                });
+            });
 
             return Ok();
         }
 
-        private async static Task SubmitUserHelpFormBackground(IServiceScopeFactory serviceScopeFactory, 
-            Guid applicationUserId,
-            UserHelp userHelp)
+        private async static Task SubmitUserHelpFormBackground(IServiceScopeFactory serviceScopeFactory,
+                Guid applicationUserId,
+                UserHelp userHelp)
         {
             using var scope = serviceScopeFactory.CreateScope();
             ILogger<AuthenticationController> logger = null;
+
             try
             {
                 logger = scope.ServiceProvider.GetRequiredService<ILogger<AuthenticationController>>();
@@ -650,6 +654,8 @@ namespace ECDLink.Security.Api
                 await notificationManager.SendHelpFormSubmissionToAdministratorAsync(userHelp);
                 await notificationService.ExpireNotificationsTypesForUser(applicationUserId.ToString(), TemplateTypeConstants.FeedbackNotification);
 
+                var adminUsers = userManager.GetUsersInRoleAsync(Roles.ADMINISTRATOR).Result;
+
                 var affectedUserFullName = "anonymous";
                 if (userHelp.UserId != null)
                 {
@@ -658,41 +664,42 @@ namespace ECDLink.Security.Api
                 }
 
                 var replacements = new List<TagsReplacements>
-                {
-                    new () { FindValue = "AffectedUserFullName", ReplacementValue = affectedUserFullName },
-                    new () { FindValue = "ApplicationName", ReplacementValue = TenantExecutionContext.Tenant.ApplicationName },
-                    new () { FindValue = "HelpContactDetail", ReplacementValue = userHelp.ContactPreference == "email" ? userHelp.Email : userHelp.CellNumber },
-                    new () { FindValue = "HelpCategory", ReplacementValue = userHelp.Subject },
-                    new () { FindValue = "HelpDescription", ReplacementValue = userHelp.Description },
-                    new () { FindValue = "HelpLoginStatus", ReplacementValue = userHelp.IsLoggedIn ? "Yes" : "No" },
-                    new () { FindValue = "OrganisationName", ReplacementValue = TenantExecutionContext.Tenant.OrganisationName },
-                };
+                    {
+                        new TagsReplacements() { FindValue = "AffectedUserFullName", ReplacementValue = affectedUserFullName },
+                        new TagsReplacements() { FindValue = "ApplicationName", ReplacementValue = TenantExecutionContext.Tenant.ApplicationName },
+                        new TagsReplacements() { FindValue = "HelpContactDetail", ReplacementValue = userHelp.ContactPreference == "email" ? userHelp.Email : userHelp.CellNumber },
+                        new TagsReplacements() { FindValue = "HelpSubject", ReplacementValue = userHelp.Subject },
+                        new TagsReplacements() { FindValue = "HelpDescription", ReplacementValue = userHelp.Description },
+                        new TagsReplacements() { FindValue = "HelpLoginStatus", ReplacementValue = userHelp.IsLoggedIn ? "Yes" : "No" },
+                        new TagsReplacements() { FindValue = "OrganisationName", ReplacementValue = TenantExecutionContext.Tenant.OrganisationName },
+                    };
 
-                var userToSend = await userManager.FindByIdAsync(applicationUserId);
-                await notificationService.SendNotificationAsync(
-                    null,
-                    TemplateTypeConstants.AdminUserHelpForm,
-                    DateTime.Now,
-                    userToSend,
-                    "",
-                    MessageStatusConstants.Blue,
-                    replacements,
-                    null,
-                    false,
-                    true,
-                    null,
-                    null,
-                    null,
-                    "portal"
-                );
-                logger.LogInformation("Help request logged {UserHelpId}", userHelp.Id);
+                foreach (var adminUser in adminUsers)
+                {
+                    await notificationService.SendNotificationAsync(
+                        null,
+                        TemplateTypeConstants.AdminUserHelpForm,
+                        DateTime.Now,
+                        adminUser,
+                        "",
+                        MessageStatusConstants.Red,
+                        replacements,
+                        null,
+                        false,
+                        false,
+                        string.Join(',', replacements),
+                        null,
+                        null,
+                        "portal"
+                    );
+                }
+                logger.LogInformation("Help request logged {UserHelpId}", userHelp.Id); 
             }
             catch (Exception ex)
             {
-                logger?.LogInformation(ex, ex.Message);
+              logger?.LogInformation(ex, ex.Message);
             }
         }
-
 
         [Route("register-wl-user")]
         [AllowAnonymous]
