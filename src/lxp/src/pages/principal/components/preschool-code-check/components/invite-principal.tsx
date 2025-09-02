@@ -6,6 +6,7 @@ import {
   FormInput,
   LoadingSpinner,
   SA_CELL_REGEX,
+  SliderPagination,
   Typography,
 } from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
@@ -73,134 +74,131 @@ export const InvitePrincipal: React.FC<{
   };
 
   return (
-    <>
-      <BannerWrapper
-        onBack={() => setInvitePrincipal && setInvitePrincipal(false)}
-        color="primary"
-        title={`Preschool information`}
-        subTitle={'Step 1 of 2'}
-        displayOffline={!isOnline}
-        className={'relative'}
-        backgroundUrl={TransparentLayer}
-        size={'large'}
-        renderBorder={true}
-        showBackground={true}
-      >
-        <div className="h-screen overscroll-y-auto px-4 pt-7">
-          <div className="flex flex-col gap-11">
-            <div>
-              <Card
-                className="bg-uiBg mb-6 flex flex-col items-center gap-3 p-6"
-                borderRaduis="xl"
-                shadowSize="lg"
-              >
-                <div className="">
-                  <Cebisa />
-                </div>
-                <Typography
-                  color="textDark"
-                  text={`Invite your principal to ${appName}!`}
-                  type={'h3'}
-                  align="center"
-                />
-              </Card>
-            </div>
-          </div>
-          <div className="h-fit mt-4 mb-1">
-            <FormInput
-              label={`What is your principal's phone number?`}
-              placeholder={'e.g 0123456789'}
-              type={'number'}
-              onChange={(e) => {
-                setPrincipalPhoneNumber(e?.target?.value);
-                setError('');
-              }}
-              value={principalPhoneNumber}
-              error={error as unknown as FieldError}
-            ></FormInput>
-            {error && (
-              <Typography
-                type="body"
-                hasMarkup
-                text={error}
-                className="mt-1"
-                color="errorMain"
-              />
-            )}
-
-            {isLoading && (
-              <LoadingSpinner
-                size="medium"
-                spinnerColor="quatenary"
-                backgroundColor="uiLight"
-                className="my-4"
-              />
-            )}
-
-            {principalPhoneNumber && (
-              <div
-                className={`${
-                  allowPermissions
-                    ? 'border-quatenary bg-quatenaryBg border'
-                    : 'bg-uiBg'
-                } bg-uiBg mt-2 flex w-full flex-row items-center justify-between gap-2 rounded-xl p-4`}
-              >
-                <Checkbox
-                  description={`I give permission for my information to be shared with the preschool principal`}
-                  descriptionColor="textMid"
-                  checked={allowPermissions}
-                  onCheckboxChange={() =>
-                    setAllowPermissions(!allowPermissions)
-                  }
-                />
-                &nbsp;
-                <Button
-                  color={'secondaryAccent2'}
-                  type={'filled'}
-                  text="Read"
-                  textColor="secondary"
-                  className={'rounded-xl'}
-                  size={'small'}
-                  onClick={() => setViewPermissionToShare(true)}
-                />
+    <BannerWrapper
+      onBack={() => setInvitePrincipal && setInvitePrincipal(false)}
+      color="primary"
+      title={`Preschool information`}
+      subTitle={'Step 1 of 2'}
+      displayOffline={!isOnline}
+      className={'relative'}
+      backgroundUrl={TransparentLayer}
+      size={'large'}
+      renderBorder={true}
+      showBackground={true}
+    >
+      <div className="h-screen overscroll-y-auto px-4 pt-7">
+        <div className="flex flex-col gap-11">
+          <div>
+            <Card
+              className="bg-uiBg mb-6 flex flex-col items-center gap-3 p-6"
+              borderRaduis="xl"
+              shadowSize="lg"
+            >
+              <div className="">
+                <Cebisa />
               </div>
-            )}
-            <div className="mt-4 flex w-full flex-col justify-center">
-              <Button
-                type="filled"
-                color="quatenary"
-                className={'mt-1 mb-2 w-full'}
-                disabled={!principalPhoneNumber || !allowPermissions}
-                isLoading={isLoading}
-                onClick={handleInvitePrincipal}
-              >
-                {renderIcon('ExclamationIcon', 'mr-2 text-white w-5')}
-                <Typography
-                  type={'help'}
-                  text={'Save & send invitation'}
-                  color={'white'}
-                />
-              </Button>
-              <Button
-                type="outlined"
-                color="quatenary"
-                className={'border-quatenary bottom-12 mt-1 mb-2 w-full border'}
-                onClick={handleSkipAddPractitionerToPrincipal} // Navigate to a different page if it is principle
-              >
-                {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
-                <Typography type={'help'} text={'Skip'} color={'quatenary'} />
-              </Button>
-            </div>
+              <Typography
+                color="textDark"
+                text={`Invite your principal to ${appName}!`}
+                type={'h3'}
+                align="center"
+              />
+            </Card>
           </div>
-          <Article
-            visible={viewPermissionToShare}
-            consentEnumType={ContentConsentTypeEnum.PermissionToShare}
-            onClose={function (): void {
-              setViewPermissionToShare(false);
-            }}
-          />
         </div>
-      </BannerWrapper>
-    </>
+        <SliderPagination totalItems={2} activeIndex={0} className={'p-4'} />
+        <div className="h-fit mt-4 mb-1">
+          <FormInput
+            label={`What is your principal's phone number?`}
+            placeholder={'e.g 0123456789'}
+            type={'number'}
+            onChange={(e) => {
+              setPrincipalPhoneNumber(e?.target?.value);
+              setError('');
+            }}
+            value={principalPhoneNumber}
+            error={error as unknown as FieldError}
+          ></FormInput>
+          {error && (
+            <Typography
+              type="body"
+              hasMarkup
+              text={error}
+              className="mt-1"
+              color="errorMain"
+            />
+          )}
+
+          {isLoading && (
+            <LoadingSpinner
+              size="medium"
+              spinnerColor="quatenary"
+              backgroundColor="uiLight"
+              className="my-4"
+            />
+          )}
+
+          {principalPhoneNumber && (
+            <div
+              className={`${
+                allowPermissions
+                  ? 'border-quatenary bg-quatenaryBg border'
+                  : 'bg-uiBg'
+              } bg-uiBg mt-2 flex w-full flex-row items-center justify-between gap-2 rounded-xl p-4`}
+            >
+              <Checkbox
+                description={`I give permission for my information to be shared with the preschool principal`}
+                descriptionColor="textMid"
+                checked={allowPermissions}
+                onCheckboxChange={() => setAllowPermissions(!allowPermissions)}
+              />
+              &nbsp;
+              <Button
+                color={'secondaryAccent2'}
+                type={'filled'}
+                text="Read"
+                textColor="secondary"
+                className={'rounded-xl'}
+                size={'small'}
+                onClick={() => setViewPermissionToShare(true)}
+              />
+            </div>
+          )}
+          <div className="mt-4 flex w-full flex-col justify-center">
+            <Button
+              type="filled"
+              color="quatenary"
+              className={'mt-1 mb-2 w-full'}
+              disabled={!principalPhoneNumber || !allowPermissions}
+              isLoading={isLoading}
+              onClick={handleInvitePrincipal}
+            >
+              {renderIcon('ExclamationIcon', 'mr-2 text-white w-5')}
+              <Typography
+                type={'help'}
+                text={'Save & send invitation'}
+                color={'white'}
+              />
+            </Button>
+            <Button
+              type="outlined"
+              color="quatenary"
+              className={'border-quatenary bottom-12 mt-1 mb-2 w-full border'}
+              onClick={handleSkipAddPractitionerToPrincipal} // Navigate to a different page if it is principle
+            >
+              {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
+              <Typography type={'help'} text={'Skip'} color={'quatenary'} />
+            </Button>
+          </div>
+        </div>
+        <Article
+          visible={viewPermissionToShare}
+          consentEnumType={ContentConsentTypeEnum.PermissionToShare}
+          onClose={function (): void {
+            setViewPermissionToShare(false);
+          }}
+        />
+      </div>
+    </BannerWrapper>
   );
 };
