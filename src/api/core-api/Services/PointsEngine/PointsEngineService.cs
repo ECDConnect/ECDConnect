@@ -1034,7 +1034,6 @@ namespace EcdLink.Api.CoreApi.Services
         /// <summary>
         /// Complete an online training course
         /// 200 points per course completed in the "Training" section
-        /// Max Year 200
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
@@ -1047,20 +1046,12 @@ namespace EcdLink.Api.CoreApi.Services
                                                                                     && x.UserId == userId 
                                                                                     && x.CompletedDate.Year == today.Year
                                                                                     && x.CompletedDate.Month == today.Month).CountAsync();
-                if (trainingCoursesCount > 0)
-                {
-                    var activity = await _pointsActivityRepo.GetAll().SingleAsync(x => x.Id == PointsActivityConstants.CompleteOnlineTrainingCourseId);
-                    //var yearPoints = _pointsUserSummaryRepo.GetAll().Where(x =>
-                    //                       x.UserId == userId
-                    //                       && x.PointsActivityId == activity.Id
-                    //                       && x.DateScored.Year >= today.Year).Select(x => x.PointsTotal).Sum();
-                    //var userPoints = yearPoints == 0 ? activity.Points : 0;
-                    AddOrUpdatePoints(
-                        PointsActivityConstants.CompleteOnlineTrainingCourseId,
-                        userId,
-                        activity.Points,
-                        trainingCoursesCount);
-                }
+                var activity = await _pointsActivityRepo.GetAll().SingleAsync(x => x.Id == PointsActivityConstants.CompleteOnlineTrainingCourseId);
+                AddOrUpdatePoints(
+                    PointsActivityConstants.CompleteOnlineTrainingCourseId,
+                    userId,
+                    activity.Points,
+                    trainingCoursesCount);
             }
         }
 
