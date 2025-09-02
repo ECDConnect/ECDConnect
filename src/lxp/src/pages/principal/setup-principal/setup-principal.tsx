@@ -570,6 +570,9 @@ export const SetupPrincipal: React.FC = () => {
               onAllStepsComplete();
             }}
             isLoading={isLoading}
+            showStep={true}
+            stepIndex={isNotPrincipal ? 1 : 2}
+            stepTotal={isNotPrincipal ? 2 : 3}
           />
         );
 

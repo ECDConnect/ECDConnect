@@ -191,6 +191,9 @@ export const EditPractitionerProfile: React.FC = () => {
             onSubmit={() => {
               onAllStepsComplete();
             }}
+            showStep={true}
+            stepIndex={1}
+            stepTotal={2}
           />
         );
 
