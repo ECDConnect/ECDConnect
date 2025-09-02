@@ -326,7 +326,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
     >
       <div className="flex flex-col justify-center p-4">
         <Typography
-          className="truncate  whitespace-nowrap"
+          className="truncate whitespace-nowrap"
           type="h2"
           weight="bold"
           color="textDark"
