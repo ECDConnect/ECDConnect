@@ -338,7 +338,7 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
                 text={`R ${formatCurrency(totalIncome)}`}
                 color={'white'}
                 type="h4"
-                className="mr-12 w-4/12 text-right"
+                className="mr-12 w-4/12 whitespace-nowrap text-right"
               />
             </Card>
           </>
@@ -398,7 +398,7 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
                 text={`R ${formatCurrency(totalExpenses)}`}
                 color={'white'}
                 type="h4"
-                className="w-8/12 text-right"
+                className="w-8/12 whitespace-nowrap text-right"
               />
             </Card>
           </>
@@ -418,7 +418,7 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
             text={`R ${formatCurrency(totalBalance)}`}
             color={'white'}
             type="h1"
-            className="w-8/12 text-right"
+            className="w-8/12 whitespace-nowrap text-right"
           />
         </Card>
       </div>
