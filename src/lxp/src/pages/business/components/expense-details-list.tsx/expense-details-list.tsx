@@ -95,7 +95,7 @@ export const ExpenseDetailsList: React.FC<ExpenseDetailsListProps> = ({
             text={`R ${formatCurrency(sumIncomeOrExpenseItems(expenseItems))}`}
             color={'white'}
             type="h4"
-            className="mr-12 w-4/12 text-right"
+            className="mr-12 w-4/12 whitespace-nowrap text-right"
           />
         </Card>
       </div>
