@@ -325,6 +325,7 @@ export const SubmitIncomeStatements: React.FC = () => {
                             : 'secondary'
                         }
                         align={'center'}
+                        className="whitespace-nowrap"
                       />
                     </td>
                     <td className="w-1/3">
