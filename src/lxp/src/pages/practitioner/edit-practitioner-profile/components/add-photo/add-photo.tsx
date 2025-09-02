@@ -9,6 +9,7 @@ import {
   renderIcon,
   Card,
   IMAGE_WIDTH,
+  SliderPagination,
 } from '@ecdlink/ui';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -20,7 +21,13 @@ import { AddPhotoProps } from './add-photo.types';
 import { cloneDeep } from 'lodash';
 import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
 
-export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit, isLoading }) => {
+export const AddPhoto: React.FC<AddPhotoProps> = ({
+  onSubmit,
+  isLoading,
+  stepIndex = 1,
+  stepTotal = 2,
+  showStep = false,
+}) => {
   const user = useSelector(userSelectors.getUser);
   const appDispatch = useAppDispatch();
   const {
@@ -87,6 +94,13 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit, isLoading }) => {
           </Card>
         </div>
       </div>
+      {showStep && (
+        <SliderPagination
+          totalItems={stepTotal}
+          activeIndex={stepIndex}
+          className={'p-4'}
+        />
+      )}
       <div className={'inline-flex w-full justify-center pt-16 pb-12'}>
         <ProfileAvatar
           dataUrl={userProfilePicture?.file ?? user?.profileImageUrl ?? ''}
