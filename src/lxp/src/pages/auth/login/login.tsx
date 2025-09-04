@@ -330,7 +330,7 @@ export const Login: React.FC = () => {
               <Button
                 className={'mt-1 mb-3'}
                 type="outlined"
-                color="secondary"
+                color="tertiary"
                 background={'transparent'}
                 size="small"
                 disabled={!isOnline}
@@ -338,8 +338,8 @@ export const Login: React.FC = () => {
               >
                 <Typography
                   type="buttonSmall"
-                  color="secondary"
-                  text={'Forgot my password'}
+                  color="tertiary"
+                  text={'Forgot my password/username'}
                 ></Typography>
               </Button>
             </div>
