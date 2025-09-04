@@ -250,6 +250,7 @@ export type AddChildTokenModelInput = {
   isSouthAfricanCitizen: Scalars['Boolean'];
   languageId?: InputMaybe<Scalars['UUID']>;
   otherHealthConditions?: InputMaybe<Scalars['String']>;
+  otherLanguages?: InputMaybe<Scalars['String']>;
   profileImageUrl?: InputMaybe<Scalars['String']>;
   raceId?: InputMaybe<Scalars['UUID']>;
   surname?: InputMaybe<Scalars['String']>;
@@ -1052,6 +1053,7 @@ export type Child = {
   language?: Maybe<Language>;
   languageId?: Maybe<Scalars['UUID']>;
   otherHealthConditions?: Maybe<Scalars['String']>;
+  otherLanguages?: Maybe<Scalars['String']>;
   playgroupGroup?: Maybe<Scalars['String']>;
   reasonForLeaving?: Maybe<ReasonForLeaving>;
   reasonForLeavingId?: Maybe<Scalars['UUID']>;
@@ -1143,6 +1145,7 @@ export type ChildFilterInput = {
   languageId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   or?: InputMaybe<Array<ChildFilterInput>>;
   otherHealthConditions?: InputMaybe<StringOperationFilterInput>;
+  otherLanguages?: InputMaybe<StringOperationFilterInput>;
   playgroupGroup?: InputMaybe<StringOperationFilterInput>;
   reasonForLeaving?: InputMaybe<ReasonForLeavingFilterInput>;
   reasonForLeavingId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
@@ -1183,6 +1186,7 @@ export type ChildInput = {
   Language?: InputMaybe<LanguageInput>;
   LanguageId?: InputMaybe<Scalars['UUID']>;
   OtherHealthConditions?: InputMaybe<Scalars['String']>;
+  OtherLanguages?: InputMaybe<Scalars['String']>;
   PlaygroupGroup?: InputMaybe<Scalars['String']>;
   ReasonForLeaving?: InputMaybe<ReasonForLeavingInput>;
   ReasonForLeavingId?: InputMaybe<Scalars['UUID']>;
@@ -1406,6 +1410,7 @@ export type ChildSortInput = {
   language?: InputMaybe<LanguageSortInput>;
   languageId?: InputMaybe<SortEnumType>;
   otherHealthConditions?: InputMaybe<SortEnumType>;
+  otherLanguages?: InputMaybe<SortEnumType>;
   playgroupGroup?: InputMaybe<SortEnumType>;
   reasonForLeaving?: InputMaybe<ReasonForLeavingSortInput>;
   reasonForLeavingId?: InputMaybe<SortEnumType>;
@@ -13076,6 +13081,7 @@ export type UpdateChildAndCaregiverInput = {
   isActive: Scalars['Boolean'];
   languageId?: InputMaybe<Scalars['UUID']>;
   otherHealthConditions?: InputMaybe<Scalars['String']>;
+  otherLanguages?: InputMaybe<Scalars['String']>;
   reasonForLeavingId?: InputMaybe<Scalars['UUID']>;
   user?: InputMaybe<ChildUserUpdateInput>;
   workflowStatusId: Scalars['UUID'];

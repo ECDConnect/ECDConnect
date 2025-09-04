@@ -184,6 +184,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 childEntity.OtherHealthConditions = child.OtherHealthConditions;
                 childEntity.WorkflowStatusId = child.WorkflowStatusId;
                 childEntity.IsAddedByCaregiver = true;
+                childEntity.OtherLanguages = child.OtherLanguages;
 
                 childEntity.Caregiver = new Caregiver
                 {
