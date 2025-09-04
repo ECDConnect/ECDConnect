@@ -295,7 +295,7 @@ export const OaLogin: React.FC = () => {
               <Button
                 className={'mt-1 mb-3'}
                 type="outlined"
-                color="tertiary"
+                color="secondary"
                 background={'transparent'}
                 size="small"
                 disabled={!isOnline}
@@ -303,7 +303,7 @@ export const OaLogin: React.FC = () => {
               >
                 <Typography
                   type="buttonSmall"
-                  color="tertiary"
+                  color="secondary"
                   text={'Forgot my password/username'}
                 ></Typography>
               </Button>
