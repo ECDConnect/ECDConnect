@@ -10,4 +10,5 @@ export interface ChildExtraInformationFormModel {
 export const childExtraInformationFormSchema = Yup.object().shape({
   genderId: Yup.string(),
   homeLanguages: Yup.array(),
+  otherLanguages: Yup.string(),
 });

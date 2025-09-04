@@ -36,6 +36,7 @@ class ChildService {
             allergies
             disabilities
             otherHealthConditions
+            otherLanguages
             isActive
             insertedBy
             userId
@@ -123,6 +124,7 @@ class ChildService {
             allergies
             disabilities
             otherHealthConditions
+            otherLanguages
             isActive
             insertedBy
             userId
@@ -210,6 +212,7 @@ class ChildService {
             allergies
             disabilities
             otherHealthConditions
+            otherLanguages
             isActive
             insertedBy
             userId

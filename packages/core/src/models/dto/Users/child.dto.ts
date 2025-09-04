@@ -23,6 +23,7 @@ export interface ChildDto extends EntityBase {
   reasonForLeavingId?: string;
   inactiveDate?: Date;
   inactivityComments?: string;
+  otherLanguages?: string;
 }
 
 export interface AddChildTokenDto {

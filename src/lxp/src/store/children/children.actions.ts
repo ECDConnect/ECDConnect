@@ -482,6 +482,7 @@ const mapChildInput = (
   allergies: child.allergies,
   disabilities: child.disabilities,
   otherHealthConditions: child.otherHealthConditions,
+  otherLanguages: child.otherLanguages,
   workflowStatusId: child.workflowStatusId,
   isActive: child.isActive === false ? false : true,
   user: mapUserInput(child.user!),

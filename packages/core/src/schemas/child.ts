@@ -6,10 +6,12 @@ export const initialChildValues: ChildDto = {
   disabilities: '',
   otherHealthConditions: '',
   languageId: '',
+  otherLanguages: '',
 };
 
 export const childSchema = Yup.object().shape({
   allergies: Yup.string(),
   disabilities: Yup.string(),
   otherHealthConditions: Yup.string(),
+  otherLanguages: Yup.string(),
 });
