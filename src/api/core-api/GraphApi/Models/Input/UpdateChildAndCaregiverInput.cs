@@ -15,9 +15,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Input
         public ChildUserUpdateInput User { get; set; }
         public ChildCaregiverInput Caregiver { get; set; }
         public Guid? ReasonForLeavingId { get; set; }
-         public string InactiveReason { get; set; }
+        public string InactiveReason { get; set; }
         public DateTime? InactiveDate { get; set; }
         public string InactivityComments { get; set; }
+        public string OtherLanguages { get; set; }
     }
 
     public class ChildUserUpdateInput

@@ -25,6 +25,7 @@ export const GetAllChild = gql`
         description
       }
       allergies
+      otherLanguages
       disabilities
       otherHealthConditions
     }
@@ -55,6 +56,7 @@ export const GetChildById = gql`
         description
       }
       allergies
+      otherLanguages
       disabilities
       otherHealthConditions
     }

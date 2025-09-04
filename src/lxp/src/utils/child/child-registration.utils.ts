@@ -97,6 +97,7 @@ export const mapChildDto = (
       allergies: healthInformationForm?.allergies ?? '',
       disabilities: healthInformationForm?.disabilities ?? '',
       otherHealthConditions: healthInformationForm?.healthConditions ?? '',
+      otherLanguages: childExtraInformationForm?.otherLanguages ?? '',
       workflowStatusId: childStatusId,
     };
   }
@@ -114,6 +115,7 @@ export const mapChildDto = (
     allergies: healthInformationForm?.allergies ?? '',
     disabilities: healthInformationForm?.disabilities ?? '',
     otherHealthConditions: healthInformationForm?.healthConditions ?? '',
+    otherLanguages: childExtraInformationForm?.otherLanguages ?? '',
     workflowStatusId: childStatusId,
     insertedDate: new Date().toISOString(),
     insertedBy: '',
@@ -359,6 +361,7 @@ export const mapAddChildTokenModelInput = (
     allergies: healthInformationForm?.allergies ?? '',
     disabilities: healthInformationForm?.disabilities ?? '',
     otherHealthConditions: healthInformationForm?.healthConditions ?? '',
+    otherLanguages: childExtraInformationForm?.otherLanguages ?? '',
     workflowStatusId: childWorkflowStatusId,
   };
 };
