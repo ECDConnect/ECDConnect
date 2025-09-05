@@ -206,10 +206,10 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
   }
 
   const childrenUnder5Years = children.filter(
-    (x) => !x.ageInMonths || x.ageInMonths <= 60
+    (x) => x.ageInMonths && x.ageInMonths <= 60
   );
   const childrenOver5Years = children.filter(
-    (x) => !x.ageInMonths || x.ageInMonths > 60
+    (x) => x.ageInMonths && x.ageInMonths > 60
   );
 
   const progressBarColour: Colours = hasPermissionToCreateProgressReports
