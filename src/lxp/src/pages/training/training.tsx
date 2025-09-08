@@ -108,6 +108,7 @@ export const Training: React.FC = () => {
           height="800px"
           width="90%"
           className="divide-uiLight mx-auto divide-y-2 divide-dashed"
+          allowfullscreen
         ></iframe>
       </div>
     </BannerWrapper>
