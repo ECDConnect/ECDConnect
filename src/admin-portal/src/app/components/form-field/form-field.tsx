@@ -96,7 +96,7 @@ const FormField: React.FC<FormFieldProps> = ({
           type={type}
           {...register(nameProp, {
             required: required,
-            validate: validation,
+            ...validation,
           })}
           className={error ? errorStyle : getInputTypeStyles()}
           placeholder={placeholder}
