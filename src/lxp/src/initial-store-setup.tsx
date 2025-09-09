@@ -1,4 +1,4 @@
-import { subMonths, startOfQuarter, lastDayOfQuarter } from 'date-fns';
+import { subMonths } from 'date-fns';
 import React, { useCallback, useEffect, useState } from 'react';
 import Loader from './components/loader/loader';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
@@ -69,7 +69,7 @@ import { notificationActions } from './store/notifications';
 import { pqaActions } from './store/pqa';
 
 type IntialStoreSetupContextValues = {
-  initloading: boolean;
+  initLoading: boolean;
   initStoreSetup: () => Promise<void>;
   resetAppStore: (showLoading?: boolean, isSync?: boolean) => Promise<void>;
   resetAuth: () => Promise<void>;
@@ -88,7 +88,7 @@ export const IntialStoreSetupContext =
 const InitialStoreSetup: React.FC = ({ children }) => {
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
-  const [initloading, setInitLoading] = useState(false);
+  const [initLoading, setInitLoading] = useState(false);
   const [staticDataLoading, setStaticDataLoading] = useState(false);
   const userData = useSelector(userSelectors.getUser);
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -102,10 +102,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   );
 
   const [otherLoading, setOtherLoading] = useState(false);
-
-  const [shouldSaveStateHash, setShouldSaveStateHash] = useState(false);
-  const quarterStartDate = startOfQuarter(new Date());
-  const quarterLastDay = lastDayOfQuarter(new Date());
 
   const resetAuth = async () => {
     appDispatch(authActions.resetAuthState());
@@ -165,16 +161,12 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   };
 
   const initStoreSetup = useCallback(async () => {
-    if (isOnline) {
+    if (isOnline && !userData) {
       setInitLoading(true);
       await initStaticStoreSetup();
-
-      if (!!userData) {
-        await initAdditionalStoreSetup();
-      }
+      await initAdditionalStoreSetup();
       appDispatch(settingActions.setLastDataSync());
       setInitLoading(false);
-      setShouldSaveStateHash(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
@@ -429,7 +421,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   };
 
   const values = {
-    initloading,
+    initLoading,
     initStoreSetup,
     resetAppStore,
     resetAuth,
@@ -559,8 +551,8 @@ const InitialStoreSetup: React.FC = ({ children }) => {
 
   return (
     <IntialStoreSetupContext.Provider value={values}>
-      {!initloading && children}
-      {initloading && <Loader loadingMessage={getLoadingMessage()} />}
+      {!initLoading && children}
+      {initLoading && <Loader loadingMessage={getLoadingMessage()} />}
     </IntialStoreSetupContext.Provider>
   );
 };
