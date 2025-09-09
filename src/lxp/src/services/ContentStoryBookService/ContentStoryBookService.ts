@@ -20,6 +20,7 @@ class ContentStoryBookService {
             author
             illustrator
             bookLocation
+            bookLocationLink
             keywords
             availableLanguages {
               id
