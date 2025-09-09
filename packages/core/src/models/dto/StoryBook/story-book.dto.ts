@@ -6,7 +6,8 @@ export interface StoryBookDto {
   type: string;
   author: string;
   illustrator: string;
-  bookLocation: string; // Markdown
+  bookLocation: string;
+  bookLocationLink: string;
   keywords: string;
   storyBookParts: StoryBookPartDto[];
   availableLanguages: LanguageDto[];
