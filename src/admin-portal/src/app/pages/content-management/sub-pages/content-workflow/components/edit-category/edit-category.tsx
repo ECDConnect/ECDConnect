@@ -24,6 +24,7 @@ import {
   bulkUpdateProgressTrackingCategoryImages,
   bulkUpdateProgressTrackingSubCategoryImages,
 } from '@ecdlink/graphql';
+import * as styles from '../../../../../pages.styles';
 
 export interface ContentViewProps {
   content: any;
@@ -398,7 +399,7 @@ export default function EditCategory({
                 <button
                   onClick={cancelDialog}
                   type="button"
-                  className="bg-errorBg text-tertiary hover:bg-tertiary ml-2 inline-flex items-center rounded-xl border border-transparent px-4 py-2.5 text-sm font-medium shadow-sm hover:text-white"
+                  className={styles.cancelButton}
                 >
                   Cancel
                   <XIcon width="22px" className="pl-1" />

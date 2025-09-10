@@ -22,15 +22,13 @@ import {
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import PasswordForm from '../password-form/password-form';
 import UserDetailsForm from '../user-details-form/user-details-form';
-import UserHierarchy from '../user-hierarchy/user-hierarchy';
-import UserPanelSave from '../user-panel-save/user-panel-save';
 import UserRoles from '../user-roles/user-roles';
 import { UserPanelProps } from '../users';
 import { Button, DialogPosition, Typography } from '@ecdlink/ui';
-import { PaperAirplaneIcon, SaveIcon } from '@heroicons/react/solid';
+import { SaveIcon } from '@heroicons/react/solid';
 import AlertModal from '../../../../components/dialog-alert/dialog-alert';
+import * as styles from '../../../pages.styles';
 
 export default function UserPanelEdit(props: UserPanelProps) {
   const { setNotification } = useNotifications();
@@ -324,11 +322,10 @@ export default function UserPanelEdit(props: UserPanelProps) {
       <div className="mx-auto mt-5 max-w-5xl">{getComponent()}</div>
       <div className="flex flex-row">
         <Button
-          className={'m-2 mt-6 w-full rounded-xl'}
+          // className={'m-2 mt-6 w-full rounded-xl'}
+          className={styles.mainButton}
           type="filled"
-          // isLoading={isLoading}
           color={'secondary'}
-          // disabled={userDetailForm.email ? false : true}
           onClick={onSave}
         >
           <SaveIcon className="mx-4 h-5 w-5 text-white"></SaveIcon>

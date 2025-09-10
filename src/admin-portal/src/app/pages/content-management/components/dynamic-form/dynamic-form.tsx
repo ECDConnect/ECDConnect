@@ -29,6 +29,7 @@ import {
 import Editor from '../../../../components/form-markdown-editor/form-markdown-editor';
 import { InformationCircleIcon } from '@heroicons/react/solid';
 import { ContentTypeDto, useDialog } from '@ecdlink/core';
+import * as styles from '../../../pages.styles';
 
 const acceptedFormats = ['svg', 'png', 'jpg', 'jpeg'];
 const acceptedVideoFormats = ['mp4'];
@@ -116,9 +117,9 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             buttonClass="rounded-2xl"
             actionButtons={[
               {
-                colour: 'secondary',
+                colour: 'tertiary',
                 text: 'Close',
-                textColour: 'secondary',
+                textColour: 'tertiary',
                 type: 'outlined',
                 leadingIcon: 'XIcon',
                 onClick: onClose,
@@ -353,7 +354,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                       <div className="justify-stretch flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
                         <button
                           type="button"
-                          className="bg-secondary hover:bg-uiLight focus:outline-none focus:ring-secondary-500 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                          className={styles.mainButton}
                           onClick={() => renderDialog()}
                         >
                           Learn more
@@ -366,7 +367,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                     color={'textMid'}
                     text={`If you select 'Yes', then any future edits made & all translations of this activity can be shared with other organisations.`}
                   />
-                  <div className={`bg-uiBg gap-2 sm:col-span-12`}>
+                  <div className={`gap-2 sm:col-span-12`}>
                     <ButtonGroup
                       options={shareContentOptions}
                       onOptionSelected={(value: string | string[]) => {
@@ -374,7 +375,8 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                       }}
                       selectedOptions={field?.contentValue?.value}
                       color="tertiary"
-                      notSelectedColor="tertiaryAccent2"
+                      notSelectedColor="errorBg"
+                      textColor="tertiary"
                       type={ButtonGroupTypes.Button}
                       className={'mr-2 w-full rounded-2xl'}
                       multiple={false}
@@ -405,7 +407,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                   {field?.title}
                 </label>
                 <div
-                  className={`bg-uiBg sm:col-span-12 ${
+                  className={`sm:col-span-12 ${
                     disableActivitiesInputs
                       ? 'pointer-events-none opacity-25'
                       : ''
@@ -417,6 +419,8 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                       onStateChange(propName, value);
                     }}
                     color="tertiary"
+                    textColor="tertiary"
+                    notSelectedColor="errorBg"
                     selectedOptions={
                       field.contentValue
                         ? field.contentValue.value

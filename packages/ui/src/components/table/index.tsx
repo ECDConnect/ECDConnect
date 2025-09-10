@@ -290,7 +290,7 @@ export const Table = forwardRef<TableRefMethods, TableProps>(
                   // @ts-ignore
                   type="filled"
                   // @ts-ignore
-                  color="secondary"
+                  color="quatenary"
                   textColor="white"
                   className="mt-1 h-11 w-full rounded-md px-2 py-0 hover:bg-gray-300 lg:w-auto"
                   {...(actionButton as ButtonProps)}
@@ -329,7 +329,7 @@ export const Table = forwardRef<TableRefMethods, TableProps>(
                       isFullWidth={false}
                       key={`filter-${index}`}
                       bgColor="adminPortalBg"
-                      color="secondary"
+                      color="adminPortalBg"
                       displayMenuOverlay
                       {...(filterProps as SearchDropDownProps<string>)}
                     />
@@ -339,7 +339,7 @@ export const Table = forwardRef<TableRefMethods, TableProps>(
               <Button
                 type="filled"
                 color="transparent"
-                className="text-secondary mt-1 w-36 rounded-xl p-2 shadow-none hover:bg-gray-300"
+                className="text-quatenary mt-1 w-36 rounded-xl p-2 shadow-none hover:bg-gray-300"
                 onClick={onClearFilters}
               >
                 Clear all
