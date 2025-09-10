@@ -103,8 +103,8 @@ export const AddIncome: React.FC = () => {
               },
               {
                 text: 'Close',
-                textColour: 'secondary',
-                colour: 'secondary',
+                textColour: 'quatenary',
+                colour: 'quatenary',
                 type: 'outlined',
                 onClick: onClose,
                 leadingIcon: 'XIcon',
