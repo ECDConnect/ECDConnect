@@ -40,6 +40,7 @@ import {
 } from '@ecdlink/ui';
 import { format } from 'date-fns';
 import ReactDatePicker from 'react-datepicker';
+import * as styles from '../../../pages.styles';
 
 export interface ContentListProps {
   selectedTab?: number;
@@ -874,7 +875,7 @@ export default function ContentList({
                 <button
                   onClick={clearFilters}
                   type="button"
-                  className="text-secondary hover:bg-secondary outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium hover:text-white "
+                  className={styles.clearButton}
                 >
                   Clear All
                 </button>
