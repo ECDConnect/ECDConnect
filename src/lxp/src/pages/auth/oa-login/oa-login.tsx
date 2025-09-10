@@ -56,7 +56,7 @@ export const OaLogin: React.FC = () => {
   const [freeMemory, setFreeMemory] = useState(0);
   const [errorMessage, setErrorMessage] = useState(false);
   const tenant = useTenant();
-  const { resetAppStore, resetAuth } = useStoreSetup();
+  const { resetAppStore, resetAuth, resetUser } = useStoreSetup();
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
@@ -129,6 +129,7 @@ export const OaLogin: React.FC = () => {
 
       await resetAppStore();
       await resetAuth();
+      await resetUser();
     }
   };
 
