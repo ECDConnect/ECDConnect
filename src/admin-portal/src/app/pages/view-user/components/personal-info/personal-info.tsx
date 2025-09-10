@@ -649,6 +649,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
             id="dropdownHoverButton"
             className="bg-secondary focus:border-secondary w-1/ focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg py-2.5 px-12 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
             type="button"
+            className={styles.mainButton}
           >
             {' '}
             {editActive ? 'Close' : 'Edit'}
