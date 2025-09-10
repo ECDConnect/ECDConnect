@@ -134,7 +134,7 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
                 >
                   {isRequired ? `${field?.title} *` : field?.title}
                 </label>
-                <div className="bg-uiBg sm:col-span-12">
+                <div className="sm:col-span-12">
                   <ButtonGroup
                     options={storyBookTypeOptions}
                     onOptionSelected={(value: string | string[]) => {
@@ -142,7 +142,8 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
                     }}
                     selectedOptions={formType}
                     color="tertiary"
-                    notSelectedColor="tertiaryAccent2"
+                    notSelectedColor="errorBg"
+                    textColor="tertiary"
                     type={ButtonGroupTypes.Button}
                     className={'w-full'}
                     multiple={false}
@@ -183,7 +184,7 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
                   color="textDark"
                   text={`If you select "Yes", then any future edits made & all translations of this story can be shared with other organisations.`}
                 />
-                <div className="bg-uiBg sm:col-span-12">
+                <div className="sm:col-span-12">
                   <ButtonGroup
                     options={shareContentOptions}
                     onOptionSelected={(value: string | string[]) => {
@@ -191,7 +192,8 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
                     }}
                     selectedOptions={formType}
                     color="tertiary"
-                    notSelectedColor="tertiaryAccent2"
+                    notSelectedColor="errorBg"
+                    textColor="tertiary"
                     type={ButtonGroupTypes.Button}
                     className={'w-full'}
                     multiple={false}
