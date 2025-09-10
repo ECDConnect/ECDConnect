@@ -32,6 +32,7 @@ import MessageForm from './message-form';
 import { useHistory } from 'react-router';
 import { MessageRoleDto, ssRoles } from './message';
 import { useTenant } from '../../../hooks/useTenant';
+import * as styles from '../../pages.styles';
 
 export default function MessagePanel() {
   const messageSchema = Yup.object().shape({
@@ -435,11 +436,13 @@ export default function MessagePanel() {
               />
               <div className="absolute top-20 right-20 ">
                 <button
-                  className="focus:outline-none focus:ring-primary rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2"
+                  className={styles.cancelButton}
+                  // className="focus:outline-none focus:ring-primary rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2"
                   onClick={() => showDisgardPopup()}
                 >
                   <span className="sr-only">Close panel</span>
                   <XIcon className="h-6 w-6" aria-hidden="true" />
+                  Cancel
                 </button>
               </div>
             </div>

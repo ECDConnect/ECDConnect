@@ -1,6 +1,5 @@
 ﻿using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
-using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Training;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
@@ -311,7 +310,6 @@ where mu.id = @userId
                 var userMap = new ConcurrentDictionary<string, Guid?>();
 
                 var fromCompletedDate = await GetLastCompletedDateAsync();
-                //long fromCompleted = new DateTimeOffset(fromCompletedDate).ToUnixTimeSeconds();
                 _logger.LogInformation("Fetching Moodle completed courses since {FromCompletedDate}", fromCompletedDate);
 
                 var records = await FetchCompletedCoursesAsync(cohorts, fromCompletedDate);
@@ -364,17 +362,53 @@ where mu.id = @userId
             await conn.OpenAsync();
 
             string query = @"
-            SELECT DISTINCT mu.username, course.fullname AS course, to_timestamp(compl.timecompleted) timecompleted, to_timestamp(compl.timeenrolled) timeenrolled
-            FROM mdl_course_completions compl
-            JOIN mdl_course course ON compl.course = course.id
-            JOIN mdl_user mu ON compl.userid = mu.id 
-            JOIN mdl_cohort_members mcm ON mu.id = mcm.userid 
-            JOIN mdl_cohort mc ON mcm.cohortid = mc.id 
-            WHERE (mc.idnumber = ANY(@cohorts) OR mc.name = ANY(@cohorts))
-                AND to_timestamp(compl.timecompleted) > @fromCompleted
-                AND compl.timecompleted IS NOT NULL
-                AND mc.idnumber NOT ILIKE '%-ui'
-            ORDER BY timeenrolled DESC";
+;WITH courses AS 
+(
+	SELECT c.id, c.fullname, COALESCE(COUNT(DISTINCT mcm.id),0) modules
+	FROM mdl_course c
+	JOIN mdl_enrol me ON c.id = me.courseid
+	JOIN mdl_cohort mc ON me.customint1 = mc.id
+	LEFT JOIN mdl_course_modules mcm ON c.id = mcm.course AND mcm.visible = 1
+	WHERE (mc.idnumber = ANY(@cohorts) OR mc.name = ANY(@cohorts))
+        AND mc.idnumber NOT ILIKE '%-ui'
+	GROUP BY c.id, c.fullname
+)
+, completions1 AS 
+(
+	SELECT mcc.userid, mcc.course, to_timestamp(timecompleted) ""timecompleted"" 
+	FROM mdl_course_completions mcc 
+	JOIN courses c ON mcc.course = c.id
+	WHERE mcc.timecompleted IS NOT NULL 
+        AND to_timestamp(mcc.timecompleted) > @fromCompleted
+)
+, completions2 AS
+(
+	SELECT mcmc.userid, c.id ""course"", c.modules, to_timestamp(max(mcmc.timemodified)) ""timecompleted"" 
+	FROM courses c
+	JOIN mdl_course_modules mcm ON c.id = mcm.course
+	JOIN mdl_course_modules_completion mcmc ON mcm.id = mcmc.coursemoduleid
+	WHERE mcmc.completionstate = 1
+        AND to_timestamp(mcmc.timemodified) > @fromCompleted
+	GROUP BY mcmc.userid, c.id, c.modules
+	HAVING c.modules = COUNT(DISTINCT mcmc.id)
+)
+, completions AS
+(
+	SELECT c1.userid, c1.course, c1.timecompleted, 'real' completion_type
+	FROM completions1 c1
+	UNION
+	SELECT c2.userid, c2.course, c2.timecompleted, 'calc' completion_type
+	FROM completions2 c2
+	LEFT JOIN completions1 c1 ON c2.userid = c1.userid AND c2.course = c1.course
+	WHERE c1.userid IS NULL
+)
+SELECT mu.username, mc.fullname AS course, MAX(c.timecompleted) timecompleted, MAX(c.completion_type) completion_type
+FROM completions c
+JOIN mdl_user mu ON c.userid = mu.id 
+JOIN mdl_course mc ON c.course = mc.id
+GROUP BY mu.username, mc.fullname 
+ORDER BY ""username"", ""course"";
+    ";
 
             await using var cmd = new NpgsqlCommand(query, conn)
             {
@@ -389,7 +423,6 @@ where mu.id = @userId
             {
                 var username = reader.GetString(0);
                 var course = reader.GetString(1);
-                //var timeCompleted = DateTimeOffset.FromUnixTimeSeconds(reader.GetInt64(2)).UtcDateTime;
                 var timeCompleted = reader.GetDateTime(2);
                 records.Add((username, course, timeCompleted));
             }

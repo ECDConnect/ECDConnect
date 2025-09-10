@@ -125,7 +125,7 @@ const CreateResourceForm: React.FC<CreateResourceFormProps> = ({
                     <ButtonGroup<string>
                       color="tertiary"
                       textColor="tertiary"
-                      notSelectedColor="tertiaryAccent2"
+                      notSelectedColor="errorBg"
                       type={ButtonGroupTypes.Button}
                       options={dataFreeOptions}
                       onOptionSelected={(value) => {

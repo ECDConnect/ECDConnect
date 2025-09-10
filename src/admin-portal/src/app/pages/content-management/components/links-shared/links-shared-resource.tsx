@@ -232,7 +232,7 @@ export const LinksSharedResource = ({
           onClick={onCancel}
           className="rounded-xl px-2"
           color="errorBg"
-          textColor="tertiary"
+          textColor="secondary"
           icon="XIcon"
           iconPosition="end"
         />
@@ -324,7 +324,7 @@ export const LinksSharedResource = ({
         isLoading={loading}
         buttonType="submit"
         type="filled"
-        color="secondary"
+        color="quatenary"
         textColor="white"
         text="Save & publish"
         icon="SaveIcon"
