@@ -37,9 +37,9 @@ import {
 import * as yup from 'yup';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useUserRole } from '../../../../hooks/useUserRole';
 import { cloneDeep } from '@apollo/client/utilities';
 import { useTenant } from '../../../../hooks/useTenant';
+import * as styles from '../../../pages.styles';
 
 export interface PersonalInfoProps {
   userData: UserDto;
@@ -647,8 +647,9 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
               setEditActive(!editActive);
             }}
             id="dropdownHoverButton"
-            className="bg-secondary focus:border-secondary w-1/ focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg py-2.5 px-12 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
+            s
             type="button"
+            className={styles.mainButton}
           >
             {' '}
             {editActive ? 'Close' : 'Edit'}
