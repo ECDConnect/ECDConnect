@@ -340,7 +340,14 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
             type="filled"
             isLoading={isLoading}
             color="quatenary"
-            disabled={!password || !username || isLoading || !isValid}
+            disabled={
+              !password ||
+              !username ||
+              isLoading ||
+              !isValid ||
+              (isOpenAccess && !isValidPhoneNumber) ||
+              !phoneNumber
+            }
             onClick={handleCreateUser}
           >
             <Typography type="help" color="white" text={'Sign up'}></Typography>
