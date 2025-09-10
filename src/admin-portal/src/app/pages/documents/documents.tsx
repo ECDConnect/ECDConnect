@@ -18,6 +18,7 @@ import { Dropdown, LoadingSpinner, SearchDropDownOption } from '@ecdlink/ui';
 import DatePicker from 'react-datepicker';
 import SearchDropDown from '../../components/dropdown/search-dropdown/search-dropdown';
 import { format } from 'date-fns';
+import * as styles from '../pages.styles';
 
 export const sortByTypeOptions: SearchDropDownOption<string>[] = [
   'MaternalCaseRecord',
@@ -340,7 +341,7 @@ export default function Documents() {
               <button
                 onClick={() => clearFilters()}
                 type="button"
-                className="text-secondary hover:bg-secondary outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium hover:text-white"
+                className={styles.clearButton}
               >
                 Clear All
               </button>

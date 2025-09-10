@@ -14,6 +14,7 @@ import {
   UserAvatar,
   ScoreCard,
   NoPointsScoreCard,
+  renderIcon,
 } from '@ecdlink/ui';
 import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -72,6 +73,7 @@ import { PermissionsNames } from '../principal/components/add-practitioner/add-p
 import { usePoints } from '@/hooks/usePoints';
 import { usePointsToDoEmoji } from '@/hooks/usePointsToDoEmoji';
 import { useStoreSetup } from '@hooks/useStoreSetup';
+import ReactGA from 'react-ga4';
 
 const { version } = require('../../../package.json');
 
@@ -95,6 +97,7 @@ export const Dashboard: React.FC = () => {
   } = useTenantModules();
 
   const appName = tenant?.tenant?.applicationName;
+
   const isOpenAccess = tenant?.isOpenAccess;
   const isWhiteLabel = tenant?.isWhiteLabel;
   const shouldUserSyncOffline = useSelector(settingSelectors.getShouldUserSync);
@@ -124,6 +127,9 @@ export const Dashboard: React.FC = () => {
   const isRegistered = practitioner?.isRegistered;
   const isProgress = practitioner?.progress;
   const hasConsent = practitioner?.shareInfo;
+  const [installPromptEvent, setInstallPromptEvent] = useState<Event | null>(
+    null
+  ); // State to store the install prompt event
 
   const missingProgramme =
     (practitioner?.isRegistered === null || practitioner?.isRegistered) &&
@@ -200,6 +206,103 @@ export const Dashboard: React.FC = () => {
       }
     }
   }, [appDispatch, practitioner?.userId]);
+
+  // Handle the beforeinstallprompt event and show the dialog automatically
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault(); // Prevent Chrome's default install prompt
+      setInstallPromptEvent(e); // Store the event for later use
+
+      // Check if the prompt has been shown recently to avoid spamming
+      const lastShown = localStorage.getItem('installPromptLastShown');
+      const now = Date.now();
+      const oneDayInMs = 24 * 60 * 60 * 1000; // 24 hours
+
+      console.log('Last shown: ' + lastShown + ' one day : ' + oneDayInMs);
+
+      if (!lastShown || now - parseInt(lastShown) > oneDayInMs) {
+        // Show the install prompt dialog
+        dialog({
+          position: DialogPosition.Middle,
+          blocking: false,
+          render: (onSubmit, onClose) => (
+            <ActionModal
+              customIcon={renderIcon('DownloadIcon', `w-28 h-28 text-primary`)}
+              title={`Add ${appName} to your phone's home screen`}
+              actionButtons={[
+                {
+                  text: 'Download',
+                  textColour: 'white',
+                  colour: 'primary',
+                  type: 'filled',
+                  leadingIcon: 'DownloadIcon',
+                  onClick: async () => {
+                    if (installPromptEvent) {
+                      (installPromptEvent as any).prompt();
+                      const { outcome } = await (installPromptEvent as any)
+                        .userChoice;
+                      if (outcome === 'accepted') {
+                        ReactGA.event({
+                          category: 'PWA',
+                          action: 'Install Button Clicked',
+                          label: 'ECD Connect App',
+                        });
+                        console.log('User accepted the install prompt');
+                        setInstallPromptEvent(null);
+                      } else {
+                        ReactGA.event({
+                          category: 'PWA',
+                          action: 'Install Prompt Dismissed',
+                          label: appName,
+                        });
+
+                        console.log('User dismissed the install prompt');
+                        setInstallPromptEvent(null);
+                      }
+                    }
+                    localStorage.setItem(
+                      'installPromptLastShown',
+                      now.toString()
+                    );
+                    onSubmit();
+                  },
+                },
+                {
+                  text: 'Not Now',
+                  textColour: 'primary',
+                  colour: 'primary',
+                  type: 'outlined',
+                  onClick: () => {
+                    localStorage.setItem(
+                      'installPromptLastShown',
+                      now.toString()
+                    );
+                    onClose();
+                  },
+                },
+              ]}
+            />
+          ),
+        });
+      }
+    };
+
+    const handleAppInstalled = () => {
+      console.log('PWA was installed');
+      setInstallPromptEvent(null); // Clear the event after installation
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener(
+        'beforeinstallprompt',
+        handleBeforeInstallPrompt
+      );
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, [dialog, appName, installPromptEvent]);
 
   useEffect(() => {
     if (isOnline && !isCoach && practitioner) {
