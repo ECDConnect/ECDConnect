@@ -24,6 +24,7 @@ import { Training } from '@/pages/training/training';
 import { Messages } from '@messages-p/messages';
 import { EditPractitionerProfile } from '@practitioner-p/edit-practitioner-profile/edit-practitioner-profile';
 import { PractitionerAbout } from '@practitioner-p/practitioner-about/practitioner-about';
+import { PractitionerHelp } from '@practitioner-p/practitioner-help/practitioner-help';
 import PractitionerAccount from '@practitioner-p/practitioner-account/practitioner-account';
 import { PractitionerProfile } from '@practitioner-p/practitioner-profile/practitioner-profile';
 import { PractitionerProgrammeInformation } from '@practitioner-p/practitioner-programme-information/practitioner-programme-information';
@@ -266,6 +267,11 @@ const AuthRoutes: React.FC = () => {
         exact
         path={ROUTES.PRACTITIONER.ABOUT.ROOT}
         component={PractitionerAbout}
+      />
+      <Route
+        exact
+        path={ROUTES.PRACTITIONER.HELP.ROOT}
+        component={PractitionerHelp}
       />
       <Route
         exact

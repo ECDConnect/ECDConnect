@@ -611,6 +611,12 @@ export const Dashboard: React.FC = () => {
           current: false,
         },
         {
+          name: NavigationNames.Profile.Help,
+          href: ROUTES.PRACTITIONER.HELP.ROOT,
+          onNavigation: onNavigation,
+          current: false,
+        },
+        {
           name: NavigationNames.Profile.Journey,
           href: ROUTES.PRACTITIONER.PROFILE.ROOT,
           onNavigation: onNavigation,
