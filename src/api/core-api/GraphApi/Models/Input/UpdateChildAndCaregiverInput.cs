@@ -6,7 +6,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Input
     public class UpdateChildAndCaregiverInput
     {
         public Guid Id { get; set; }
-        public Guid? LanguageId { get; set; }
         public string Allergies { get; set; }
         public string Disabilities { get; set; }
         public string OtherHealthConditions { get; set; }
@@ -19,6 +18,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Input
         public DateTime? InactiveDate { get; set; }
         public string InactivityComments { get; set; }
         public string OtherLanguages { get; set; }
+        public List<Guid> HomeLanguageIds { get; set; }
     }
 
     public class ChildUserUpdateInput

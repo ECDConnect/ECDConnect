@@ -21,7 +21,6 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         ApplicationUserJoin,
         IDocumentQueryable,
         CaregiverJoin<Guid?>,
-        LanguageJoin<Guid?>,
         ReasonForLeavingJoin<Guid?>,
         WorkflowStatusJoin<Guid?>,
         IUserType,
@@ -31,10 +30,6 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         [ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
         public Guid? UserId { get; set; }
-
-        [ForeignKey(nameof(LanguageId))]
-        public virtual Language Language { get; set; }
-        public Guid? LanguageId { get; set; }
 
         [ForeignKey(nameof(CaregiverId))]
         public virtual Caregiver Caregiver { get; set; }

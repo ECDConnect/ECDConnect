@@ -32,7 +32,6 @@ class ChildService {
             id
             workflowStatusId
             insertedDate
-            languageId
             allergies
             disabilities
             otherHealthConditions
@@ -52,6 +51,9 @@ class ChildService {
               isActive
               isSouthAfricanCitizen
               verifiedByHomeAffairs
+              userLanguages {
+                languageId
+              }
             }
             caregiverId 
             caregiver {
@@ -120,7 +122,6 @@ class ChildService {
             id
             workflowStatusId
             insertedDate
-            languageId
             allergies
             disabilities
             otherHealthConditions
@@ -140,6 +141,9 @@ class ChildService {
               isActive
               isSouthAfricanCitizen
               verifiedByHomeAffairs
+              userLanguages {
+                languageId
+              }
             }
             caregiverId 
             caregiver {
@@ -208,7 +212,6 @@ class ChildService {
             id
             workflowStatusId
             insertedDate
-            languageId
             allergies
             disabilities
             otherHealthConditions
@@ -228,6 +231,9 @@ class ChildService {
               isActive
               isSouthAfricanCitizen
               verifiedByHomeAffairs
+              userLanguages {
+                languageId
+              }
             }
             caregiverId 
             caregiver {

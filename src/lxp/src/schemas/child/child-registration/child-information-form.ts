@@ -11,6 +11,7 @@ export interface ChildInformationFormModel {
   dobYear: number;
   dob?: Date;
   dobValid?: boolean;
+  homeLanguageIds?: string[];
 }
 
 export const childInformationFormSchema = Yup.object().shape({

@@ -85,17 +85,16 @@ namespace EcdLink.Api.CoreApi.Services
 
             // Update child fields
             child.IsActive = isActive;
-            child.LanguageId = input.LanguageId;
             child.Allergies = input.Allergies;
             child.Disabilities = input.Disabilities;
             child.OtherHealthConditions = input.OtherHealthConditions;
             child.WorkflowStatusId = input.WorkflowStatusId;
             child.OtherLanguages = input.OtherLanguages;
             if (input.ReasonForLeavingId != null) child.ReasonForLeavingId = input.ReasonForLeavingId;
-            if (input.InactiveDate != null) child.InactiveDate = input. InactiveDate;
+            if (input.InactiveDate != null) child.InactiveDate = input.InactiveDate;
             if (input.InactiveReason != null) child.InactiveReason = input.InactiveReason;
             if (input.InactivityComments != null) child.InactivityComments = input.InactivityComments;
-            
+
             // Update child user fields
             if (input.User != null)
             {
@@ -166,6 +165,12 @@ namespace EcdLink.Api.CoreApi.Services
                 UpdateCaregiverGrants(child.UserId.Value, input.Caregiver.GrantIds, tenantId);
             }
 
+            // Add home languages
+            if (input.HomeLanguageIds != null && input.HomeLanguageIds.Any())
+            {
+                UpdateChildLanguages(child.UserId.Value, input.HomeLanguageIds, tenantId);
+            }
+
             // If child is deactivated, ensure all learner records are also disabled
             if (!isActive)
             {
@@ -215,6 +220,31 @@ namespace EcdLink.Api.CoreApi.Services
             _dbContext.UserGrants.RemoveRange(existingGrants);
             //reinsert
             _dbContext.UserGrants.AddRange(grantsToAdd);
+            _dbContext.SaveChanges();
+        }
+        
+        public void UpdateChildLanguages(Guid childUserId, List<Guid> homeLanguageIds, Guid tenantId)
+        {
+            if (homeLanguageIds == null || !homeLanguageIds.Any())
+            {
+                return;
+            }
+
+            var languagesToAdd = homeLanguageIds.Select(x => new UserLanguage
+            {
+                Id = Guid.NewGuid(),
+                LanguageId = x,
+                UserId = childUserId,
+                TenantId = tenantId
+            });
+
+            var existingLanguages = _dbContext.UserLanguages
+                .Where(x => x.UserId == childUserId);
+
+            //remove
+            _dbContext.UserLanguages.RemoveRange(existingLanguages);
+            //reinsert
+            _dbContext.UserLanguages.AddRange(languagesToAdd);
             _dbContext.SaveChanges();
         }
     }
