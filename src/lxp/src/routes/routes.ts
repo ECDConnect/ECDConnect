@@ -92,6 +92,11 @@ const ROUTES = {
       YEAR: '/year',
     }),
     CONTACT_COACH: '/contact-coach',
+    HELP: addPrefix('/help', {
+      VIDEOS: '/videos',
+      DOWNLOAD: '/download',
+      CHAT: '/chat',
+    }),
   }),
   CHILD_NOTES: '/child-notes',
   CHILD_PROFILE: '/child-profile',
