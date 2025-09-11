@@ -12,5 +12,6 @@ namespace EcdLink.Api.CoreApi.Services.Interfaces
         void UpdateChild(UpdateChildAndCaregiverInput input);
 
         void UpdateCaregiverGrants(Guid childUserId, List<Guid> grantIds, Guid tenantId);
+        void UpdateChildLanguages(Guid childUserId, List<Guid> homeLanguageIds, Guid tenantId);
     }
 }

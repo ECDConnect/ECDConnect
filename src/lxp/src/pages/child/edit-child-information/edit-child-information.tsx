@@ -366,7 +366,10 @@ export const EditChildInformation: React.FC = () => {
       list.push({
         title: 'Home languages',
         subTitle:
-          languages.find((x) => x.id === child.languageId)?.description || '',
+          languages
+            .filter((lang) => child.homeLanguageIds?.includes(lang?.id!))
+            .map((lang) => lang.description)
+            .join(', ') || '',
         switchTextStyles: true,
       });
 
