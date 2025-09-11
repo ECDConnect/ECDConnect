@@ -478,7 +478,6 @@ const mapChildInput = (
   child: Partial<ChildDto>
 ): UpdateChildAndCaregiverInput => ({
   id: child.id,
-  languageId: child.languageId,
   allergies: child.allergies,
   disabilities: child.disabilities,
   otherHealthConditions: child.otherHealthConditions,
@@ -490,6 +489,7 @@ const mapChildInput = (
   reasonForLeavingId: child?.reasonForLeavingId || null,
   inactivityComments: child?.inactivityComments || null,
   inactiveDate: child?.inactiveDate || null,
+  homeLanguageIds: child.homeLanguageIds,
 });
 
 const mapUserInput = (childUser: Partial<UserDto>): ChildUserUpdateInput => ({

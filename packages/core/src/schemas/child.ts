@@ -5,7 +5,7 @@ export const initialChildValues: ChildDto = {
   allergies: '',
   disabilities: '',
   otherHealthConditions: '',
-  languageId: '',
+  homeLanguageIds: [],
   otherLanguages: '',
 };
 

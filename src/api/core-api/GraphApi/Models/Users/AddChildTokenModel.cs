@@ -40,6 +40,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Users
 
         public string InsertedBy { get; set; }
         public string OtherLanguages { get; set; }
+        public List<Guid> HomeLanguageIds { get; set; }
     }
 
     public class AddChildSiteAddressTokenModel
