@@ -6,7 +6,6 @@ import reportWebVitals from './reportWebVitals';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import './styles.css';
 import './i18n';
-import Loader from './components/loader/loader';
 
 if (
   process.env.NODE_ENV === 'development' &&
