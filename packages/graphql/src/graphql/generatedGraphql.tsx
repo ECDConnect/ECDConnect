@@ -245,6 +245,7 @@ export type AddChildTokenModelInput = {
   firstName?: InputMaybe<Scalars['String']>;
   fullName?: InputMaybe<Scalars['String']>;
   genderId?: InputMaybe<Scalars['UUID']>;
+  homeLanguageIds?: InputMaybe<Array<Scalars['UUID']>>;
   idNumber?: InputMaybe<Scalars['String']>;
   insertedBy?: InputMaybe<Scalars['String']>;
   isSouthAfricanCitizen: Scalars['Boolean'];
@@ -347,6 +348,7 @@ export type ApplicationUser = {
   trainingCourses?: Maybe<Array<Maybe<UserTrainingCourse>>>;
   twoFactorEnabled: Scalars['Boolean'];
   updatedDate?: Maybe<Scalars['DateTime']>;
+  userLanguages?: Maybe<Array<Maybe<UserLanguage>>>;
   userName?: Maybe<Scalars['String']>;
   userPermissions?: Maybe<Array<Maybe<UserPermission>>>;
   verifiedByHomeAffairs: Scalars['Boolean'];
@@ -410,6 +412,7 @@ export type ApplicationUserFilterInput = {
   trainingCourses?: InputMaybe<ListFilterInputTypeOfUserTrainingCourseFilterInput>;
   twoFactorEnabled?: InputMaybe<BooleanOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  userLanguages?: InputMaybe<ListFilterInputTypeOfUserLanguageFilterInput>;
   userName?: InputMaybe<StringOperationFilterInput>;
   userPermissions?: InputMaybe<ListFilterInputTypeOfUserPermissionFilterInput>;
   verifiedByHomeAffairs?: InputMaybe<BooleanOperationFilterInput>;
@@ -471,6 +474,7 @@ export type ApplicationUserInput = {
   trainingCourses?: InputMaybe<Array<InputMaybe<UserTrainingCourseInput>>>;
   twoFactorEnabled: Scalars['Boolean'];
   updatedDate?: InputMaybe<Scalars['DateTime']>;
+  userLanguages?: InputMaybe<Array<InputMaybe<UserLanguageInput>>>;
   userName?: InputMaybe<Scalars['String']>;
   userPermissions?: InputMaybe<Array<InputMaybe<UserPermissionInput>>>;
   verifiedByHomeAffairs: Scalars['Boolean'];
@@ -1050,8 +1054,6 @@ export type Child = {
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
   isAddedByCaregiver?: Maybe<Scalars['Boolean']>;
-  language?: Maybe<Language>;
-  languageId?: Maybe<Scalars['UUID']>;
   otherHealthConditions?: Maybe<Scalars['String']>;
   otherLanguages?: Maybe<Scalars['String']>;
   playgroupGroup?: Maybe<Scalars['String']>;
@@ -1141,8 +1143,6 @@ export type ChildFilterInput = {
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   isAddedByCaregiver?: InputMaybe<BooleanOperationFilterInput>;
-  language?: InputMaybe<LanguageFilterInput>;
-  languageId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   or?: InputMaybe<Array<ChildFilterInput>>;
   otherHealthConditions?: InputMaybe<StringOperationFilterInput>;
   otherLanguages?: InputMaybe<StringOperationFilterInput>;
@@ -1183,8 +1183,6 @@ export type ChildInput = {
   InsertedBy?: InputMaybe<Scalars['String']>;
   IsActive: Scalars['Boolean'];
   IsAddedByCaregiver?: InputMaybe<Scalars['Boolean']>;
-  Language?: InputMaybe<LanguageInput>;
-  LanguageId?: InputMaybe<Scalars['UUID']>;
   OtherHealthConditions?: InputMaybe<Scalars['String']>;
   OtherLanguages?: InputMaybe<Scalars['String']>;
   PlaygroupGroup?: InputMaybe<Scalars['String']>;
@@ -1407,8 +1405,6 @@ export type ChildSortInput = {
   insertedDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
   isAddedByCaregiver?: InputMaybe<SortEnumType>;
-  language?: InputMaybe<LanguageSortInput>;
-  languageId?: InputMaybe<SortEnumType>;
   otherHealthConditions?: InputMaybe<SortEnumType>;
   otherLanguages?: InputMaybe<SortEnumType>;
   playgroupGroup?: InputMaybe<SortEnumType>;
@@ -3808,6 +3804,13 @@ export type ListFilterInputTypeOfStatementsIncomeFilterInput = {
   some?: InputMaybe<StatementsIncomeFilterInput>;
 };
 
+export type ListFilterInputTypeOfUserLanguageFilterInput = {
+  all?: InputMaybe<UserLanguageFilterInput>;
+  any?: InputMaybe<Scalars['Boolean']>;
+  none?: InputMaybe<UserLanguageFilterInput>;
+  some?: InputMaybe<UserLanguageFilterInput>;
+};
+
 export type ListFilterInputTypeOfUserPermissionFilterInput = {
   all?: InputMaybe<UserPermissionFilterInput>;
   any?: InputMaybe<Scalars['Boolean']>;
@@ -4366,6 +4369,7 @@ export type Mutation = {
   createUserGrant?: Maybe<UserGrant>;
   createUserHelp?: Maybe<UserHelp>;
   createUserHierarchyEntity?: Maybe<UserHierarchyEntity>;
+  createUserLanguage?: Maybe<UserLanguage>;
   createUserPermission?: Maybe<UserPermission>;
   createUserResourceLikes?: Maybe<UserResourceLikes>;
   createUserTrainingCourse?: Maybe<UserTrainingCourse>;
@@ -4485,6 +4489,7 @@ export type Mutation = {
   deleteUserGrant?: Maybe<Scalars['Boolean']>;
   deleteUserHelp?: Maybe<Scalars['Boolean']>;
   deleteUserHierarchyEntity?: Maybe<Scalars['Boolean']>;
+  deleteUserLanguage?: Maybe<Scalars['Boolean']>;
   deleteUserPermission?: Maybe<Scalars['Boolean']>;
   deleteUserResourceLikes?: Maybe<Scalars['Boolean']>;
   deleteUserTrainingCourse?: Maybe<Scalars['Boolean']>;
@@ -4673,6 +4678,7 @@ export type Mutation = {
   updateUserGrant?: Maybe<UserGrant>;
   updateUserHelp?: Maybe<UserHelp>;
   updateUserHierarchyEntity?: Maybe<UserHierarchyEntity>;
+  updateUserLanguage?: Maybe<UserLanguage>;
   updateUserPermission?: Maybe<Array<Maybe<UserPermissionModel>>>;
   updateUserResourceLikes?: Maybe<UserResourceLikes>;
   updateUserTrainingCourse?: Maybe<UserTrainingCourse>;
@@ -5353,6 +5359,10 @@ export type MutationCreateUserHierarchyEntityArgs = {
   input?: InputMaybe<UserHierarchyEntityInput>;
 };
 
+export type MutationCreateUserLanguageArgs = {
+  input?: InputMaybe<UserLanguageInput>;
+};
+
 export type MutationCreateUserPermissionArgs = {
   input?: InputMaybe<UserPermissionInput>;
 };
@@ -5886,6 +5896,10 @@ export type MutationDeleteUserHelpArgs = {
 };
 
 export type MutationDeleteUserHierarchyEntityArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDeleteUserLanguageArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
 
@@ -6859,6 +6873,11 @@ export type MutationUpdateUserHelpArgs = {
 export type MutationUpdateUserHierarchyEntityArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<UserHierarchyEntityInput>;
+};
+
+export type MutationUpdateUserLanguageArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  input?: InputMaybe<UserLanguageInput>;
 };
 
 export type MutationUpdateUserPermissionArgs = {
@@ -8971,6 +8990,7 @@ export type Query = {
   GetAllUserGrant?: Maybe<Array<Maybe<UserGrant>>>;
   GetAllUserHelp?: Maybe<Array<Maybe<UserHelp>>>;
   GetAllUserHierarchyEntity?: Maybe<Array<Maybe<UserHierarchyEntity>>>;
+  GetAllUserLanguage?: Maybe<Array<Maybe<UserLanguage>>>;
   GetAllUserPermission?: Maybe<Array<Maybe<UserPermission>>>;
   GetAllUserResourceLikes?: Maybe<Array<Maybe<UserResourceLikes>>>;
   GetAllUserTrainingCourse?: Maybe<Array<Maybe<UserTrainingCourse>>>;
@@ -9078,6 +9098,7 @@ export type Query = {
   GetUserGrantById?: Maybe<UserGrant>;
   GetUserHelpById?: Maybe<UserHelp>;
   GetUserHierarchyEntityById?: Maybe<UserHierarchyEntity>;
+  GetUserLanguageById?: Maybe<UserLanguage>;
   GetUserPermissionById?: Maybe<UserPermission>;
   GetUserResourceLikesById?: Maybe<UserResourceLikes>;
   GetUserTrainingCourseById?: Maybe<UserTrainingCourse>;
@@ -9226,6 +9247,7 @@ export type Query = {
   countUserGrant?: Maybe<Scalars['Int']>;
   countUserHelp?: Maybe<Scalars['Int']>;
   countUserHierarchyEntity?: Maybe<Scalars['Int']>;
+  countUserLanguage?: Maybe<Scalars['Int']>;
   countUserPermission?: Maybe<Scalars['Int']>;
   countUserResourceLikes?: Maybe<Scalars['Int']>;
   countUserTrainingCourse?: Maybe<Scalars['Int']>;
@@ -9907,6 +9929,12 @@ export type QueryGetAllUserHierarchyEntityArgs = {
   where?: InputMaybe<UserHierarchyEntityFilterInput>;
 };
 
+export type QueryGetAllUserLanguageArgs = {
+  order?: InputMaybe<Array<UserLanguageSortInput>>;
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<UserLanguageFilterInput>;
+};
+
 export type QueryGetAllUserPermissionArgs = {
   order?: InputMaybe<Array<UserPermissionSortInput>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
@@ -10474,6 +10502,11 @@ export type QueryGetUserHelpByIdArgs = {
 export type QueryGetUserHierarchyEntityByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<UserHierarchyEntityFilterInput>;
+};
+
+export type QueryGetUserLanguageByIdArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  where?: InputMaybe<UserLanguageFilterInput>;
 };
 
 export type QueryGetUserPermissionByIdArgs = {
@@ -11167,6 +11200,11 @@ export type QueryCountUserHelpArgs = {
 };
 
 export type QueryCountUserHierarchyEntityArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountUserLanguageArgs = {
   pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ComparableInt32OperationFilterInput>;
 };
@@ -13074,12 +13112,12 @@ export type UpdateChildAndCaregiverInput = {
   allergies?: InputMaybe<Scalars['String']>;
   caregiver?: InputMaybe<ChildCaregiverInput>;
   disabilities?: InputMaybe<Scalars['String']>;
+  homeLanguageIds?: InputMaybe<Array<Scalars['UUID']>>;
   id: Scalars['UUID'];
   inactiveDate?: InputMaybe<Scalars['DateTime']>;
   inactiveReason?: InputMaybe<Scalars['String']>;
   inactivityComments?: InputMaybe<Scalars['String']>;
   isActive: Scalars['Boolean'];
-  languageId?: InputMaybe<Scalars['UUID']>;
   otherHealthConditions?: InputMaybe<Scalars['String']>;
   otherLanguages?: InputMaybe<Scalars['String']>;
   reasonForLeavingId?: InputMaybe<Scalars['UUID']>;
@@ -13341,6 +13379,55 @@ export type UserImportModel = {
   createdUsers?: Maybe<Array<Maybe<Scalars['String']>>>;
   /** Rows of errors. */
   validationErrors?: Maybe<Array<Maybe<InputValidationError>>>;
+};
+
+export type UserLanguage = {
+  __typename?: 'UserLanguage';
+  id: Scalars['UUID'];
+  insertedDate: Scalars['DateTime'];
+  isActive: Scalars['Boolean'];
+  language?: Maybe<Language>;
+  languageId: Scalars['UUID'];
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+  user?: Maybe<ApplicationUser>;
+  userId: Scalars['UUID'];
+};
+
+export type UserLanguageFilterInput = {
+  and?: InputMaybe<Array<UserLanguageFilterInput>>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  language?: InputMaybe<LanguageFilterInput>;
+  languageId?: InputMaybe<ComparableGuidOperationFilterInput>;
+  or?: InputMaybe<Array<UserLanguageFilterInput>>;
+  updatedBy?: InputMaybe<StringOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  user?: InputMaybe<ApplicationUserFilterInput>;
+  userId?: InputMaybe<ComparableGuidOperationFilterInput>;
+};
+
+export type UserLanguageInput = {
+  Id?: InputMaybe<Scalars['UUID']>;
+  IsActive: Scalars['Boolean'];
+  Language?: InputMaybe<LanguageInput>;
+  LanguageId: Scalars['UUID'];
+  UpdatedBy?: InputMaybe<Scalars['String']>;
+  User?: InputMaybe<ApplicationUserInput>;
+  UserId: Scalars['UUID'];
+};
+
+export type UserLanguageSortInput = {
+  id?: InputMaybe<SortEnumType>;
+  insertedDate?: InputMaybe<SortEnumType>;
+  isActive?: InputMaybe<SortEnumType>;
+  language?: InputMaybe<LanguageSortInput>;
+  languageId?: InputMaybe<SortEnumType>;
+  updatedBy?: InputMaybe<SortEnumType>;
+  updatedDate?: InputMaybe<SortEnumType>;
+  user?: InputMaybe<ApplicationUserSortInput>;
+  userId?: InputMaybe<SortEnumType>;
 };
 
 export type UserModelInput = {

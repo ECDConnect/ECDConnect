@@ -180,7 +180,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 //// Update
                 childEntity.Allergies = child.Allergies;
                 childEntity.Disabilities = child.Disabilities;
-                childEntity.LanguageId = child.LanguageId;
                 childEntity.OtherHealthConditions = child.OtherHealthConditions;
                 childEntity.WorkflowStatusId = child.WorkflowStatusId;
                 childEntity.IsAddedByCaregiver = true;
@@ -221,6 +220,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 if (caregiver != null && caregiver.GrantIds != null)
                 {
                     childService.UpdateCaregiverGrants(childEntity.UserId.Value, caregiver.GrantIds, tenantId);
+                }
+
+                if (child != null && child.HomeLanguageIds != null)
+                {
+                    childService.UpdateChildLanguages(childEntity.UserId.Value, child.HomeLanguageIds, tenantId);
                 }
 
                 appUser.GenderId = child.GenderId;
