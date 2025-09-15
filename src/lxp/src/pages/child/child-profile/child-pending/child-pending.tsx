@@ -145,10 +145,7 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
           <CaregiverChildRegistrationModal
             onSubmit={whatsapp}
             onCancel={onCancel}
-            childDetails={{
-              firstName: childUser?.firstName || '',
-              surname: childUser?.surname || '',
-            }}
+            firstName={childUser?.firstName || ''}
             caregiverUrl={caregiverChildregUrl}
             couldCopyToClipboard={linkCopied}
           />
