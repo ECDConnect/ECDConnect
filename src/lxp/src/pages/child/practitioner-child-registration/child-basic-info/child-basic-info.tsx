@@ -338,6 +338,7 @@ export const ChildBasicInfo: React.FC<
                 type: 'filled',
                 onClick: () => {
                   createLink(newChild);
+                  onExit();
                   onClose();
                 },
                 leadingIcon: 'LinkIcon',
@@ -349,6 +350,7 @@ export const ChildBasicInfo: React.FC<
                 type: 'outlined',
                 onClick: () => {
                   onUploadSelf(newChild);
+                  onExit();
                   onClose();
                 },
                 leadingIcon: 'ClipboardListIcon',
