@@ -26,7 +26,7 @@ export const PractitionerChildRegistration: React.FC = () => {
     basicDetails: ChildBasicInfoModel
   ) => {
     setChildDetails(basicDetails);
-    goToStep(PractitionerChildRegistrationSteps.caregiverLink);
+    // goToStep(PractitionerChildRegistrationSteps.caregiverLink);
   };
 
   const exitRegistrationPrompt = () => {
@@ -89,14 +89,14 @@ export const PractitionerChildRegistration: React.FC = () => {
       >
         <ChildBasicInfo onSubmit={onBasicChildInfoSubmitted} />
       </Step>
-      <Step
+      {/* <Step
         stepKey={PractitionerChildRegistrationSteps.caregiverLink}
         viewBannerWapper={true}
       >
         {childDetails && (
           <CaregiverLink onNewChild={onNewChild} childDetails={childDetails} />
         )}
-      </Step>
+      </Step> */}
     </StepViewer>
   );
 };
