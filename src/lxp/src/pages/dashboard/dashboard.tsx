@@ -643,6 +643,13 @@ export const Dashboard: React.FC = () => {
         ]
       : []),
     {
+      name: NavigationNames.Community.Community,
+      href: ROUTES.COMMUNITY.ROOT,
+      icon: styles.communityIconName,
+      current: false,
+      showDivider: true,
+    },
+    {
       name: NavigationNames.Training,
       href: ROUTES.TRAINING,
       icon: styles.trainingIconName,
