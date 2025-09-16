@@ -346,7 +346,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
               isLoading ||
               !isValid ||
               (isOpenAccess && !isValidPhoneNumber) ||
-              !phoneNumber
+              (isOpenAccess && !phoneNumber)
             }
             onClick={handleCreateUser}
           >
