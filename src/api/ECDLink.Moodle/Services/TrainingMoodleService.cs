@@ -76,8 +76,8 @@ namespace EcdLink.Moodle.Services
                 UserName = user.Id.ToString(),
                 Password = _config.Site.DefaultPassword,
                 IdNumber = user.IdNumber ?? "",
-                Firstname = user.FirstName ?? " ",
-                Lastname = user.Surname ?? " ",
+                Firstname = string.IsNullOrEmpty(user.FirstName) ? " " : user.FirstName,
+                Lastname = string.IsNullOrEmpty(user.Surname) ? " " : user.Surname,
                 Email = string.Format(_config.Site.EmailFormatString, user.Id, user.FirstName, user.Surname),
                 Phone1 = user.PhoneNumber ?? ""
             };
