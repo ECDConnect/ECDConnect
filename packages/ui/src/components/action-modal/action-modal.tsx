@@ -171,7 +171,8 @@ export const ActionModal: React.FC<ActionModalProps> = ({
             {button.leadingIcon &&
               renderIcon(
                 button.leadingIcon,
-                `text-${button.textColour} h-4 w-4 mr-2`
+                `text-${button.textColour} h-4 w-4 mr-2`,
+                button.leadingIconType
               )}
             <Typography
               className={button.textClassName}
@@ -182,7 +183,8 @@ export const ActionModal: React.FC<ActionModalProps> = ({
             {button.trailingIcon &&
               renderIcon(
                 button.trailingIcon,
-                `text-${button.textColour} h-4 w-4 mr-2`
+                `text-${button.textColour} h-4 w-4 mr-2`,
+                button.trailingIconType
               )}
           </div>
         </Button>

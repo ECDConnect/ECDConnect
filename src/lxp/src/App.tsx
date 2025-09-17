@@ -32,7 +32,6 @@ import { useTenant } from './hooks/useTenant';
 import { Helmet } from 'react-helmet';
 import { userActions, userSelectors } from './store/user';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
-import PWAInstallButton from './components/pwa-install-button/pwa-install-button';
 
 if (process.env.NODE_ENV === 'development') {
   stopReportingRuntimeErrors();
@@ -265,7 +264,6 @@ const App: React.FC = () => {
       <Helmet>
         <title>{getTitle()}</title>
       </Helmet>
-      <PWAInstallButton />
       <IonReactRouter>
         <AppErrorHandler>
           <IonRouterOutlet>{getRoutes()}</IonRouterOutlet>

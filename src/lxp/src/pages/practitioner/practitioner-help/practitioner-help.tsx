@@ -19,6 +19,7 @@ import {
   ChatAlt2Icon,
   VideoCameraIcon,
 } from '@heroicons/react/solid';
+import { useTenant } from '@/hooks/useTenant';
 
 export const HelpTypes = {
   videos: 'Watch videos',
@@ -31,9 +32,12 @@ export const PractitionerHelp: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const tenant = useTenant();
 
   const whatsapp = () => {
-    window.open(`https://wa.me/27834071970`);
+    window.open(
+      `https://wa.me/${tenant.tenant?.organisationHelpWhatsAppNumber}`
+    );
   };
 
   const videos = () => {

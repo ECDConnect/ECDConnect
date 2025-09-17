@@ -7,7 +7,9 @@ export interface ActionModalButton {
   textType?: TypographyType;
   textClassName?: string;
   leadingIcon?: string;
+  leadingIconType?: 'hero' | 'img';
   trailingIcon?: string;
+  trailingIconType?: 'hero' | 'img';
   colour: Colours;
   textColour: Colours;
   type: ButtonType;
