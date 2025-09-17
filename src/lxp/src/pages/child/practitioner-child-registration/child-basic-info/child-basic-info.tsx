@@ -350,7 +350,6 @@ export const ChildBasicInfo: React.FC<
                 type: 'outlined',
                 onClick: () => {
                   onUploadSelf(newChild);
-                  onExit();
                   onClose();
                 },
                 leadingIcon: 'ClipboardListIcon',
