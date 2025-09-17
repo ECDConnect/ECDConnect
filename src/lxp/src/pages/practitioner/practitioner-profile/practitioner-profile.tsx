@@ -152,7 +152,11 @@ export const PractitionerProfile: React.FC = () => {
         iconColor: 'white',
         backgroundColor: 'warningBg',
         onActionClick: () => {
-          history.push(ROUTES.PRACTITIONER.HELP.ROOT);
+          if (isOnline) {
+            history.push(ROUTES.PRACTITIONER.HELP.ROOT);
+          } else {
+            showOnlineOnly();
+          }
         },
       },
       {
