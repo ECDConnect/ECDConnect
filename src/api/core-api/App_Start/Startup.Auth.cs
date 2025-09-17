@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace EcdLink.Api.CoreApi
 {
@@ -34,7 +35,7 @@ namespace EcdLink.Api.CoreApi
                 .CreateDbContext());
         }
 
-        private void SetIdentityUser(IServiceCollection services)
+        private void SetIdentityUser(IServiceCollection services, IConfiguration configuration)
         {
             services.AddTransient<IRoleStore<ApplicationIdentityRole>, ApplicationRoleStore>();
             services.AddTransient<IUserRoleStore<ApplicationUser>, ApplicationUserRoleStore>();
@@ -52,6 +53,12 @@ namespace EcdLink.Api.CoreApi
                     ProviderKeys.Tokens.OPEN_ACCESS,
                     new TokenProviderDescriptor(typeof(CustomOpenAccessTokenProvider<ApplicationUser>))
                 );
+
+                var lockoutSettings = configuration.GetSection("IdentityOptions:Lockout");
+                config.Lockout.AllowedForNewUsers = lockoutSettings.GetValue<bool>("AllowedForNewUsers");
+                config.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(lockoutSettings.GetValue<int>("DefaultLockoutTimeSpanInMinutes"));
+                config.Lockout.MaxFailedAccessAttempts = lockoutSettings.GetValue<int>("MaxFailedAccessAttempts");
+
             }).AddEntityFrameworkStores<AuthenticationDbContext>()
               .AddUserManager<ApplicationUserManager>()
               .AddRoleManager<ApplicationRoleManager>()

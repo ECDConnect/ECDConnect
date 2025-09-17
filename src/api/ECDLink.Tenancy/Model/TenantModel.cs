@@ -25,6 +25,8 @@ namespace ECDLink.Tenancy.Model
             GoogleTagManager = model.GoogleTagManager;
             OrganisationEmail = model.OrganisationEmail;
             BlobStorageAddress = model.BlobStorageAddress;
+            OrganisationHelpPhoneNumber = model.OrganisationHelpPhoneNumber;
+            OrganisationHelpWhatsAppNumber = model.OrganisationHelpWhatsAppNumber;
         }
 
         public Guid Id { get; set; }
@@ -41,6 +43,8 @@ namespace ECDLink.Tenancy.Model
         public string GoogleTagManager { get; set; }
         public string OrganisationEmail { get; set; }
         public string BlobStorageAddress { get; set; }
+        public string OrganisationHelpPhoneNumber { get; set; }
+        public string OrganisationHelpWhatsAppNumber { get; set; }
     }
 
     public class TenantModelAPI
@@ -72,6 +76,8 @@ namespace ECDLink.Tenancy.Model
             GoogleAnalyticsTag = model.GoogleAnalyticsTag;
             GoogleTagManager = model.GoogleTagManager;
             OrganisationEmail = model.OrganisationEmail;
+            OrganisationHelpPhoneNumber = model.OrganisationHelpPhoneNumber;
+            OrganisationHelpWhatsAppNumber = model.OrganisationHelpWhatsAppNumber;
             BlobStorageAddress = model.BlobStorageAddress;
         }
 
@@ -87,6 +93,8 @@ namespace ECDLink.Tenancy.Model
         public string GoogleAnalyticsTag { get; set; }
         public string GoogleTagManager { get; set; }
         public string OrganisationEmail { get; set; }
+        public string OrganisationHelpPhoneNumber { get; set; }
+        public string OrganisationHelpWhatsAppNumber { get; set; }
         public string BlobStorageAddress { get; set; }
     }
 }

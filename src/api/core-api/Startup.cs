@@ -109,7 +109,7 @@ namespace EcdLink.Api.CoreApi
         public void ConfigureServices(IServiceCollection services)
         {
             ConfigureAuthContext(services, Configuration);
-            SetIdentityUser(services);
+            SetIdentityUser(services, Configuration);
             ConfigureTenancy(services);
 
             services.AddHttpContextAccessor();

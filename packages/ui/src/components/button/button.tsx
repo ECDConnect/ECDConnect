@@ -19,6 +19,7 @@ export const Button: React.FC<ButtonProps> = ({
   className,
   testId,
   icon,
+  iconType = 'hero',
   iconPosition = 'start',
   text,
   textColor,
@@ -55,7 +56,7 @@ export const Button: React.FC<ButtonProps> = ({
       )}
       {icon &&
         iconPosition === 'start' &&
-        renderIcon(icon, `h-5 w-4 mr-2 text-${textColor}`)}
+        renderIcon(icon, `h-5 w-4 mr-2 text-${textColor}`, iconType)}
       {text && (
         <Typography
           type={'button'}
@@ -68,7 +69,8 @@ export const Button: React.FC<ButtonProps> = ({
         iconPosition === 'end' &&
         renderIcon(
           icon,
-          `h-5 w-4 ml-2 text-${textColor} ${disabled ? 'opacity-50' : ''}`
+          `h-5 w-4 ml-2 text-${textColor} ${disabled ? 'opacity-50' : ''}`,
+          iconType
         )}
       {children}
     </button>
