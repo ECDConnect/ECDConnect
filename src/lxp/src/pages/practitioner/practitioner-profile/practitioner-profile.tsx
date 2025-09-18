@@ -32,8 +32,7 @@ import { ReassignClassPageState } from '@/pages/classroom/class-dashboard/practi
 import { AbsenceCard } from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-profile/components/absence-card/absence-card';
 
 export const PractitionerProfile: React.FC = () => {
-  const [isJourneyFormOpen, setJourneyFormOpen] = useState(false);
-  // const { resetAuth, resetAppStore } = useStoreSetup();
+  const [isJourneyFormOpen, setIsJourneyFormOpen] = useState(false);
   const user = useSelector(userSelectors.getUser);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const isPrincipal = practitioner?.isPrincipal;
@@ -243,12 +242,14 @@ export const PractitionerProfile: React.FC = () => {
     {
       title: 'Journey',
       initActive: false,
-      child: <PractitionerJourney onIsDisplayFormChange={setJourneyFormOpen} />,
+      child: (
+        <PractitionerJourney onIsDisplayFormChange={setIsJourneyFormOpen} />
+      ),
     },
   ];
 
   if (isJourneyFormOpen) {
-    return <PractitionerJourney onIsDisplayFormChange={setJourneyFormOpen} />;
+    return <PractitionerJourney onIsDisplayFormChange={setIsJourneyFormOpen} />;
   }
 
   return (
@@ -277,7 +278,7 @@ export const PractitionerProfile: React.FC = () => {
       )}
       {practitioner?.isPrincipal && (
         <AbsenceCard
-          className="ml-4 mt-5 w-11/12 shadow"
+          className="w-12/12 ml-4 mr-4 mt-5 shadow"
           practitioner={practitioner!}
           handleReassignClass={handleReassignClass}
           practitionerUserId={practitioner?.userId!}

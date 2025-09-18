@@ -20,6 +20,7 @@ import {
 } from '@/store/notifications/notifications.actions';
 import { MessageActionConfig } from '@models/messages/messages';
 import { referenceNames } from '@/services/NotificationService/validators/points/poinstNotificationValidator.types';
+import pwa from '@/utils/pwa';
 
 export const Messages: React.FC = () => {
   const history = useHistory();
@@ -80,6 +81,11 @@ export const Messages: React.FC = () => {
   };
 
   const messageActioned = (notification: Notification) => {
+    if (notification.message.reference === 'practitioner-download-app') {
+      pwa.showInstallPrompt();
+      return;
+    }
+
     if (notification.message?.isFromBackend) {
       appDispatch(
         markAsReadNotification({
