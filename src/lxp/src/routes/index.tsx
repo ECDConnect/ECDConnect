@@ -1,5 +1,4 @@
 import { Redirect, Route, Switch, useLocation } from 'react-router-dom';
-import { Login } from '@auth-p/login/login';
 import { NewPassword } from '@auth-p/new-password/new-password';
 import PasswordReset from '@auth-p/password-reset/password-reset';
 import { SignUp } from '@auth-p/sign-up/sign-up';
@@ -25,6 +24,7 @@ import { Training } from '@/pages/training/training';
 import { Messages } from '@messages-p/messages';
 import { EditPractitionerProfile } from '@practitioner-p/edit-practitioner-profile/edit-practitioner-profile';
 import { PractitionerAbout } from '@practitioner-p/practitioner-about/practitioner-about';
+import { PractitionerHelp } from '@practitioner-p/practitioner-help/practitioner-help';
 import PractitionerAccount from '@practitioner-p/practitioner-account/practitioner-account';
 import { PractitionerProfile } from '@practitioner-p/practitioner-profile/practitioner-profile';
 import { PractitionerProgrammeInformation } from '@practitioner-p/practitioner-programme-information/practitioner-programme-information';
@@ -114,10 +114,6 @@ import { HelpForm } from '@/components/help-form/help-form';
 const PublicRoutes: React.FC = () => {
   const tenant = useTenant();
   const isOpenAccessUrl = tenant?.isOpenAccess;
-  //const url = window.location?.hostname;
-  // const isOpenAccessUrl =
-  //   url === 'ecdconnect-develop-app.azurewebsites.net' ||
-  //   url === 'ecdconnect-develop-app';
 
   return (
     <Switch>
@@ -184,7 +180,7 @@ const AuthRoutes: React.FC = () => {
       {(!isOnline ||
         (location.pathname === ROUTES.LOGIN &&
           previousLocation?.pathname === ROUTES.LOGIN)) && (
-        <Route path={ROUTES.LOGIN} component={Login} exact={true} />
+        <Route path={ROUTES.LOGIN} component={OaLogin} exact={true} />
       )}
       <Route
         path={ROUTES.PASSWORD_RESET}
@@ -271,6 +267,11 @@ const AuthRoutes: React.FC = () => {
         exact
         path={ROUTES.PRACTITIONER.ABOUT.ROOT}
         component={PractitionerAbout}
+      />
+      <Route
+        exact
+        path={ROUTES.PRACTITIONER.HELP.ROOT}
+        component={PractitionerHelp}
       />
       <Route
         exact

@@ -17,7 +17,7 @@ export const getStyles = ({
     },
     main: 'rounded-lg',
     table_head: {
-      table_row: ` mb-10 border-b-2 border-secondary bg-blue-50`,
+      table_row: ` mb-10 border-b-2 border-quatenary bg-blue-50`,
       table_data: `px-6 py-8 pl-6 pr-6 pt-4 pb-4 bg-quaternary text-left text-xs font-medium text-gray-500 uppercase tracking-wider leading-none`,
     },
     table_body: {
@@ -36,6 +36,6 @@ export const getStyles = ({
         } text-gray-600 table-stats md:w-auto md:flex-row`,
         bold_numbers: `text-gray-900 font-bold`,
       },
-      page_numbers: ` text-secondary page-numbers z-10 relative inline-flex items-center px-4 py-2 text-sm font-medium w-4`,
+      page_numbers: ` text-quatenary page-numbers z-10 relative inline-flex items-center px-4 py-2 text-sm font-medium w-4`,
     },
   } as ItableStyle);

@@ -142,6 +142,24 @@ export const PractitionerProfile: React.FC = () => {
         },
       },
       {
+        title: 'Get help',
+        titleStyle,
+        subTitle: 'Help videos & chat support',
+        subTitleStyle,
+        menuIcon: 'QuestionMarkCircleIcon',
+        showIcon: true,
+        iconBackgroundColor: 'warning',
+        iconColor: 'white',
+        backgroundColor: 'warningBg',
+        onActionClick: () => {
+          if (isOnline) {
+            history.push(ROUTES.PRACTITIONER.HELP.ROOT);
+          } else {
+            showOnlineOnly();
+          }
+        },
+      },
+      {
         title: NavigationNames.Logout,
         titleStyle,
         subTitleStyle,
@@ -203,7 +221,9 @@ export const PractitionerProfile: React.FC = () => {
       },
     });
 
-    return stackedMenuList;
+    return stackedMenuList.filter(
+      (item) => item.title !== 'Get help' || isOpenAccess
+    );
   };
 
   const tabItem: TabItem[] = [

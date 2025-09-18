@@ -478,10 +478,10 @@ const mapChildInput = (
   child: Partial<ChildDto>
 ): UpdateChildAndCaregiverInput => ({
   id: child.id,
-  languageId: child.languageId,
   allergies: child.allergies,
   disabilities: child.disabilities,
   otherHealthConditions: child.otherHealthConditions,
+  otherLanguages: child.otherLanguages,
   workflowStatusId: child.workflowStatusId,
   isActive: child.isActive === false ? false : true,
   user: mapUserInput(child.user!),
@@ -489,6 +489,7 @@ const mapChildInput = (
   reasonForLeavingId: child?.reasonForLeavingId || null,
   inactivityComments: child?.inactivityComments || null,
   inactiveDate: child?.inactiveDate || null,
+  homeLanguageIds: child.homeLanguageIds,
 });
 
 const mapUserInput = (childUser: Partial<UserDto>): ChildUserUpdateInput => ({

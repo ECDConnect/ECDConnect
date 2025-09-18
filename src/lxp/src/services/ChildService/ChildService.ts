@@ -32,10 +32,10 @@ class ChildService {
             id
             workflowStatusId
             insertedDate
-            languageId
             allergies
             disabilities
             otherHealthConditions
+            otherLanguages
             isActive
             insertedBy
             userId
@@ -51,6 +51,9 @@ class ChildService {
               isActive
               isSouthAfricanCitizen
               verifiedByHomeAffairs
+              userLanguages {
+                languageId
+              }
             }
             caregiverId 
             caregiver {
@@ -119,10 +122,10 @@ class ChildService {
             id
             workflowStatusId
             insertedDate
-            languageId
             allergies
             disabilities
             otherHealthConditions
+            otherLanguages
             isActive
             insertedBy
             userId
@@ -138,6 +141,9 @@ class ChildService {
               isActive
               isSouthAfricanCitizen
               verifiedByHomeAffairs
+              userLanguages {
+                languageId
+              }
             }
             caregiverId 
             caregiver {
@@ -206,10 +212,10 @@ class ChildService {
             id
             workflowStatusId
             insertedDate
-            languageId
             allergies
             disabilities
             otherHealthConditions
+            otherLanguages
             isActive
             insertedBy
             userId
@@ -225,6 +231,9 @@ class ChildService {
               isActive
               isSouthAfricanCitizen
               verifiedByHomeAffairs
+              userLanguages {
+                languageId
+              }
             }
             caregiverId 
             caregiver {

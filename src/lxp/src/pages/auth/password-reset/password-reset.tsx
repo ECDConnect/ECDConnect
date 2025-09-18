@@ -136,9 +136,10 @@ export const PasswordReset: React.FC = () => {
     <div className={styles.container}>
       <BannerWrapper
         color="primary"
-        size="normal"
+        size="small"
         renderBorder={true}
         onBack={goBack}
+        title="Reset password"
       >
         <div className={styles.pResetContainer}>
           {!displaySuccess && (
@@ -146,7 +147,7 @@ export const PasswordReset: React.FC = () => {
               <Typography
                 type="h4"
                 color="textDark"
-                text={`Enter your cellphone number. If we find an account linked to this cellphone, we'll send an SMS with a password reset link.`}
+                text={`Enter your cellphone number. If we find an account linked to this cellphone, we'll send an SMS with your username and a password reset link.`}
               ></Typography>
               <div className={'mt-4'}>
                 <form>

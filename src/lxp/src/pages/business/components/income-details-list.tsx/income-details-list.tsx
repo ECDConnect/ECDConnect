@@ -100,7 +100,7 @@ export const IncomeDetailsList: React.FC<IncomeDetailsListProps> = ({
             text={`R ${formatCurrency(sumIncomeOrExpenseItems(incomeItems))}`}
             color={'white'}
             type="h4"
-            className="mr-12 w-4/12 text-right"
+            className="mr-12 w-4/12 whitespace-nowrap text-right"
           />
         </Card>
       </div>

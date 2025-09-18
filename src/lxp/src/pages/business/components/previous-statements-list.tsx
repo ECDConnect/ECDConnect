@@ -100,7 +100,7 @@ export const PreviousStatementsList: React.FC<PreviousStatementsListProps> = ({
                   text={`R ${formatCurrency(yearSummary.balance)}`}
                   color={'white'}
                   type="h4"
-                  className="mr-4 w-5/12 text-right"
+                  className="mr-4 w-5/12 whitespace-nowrap text-right"
                 />
               </Card>
             </div>

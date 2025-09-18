@@ -119,8 +119,8 @@ export function StaticData() {
 
   return (
     <div>
-      <div className=" -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-        <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+      <div className=" -my-2 overflow-x-auto bg-white p-6 sm:-mx-6 lg:-mx-8">
+        <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8 ">
           <div className="relative w-6/12 py-8">
             {searchValue === '' && (
               <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">

@@ -32,7 +32,6 @@ import { practitionerSelectors } from '@/store/practitioner';
 import { syncThunkActions } from '@/store/sync';
 import { useStoreSetup } from '@/hooks/useStoreSetup';
 import { userThunkActions } from '@/store/user';
-import facebookLogo from '../../../assets/icon/facebook_white.svg';
 import ReactGA from 'react-ga4';
 import {
   OaLoginModel,
@@ -43,7 +42,7 @@ import { AuthService } from '@/services/AuthService';
 import { VerifyPhoneNumberAuthCode } from '@/components/user-registration/components/verify-phone-number';
 import { useTenant } from '@/hooks/useTenant';
 
-var CryptoJS = require('crypto-js');
+const CryptoJS = require('crypto-js');
 const { version } = require('../../../../package.json');
 
 export const OaLogin: React.FC = () => {
@@ -57,19 +56,17 @@ export const OaLogin: React.FC = () => {
   const [freeMemory, setFreeMemory] = useState(0);
   const [errorMessage, setErrorMessage] = useState(false);
   const tenant = useTenant();
+  const { resetAppStore, resetAuth, resetUser } = useStoreSetup();
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
-  const { resetAppStore, resetAuth } = useStoreSetup();
-
-  navigator?.storage?.estimate &&
-    navigator?.storage?.estimate().then((estimate) => {
-      if (estimate?.quota) {
-        const freMemoryResult = estimate?.quota / 1024 / 1024;
-        setFreeMemory(Number(freMemoryResult.toFixed(0)));
-        return estimate;
-      }
-    });
+  navigator?.storage?.estimate().then((estimate) => {
+    if (estimate?.quota) {
+      const freMemoryResult = estimate?.quota / 1024 / 1024;
+      setFreeMemory(Number(freMemoryResult.toFixed(0)));
+      return estimate;
+    }
+  });
 
   const {
     register: loginRegister,
@@ -121,8 +118,8 @@ export const OaLogin: React.FC = () => {
   const checkSyncData = async () => {
     if (
       username !== userIdHashDecryptedToString &&
-      !!practitioner &&
-      isOnline
+      !!practitioner /* &&
+      isOnline*/
     ) {
       if (practitioner?.isPrincipal === true) {
         await appDispatch(syncThunkActions.syncOfflineData({}));
@@ -130,8 +127,9 @@ export const OaLogin: React.FC = () => {
         await appDispatch(syncThunkActions.syncOfflineDataForPractitioner({}));
       }
 
-      // await resetAppStore();
-      // await resetAuth();
+      await resetAppStore();
+      await resetAuth();
+      await resetUser();
     }
   };
 
@@ -144,7 +142,6 @@ export const OaLogin: React.FC = () => {
       })
       .catch((error) => {
         setIsLoading(false);
-        return;
       });
     setIsLoading(false);
 
@@ -304,7 +301,7 @@ export const OaLogin: React.FC = () => {
                 <Typography
                   type="buttonSmall"
                   color="secondary"
-                  text={'Forgot my password'}
+                  text={'Forgot my password/username'}
                 ></Typography>
               </Button>
             </div>

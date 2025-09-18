@@ -7,6 +7,7 @@ import {
   DialogPosition,
   FormInput,
   LoadingSpinner,
+  SliderPagination,
   Typography,
 } from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
@@ -148,6 +149,8 @@ export const PreschoolCodeCheck: React.FC<{
           </Card>
         </div>
       </div>
+
+      <SliderPagination totalItems={2} activeIndex={0} className={'p-4'} />
 
       <Typography
         color="textDark"

@@ -74,6 +74,9 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
     if (template && watchFields) {
       const fields = renderFields(template?.fields);
       setFields(fields);
+      setTimeout(function () {
+        setIsLoading(false);
+      }, 2000);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [template, watchFields]);
@@ -109,12 +112,6 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
         subLabel = 'Use commas to separate words';
       }
 
-      if (index + 1 === fields.length) {
-        setTimeout(function () {
-          setIsLoading(false);
-        }, 6000);
-      }
-
       const isAuthorizationChecked =
         initialValues?.hasOwnProperty('authorsAuthorization') &&
         initialValues?.authorsAuthorization !== undefined
@@ -137,7 +134,7 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
                 >
                   {isRequired ? `${field?.title} *` : field?.title}
                 </label>
-                <div className="bg-uiBg sm:col-span-12">
+                <div className="sm:col-span-12">
                   <ButtonGroup
                     options={storyBookTypeOptions}
                     onOptionSelected={(value: string | string[]) => {
@@ -145,7 +142,8 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
                     }}
                     selectedOptions={formType}
                     color="tertiary"
-                    notSelectedColor="tertiaryAccent2"
+                    notSelectedColor="errorBg"
+                    textColor="tertiary"
                     type={ButtonGroupTypes.Button}
                     className={'w-full'}
                     multiple={false}
@@ -186,7 +184,7 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
                   color="textDark"
                   text={`If you select "Yes", then any future edits made & all translations of this story can be shared with other organisations.`}
                 />
-                <div className="bg-uiBg sm:col-span-12">
+                <div className="sm:col-span-12">
                   <ButtonGroup
                     options={shareContentOptions}
                     onOptionSelected={(value: string | string[]) => {
@@ -194,7 +192,8 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
                     }}
                     selectedOptions={formType}
                     color="tertiary"
-                    notSelectedColor="tertiaryAccent2"
+                    notSelectedColor="errorBg"
+                    textColor="tertiary"
                     type={ButtonGroupTypes.Button}
                     className={'w-full'}
                     multiple={false}
@@ -215,49 +214,44 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
           if (propName === 'bookLocation') {
             return (
               <div key={propName} className={contentWrapper}>
-                <div className="sm:col-span-12">
-                  <div className="mb-2 font-semibold">
-                    Where can you find a copy of this story book?
+                <div className="mb-2 font-semibold">
+                  Where can you find a copy of this story book?
+                </div>
+                <div className="flex flex-row gap-4">
+                  <div className="flex-1">
+                    <FormField
+                      label={isRequired ? 'Book Location *' : 'Book Location'}
+                      nameProp="bookLocation"
+                      placeholder={placeHolder}
+                      register={register}
+                      error={
+                        isRequired &&
+                        initialValues?.hasOwnProperty('bookLocation') &&
+                        !initialValues['bookLocation']
+                          ? requiredMessage
+                          : ''
+                      }
+                      required={isRequired}
+                      validation={validation}
+                    />
                   </div>
-                  <FormField
-                    label={isRequired ? title + ' *' : title}
-                    nameProp={propName}
-                    placeholder={placeHolder}
-                    register={register}
-                    error={
-                      isRequired &&
-                      initialValues?.hasOwnProperty(propName) &&
-                      !initialValues[propName]
-                        ? requiredMessage
-                        : ''
-                    }
-                    required={isRequired}
-                    validation={validation}
-                  />
+                  <div className="flex-1">
+                    <FormField
+                      label="Book Location Link"
+                      nameProp="bookLocationLink"
+                      placeholder="Add link"
+                      register={register}
+                      required={false}
+                      validation={validation}
+                    />
+                  </div>
                 </div>
               </div>
             );
           }
+
           if (propName === 'bookLocationLink') {
-            return (
-              <div key={propName} className={contentWrapper}>
-                <FormField
-                  label={isRequired ? title + ' *' : title}
-                  nameProp={propName}
-                  placeholder={placeHolder}
-                  register={register}
-                  error={
-                    isRequired &&
-                    initialValues?.hasOwnProperty(propName) &&
-                    !initialValues[propName]
-                      ? requiredMessage
-                      : ''
-                  }
-                  required={isRequired}
-                  validation={validation}
-                />
-              </div>
-            );
+            return null;
           }
 
           // Hide fields when editing
