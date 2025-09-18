@@ -2,7 +2,6 @@ import {
   Config,
   LocalStorageKeys,
   VerifyPrincipalInvitationModel,
-  useTheme,
 } from '@ecdlink/core';
 import {
   Alert,
@@ -25,7 +24,6 @@ import * as styles from './oa-sign-up-or-login.types';
 import { UserService } from '@/services/UserService';
 import { useTenant } from '@/hooks/useTenant';
 import { OAAgreements } from './components/oa-agreements/oa-agreements';
-import ROUTES from '@/routes/routes';
 import Banner1 from '../../../assets/banner-ss2.svg';
 import Banner3 from '../../../assets/banner2-ss-svg.svg';
 import { AuthService } from '@/services/AuthService';
@@ -40,9 +38,8 @@ export const OASignUpOrLogin: React.FC = () => {
 
   const { resetAppStore, resetAuth, resetUser } = useStoreSetup();
   const history = useHistory();
-  const { theme } = useTheme();
   const { isOnline } = useOnlineStatus();
-  const [userDetails, setUserDetails] = useState<any>();
+  const [setUserDetails] = useState<any>();
   const isWhitelabel = tenant?.isWhiteLabel;
   const applicationName = tenant?.tenant?.applicationName;
 
@@ -125,7 +122,7 @@ export const OASignUpOrLogin: React.FC = () => {
     <div className={styles.wrapper}>
       <BannerWrapper
         color={'primary'}
-        showBackground={isWhitelabel ? false : true}
+        showBackground={!isWhitelabel}
         backgroundUrl={TransparentLayer}
         backgroundImageColour={'primary'}
         className={styles.contentWrapper}

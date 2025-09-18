@@ -37,6 +37,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<MessageTemplate> MessageTemplates { get; set; }
         public DbSet<MessageLog> MessageLogs { get; set; }
         public DbSet<UserGrant> UserGrants { get; set; }
+        public DbSet<UserLanguage> UserLanguages { get; set; }
         public DbSet<Document> Documents { get; set; }
         public DbSet<DocumentType> DocumentTypes { get; set; }
         public DbSet<Education> Education { get; set; }

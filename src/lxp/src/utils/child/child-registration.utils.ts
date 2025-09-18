@@ -88,15 +88,11 @@ export const mapChildDto = (
     } = child;
     return {
       ...restChild,
-      // TODO: update language field to be an array
-      languageId:
-        childExtraInformationForm?.homeLanguages &&
-        childExtraInformationForm.homeLanguages[0]
-          ? childExtraInformationForm.homeLanguages[0]
-          : undefined,
+      homeLanguageIds: childExtraInformationForm?.homeLanguageIds,
       allergies: healthInformationForm?.allergies ?? '',
       disabilities: healthInformationForm?.disabilities ?? '',
       otherHealthConditions: healthInformationForm?.healthConditions ?? '',
+      otherLanguages: childExtraInformationForm?.otherLanguages ?? '',
       workflowStatusId: childStatusId,
     };
   }
@@ -106,14 +102,12 @@ export const mapChildDto = (
     isActive: true,
     userId: userId,
     caregiverId: '',
-    languageId:
-      childExtraInformationForm?.homeLanguages &&
-      childExtraInformationForm.homeLanguages[0]
-        ? childExtraInformationForm.homeLanguages[0]
-        : undefined,
+
     allergies: healthInformationForm?.allergies ?? '',
     disabilities: healthInformationForm?.disabilities ?? '',
     otherHealthConditions: healthInformationForm?.healthConditions ?? '',
+    otherLanguages: childExtraInformationForm?.otherLanguages ?? '',
+    homeLanguageIds: childExtraInformationForm?.homeLanguageIds,
     workflowStatusId: childStatusId,
     insertedDate: new Date().toISOString(),
     insertedBy: '',
@@ -351,14 +345,11 @@ export const mapAddChildTokenModelInput = (
     verifiedByHomeAffairs: false,
     userId: userId,
     raceId: null,
-    languageId:
-      childExtraInformationForm?.homeLanguages &&
-      childExtraInformationForm.homeLanguages[0]
-        ? childExtraInformationForm.homeLanguages[0]
-        : undefined,
     allergies: healthInformationForm?.allergies ?? '',
     disabilities: healthInformationForm?.disabilities ?? '',
     otherHealthConditions: healthInformationForm?.healthConditions ?? '',
+    otherLanguages: childExtraInformationForm?.otherLanguages ?? '',
     workflowStatusId: childWorkflowStatusId,
+    homeLanguageIds: childInformation.homeLanguageIds,
   };
 };

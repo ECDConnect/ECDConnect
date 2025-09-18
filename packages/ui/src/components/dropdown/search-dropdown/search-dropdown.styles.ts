@@ -71,7 +71,7 @@ export const getButtonIcon = (
   const baseStyle = `h-6 w-6 ml-1 mr-2`;
 
   if (hasSelectedItems && !open) {
-    return classNames(baseStyle, `text-white`);
+    return classNames(baseStyle, `textMid`);
   }
 
   return classNames(baseStyle, `text-${colour}`);

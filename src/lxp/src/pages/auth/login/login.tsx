@@ -59,7 +59,9 @@ export const Login: React.FC = () => {
   const { resetAppStore, resetAuth, resetUser } = useStoreSetup();
 
   useEffect(() => {
-    resetAppStore();
+    if (isOnline) {
+      resetAppStore();
+    }
   }, []);
 
   navigator?.storage?.estimate &&
@@ -339,7 +341,7 @@ export const Login: React.FC = () => {
                 <Typography
                   type="buttonSmall"
                   color="secondary"
-                  text={'Forgot my password'}
+                  text={'Forgot my password/username'}
                 ></Typography>
               </Button>
             </div>

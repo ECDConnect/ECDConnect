@@ -217,7 +217,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers
                 return false;
             }
 
-            _shortUrlManager.RemoveShortUrl(user.Id, TemplateTypeConstants.ForgotPassword);
+            await _shortUrlManager.RemoveShortUrl(user.Id, TemplateTypeConstants.ForgotPassword);
 
             return true;
         }
@@ -285,7 +285,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers
                 user.PendingPhoneNumber = "";
                 user.PhoneNumberConfirmed = true;
                 await _userManager.UpdateAsync(user);
-                _shortUrlManager.RemoveShortUrl(user.Id, TemplateTypeConstants.VerifyCellphoneNumber);
+                await _shortUrlManager.RemoveShortUrl(user.Id, TemplateTypeConstants.VerifyCellphoneNumber);
             }
 
             return cellphoneNumberChangeRequest.Succeeded;

@@ -103,7 +103,7 @@ namespace ECDLink.Security.Api
                 await _securityManager.ChangePasswordAsync(user, invitationModel.Password);
             }
 
-            _shortUrlManager.RemoveShortUrl(user.Id, TemplateTypeConstants.Invitation);
+            await _shortUrlManager.RemoveShortUrl(user.Id, TemplateTypeConstants.Invitation);
 
             return Ok();
         }
@@ -132,7 +132,7 @@ namespace ECDLink.Security.Api
             var userIsAdmin = await _userManager.IsInRoleAsync(user, Roles.ADMINISTRATOR);
             if (userIsAdmin)
             {
-                _shortUrlManager.RemoveShortUrl(user.Id, TemplateTypeConstants.AdminPortalInvitation);
+                await _shortUrlManager.RemoveShortUrl(user.Id, TemplateTypeConstants.AdminPortalInvitation);
                 return Ok(true);
             }
 
@@ -375,7 +375,7 @@ namespace ECDLink.Security.Api
                 });
             }
 
-            var user = _userManager.FindByIdAsync(input.UserId).Result;
+            var user = await _userManager.FindByIdAsync(input.UserId);
             if (user == null)
             {
                 return BadRequest(new FailedVerificationModel
@@ -398,7 +398,7 @@ namespace ECDLink.Security.Api
                 });
             }
             // Mark invitation as clicked
-            _shortUrlManager.RemoveShortUrl(user.Id, TemplateTypeConstants.Invitation);
+            await _shortUrlManager.RemoveShortUrl(user.Id, TemplateTypeConstants.Invitation);
             
             // Update user with new username
             user.UserName = input.UserName;
