@@ -355,7 +355,7 @@ export const ObservationsForChildLandingComplete: React.FC<
                 type="body"
                 color="textMid"
                 className="mt-2"
-                text={'Todo:'}
+                text={'To do:'}
               />
               <Typography
                 type="body"
@@ -434,7 +434,7 @@ export const ObservationsForChildLandingComplete: React.FC<
                             type="small"
                             color="textMid"
                             className="mt-2"
-                            text={'Todo:'}
+                            text={'To do:'}
                           />
                           <Typography
                             type="body"

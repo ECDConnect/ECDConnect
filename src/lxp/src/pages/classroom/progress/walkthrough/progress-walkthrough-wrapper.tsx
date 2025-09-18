@@ -107,7 +107,7 @@ export default function ProgressWalkthroughWrapper() {
       target: '#skill-0',
       content:
         translations[language][
-          "Great!\n\n If you are not sure if Temba can do something, you can choose “Dont't know”"
+          "Great!\n\n If you are not sure if Temba can do something, you can choose “Don't know”"
         ],
       placement: 'bottom-end',
       offset: 10,
