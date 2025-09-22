@@ -18,14 +18,14 @@
       "purpose": "maskable"
     },
     {
-      "src": "assets/smartstart-og.png",
+      "src": "assets/ecdconnect-og.png",
       "type": "image/png",
       "sizes": "1024x1024",
       "purpose": "maskable"
     }
   ],
   "id": "ecdconnect",
-  "start_url": ".",
+  "start_url": "/",
   "display": "standalone",
   "theme_color": "#ffffff",
   "background_color": "#ffffff"
