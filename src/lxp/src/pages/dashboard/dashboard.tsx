@@ -33,7 +33,8 @@ import { userSelectors, userThunkActions } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
 import TransparentLayer from '../../assets/TransparentLayer.png';
-
+import BusinessIconTile from '../../assets/businessIconTile.png';
+import BusinessIconNavigation from '../../assets/BusinessIconNavigation.png';
 import {
   practitionerSelectors,
   practitionerThunkActions,
@@ -607,7 +608,7 @@ export const Dashboard: React.FC = () => {
           {
             name: NavigationNames.Business.Business,
             href: ROUTES.BUSINESS,
-            icon: styles.businessIconName,
+            icon: BusinessIconNavigation,
             current: false,
             showDivider: true,
             nestedChildren: [
@@ -772,8 +773,7 @@ export const Dashboard: React.FC = () => {
   if (isPrincipal || isTrialPeriod) {
     dashboardItems.splice(1, 0, {
       title: NavigationNames.Business.Business,
-      titleIcon: styles.businessIconName,
-      titleIconClassName: styles.businessIcon,
+      icon: BusinessIconTile,
       onActionClick: () => {
         goToBusiness();
       },

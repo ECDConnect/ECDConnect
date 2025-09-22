@@ -9,4 +9,5 @@ export interface TitleListDataItem {
   chipConfig?: ChipConfig;
   onActionClick: () => void;
   classNames?: string;
+  icon?: string;
 }
