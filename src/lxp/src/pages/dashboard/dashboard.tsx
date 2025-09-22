@@ -14,7 +14,6 @@ import {
   UserAvatar,
   ScoreCard,
   NoPointsScoreCard,
-  renderIcon,
 } from '@ecdlink/ui';
 import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -34,7 +33,8 @@ import { userSelectors, userThunkActions } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
 import TransparentLayer from '../../assets/TransparentLayer.png';
-
+import BusinessIconTile from '../../assets/businessIconTile.png';
+import BusinessIconNavigation from '../../assets/BusinessIconNavigation.png';
 import {
   practitionerSelectors,
   practitionerThunkActions,
@@ -53,7 +53,6 @@ import { ReactComponent as EmojiBlueSmile } from '../../assets/neutral_blue_emot
 import { ReactComponent as EmojiOrangeSmile } from '../../assets/mehFace.svg';
 import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
 import { syncThunkActions } from '@store/sync';
-
 import {
   TabsItemForPrincipal,
   TabsItems,
@@ -73,7 +72,6 @@ import { PermissionsNames } from '../principal/components/add-practitioner/add-p
 import { usePoints } from '@/hooks/usePoints';
 import { usePointsToDoEmoji } from '@/hooks/usePointsToDoEmoji';
 import { useStoreSetup } from '@hooks/useStoreSetup';
-import ReactGA from 'react-ga4';
 
 const { version } = require('../../../package.json');
 
@@ -97,7 +95,6 @@ export const Dashboard: React.FC = () => {
   } = useTenantModules();
 
   const appName = tenant?.tenant?.applicationName;
-
   const isOpenAccess = tenant?.isOpenAccess;
   const isWhiteLabel = tenant?.isWhiteLabel;
   const shouldUserSyncOffline = useSelector(settingSelectors.getShouldUserSync);
@@ -612,7 +609,7 @@ export const Dashboard: React.FC = () => {
           {
             name: NavigationNames.Business.Business,
             href: ROUTES.BUSINESS,
-            icon: styles.businessIconName,
+            icon: BusinessIconNavigation,
             current: false,
             showDivider: true,
             nestedChildren: [
@@ -777,8 +774,7 @@ export const Dashboard: React.FC = () => {
   if (isPrincipal || isTrialPeriod) {
     dashboardItems.splice(1, 0, {
       title: NavigationNames.Business.Business,
-      titleIcon: styles.businessIconName,
-      titleIconClassName: styles.businessIcon,
+      icon: BusinessIconTile,
       onActionClick: () => {
         goToBusiness();
       },
