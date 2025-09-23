@@ -57,7 +57,7 @@ export const ConfirmPlayGroups: React.FC<ConfirmPlayGroupsProps> = ({
 
   // handle redirect from adding a child when there are no classes available
   useEffect(() => {
-    if (location.state.redirectToAddNewClassPage) {
+    if (location.state.redirectFromBusinessToAddClass) {
       onAddNewPlaygroup();
     }
   }, [location]);
