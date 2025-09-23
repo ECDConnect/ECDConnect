@@ -2,7 +2,7 @@ export interface EditPlaygroupsRouteState {
   returnRoute?: string;
   redirectToClassesPage?: boolean;
   selectedClassroomGroupId?: string;
-  redirectToAddNewClassPage?: boolean;
+  redirectFromBusinessToAddClass?: boolean;
 }
 
 export enum EditPlaygroupsSteps {
