@@ -794,7 +794,7 @@ export const ChildProfile: React.FC = () => {
           <CreateNote
             userId={child?.userId || ''}
             noteType={NoteTypeEnum.Child}
-            titleText={`Add a note to ${child?.user?.firstName} profile`}
+            titleText={`Add a note to ${child?.user?.firstName}'s profile`}
             onBack={() => onCreateChildNoteBack()}
             onCreated={() => onNoteCreated()}
           />

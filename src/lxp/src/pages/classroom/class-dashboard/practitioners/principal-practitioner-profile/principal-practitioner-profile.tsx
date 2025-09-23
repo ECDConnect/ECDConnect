@@ -698,7 +698,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                 <CreateNote
                   userId={practitionerUserId || ''}
                   noteType={NoteTypeEnum.Unknown}
-                  titleText={`Add a note to ${practitioner?.user?.firstName} profile`}
+                  titleText={`Add a note to ${practitioner?.user?.firstName}'s profile`}
                   onBack={() => onCreatePractitionerNoteBack()}
                   onCreated={() => onCreatePractitionerNoteBack()}
                 />
