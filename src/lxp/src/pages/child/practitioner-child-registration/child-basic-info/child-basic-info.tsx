@@ -338,7 +338,7 @@ export const ChildBasicInfo: React.FC<
                 type: 'filled',
                 onClick: () => {
                   history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS, {
-                    redirectToAddNewClassPage: true,
+                    redirectFromBusinessToAddClass: true,
                   } as EditPlaygroupsRouteState);
                   onClose();
                 },
