@@ -46,7 +46,7 @@ export const ViewNote: React.FC<ViewNoteProps> = ({
             {
               text: 'Delete',
               textColour: 'white',
-              colour: 'primary',
+              colour: 'quatenary',
               type: 'filled',
               onClick: () => {
                 submit();
@@ -60,7 +60,7 @@ export const ViewNote: React.FC<ViewNoteProps> = ({
               colour: 'primary',
               type: 'outlined',
               onClick: cancel,
-              leadingIcon: 'PencilIcon',
+              leadingIcon: 'XIcon',
             },
           ]}
         />
@@ -71,7 +71,7 @@ export const ViewNote: React.FC<ViewNoteProps> = ({
   return (
     <BannerWrapper
       size={'small'}
-      backgroundColour={'uiBg'}
+      backgroundColour={'white'}
       renderBorder={true}
       title={note.name}
       color={'primary'}
@@ -98,14 +98,12 @@ export const ViewNote: React.FC<ViewNoteProps> = ({
           color={'textMid'}
           className={'break-words pt-4'}
         />
-        <div className={'py-4'}>
-          <Divider></Divider>
-        </div>
+        <div className={'py-4'}></div>
         <Button
           onClick={() => deletePrompt(note)}
           className="w-full"
           size="small"
-          color="errorDark"
+          color="quatenary"
           type="filled"
         >
           {renderIcon('TrashIcon', classNames('h-5 w-5 text-white'))}

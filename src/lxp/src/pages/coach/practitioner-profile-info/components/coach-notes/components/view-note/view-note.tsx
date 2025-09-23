@@ -54,7 +54,7 @@ export const ViewNote: React.FC<ViewNoteProps> = ({
             {
               text: 'Delete',
               textColour: 'white',
-              colour: 'primary',
+              colour: 'quatenary',
               type: 'filled',
               isLoading,
               disabled: isLoading,
@@ -72,7 +72,7 @@ export const ViewNote: React.FC<ViewNoteProps> = ({
               isLoading,
               disabled: isLoading,
               onClick: cancel,
-              leadingIcon: 'PencilIcon',
+              leadingIcon: 'XIcon',
             },
           ]}
         />
