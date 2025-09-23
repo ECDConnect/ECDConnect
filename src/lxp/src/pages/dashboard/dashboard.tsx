@@ -1123,7 +1123,7 @@ export const Dashboard: React.FC = () => {
           {(!isPhase1Completed && !isCoach) || totalYearPoints === 0 ? (
             <NoPointsScoreCard
               image={renderPointsToDoEmoji}
-              className="mt-1 w-full py-4"
+              className="mt-4 w-full py-4"
               mainText={''}
               currentPoints={getCurrentPointsToDo}
               maxPoints={
@@ -1154,7 +1154,7 @@ export const Dashboard: React.FC = () => {
           !isCoach &&
           !!pointsScoreProps ? (
             <ScoreCard
-              className="mt-1 mb-1 h-20 w-full"
+              className="mt-4 mb-1 h-20 w-full"
               progressBarClassName="flex pt-2"
               mainText={pointsScoreProps?.mainText!}
               hint={pointsScoreProps?.hint}
