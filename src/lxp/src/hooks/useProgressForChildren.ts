@@ -9,7 +9,7 @@ import { differenceInMonths, format, isBefore } from 'date-fns';
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
-export const useProgressForChildren = () => {
+export const useProgressForChildren = (useNextPeriod?: boolean) => {
   const baseChildren = useSelector(childrenSelectors.getChildren);
 
   const allAgeGroups = useSelector(
@@ -22,6 +22,10 @@ export const useProgressForChildren = () => {
 
   const currentReportingPeriodForSummary = useSelector(
     classroomsSelectors.getExpiredProgressReportPeriod()
+  );
+
+  const nextReportingPeriod = useSelector(
+    classroomsSelectors.getNextProgressReportPeriod()
   );
 
   const currentReportingPeriod = useSelector(
@@ -46,11 +50,15 @@ export const useProgressForChildren = () => {
   const reportingPeriod = useMemo(() => {
     return isWithinReportPeriod
       ? currentReportingPeriod
+      : useNextPeriod
+      ? nextReportingPeriod
       : currentReportingPeriodForSummary;
   }, [
     currentReportingPeriod,
     currentReportingPeriodForSummary,
     isWithinReportPeriod,
+    nextReportingPeriod,
+    useNextPeriod,
   ]);
 
   const baseReports = useSelector(
