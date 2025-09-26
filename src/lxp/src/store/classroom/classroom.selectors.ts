@@ -201,6 +201,51 @@ export const getLearnersForClassroomGroups = (
     }
   );
 
+export const getNextProgressReportPeriod = () =>
+  createSelector(
+    (state: RootState) => state.classroomData.classroom,
+    (classroom: ClassroomDto | undefined) => {
+      const currentYear = new Date().getFullYear();
+
+      const currentYearsReportingPeriods =
+        classroom?.childProgressReportPeriods
+          ?.filter((x) => new Date(x.startDate).getFullYear() === currentYear)
+          .sort(
+            (a, b) =>
+              new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+          ) || [];
+
+      // Get first in order where start date is after the current date
+      const index = currentYearsReportingPeriods.findIndex((x) =>
+        isBefore(
+          new Date(
+            new Date().getFullYear(),
+            new Date().getMonth(),
+            new Date().getDate()
+          ),
+          new Date(x.startDate)
+        )
+      );
+
+      if (index < 0) {
+        return undefined;
+      }
+
+      const startDate = new Date(currentYearsReportingPeriods[index].startDate);
+      startDate.setHours(0, 0, 0, 0);
+
+      const endDate = new Date(currentYearsReportingPeriods[index].endDate);
+      endDate.setHours(23, 59, 59, 0);
+
+      return {
+        reportNumber: index + 1,
+        id: currentYearsReportingPeriods[index].id,
+        startDate: startDate,
+        endDate: endDate,
+      } as ProgressReportPeriod;
+    }
+  );
+
 export const getCurrentProgressReportPeriod = () =>
   createSelector(
     (state: RootState) => state.classroomData.classroom,

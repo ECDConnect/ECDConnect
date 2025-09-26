@@ -25,7 +25,7 @@ export const SelectCategoryToTrack: React.FC = () => {
   );
 
   const { currentReportingPeriod, ageGroupsAvailableForTracking, children } =
-    useProgressForChildren();
+    useProgressForChildren(true);
 
   const [step, setStep] = useState(1);
 
