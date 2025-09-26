@@ -38,6 +38,9 @@ export const ProgressCaregiverReportSummaryPage: React.FC<
   howCanCaregiverSupport,
   totalPages,
 }) => {
+  const years = Math.floor(ageInMonths / 12); // integer division for years
+  const months = ageInMonths % 12; // remainder for months
+
   return (
     <div
       className={'flex flex-col px-4 pb-4 pt-4'}
@@ -63,7 +66,7 @@ export const ProgressCaregiverReportSummaryPage: React.FC<
               text={`${format(
                 reportingPeriodEndDate,
                 'MMM yyy'
-              )} | ${ageInMonths} months old`}
+              )} | ${years} years ${months} months old`}
               lineHeight={4}
               className="pb-3 text-center"
             />
@@ -94,7 +97,12 @@ export const ProgressCaregiverReportSummaryPage: React.FC<
         </Card>
       </div>
       <Divider dividerType="dashed" className="mb-4" />
-      <Typography type="h1" color="textDark" text={'Progress summary'} />
+      <Typography
+        type="h1"
+        color="textDark"
+        text={'Progress summary'}
+        className="pb-5"
+      />
 
       <div style={styles.TertiaryBox}>
         <div className="flex flex-row">
