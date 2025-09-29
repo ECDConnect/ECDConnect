@@ -92,6 +92,11 @@ export const ObservationsForChildLanding: React.FC = () => {
             <ObservationsForChildLandingIncomplete
               childId={routeState.childId}
               currentAgeGroup={isWalkthrough ? ageGroup : observationsAgeGroup!}
+              doNotKnowPercentage={report?.unknownPercentage || 0}
+              doNotKnowCount={report?.unknownCount || 0}
+              childFirstName={child?.user?.firstName || ''}
+              ageInMonths={isWalkthrough ? 3 : currentAge || 0}
+              currentReport={isWalkthrough ? walkthroughReport : report}
             />
           )}
           {/* All observations completed for current report period, but we are still outside the window */}

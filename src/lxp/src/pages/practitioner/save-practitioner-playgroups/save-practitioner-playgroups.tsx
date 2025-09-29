@@ -19,7 +19,6 @@ import {
   EditPlaygroupsRouteState,
   EditPlaygroupsSteps,
 } from './save-practitioner-playgroups.types';
-import { staticDataSelectors } from '@store/static-data';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useStoreSetup } from '@hooks/useStoreSetup';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';

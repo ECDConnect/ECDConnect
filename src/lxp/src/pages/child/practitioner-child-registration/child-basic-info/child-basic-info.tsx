@@ -54,6 +54,7 @@ import {
 } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import { ClassDashboardRouteState } from '@/pages/business/business.types';
 import { ChildProfileRouteState } from '../../child-profile/child-profile.types';
+import { EditPlaygroupsRouteState } from '@/pages/practitioner/save-practitioner-playgroups/save-practitioner-playgroups.types';
 
 export const ChildBasicInfo: React.FC<
   FormComponentProps<ChildBasicInfoModel>
@@ -168,6 +169,12 @@ export const ChildBasicInfo: React.FC<
       debouncedDispatch.cancel();
     };
   }, [firstName, surname, userAuth?.id, isOnline, debouncedDispatch]);
+
+  useEffect(() => {
+    if (allClassroomGroups.length === 0) {
+      handleNoClasses();
+    }
+  }, [allClassroomGroups]);
 
   // menu option calls
 
@@ -307,6 +314,52 @@ export const ChildBasicInfo: React.FC<
       childId: childId,
       classroomGroupIdFromRedirect: classroomGroupId,
     } as ChildProfileRouteState);
+  };
+
+  const handleNoClasses = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      blocking: true,
+      color: 'bg-white',
+      render: (onClose) => {
+        return (
+          <ActionModal
+            title={`Add a class first!`}
+            detailText={`You need to add a class before you can add children.`}
+            icon={'ExclamationCircleIcon'}
+            iconColor="alertMain"
+            iconSize={20}
+            className={'mx-4'}
+            actionButtons={[
+              {
+                text: 'Add a class',
+                textColour: 'white',
+                colour: 'quatenary',
+                type: 'filled',
+                onClick: () => {
+                  history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS, {
+                    redirectFromBusinessToAddClass: true,
+                  } as EditPlaygroupsRouteState);
+                  onClose();
+                },
+                leadingIcon: 'PlusCircleIcon',
+              },
+              {
+                text: 'Close',
+                textColour: 'quatenary',
+                colour: 'quatenary',
+                type: 'outlined',
+                onClick: () => {
+                  history.goBack();
+                  onClose();
+                },
+                leadingIcon: 'XIcon',
+              },
+            ]}
+          />
+        );
+      },
+    });
   };
 
   const showMenuOptions = (newChild: ChildRegistrationDto) => {

@@ -6,6 +6,7 @@ export type ButtonShapeType = 'normal' | 'round' | 'fad';
 export type ButtonSize = 'normal' | 'small' | 'large' | 'large-round';
 export type ButtonBackgroundType = 'filled' | 'transparent';
 export type ButtonIconPosition = 'start' | 'end';
+export type ButtonIconType = 'hero' | 'img';
 
 export interface ButtonProps extends ComponentBaseProps {
   type: ButtonType;
@@ -16,6 +17,7 @@ export interface ButtonProps extends ComponentBaseProps {
   size?: ButtonSize;
   isLoading?: boolean;
   icon?: string;
+  iconType?: ButtonIconType;
   iconPosition?: 'start' | 'end';
   text?: string;
   textColor?: Colours;

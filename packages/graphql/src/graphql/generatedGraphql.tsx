@@ -12893,10 +12893,13 @@ export type TenantInternalModel = {
   googleTagManager?: Maybe<Scalars['String']>;
   host?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
+  isHost: Scalars['Boolean'];
   modules?: Maybe<TenantModuleModel>;
   moodleConfig?: Maybe<Scalars['String']>;
   moodleUrl?: Maybe<Scalars['String']>;
   organisationEmail?: Maybe<Scalars['String']>;
+  organisationHelpPhoneNumber?: Maybe<Scalars['String']>;
+  organisationHelpWhatsAppNumber?: Maybe<Scalars['String']>;
   organisationName?: Maybe<Scalars['String']>;
   path?: Maybe<Scalars['String']>;
   siteAddress?: Maybe<Scalars['String']>;
@@ -12917,6 +12920,8 @@ export type TenantModel = {
   modules?: Maybe<TenantModuleModel>;
   moodleUrl?: Maybe<Scalars['String']>;
   organisationEmail?: Maybe<Scalars['String']>;
+  organisationHelpPhoneNumber?: Maybe<Scalars['String']>;
+  organisationHelpWhatsAppNumber?: Maybe<Scalars['String']>;
   organisationName?: Maybe<Scalars['String']>;
   siteAddress?: Maybe<Scalars['String']>;
   siteAddress2?: Maybe<Scalars['String']>;
