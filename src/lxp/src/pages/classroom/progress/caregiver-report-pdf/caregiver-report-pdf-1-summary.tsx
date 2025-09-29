@@ -40,6 +40,8 @@ export const ProgressCaregiverReportSummaryPage: React.FC<
 }) => {
   const years = Math.floor(ageInMonths / 12); // integer division for years
   const months = ageInMonths % 12; // remainder for months
+  const ageString =
+    months === 0 ? `${years} years` : `${years} years ${months} months`;
 
   return (
     <div
@@ -66,7 +68,7 @@ export const ProgressCaregiverReportSummaryPage: React.FC<
               text={`${format(
                 reportingPeriodEndDate,
                 'MMM yyy'
-              )} | ${years} years ${months === 0 ? '' : 'months old'} `}
+              )} | ${ageString}`}
               lineHeight={4}
               className="pb-3 text-center"
             />
