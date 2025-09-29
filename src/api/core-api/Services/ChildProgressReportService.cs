@@ -281,12 +281,11 @@ namespace EcdLink.Api.CoreApi.Services
                                        .Select(x => x.Id)
                                        .FirstOrDefault();
 
-
             var reports = _childProgressReportRepo.GetAll().Where(x => childIds.Contains(x.ChildId) && allPeriodIds.Contains(x.ChildProgressReportPeriodId)).AsNoTracking().ToList();
             var allReports = new List<ChildProgressReport>();
 
             allReports.AddRange(reports.Where(x => x.ChildProgressReportPeriodId == activeReportPeriodId)); // current period report
-            allReports.AddRange(reports.Where(x => x.DateCompleted.HasValue)); // completed
+            allReports.AddRange(reports.Where(x => x.DateCompleted.HasValue || x.ObservationsCompleteDate.HasValue)); // completed
 
             foreach (var report in allReports.Distinct()) 
             {

@@ -8,7 +8,7 @@ import { useHistory } from 'react-router';
 export const ProgressTabObservationsSummary: React.FC = () => {
   const history = useHistory();
 
-  const { childReports } = useProgressForChildren();
+  const { childReports } = useProgressForChildren(true);
 
   const incompleteObservationsList = useMemo(() => {
     return childReports
