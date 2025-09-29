@@ -4,7 +4,13 @@ import {
   LoginRequestModel,
   loginSchema,
 } from '@ecdlink/core';
-import { Alert, Button, FormInput, Typography } from '@ecdlink/ui';
+import {
+  Alert,
+  Button,
+  FormInput,
+  PasswordInput,
+  Typography,
+} from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
@@ -86,15 +92,13 @@ export default function Login() {
               </div>
 
               <div className="space-y-1">
-                <FormInput
-                  label={'Password *'}
-                  type="password"
-                  visible={true}
+                <PasswordInput
+                  label={'Password'}
                   nameProp={'password'}
+                  value={formValues.password}
                   register={register}
-                  // error={errors['password']}
-                  className="w-full"
-                  isAdminPortalField={true}
+                  // strengthMeterVisible={true}
+                  className="mb-9 "
                 />
               </div>
 
