@@ -66,7 +66,7 @@ export const ProgressCaregiverReportSummaryPage: React.FC<
               text={`${format(
                 reportingPeriodEndDate,
                 'MMM yyy'
-              )} | ${years} years ${months} months old`}
+              )} | ${years} years ${months === 0 ? '' : 'months old'} `}
               lineHeight={4}
               className="pb-3 text-center"
             />
