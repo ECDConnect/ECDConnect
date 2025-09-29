@@ -29,7 +29,6 @@ import {
 import { useAppContext } from '@/walkthrougContext';
 import { useMemo, useState } from 'react';
 import { ChildProgressDetailedReport } from '@/models/progress/child-progress-report';
-import { ReactComponent as EmojiYellowSmile } from '@/assets/ECD_Connect_emoji3.svg';
 import { ProgressSkillValues } from '@/enums/ProgressSkillValues';
 
 export type ObservationsForChildLandingIncompleteProps = {
@@ -155,39 +154,6 @@ export const ObservationsForChildLandingIncomplete: React.FC<
       });
   }, [categories, subCategories, doNotKnowSkills]);
 
-  const skillsToWorkOnByCategory = useMemo(() => {
-    const toWorkOnSubCategories = subCategories.filter((x) =>
-      currentReport?.skillsToWorkOn.some((y) => y.subCategoryId === x.id)
-    );
-
-    return categories
-      .filter((x) =>
-        currentReport?.skillsToWorkOn.some((y) => y.categoryId === x.id)
-      )
-      .map((category) => {
-        const subCats = toWorkOnSubCategories.filter((x) =>
-          category.subCategories.some((y) => y.id === x.id)
-        );
-
-        return {
-          ...category,
-          subCategories: subCats.map((subCat) => ({
-            ...subCat,
-            skills: subCat.skills.filter((x) =>
-              currentReport?.skillsToWorkOn.some((y) => x.id === y.skillId)
-            ),
-            // skills: currentReport.skillsToWorkOn.filter(
-            //   (y) => y.subCategoryId === subCat.id
-            // ),
-          })),
-        };
-      });
-  }, [subCategories, categories, currentReport?.skillsToWorkOn]);
-
-  const currentObservationsAllPositive = currentReport?.skillObservations.every(
-    (x) => x.isPositive
-  );
-
   return (
     <>
       {doNotKnowPercentage >= 25 ? (
@@ -201,31 +167,33 @@ export const ObservationsForChildLandingIncomplete: React.FC<
           />
         </div>
       ) : (
-        <div
-          className={`mt-4 mb-4 flex flex-shrink-0 flex-row items-center justify-between rounded-full px-3 py-1 bg-${
-            currentAgeGroup?.color || 'secondary'
-          }`}
-          style={{ height: 'fit-content', width: 'fit-content' }}
-        >
-          <Typography
-            type="buttonSmall"
-            weight="bold"
-            color="white"
-            text={`${currentAgeGroup?.description} progress tracker`}
-            lineHeight={4}
-            className="text-center"
+        <>
+          <div
+            className={`mt-4 mb-4 flex flex-shrink-0 flex-row items-center justify-between rounded-full px-3 py-1 bg-${
+              currentAgeGroup?.color || 'secondary'
+            }`}
+            style={{ height: 'fit-content', width: 'fit-content' }}
+          >
+            <Typography
+              type="buttonSmall"
+              weight="bold"
+              color="white"
+              text={`${currentAgeGroup?.description} progress tracker`}
+              lineHeight={4}
+              className="text-center"
+            />
+          </div>
+          <LanguageSelector
+            labelText="Progress tracker language:"
+            labelClassName="font-medium font-body text-textDark pr-2"
+            currentLocale={currentReportLocale}
+            selectLanguage={(data) => {
+              changeLanguage(data);
+            }}
           />
-        </div>
+        </>
       )}
 
-      <LanguageSelector
-        labelText="Progress tracker language:"
-        labelClassName="font-medium font-body text-textDark pr-2"
-        currentLocale={currentReportLocale}
-        selectLanguage={(data) => {
-          changeLanguage(data);
-        }}
-      />
       {doNotKnowPercentage < 25 && (
         <div className="mt-4">
           {currentAgeGroup?.startAgeInMonths < 36 && (
@@ -298,177 +266,14 @@ export const ObservationsForChildLandingIncomplete: React.FC<
       )}
       {!isWalkthrough && showDetails && (
         <div className="pb-4">
-          <Divider dividerType="dashed" className="mb-4" />
-          <Typography
-            type="h3"
-            color="textDark"
-            className="mb-4"
-            text={`What you are working on with ${childFirstName}`}
+          <LanguageSelector
+            labelText="Progress tracker language:"
+            labelClassName="font-medium font-body text-textDark pr-2"
+            currentLocale={currentReportLocale}
+            selectLanguage={(data) => {
+              changeLanguage(data);
+            }}
           />
-
-          {/* All positive answers, green success card */}
-          {currentObservationsAllPositive && (
-            <Card className="bg-successBg mb-4 rounded-2xl p-4">
-              <div className="flex flex-row items-center">
-                <EmojiYellowSmile className="mr-4 h-16 w-12" />
-                <Typography
-                  type="h3"
-                  color="tertiary"
-                  text={`Wonderful! ${childFirstName} is ${ageInMonths} months old and can do everything in the ${currentAgeGroup?.description} progress tracker!`}
-                />
-              </div>
-              <Divider dividerType="dashed" className="mt-2 mb-2" />
-              <Typography
-                type="body"
-                color="textDark"
-                text={`Keep observing ${childFirstName} and supporting their learning.`}
-              />
-              <Typography
-                type="body"
-                color="textMid"
-                className="mt-2"
-                text={'To do:'}
-              />
-              <Typography
-                type="body"
-                color="textDark"
-                text={currentReport?.howToSupport}
-              />
-              <Button
-                onClick={() =>
-                  history.push(ROUTES.PROGRESS_OBSERVATIONS, {
-                    childId: childId,
-                    step: 'SupportLearning',
-                  })
-                }
-                className="mt-2"
-                size="normal"
-                color="quatenary"
-                type="filled"
-                icon="PencilIcon"
-                text="Edit"
-                textColor="white"
-                iconPosition="end"
-              />
-            </Card>
-          )}
-
-          {/* Show skills to work on */}
-          {!currentObservationsAllPositive &&
-            skillsToWorkOnByCategory.map((category) => (
-              <div key={category.id}>
-                <Card className="bg-uiBg mb-4 rounded-2xl p-4">
-                  <div className="flex flex-row items-center">
-                    <ImageWithFallback
-                      src={category.imageUrl}
-                      alt="category"
-                      className="mr-2 h-12 w-12"
-                    />
-                    <Typography
-                      type="h3"
-                      color="textDark"
-                      text={category.name}
-                    />
-                  </div>
-                  {category.subCategories.map((subCategory) => (
-                    <div key={subCategory.id}>
-                      <Divider dividerType="dashed" className="mt-2 mb-2" />
-                      <div className="flex flex-row items-center">
-                        <ImageWithFallback
-                          src={subCategory.imageUrl}
-                          alt="category"
-                          className="mr-2 h-8 w-8"
-                        />
-                        <Typography
-                          type="h4"
-                          color="textDark"
-                          text={subCategory.name.toUpperCase()}
-                        />
-                      </div>
-                      {subCategory.skills.map((skill) => (
-                        <div key={skill.id}>
-                          <Typography
-                            type="small"
-                            color="textMid"
-                            className="mt-2"
-                            text={'Skill:'}
-                          />
-                          <Typography
-                            type="body"
-                            color="textDark"
-                            className="mt-2"
-                            text={skill.name.replaceAll(
-                              '[childFirstName]',
-                              childFirstName
-                            )}
-                          />
-                          <Typography
-                            type="small"
-                            color="textMid"
-                            className="mt-2"
-                            text={'To do:'}
-                          />
-                          <Typography
-                            type="body"
-                            color="textDark"
-                            className="mt-2"
-                            text={
-                              currentReport?.skillsToWorkOn.find(
-                                (x) => x.skillId === skill.id
-                              )?.howToSupport
-                            }
-                          />
-                          <Button
-                            onClick={() =>
-                              history.push(ROUTES.PROGRESS_OBSERVATIONS, {
-                                childId: childId,
-                                step: 'SupportLearning',
-                              })
-                            }
-                            className="mt-2"
-                            size="normal"
-                            color="quatenary"
-                            type="filled"
-                            icon="PencilIcon"
-                            text="Edit"
-                            textColor="white"
-                            iconPosition="end"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  ))}
-                </Card>
-              </div>
-            ))}
-
-          {/* Show notes */}
-          {!!currentReport?.notes && (
-            <Card className="bg-uiBg mb-4 rounded-2xl p-4">
-              <Typography type="h3" color="textDark" text={'Notes'} />
-              <Typography
-                type="body"
-                color="textMid"
-                text={currentReport?.notes}
-              />
-              <Button
-                onClick={() =>
-                  history.push(ROUTES.PROGRESS_OBSERVATIONS_NOTES, {
-                    childId: childId,
-                  })
-                }
-                className="mt-2"
-                size="normal"
-                color="quatenary"
-                type="filled"
-                icon="PencilIcon"
-                text="Edit"
-                textColor="white"
-                iconPosition="end"
-              />
-            </Card>
-          )}
-
           {/* Do not know skills */}
           {currentReport?.skillObservations.some(
             (x) => x.value === ProgressSkillValues.DoNotKnow

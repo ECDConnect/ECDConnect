@@ -343,15 +343,20 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
               !practitioner?.isPrincipal && <ProgressTabObservationsSummary />}
 
             {/* Within report period */}
-            {/* Permission view */}
-            {!isAllReportsComplete && hasPermissionToCreateProgressReports && (
-              <ProgressTabReportSummary />
+            {isWithinReportPeriod && (
+              <>
+                {/* Permission view */}
+                {!isAllReportsComplete &&
+                  hasPermissionToCreateProgressReports && (
+                    <ProgressTabReportSummary />
+                  )}
+                {/* No permission view */}
+                {!isAllObservationsComplete &&
+                  !hasPermissionToCreateProgressReports && (
+                    <ProgressTabObservationsSummary />
+                  )}
+              </>
             )}
-            {/* No permission view */}
-            {!isAllObservationsComplete &&
-              !hasPermissionToCreateProgressReports && (
-                <ProgressTabObservationsSummary />
-              )}
 
             {isAllObservationsComplete &&
               !isAllReportsComplete &&
