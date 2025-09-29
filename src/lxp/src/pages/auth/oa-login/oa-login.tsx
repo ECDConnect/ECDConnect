@@ -41,6 +41,8 @@ import {
 import { AuthService } from '@/services/AuthService';
 import { VerifyPhoneNumberAuthCode } from '@/components/user-registration/components/verify-phone-number';
 import { useTenant } from '@/hooks/useTenant';
+import { getLogo, LogoSvgs } from '@/utils/common/svg.utils';
+import { HelpForm } from '@/components/help-form/help-form';
 
 const CryptoJS = require('crypto-js');
 const { version } = require('../../../../package.json');
@@ -48,17 +50,28 @@ const { version } = require('../../../../package.json');
 export const OaLogin: React.FC = () => {
   const appDispatch = useAppDispatch();
   const history = useHistory();
-  const [displayError, setDisplayError] = useState(false);
-  const displayMessage = 'Password or username incorrect. Please try again';
-  const [displayWrongUserError, setDisplayWrongUserError] = useState(false);
+  const [displayError, setDisplayError] = useState('');
+  const [loginAttempts, setLoginAttempts] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const { isOnline } = useOnlineStatus();
   const [freeMemory, setFreeMemory] = useState(0);
   const [errorMessage, setErrorMessage] = useState(false);
+  const [openHelp, setOpenHelp] = useState(false);
   const tenant = useTenant();
   const { resetAppStore, resetAuth, resetUser } = useStoreSetup();
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
+
+  const ERROR_NONE = '';
+  const ERROR_DETAILS_INCORRECT =
+    'Password or username incorrect. Please try again.';
+  const ERROR_STRUGGLING_LOGIN = tenant.isOpenAccess
+    ? 'Struggling to log in? Send a message to our help line!'
+    : 'Struggling to log in? Please fill in the help form.';
+  const ERROR_USER_ALREADY_LOGGED_IN = `Another user is already logged in on this device. Please try again ${
+    isOnline ? '' : 'when you are online'
+  }`;
+  const STRUGGLING_LOGIN_ATTEMPTS = 5;
 
   navigator?.storage?.estimate().then((estimate) => {
     if (estimate?.quota) {
@@ -67,6 +80,12 @@ export const OaLogin: React.FC = () => {
       return estimate;
     }
   });
+
+  const whatsapp = () => {
+    window.open(
+      `https://wa.me/${tenant.tenant?.organisationHelpWhatsAppNumber}`
+    );
+  };
 
   const {
     register: loginRegister,
@@ -111,6 +130,7 @@ export const OaLogin: React.FC = () => {
     );
     setIsLoading(false);
     // Set userId for google
+    setLoginAttempts(0);
     ReactGA.set({ userId: user?.id });
     history.push(ROUTES.DASHBOARD, { isFromLogin: true });
   };
@@ -133,10 +153,9 @@ export const OaLogin: React.FC = () => {
     }
   };
 
-  const submitForm = async () => {
-    setDisplayError(false);
+  const checkUserAuthCode = async () => {
     setIsLoading(true);
-    const checkUserAuthCode = await new AuthService()
+    const result = await new AuthService()
       .VerifyOaAuthCodeStatus(Config.authApi, {
         username: loginFormGetValues().username,
       })
@@ -144,6 +163,13 @@ export const OaLogin: React.FC = () => {
         setIsLoading(false);
       });
     setIsLoading(false);
+    return result;
+  };
+
+  const submitForm = async () => {
+    setDisplayError(ERROR_NONE);
+
+    const userAuthCode = await checkUserAuthCode();
 
     if (isValid) {
       if (freeMemory > 200 || freeMemory === 0) {
@@ -155,10 +181,15 @@ export const OaLogin: React.FC = () => {
 
         if (currentUserId && !isOnline) {
           if (username === userIdHashDecryptedToString) {
-            setDisplayWrongUserError(false);
+            setDisplayError(ERROR_NONE);
             login();
           } else {
-            setDisplayWrongUserError(true);
+            setLoginAttempts(loginAttempts + 1);
+            setDisplayError(
+              loginAttempts + 1 >= STRUGGLING_LOGIN_ATTEMPTS
+                ? ERROR_STRUGGLING_LOGIN
+                : ERROR_USER_ALREADY_LOGGED_IN
+            );
             setIsLoading(false);
           }
 
@@ -174,7 +205,7 @@ export const OaLogin: React.FC = () => {
           JSON.stringify(userLocalxpiration)
         );
 
-        setDisplayWrongUserError(false);
+        setDisplayError(ERROR_NONE);
         appDispatch(authThunkActions.login(body))
           .then((isAuthenticated: any) => {
             if (
@@ -182,18 +213,31 @@ export const OaLogin: React.FC = () => {
               isAuthenticated?.error === undefined &&
               isAuthenticated?.payload?.response?.status !== 401
             ) {
-              if (checkUserAuthCode === true) {
+              if (userAuthCode === true) {
                 setOpenVerifyPhoneNumber(true);
                 return;
               }
               login();
             } else {
-              setDisplayError(true);
+              setLoginAttempts(loginAttempts + 1);
+              setDisplayError(
+                loginAttempts + 1 >= STRUGGLING_LOGIN_ATTEMPTS
+                  ? ERROR_STRUGGLING_LOGIN
+                  : ERROR_DETAILS_INCORRECT
+              );
               setIsLoading(false);
+              if (isAuthenticated?.payload?.lockedOut === true) {
+                handleUserLockedOut();
+              }
             }
           })
           .catch((err) => {
-            setDisplayError(true);
+            setLoginAttempts(loginAttempts + 1);
+            setDisplayError(
+              loginAttempts + 1 >= STRUGGLING_LOGIN_ATTEMPTS
+                ? ERROR_STRUGGLING_LOGIN
+                : ERROR_DETAILS_INCORRECT
+            );
             setIsLoading(false);
           });
       } else {
@@ -236,6 +280,53 @@ export const OaLogin: React.FC = () => {
         );
       },
     });
+  };
+
+  const handleUserLockedOut = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      blocking: true,
+      color: 'bg-white',
+      render: (onClose) => {
+        return (
+          <ActionModal
+            className={'mx-4'}
+            title={`Oops! Too many login attempts!`}
+            detailText={
+              tenant.isOpenAccess
+                ? 'Please try again later. If you are still struggling, please send a message to our helpline.'
+                : 'Please try again later. If you are still struggling, please fill in the help form.'
+            }
+            icon={'ExclamationCircleIcon'}
+            iconSize={48}
+            iconColor={'alertMain'}
+            iconBorderColor={'white'}
+            actionButtons={[
+              {
+                text: 'Get help',
+                colour: 'quatenary',
+                type: 'filled',
+                onClick: () => onClickGetHelp(onClose),
+                textColour: 'white',
+                leadingIcon: tenant.isOpenAccess
+                  ? getLogo(LogoSvgs.whatsappWhite)
+                  : 'QuestionMarkCircleIcon',
+                leadingIconType: tenant.isOpenAccess ? 'img' : 'hero',
+              },
+            ]}
+          />
+        );
+      },
+    });
+  };
+
+  const onClickGetHelp = (onClose?: () => void) => {
+    if (tenant.isOpenAccess) {
+      whatsapp();
+    } else {
+      setOpenHelp(true);
+    }
+    if (onClose) onClose();
   };
 
   const userAgent = navigator.userAgent;
@@ -306,20 +397,28 @@ export const OaLogin: React.FC = () => {
               </Button>
             </div>
             <Divider></Divider>
-            {displayError && (
+            {!!displayError && (
               <Alert
                 className={'mt-5 mb-3'}
-                title={displayMessage}
+                title={displayError}
                 type={'error'}
-              />
-            )}
-            {displayWrongUserError && (
-              <Alert
-                className={'mt-5 mb-3'}
-                message={`Another user is already logged in on this device. Please try again ${
-                  isOnline ? '' : 'when you are online'
-                }`}
-                type={'error'}
+                button={
+                  displayError === ERROR_STRUGGLING_LOGIN ? (
+                    <Button
+                      text="Get help"
+                      icon={
+                        tenant.isOpenAccess
+                          ? getLogo(LogoSvgs.whatsappWhite)
+                          : 'QuestionMarkCircleIcon'
+                      }
+                      iconType={tenant.isOpenAccess ? 'img' : 'hero'}
+                      type={'filled'}
+                      color={'quatenary'}
+                      textColor={'white'}
+                      onClick={() => onClickGetHelp()}
+                    />
+                  ) : undefined
+                }
               />
             )}
           </div>
@@ -356,6 +455,14 @@ export const OaLogin: React.FC = () => {
             />
           </Dialog>
         )}
+        <Dialog
+          visible={openHelp}
+          position={DialogPosition.Full}
+          className="w-full"
+          stretch
+        >
+          <HelpForm closeAction={setOpenHelp} />
+        </Dialog>
       </div>
     </BannerWrapper>
   );

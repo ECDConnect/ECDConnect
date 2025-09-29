@@ -24,6 +24,7 @@ using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -31,6 +32,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace ECDLink.Security.Api
@@ -47,13 +49,12 @@ namespace ECDLink.Security.Api
         private readonly IPasswordManager<ApplicationUser> _passwordManager;
         private readonly PersonnelService _personnelService;
         private readonly AuthenticationDbContext _dbContext;
-        private readonly TenantService _tenantService;
         private readonly Guid _applicationUserId;
         private readonly IGenericRepository<UserHelp, Guid> _userHelpRepo;
         private readonly IServiceScopeFactory _serviceScopeFactory;
-        private readonly INotificationService _notificationService;
 
         public AuthenticationController(
+            SignInManager<ApplicationUser> signInManager,
             ITokenManager<ApplicationUser, SecurityCodeTokenManager> securityCodeManager,
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -62,11 +63,9 @@ namespace ECDLink.Security.Api
             IPasswordManager<ApplicationUser> passwordManager,
             SecurityNotificationManager notificationManager,
             PersonnelService personnelService,
-            TenantService tenantService,
             HierarchyEngine hierarchyEngine,
             AuthenticationDbContext dbContext,
-            IServiceScopeFactory serviceScopeFactory,
-            [Service] INotificationService notificationService)
+            IServiceScopeFactory serviceScopeFactory)
         {
             _applicationUserId = contextAccessor.HttpContext != null && contextAccessor.HttpContext.GetUser() != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();
 
@@ -79,9 +78,7 @@ namespace ECDLink.Security.Api
             _notificationManager = notificationManager;
             _securityCodeManager = securityCodeManager;
             _dbContext = dbContext;
-            _tenantService = tenantService;
             _serviceScopeFactory = serviceScopeFactory;
-            _notificationService = notificationService;
         }
 
         // POST api/auth/login
@@ -100,49 +97,52 @@ namespace ECDLink.Security.Api
             Console.WriteLine("Login: Username={0}, Referrer={1}, Origin={2}, TenantId={3}", login.Username, HttpContext.Request.Headers.Referer, HttpContext.Request.Headers.Origin, TenantExecutionContext.Tenant.Id);
 
             var tenantData = TenantExecutionContext.Tenant;
-            var organisationName = tenantData.OrganisationName;
-            var callCenterNumber = "0800 014 817"; // TODO: Callcenter number should be in the tenant config?
+            if (tenantData.IsHost)
+            {
+                return LoginUnauthorizedResult();
+            }
 
             //exclude funny script attempts
             if ((login?.Password?.StartsWith('<') ?? true)
                 || (login?.PhoneNumber?.StartsWith('<') ?? false)
                 || (login?.Username?.StartsWith('<') ?? true))
             {
-                return Unauthorized(new { Error = $"Some of the information you have entered is incorrect. Please contact the {organisationName} call centre to find out more: {callCenterNumber}" });
+                return LoginUnauthorizedResult();
             }
 
             ApplicationUser user;
             if (!string.IsNullOrWhiteSpace(login.Username))
             {
                 // find the user and set the tenant they belong to
-                user = await _securityManager.GetUsernameAsync(login.Username, login.Password);
-                if (user != null)
-                {
-                    if (ValidateTenantForUser(user.TenantId, tenantData.Id))
-                    {
-                        var tenantId = user.TenantId;
-                        var tenants = _tenantService.GetTenantById((Guid)tenantId);
-                        TenantExecutionContext.SetTenant(null, true);
-                        TenantExecutionContext.SetTenant(tenants.First());
-                        await _userManager.SetObjectDataAsync(user, tenantId);
-                    }
-                }
+                user = await _securityManager.GetUserByNameAsync(login.Username);
             }
             else
             {
                 var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(login.PhoneNumber);
-                user = await _securityManager.LogInWithPhoneNumberAsync(normalizePhoneNumber, login.Password);
+                user = await _securityManager.GetUserByPhoneNumberAsync(normalizePhoneNumber);
             }
 
-            if (user == null || (user.LockoutEnabled && user.LockoutEnd > DateTime.Now))
+            if (user == null || !user.IsActive)
             {
-                return Unauthorized(new { Error = $"Some of the information you have entered is incorrect. Please contact the {organisationName} call centre to find out more: {callCenterNumber}" });
+                return LoginUnauthorizedResult();
             }
 
             if (!ValidateTenantForUser(user.TenantId, tenantData.Id))
             {
-                return Unauthorized(new { Error = $"You do not have access. Please contact the {organisationName} call centre to find out more: {callCenterNumber}" });
+                return LoginUnauthorizedResult();
             }
+
+            if ((await _userManager.IsLockedOutAsync(user)) || (user.LockoutEnabled && user.LockoutEnd > DateTime.Now))
+            {
+                return LoginUnauthorizedResult(lockedOut: true);
+            }
+
+            if (!await _securityManager.IsPasswordValidAsync(user, login.Password))
+            {
+                return LoginUnauthorizedResult(lockedOut: await _userManager.IsLockedOutAsync(user));
+            }
+
+            await _userManager.SetObjectDataAsync(user, tenantData.Id);
 
             // Check if logging into admin portal and deny non "administrators" or "Coaches" access.
             var isAdminPortal = CheckHostUrlForAdminPortal(
@@ -158,7 +158,7 @@ namespace ECDLink.Security.Api
                 // You need to be an administrator to login into portal
                 if (!isAdministrator)
                 {
-                    return Unauthorized(new { Error = $"You do not have permission to access this portal. Please contact the {organisationName} call centre to find out more: {callCenterNumber}" });
+                    return LoginUnauthorizedResult(message: "You do not have permission to access this portal.");
                 }
             }
             else
@@ -166,7 +166,7 @@ namespace ECDLink.Security.Api
                 // Can't login without a role or if you are an administrator
                 if (!userRoles.Any() || isAdministrator)
                 {
-                    return Unauthorized(new { Error = $"You do not have access. Please contact the {organisationName} call centre to find out more: {callCenterNumber}" });
+                    return LoginUnauthorizedResult(message: "You do not have access.");
                 }
             }
 
@@ -190,6 +190,22 @@ namespace ECDLink.Security.Api
             return hostAddress.Contains(adminSiteAddress) || hostAddress.Contains(testAdminSiteAddress);
         }
 
+        private UnauthorizedObjectResult LoginUnauthorizedResult(string message = null, bool? lockedOut = null)
+        {
+            var tenantData = TenantExecutionContext.Tenant;
+
+            message ??= $"Some of the information you have entered is incorrect.";
+            message += $" Please contact the {tenantData.OrganisationName} call centre to find out more: {tenantData.OrganisationHelpPhoneNumber}";
+
+            return Unauthorized(new
+            {
+                Error = message,
+                Message = message,
+                StatusCode = HttpStatusCode.Unauthorized,
+                LockedOut = lockedOut.GetValueOrDefault(false)
+            });
+        }
+
         // This API should always return an OK result as to not give away emails
         [AllowAnonymous]
         [HttpPost]
@@ -199,7 +215,7 @@ namespace ECDLink.Security.Api
             var userIdentifier = model?.Username ?? model?.Email ?? model.PhoneNumber;
             if (string.IsNullOrWhiteSpace(userIdentifier))
             {
-                return BadRequest("No username specified for Password Reset");
+                return Ok();// BadRequest("No username specified for Password Reset");
             }
 
             // normalize the phone number
@@ -217,7 +233,7 @@ namespace ECDLink.Security.Api
 
             if (user is null || user?.TenantId.Value != tenantId)
             {
-                return BadRequest("Could not reset password");
+                return Ok(); // BadRequest("Could not reset password");
             }
 
             var sites = new List<string> { tenant.AdminSiteAddress, tenant.AdminTestSiteAddress };
@@ -228,12 +244,12 @@ namespace ECDLink.Security.Api
 
             if (!result)
             {
-                return BadRequest("Could not reset password");
+                return Ok(); // BadRequest("Could not reset password");
             }
 
-            var returnValue = ApplicationUserHelper.GetObscureMessagePrefenceValue(user);
+            //var returnValue = ApplicationUserHelper.GetObscureMessagePrefenceValue(user);
 
-            return Ok(new { phoneNumber = returnValue });
+            return Ok();
         }
 
         [Route("confirm-forgot-password")]

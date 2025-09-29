@@ -149,6 +149,8 @@ namespace ECDLink.PostgresTenancy.Services
                 GoogleAnalyticsTag = tenantEntity.GoogleAnalyticsTag,
                 GoogleTagManager = tenantEntity.GoogleTagManager,
                 OrganisationEmail = tenantEntity.OrganisationEmail,
+                OrganisationHelpPhoneNumber = tenantEntity.OrganisationHelpPhoneNumber,
+                OrganisationHelpWhatsAppNumber = tenantEntity.OrganisationHelpWhatsAppNumber,
                 DefaultSystemSettings = tenantEntity.DefaultSystemSettings,
                 BlobStorageAddress = tenantEntity.BlobStorageAddress
             };

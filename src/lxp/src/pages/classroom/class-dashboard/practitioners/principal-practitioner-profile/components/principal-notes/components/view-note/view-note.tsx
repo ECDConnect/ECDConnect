@@ -46,7 +46,7 @@ export const ViewNote: React.FC<ViewNoteProps> = ({
             {
               text: 'Delete',
               textColour: 'white',
-              colour: 'primary',
+              colour: 'quatenary',
               type: 'filled',
               onClick: () => {
                 submit();
@@ -60,7 +60,7 @@ export const ViewNote: React.FC<ViewNoteProps> = ({
               colour: 'primary',
               type: 'outlined',
               onClick: cancel,
-              leadingIcon: 'PencilIcon',
+              leadingIcon: 'XIcon',
             },
           ]}
         />
@@ -105,7 +105,7 @@ export const ViewNote: React.FC<ViewNoteProps> = ({
           onClick={() => deletePrompt(note)}
           className="w-full rounded-2xl"
           size="small"
-          color="primary"
+          color="quatenary"
           type="filled"
         >
           {renderIcon('TrashIcon', classNames('h-5 w-5 text-white'))}

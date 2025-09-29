@@ -14,11 +14,10 @@ import ROUTES from '@/routes/routes';
 import iconRobotImage from '@/assets/iconRobot.svg';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
-import {
-  DocumentIcon,
-  ChatAlt2Icon,
-  VideoCameraIcon,
-} from '@heroicons/react/solid';
+import { VideoCameraIcon, DocumentTextIcon } from '@heroicons/react/solid';
+import { useTenant } from '@/hooks/useTenant';
+import { DownloadAppCard } from '@/components/download-app-card/download-app-card';
+import { getLogo, LogoSvgs } from '@/utils/common/svg.utils';
 
 export const HelpTypes = {
   videos: 'Watch videos',
@@ -31,9 +30,12 @@ export const PractitionerHelp: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const tenant = useTenant();
 
   const whatsapp = () => {
-    window.open(`https://wa.me/27834071970`);
+    window.open(
+      `https://wa.me/${tenant.tenant?.organisationHelpWhatsAppNumber}`
+    );
   };
 
   const videos = () => {
@@ -82,7 +84,7 @@ export const PractitionerHelp: React.FC = () => {
         showIcon: true,
         iconBackgroundColor: 'quatenary',
         iconColor: 'white',
-        backgroundColor: 'quatenaryBg',
+        backgroundColor: 'uiBg',
         onActionClick: () => {
           videos();
         },
@@ -94,13 +96,13 @@ export const PractitionerHelp: React.FC = () => {
         subTitleStyle,
         customIcon: (
           <div className="bg-quatenary mr-2 rounded-full p-3">
-            <DocumentIcon className="h-8 w-8 text-white" />
+            <DocumentTextIcon className="h-8 w-8 text-white" />
           </div>
         ),
         showIcon: true,
         iconBackgroundColor: 'quatenary',
         iconColor: 'white',
-        backgroundColor: 'quatenaryBg',
+        backgroundColor: 'uiBg',
         onActionClick: () => {
           download();
         },
@@ -112,13 +114,17 @@ export const PractitionerHelp: React.FC = () => {
         subTitleStyle,
         customIcon: (
           <div className="bg-quatenary mr-2 rounded-full p-3">
-            <ChatAlt2Icon className="h-8 w-8 text-white" />
+            <img
+              alt=""
+              src={getLogo(LogoSvgs.whatsappWhite)}
+              className="h-8 w-8 text-white"
+            />
           </div>
         ),
         showIcon: true,
         iconBackgroundColor: 'quatenary',
         iconColor: 'white',
-        backgroundColor: 'quatenaryBg',
+        backgroundColor: 'uiBg',
         onActionClick: () => {
           whatsapp();
         },
@@ -140,7 +146,7 @@ export const PractitionerHelp: React.FC = () => {
       displayOffline={!isOnline}
       onBack={() => history.push(ROUTES.PRACTITIONER.PROFILE.ROOT)}
     >
-      <div className="px-4">
+      <div className="">
         <div className={'inline-flex w-full justify-center pt-8'}>
           <ProfileAvatar
             dataUrl={iconRobotImage}
@@ -155,6 +161,7 @@ export const PractitionerHelp: React.FC = () => {
           type={'MenuList'}
           className={'-mt-0.5 flex flex-col gap-1 px-4'}
         ></StackedList>
+        <DownloadAppCard className="w-12/12 ml-4 mr-4 mt-5 shadow" />
       </div>
     </BannerWrapper>
   );

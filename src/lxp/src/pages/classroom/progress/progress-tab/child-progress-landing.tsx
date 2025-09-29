@@ -61,7 +61,7 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
     percentageObservationsCompleted,
     isAllObservationsComplete,
     isAllReportsComplete,
-  } = useProgressForChildren();
+  } = useProgressForChildren(true);
 
   const [generatedReports, setGeneratedReports] = useState<{
     [reportId: string]: boolean;
@@ -343,71 +343,66 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
               !practitioner?.isPrincipal && <ProgressTabObservationsSummary />}
 
             {/* Within report period */}
-            {isWithinReportPeriod && (
-              <>
-                {/* Permission view */}
-                {!isAllReportsComplete &&
-                  hasPermissionToCreateProgressReports && (
-                    <ProgressTabReportSummary />
-                  )}
-                {/* No permission view */}
-                {!isAllObservationsComplete &&
-                  !hasPermissionToCreateProgressReports && (
-                    <ProgressTabObservationsSummary />
-                  )}
+            {/* Permission view */}
+            {!isAllReportsComplete && hasPermissionToCreateProgressReports && (
+              <ProgressTabReportSummary />
+            )}
+            {/* No permission view */}
+            {!isAllObservationsComplete &&
+              !hasPermissionToCreateProgressReports && (
+                <ProgressTabObservationsSummary />
+              )}
 
-                {isAllObservationsComplete &&
-                  !isAllReportsComplete &&
-                  !hasPermissionToCreateProgressReports &&
-                  !practitioner?.isPrincipal && (
-                    <>
-                      <Alert
-                        type="success"
-                        title="Well done!"
-                        message="You can keep observing children and change your responses."
-                        className="mt-4"
-                      />
-                      <Button
-                        onClick={handleContinueTrackingProgress}
-                        className="mt-4 w-full"
-                        size="small"
-                        color="quatenary"
-                        textColor="white"
-                        type="filled"
-                        icon={'PresentationChartBarIcon'}
-                        text={'Continue tracking progress'}
-                      />
-                    </>
-                  )}
-                {isAllReportsComplete && (
-                  <>
-                    <Button
-                      onClick={() => generateAllReports()}
-                      className="mt-auto w-full"
-                      size="small"
-                      color="quatenary"
-                      textColor="white"
-                      type="filled"
-                      icon={generatingReports ? undefined : 'DownloadIcon'}
-                      text={generateButtonLabel()}
-                      disabled={generatingReports || !isOnline}
-                    />
-                    <Button
-                      onClick={() =>
-                        history.replace(
-                          ROUTES.PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP
-                        )
-                      }
-                      className="mt-4 w-full"
-                      size="small"
-                      color="quatenary"
-                      textColor="quatenary"
-                      type="outlined"
-                      icon={'EyeIcon'}
-                      text={'See Summary'}
-                    />
-                  </>
-                )}
+            {isAllObservationsComplete &&
+              !isAllReportsComplete &&
+              !hasPermissionToCreateProgressReports &&
+              !practitioner?.isPrincipal && (
+                <>
+                  <Alert
+                    type="success"
+                    title="Well done!"
+                    message="You can keep observing children and change your responses."
+                    className="mt-4"
+                  />
+                  <Button
+                    onClick={handleContinueTrackingProgress}
+                    className="mt-4 w-full"
+                    size="small"
+                    color="quatenary"
+                    textColor="white"
+                    type="filled"
+                    icon={'PresentationChartBarIcon'}
+                    text={'Continue tracking progress'}
+                  />
+                </>
+              )}
+            {isAllReportsComplete && (
+              <>
+                <Button
+                  onClick={() => generateAllReports()}
+                  className="mt-auto w-full"
+                  size="small"
+                  color="quatenary"
+                  textColor="white"
+                  type="filled"
+                  icon={generatingReports ? undefined : 'DownloadIcon'}
+                  text={generateButtonLabel()}
+                  disabled={generatingReports || !isOnline}
+                />
+                <Button
+                  onClick={() =>
+                    history.replace(
+                      ROUTES.PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP
+                    )
+                  }
+                  className="mt-4 w-full"
+                  size="small"
+                  color="quatenary"
+                  textColor="quatenary"
+                  type="outlined"
+                  icon={'EyeIcon'}
+                  text={'See Summary'}
+                />
               </>
             )}
           </div>

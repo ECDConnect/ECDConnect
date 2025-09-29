@@ -4,16 +4,20 @@ import {
   LoginRequestModel,
   loginSchema,
 } from '@ecdlink/core';
-import { Alert, Button, Typography } from '@ecdlink/ui';
+import {
+  Alert,
+  Button,
+  FormInput,
+  PasswordInput,
+  Typography,
+} from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useState } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
-import FormField from '../../form-field/form-field';
 import logo from '../../../../assets/Logo-ECDConnect.svg';
 import { ArrowRightIcon } from '@heroicons/react/solid';
-import { PasswordInput } from '../../password-input/password-input';
 
 export default function Login() {
   const { login } = useAuth();
@@ -21,19 +25,18 @@ export default function Login() {
   const [displayError, setDisplayError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const { register, getValues, formState, watch, setValue } = useForm({
+  const { register, getValues, formState, control } = useForm({
     resolver: yupResolver(loginSchema),
     defaultValues: initialLoginValues,
     mode: 'onChange',
   });
 
-  const formValues = getValues();
-  let password = watch('password');
-  const { errors, isValid } = formState;
+  const { password, email } = useWatch({
+    control,
+  });
 
-  useEffect(() => {
-    setValue('password', password);
-  }, [password]);
+  const formValues = getValues();
+  const { errors, isValid } = formState;
 
   const signIn = async () => {
     if (isValid) {
@@ -77,11 +80,14 @@ export default function Login() {
           <div className="mt-6">
             <form className="space-y-6">
               <div>
-                <FormField
+                <FormInput
                   label={'Email address *'}
+                  visible={true}
                   nameProp={'email'}
                   register={register}
-                  error={errors.email?.message}
+                  // error={errors['email']}
+                  className="w-full"
+                  isAdminPortalField={true}
                 />
               </div>
 

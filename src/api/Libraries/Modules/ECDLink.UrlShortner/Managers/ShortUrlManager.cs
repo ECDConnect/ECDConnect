@@ -74,7 +74,15 @@ namespace ECDLink.UrlShortner.Managers
                 redirect.Status = REDIRECT_STATUS.UNKNOWN;
                 return redirect;
             }
-            
+
+            if (shortUrl.MessageType == "ChildRegistration")
+            {
+                await UpdateClicked(shortUrl.Id);
+                redirect.Status = REDIRECT_STATUS.OK;
+                redirect.Url = shortUrl.URL;
+                return redirect;
+            }
+
             if (shortUrl.Clicked == 0)
             {
                 redirect.Status = REDIRECT_STATUS.OK;
@@ -176,7 +184,7 @@ namespace ECDLink.UrlShortner.Managers
         public async Task<string> GetLatestUrlInviteForUser(Guid userId, string messageType)
         {
             return await _dbContext.ShortUrls
-                .Where(x => x.UserId == userId && x.MessageType == messageType && x.IsActive && x.Clicked == 0 && x.IsActive)
+                .Where(x => x.UserId == userId && x.MessageType == messageType && x.Clicked == 0 && x.IsActive)
                 .OrderByDescending(x => x.InsertedDate)
                 .Select(x => x.URL)
                 .FirstOrDefaultAsync();

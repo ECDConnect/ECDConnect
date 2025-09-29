@@ -5,6 +5,7 @@ import childrePlayingImg from '@/assets/progress-reports/children-playing.png';
 import greenFaceImg from '@/assets/progress-reports/green-face.png';
 import blueFaceImg from '@/assets/progress-reports/blue-face.png';
 import pinkFaceImg from '@/assets/progress-reports/pink-face.png';
+import * as styles from './pdf-report.styles';
 
 export type ProgressCaregiverReportPageProps = {
   childFirstName: string;
@@ -37,6 +38,11 @@ export const ProgressCaregiverReportSummaryPage: React.FC<
   howCanCaregiverSupport,
   totalPages,
 }) => {
+  const years = Math.floor(ageInMonths / 12); // integer division for years
+  const months = ageInMonths % 12; // remainder for months
+  const ageString =
+    months === 0 ? `${years} years` : `${years} years ${months} months`;
+
   return (
     <div
       className={'flex flex-col px-4 pb-4 pt-4'}
@@ -62,7 +68,7 @@ export const ProgressCaregiverReportSummaryPage: React.FC<
               text={`${format(
                 reportingPeriodEndDate,
                 'MMM yyy'
-              )} | ${ageInMonths} months old`}
+              )} | ${ageString}`}
               lineHeight={4}
               className="pb-3 text-center"
             />
@@ -93,11 +99,14 @@ export const ProgressCaregiverReportSummaryPage: React.FC<
         </Card>
       </div>
       <Divider dividerType="dashed" className="mb-4" />
-      <Typography type="h1" color="textDark" text={'Progress summary'} />
+      <Typography
+        type="h1"
+        color="textDark"
+        text={'Progress summary'}
+        className="pb-5"
+      />
 
-      <div className="border-tertiary bg-successBg mt-6 mb-4 flex flex-col rounded-sm rounded-2xl border-2 p-4 pb-6 shadow-sm">
-        {/*  style={{position: 'relative'}} */}
-        {/* <div className='rounded-sm rounded-2xl shadow-sm bg-tertiary' style={{ opacity: '10%', position: 'absolute', top: '0', left: '0', width: '100%', height: '100%', zIndex: -1}}/> */}
+      <div style={styles.TertiaryBox}>
         <div className="flex flex-row">
           <img src={greenFaceImg} className="mr-4 h-14 w-14" />
           <Typography
@@ -110,9 +119,7 @@ export const ProgressCaregiverReportSummaryPage: React.FC<
         <Typography type="small" color="textDark" text={childEnjoys} />
       </div>
 
-      <div className="border-quatenary bg-quatenaryBg mb-4 flex flex-col rounded-sm rounded-2xl border-2 p-4 pb-6 shadow-sm">
-        {/*  style={{position: 'relative'}} */}
-        {/* <div className='rounded-sm rounded-2xl shadow-sm bg-quatenary' style={{opacity: '10%', position: 'absolute', top: '0', left: '0', width: '100%', height: '100%', zIndex: -1}}/> */}
+      <div style={styles.QuatenaryBox}>
         <div className="flex flex-row">
           <img src={blueFaceImg} className="mr-4 h-14 w-14" />
           <Typography
@@ -125,10 +132,7 @@ export const ProgressCaregiverReportSummaryPage: React.FC<
         <Typography type="small" color="textDark" text={goodProgressWith} />
       </div>
 
-      <div className="border-secondary bg-errorBg mb-4 flex flex-col rounded-sm rounded-2xl border-2 p-4 pb-6 shadow-sm">
-        {' '}
-        {/*  style={{position: 'relative'}} */}
-        {/* <div className='rounded-sm rounded-2xl shadow-sm bg-secondary' style={{opacity: '10%', position: 'absolute', top: '0', left: '0', width: '100%', height: '100%', zIndex: -1}}/> */}
+      <div style={styles.SecondaryBox}>
         <div className="flex flex-row">
           <img src={pinkFaceImg} className="mr-4 h-14 w-14" />
           <Typography
