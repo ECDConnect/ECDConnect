@@ -289,10 +289,6 @@ namespace ECDLink.Api.CoreApi.Services
             {
                 absentees = absentees.Where(a => a.AbsentDate >= startDate).ToList();
             }
-            else
-            {
-                absentees = absentees.Where(a => a.AbsentDate >= DateTime.Now.Date).ToList();
-            }
             if (endDate != null)
             {
                 absentees = absentees.Where(a => a.AbsentDate <= endDate).ToList();
