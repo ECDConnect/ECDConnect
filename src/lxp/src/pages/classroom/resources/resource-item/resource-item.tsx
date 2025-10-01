@@ -179,7 +179,7 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
           setLocale(data?.id!);
         }}
       />
-      <div className="p-4">
+      <div className="bg-white p-4">
         <Typography type="h2" text={resourceItem?.title} color="textDark" />
         <div className="my-2 flex items-center gap-4">
           <StatusChip
@@ -199,7 +199,9 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
           >
             <ThumbUpIcon className="h-5 w-5 text-white" />
             <div>
-              {resourceItem?.numberLikes ? resourceItem?.numberLikes : 0}
+              {resourceItem?.numberLikes
+                ? resourceItem?.numberLikes + ' likes'
+                : '0 likes'}
             </div>
           </div>
         </div>
@@ -258,8 +260,8 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
           className="mt-2 w-full rounded-2xl"
           size="normal"
           color="quatenary"
-          textColor="white"
-          type="filled"
+          textColor="quatenary"
+          type="outlined"
           icon={'PaperAirplaneIcon'}
           text={'Share resource'}
         />
