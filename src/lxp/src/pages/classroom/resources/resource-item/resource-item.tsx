@@ -221,11 +221,8 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
           text={'See resource'}
         />
         <Typography
-          type="help"
-          text={resourceItem?.longDescription?.replace(
-            /<\/?[a-z][a-z0-9]*[^<>]*>/gi,
-            ''
-          )}
+          type="markdown"
+          text={resourceItem?.longDescription}
           color="textMid"
           className="my-4"
         />
