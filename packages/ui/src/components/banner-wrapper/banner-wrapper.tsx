@@ -184,10 +184,10 @@ export const BannerWrapper = React.forwardRef<
             />
           )}
           {calendarRender && (
-            <div className={'mr-5 flex items-center'}>{calendarRender()}</div>
+            <div className={'mr-2 flex items-center'}>{calendarRender()}</div>
           )}
           {notificationRender && (
-            <div className={'mr-5 flex items-center'}>
+            <div className={'mr-2 flex items-center'}>
               {notificationRender()}
             </div>
           )}
