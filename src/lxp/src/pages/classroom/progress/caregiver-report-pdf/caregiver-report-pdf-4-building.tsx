@@ -1,17 +1,9 @@
-import { Card, Divider, Typography } from '@ecdlink/ui';
-import { ProgressReportPeriod } from '@/models/progress/progress-report-period';
+import { Divider, Typography } from '@ecdlink/ui';
 import { format } from 'date-fns';
-import lightbulbEmoji from '@/assets/ECD_Connect_lightbulb.png';
-import {
-  ChildProgressDetailedSkillObservation,
-  ProgressReportsCategorySummary,
-} from '@/models/progress/child-progress-report';
-import {
-  ProgressTrackingAgeGroupDto,
-  ProgressTrackingCategoryDto,
-} from '@ecdlink/core';
+import { ChildProgressDetailedSkillObservation } from '@/models/progress/child-progress-report';
+import { ProgressTrackingCategoryDto } from '@ecdlink/core';
 import blueFaceImg from '@/assets/progress-reports/blue-face.png';
-import { ProgressSkillValues } from '@/enums/ProgressSkillValues';
+import { lightenColor } from '@/utils/common/color.utils';
 
 export type ProgressCaregiverReportBuildingPageProps = {
   childFirstName: string;
@@ -65,10 +57,10 @@ export const ProgressCaregiverReportBuildingPage: React.FC<
         .map((category) => (
           <div
             key={category.id}
-            className="bg-infoBb mt-6 mb-4 flex flex-col rounded-sm rounded-2xl border-2 p-4 pb-6  shadow-sm"
+            className="mt-6 mb-4 flex flex-col rounded-sm rounded-2xl border-2 p-4 pb-6  shadow-sm"
             style={{
               borderColor: category.color,
-              // backgroundColor: getCategoryBg(category.name),
+              backgroundColor: lightenColor(category.color, 95),
             }}
           >
             <div className="flex flex-row">
