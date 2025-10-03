@@ -46,7 +46,7 @@ export const ProgressShareReport: React.FC = () => {
 
   const { child, detailedReports } = useProgressForChild(routeState.childId);
 
-  const { generateReport } = usePdfFromHtml();
+  const { generateReportAndShare } = usePdfFromHtml();
 
   const [selectedReport, setSelectedReport] = useState<string | undefined>(
     routeState.reportId
@@ -120,6 +120,16 @@ export const ProgressShareReport: React.FC = () => {
   const currentReportLocale = useSelector(
     progressTrackingSelectors?.getCurrentLocaleForReport
   );
+
+  const handleShare = async () => {
+    if (shareRef.current) {
+      await generateReportAndShare(
+        shareRef.current!,
+        shareRef.current?.offsetWidth || 750,
+        ` - ${child?.user?.fullName || child?.user?.firstName}`
+      );
+    }
+  };
 
   return (
     <BannerWrapper
@@ -213,11 +223,7 @@ export const ProgressShareReport: React.FC = () => {
         <Button
           onClick={() => {
             if (isOnline) {
-              generateReport(
-                shareRef.current!,
-                shareRef.current?.offsetWidth || 750,
-                ` - ${child?.user?.fullName || child?.user?.firstName}`
-              );
+              handleShare();
             } else {
               showOnlineOnly();
             }
