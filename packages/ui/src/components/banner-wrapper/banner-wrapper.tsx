@@ -181,6 +181,7 @@ export const BannerWrapper = React.forwardRef<
               width={25}
               height={30}
               onClick={onHelp}
+              style={{ fill: '#1DBADF' }}
             />
           )}
           {calendarRender && (
