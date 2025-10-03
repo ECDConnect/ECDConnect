@@ -95,7 +95,7 @@ export default function ChildWrapper() {
               </div>
             )}
           </div>
-          <div className="mt-4 flex justify-between">
+          <div className="mt-4 flex items-center justify-between">
             <div className="flex justify-start">
               <SliderPagination
                 totalItems={5}
@@ -104,7 +104,7 @@ export default function ChildWrapper() {
               />
             </div>
 
-            <div {...primaryProps} className={'w-full'}>
+            <div {...primaryProps}>
               <Button
                 type="filled"
                 color="primary"

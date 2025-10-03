@@ -146,7 +146,7 @@ export default function StatementsWrapper() {
               </div>
             )}
           </div>
-          <div className="mt-4 flex justify-between">
+          <div className="mt-4 flex items-center justify-between">
             <div className="flex justify-start">
               <SliderPagination
                 totalItems={10}
@@ -156,7 +156,7 @@ export default function StatementsWrapper() {
             </div>
 
             {!disableNextButton && (
-              <div {...primaryProps} className="w-full">
+              <div {...primaryProps}>
                 <Button
                   size="small"
                   type="filled"
