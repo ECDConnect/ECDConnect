@@ -47,7 +47,7 @@ export const ProgressViewReportsSummary: React.FC = () => {
     routeState.ageGroupId
   );
 
-  const { generateReport } = useProgressGenerateSummaryPdfReport();
+  const { asyncGenerateReport } = useProgressGenerateSummaryPdfReport();
 
   const splitPdf = useMemo(() => {
     if (reportsSummary.length < 3) {
@@ -230,7 +230,7 @@ export const ProgressViewReportsSummary: React.FC = () => {
         <Button
           disabled={!isOnline}
           onClick={() => {
-            generateReport(
+            asyncGenerateReport(
               shareRef.current!,
               shareRef.current?.offsetWidth || 750
             );
