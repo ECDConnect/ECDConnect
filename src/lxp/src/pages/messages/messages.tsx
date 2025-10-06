@@ -21,10 +21,13 @@ import {
 import { MessageActionConfig } from '@models/messages/messages';
 import { referenceNames } from '@/services/NotificationService/validators/points/poinstNotificationValidator.types';
 import pwa from '@/utils/pwa';
+import { userSelectors } from '@/store/user';
+import { RoleSystemNameEnum } from '@ecdlink/core';
 
 export const Messages: React.FC = () => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
+  const appDispatch = useAppDispatch();
   let notifications = useSelector(
     notificationsSelectors.getMessageBoardNotifications
   );
@@ -36,7 +39,10 @@ export const Messages: React.FC = () => {
   );
 
   const paging = usePaging<Notification>(notifications, 3, 0, 'accummilate');
-  const appDispatch = useAppDispatch();
+  const userData = useSelector(userSelectors.getUser);
+  const isCoach = userData?.roles?.some(
+    (role) => role.systemName === RoleSystemNameEnum.Coach
+  );
 
   useEffect(() => {
     if (!isOnline) {
@@ -107,9 +113,10 @@ export const Messages: React.FC = () => {
       notification.message?.cta?.includes(
         notificationTagConfig?.SeeClasses?.cta ?? ''
       ) ||
-      notification.message?.cta?.includes(
+      (notification.message?.cta?.includes(
         notificationTagConfig?.SeePractitioners?.cta ?? ''
-      )
+      ) &&
+        !isCoach)
     ) {
       appDispatch(notificationActions.removeNotification(notification!));
       if (notification.message?.isFromBackend) {
