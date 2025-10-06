@@ -10,6 +10,7 @@ export type RoundIconProps = {
   size?: IconSize;
   iconSize?: IconSize;
   iconClassName?: string;
+  onClick?: any;
 };
 
 type SizeType =

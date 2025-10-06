@@ -105,16 +105,20 @@ const childrenSlice = createSlice({
     });
     builder.addCase(getChildren.fulfilled, (state, action) => {
       if (!action.payload.retrievedFromCache) {
-        const unsyncedChildren = state.childData.children.filter(
-          (child) => !child.synced
-        );
-        const newChildren = action.payload.children.map((x) => ({
-          ...x,
-          synced: true,
-        }));
+        const newChildren = action.payload.children
+          .filter(
+            (newChild) =>
+              !state.childData.children.some(
+                (existingChild) => existingChild.id === newChild.id
+              )
+          )
+          .map((x) => ({
+            ...x,
+            synced: true,
+          }));
 
         state.childData = {
-          children: unsyncedChildren.concat(newChildren),
+          children: [...state.childData.children, ...newChildren],
           dateRefreshed: new Date().toDateString(),
         };
       }
@@ -122,9 +126,6 @@ const childrenSlice = createSlice({
 
     builder.addCase(getChildrenForClassroom.fulfilled, (state, action) => {
       if (!action.payload.retrievedFromCache) {
-        const unsyncedChildren = state.childData.children.filter(
-          (child) => !child.synced
-        );
         // Filter out new children that already exist in the state based on id
         const newChildren = action.payload.children
           .filter(
@@ -139,7 +140,7 @@ const childrenSlice = createSlice({
           }));
 
         state.childData = {
-          children: unsyncedChildren.concat(newChildren),
+          children: [...state.childData.children, ...newChildren],
           dateRefreshed: new Date().toDateString(),
         };
       }
