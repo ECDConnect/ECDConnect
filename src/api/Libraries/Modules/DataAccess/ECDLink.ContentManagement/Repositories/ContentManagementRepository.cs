@@ -94,9 +94,11 @@ namespace ECDLink.ContentManagement.Repositories
                   .FirstOrDefault();
 
                 var contents = contentType?.Content
-                        .Where(x => x.IsActive && x.ContentValues.Any())
-                        .OrderBy(x => x.Id)
-                        .ToList();
+                .Where(x => x.IsActive &&
+                    x.ContentValues.Any() &&
+                    x.ContentValues.All(cv => cv.TenantId == currentTenant))
+                .OrderBy(x => x.Id)
+                .ToList();
 
                 // Use global tenant as a fallback, mostly for static and dynamic links
                 contents = (contents?.Any() ?? false) ? contents
