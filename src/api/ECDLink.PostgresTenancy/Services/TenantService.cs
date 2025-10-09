@@ -108,13 +108,21 @@ namespace ECDLink.PostgresTenancy.Services
 
         public TenantInternalModel UpdateTenantInfo(Guid? tenantId, TenantInfoInputModel input)
         {
-            var tenantToUpdate = _repository.GetAll().Where(t => t.Id == tenantId).FirstOrDefault();
+            var result = new TenantInternalModel();
+            var tenantsToUpdate = _repository.GetAll().Where(t => t.Id == tenantId).ToList();
 
-            tenantToUpdate.OrganisationEmail = string.IsNullOrEmpty(input.OrganisationEmail) ? tenantToUpdate.OrganisationEmail : input.OrganisationEmail;
-            tenantToUpdate.OrganisationName = string.IsNullOrEmpty(input.OrganisationName) ? tenantToUpdate.OrganisationName : input.OrganisationName;
-            tenantToUpdate.ApplicationName = string.IsNullOrEmpty(input.ApplicationName) ? tenantToUpdate.ApplicationName : input.ApplicationName;
+            if (tenantsToUpdate != null && tenantsToUpdate.Count() > 0)
+            {
+                foreach (var tenantToUpdate in tenantsToUpdate)
+                {
+                    tenantToUpdate.OrganisationEmail = string.IsNullOrEmpty(input.OrganisationEmail) ? tenantToUpdate.OrganisationEmail : input.OrganisationEmail;
+                    tenantToUpdate.OrganisationName = string.IsNullOrEmpty(input.OrganisationName) ? tenantToUpdate.OrganisationName : input.OrganisationName;
+                    tenantToUpdate.ApplicationName = string.IsNullOrEmpty(input.ApplicationName) ? tenantToUpdate.ApplicationName : input.ApplicationName;
 
-            return Cast(_repository.Update(tenantToUpdate));
+                    result = Cast(_repository.Update(tenantToUpdate));
+                }
+            }
+            return result;
         }
 
         public TenantInternalModel UpdateTenantThemePath(Guid? tenantId, string themePath)
