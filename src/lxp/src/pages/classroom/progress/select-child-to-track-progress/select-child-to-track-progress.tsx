@@ -135,7 +135,25 @@ export const SelectChildToTrack: React.FC = () => {
     value: SearchDropDownOption<ClassroomGroupDto>[]
   ) => {
     setSelectedClasses(value);
+
+    if (!value.length) {
+      return setFilteredChildData(childUserListData ?? []);
+    }
+
     setSelectedClassroomGroupIds(value.map((x) => x.id));
+
+    const filteredChildren =
+      childUserListData?.filter((child) =>
+        value.some((x) =>
+          x.value?.learners?.some(
+            (learner) =>
+              learner.childUserId &&
+              learner.childUserId === child.extraData?.userId
+          )
+        )
+      ) || [];
+
+    setFilteredChildData(filteredChildren);
   };
 
   // we need to find the children over 5 from the original list and not filtered
@@ -189,9 +207,7 @@ export const SelectChildToTrack: React.FC = () => {
         </SearchHeader>
         <StackedList
           className={'mt-4 flex flex-col gap-1'}
-          listItems={
-            childList.length !== 0 ? childList : childListWithoutReport
-          }
+          listItems={filteredChildData}
           type={'UserAlertList'}
         />
         {anyChildrenOver5 && (
