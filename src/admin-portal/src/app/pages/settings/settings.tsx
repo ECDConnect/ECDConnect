@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMutation } from '@apollo/client';
-import { useTenant } from '../../hooks/useTenant';
+
 import {
   Alert,
   ActionModal,
@@ -30,6 +30,7 @@ import {
 import { SettingsTheme } from './sub-pages/theme/settings-theme';
 import { ArrowSmLeftIcon } from '@heroicons/react/outline';
 import ContentLoader from '../../components/content-loader/content-loader';
+import { useTenant } from '../../hooks/useTenant';
 
 export interface SettingsRouteState {
   overrideDefaultUrl?: string;
@@ -54,15 +55,7 @@ export function Settings() {
   const [handleRevertModal, setHandleRevertModal] = useState(false);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const {
-    register,
-    setValue,
-    formState,
-    getValues,
-    handleSubmit,
-    control,
-    trigger,
-  } = useForm({
+  const { register, setValue, formState, getValues, handleSubmit } = useForm({
     resolver: yupResolver(adminSchema),
     mode: 'onChange',
   });
@@ -140,7 +133,6 @@ export function Settings() {
         },
       };
       const themeString = JSON.stringify(themeInputModel);
-      console.log(themeString);
       updateTheme({
         variables: {
           input: themeString,
@@ -181,6 +173,7 @@ export function Settings() {
   }, [tenant]);
 
   const onSave = async () => {
+    setLoading(true);
     const adminDataForm = getValues();
 
     const tenantInput: TenantInfoInputModelInput = {
@@ -189,29 +182,28 @@ export function Settings() {
       applicationName: adminDataForm.applicationName,
     };
 
-    await updateTenant({
-      variables: {
-        id: tenant?.tenant?.id,
-        input: tenantInput,
-      },
-    })
-      .then(() => {
-        setNotification({
-          title: 'Successfully Updated Tenant!',
-          variant: NOTIFICATION.SUCCESS,
-        });
-        tenant.refresh();
-      })
-      .catch((err) => {
-        setNotification({
-          title: 'Failed to update Tenant',
-          variant: NOTIFICATION.ERROR,
-        });
+    try {
+      await updateTenant({
+        variables: {
+          id: tenant?.tenant?.id,
+          input: tenantInput,
+        },
       });
-
-    setEditActive(!editActive);
+      await tenant.refresh();
+      setNotification({
+        title: 'Successfully Updated Tenant!',
+        variant: NOTIFICATION.SUCCESS,
+      });
+      setEditActive(false);
+    } catch (err) {
+      setNotification({
+        title: 'Failed to update Tenant',
+        variant: NOTIFICATION.ERROR,
+      });
+    } finally {
+      setLoading(false);
+    }
   };
-
   if (!loading) {
     return (
       <div className="text-textDark">
