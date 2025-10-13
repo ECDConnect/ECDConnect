@@ -1,21 +1,30 @@
 import { classroomsSelectors } from '@/store/classroom';
 import {
   Alert,
+  AlertSeverityType,
   BannerWrapper,
-  Dropdown,
-  RoundIcon,
+  SearchDropDown,
+  SearchDropDownOption,
   StackedList,
   Typography,
+  UserAlertListDataItem,
 } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
-import { getAvatarColor } from '@ecdlink/core';
+import { ClassroomGroupDto, getAvatarColor } from '@ecdlink/core';
 import { useProgressForChildren } from '@/hooks/useProgressForChildren';
 import { useMemo, useState } from 'react';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { TabsItems } from '../../class-dashboard/class-dashboard.types';
+import SearchHeader from '@/components/search-header/search-header';
+import { ChildData } from '../../child-list/child-list.types';
 
 export const SelectChildToTrack: React.FC = () => {
+  const [searchTextActive, setSearchTextActive] = useState(false);
+  const [selectedClasses, setSelectedClasses] = useState<
+    SearchDropDownOption<ClassroomGroupDto>[]
+  >([]);
+
   const history = useHistory();
 
   const { currentReportingPeriod, childReports, children } =
@@ -27,11 +36,20 @@ export const SelectChildToTrack: React.FC = () => {
     string[]
   >(classroomGroups.map((x) => x.id));
 
+  const startDate = useMemo(
+    () => new Date(currentReportingPeriod!.startDate),
+    [currentReportingPeriod]
+  );
+  const endDate = useMemo(
+    () => new Date(currentReportingPeriod!.endDate),
+    [currentReportingPeriod]
+  );
+
   const filteredChildren = useSelector(
     classroomsSelectors.getLearnersForClassroomGroups(
       selectClassroomGroupIds,
-      new Date(currentReportingPeriod!.startDate),
-      new Date(currentReportingPeriod!.endDate)
+      startDate,
+      endDate
     )
   );
 
@@ -52,16 +70,17 @@ export const SelectChildToTrack: React.FC = () => {
       profileText: childReport.childFirstName,
       avatarColor: getAvatarColor() || '',
       title: childReport.childFirstName,
+      extraData: { userId: childReport.childUserId } as ChildData,
       subTitle: childReport.isObservationsComplete
         ? 'Completed'
         : childReport.isInProgress
         ? 'In progress'
         : 'Not started',
       alertSeverity: childReport.isObservationsComplete
-        ? 'success'
+        ? ('success' as AlertSeverityType)
         : childReport.isInProgress
-        ? 'warning'
-        : 'error',
+        ? ('warning' as AlertSeverityType)
+        : ('error' as AlertSeverityType),
       onActionClick: () =>
         history.push(ROUTES.PROGRESS_REPORT_LIST, {
           childId: childReport.childId,
@@ -76,16 +95,66 @@ export const SelectChildToTrack: React.FC = () => {
         id: child.childId,
         profileDataUrl: child.childProfileImageUrl,
         profileText: child.childFirstName,
+        extraData: { userId: child.childUserId } as ChildData,
         avatarColor: getAvatarColor() || '',
         title: child.childFirstName,
         subTitle: 'Not started',
-        alertSeverity: 'error',
+        alertSeverity: 'error' as AlertSeverityType,
         onActionClick: () =>
           history.push(ROUTES.PROGRESS_REPORT_LIST, {
             childId: child.childId,
           }),
       }));
   }, [children, history]);
+
+  const classOptions = useMemo(
+    () =>
+      classroomGroups?.map((currentClass) => ({
+        id: currentClass.id,
+        label: currentClass.name,
+        value: currentClass,
+      })) || [],
+    [classroomGroups]
+  );
+
+  const childUserListData = useMemo(() => {
+    return childList.length !== 0 ? childList : childListWithoutReport;
+  }, [childList, childListWithoutReport]);
+
+  const onSearchChange = (value: string) => {
+    const filtered =
+      childUserListData?.filter((child) =>
+        child.title.toLowerCase()?.includes(value.toLowerCase())
+      ) || [];
+    setFilteredChildData(filtered);
+  };
+
+  const [filteredChildData, setFilteredChildData] = useState(childUserListData);
+
+  const onFilterClasses = (
+    value: SearchDropDownOption<ClassroomGroupDto>[]
+  ) => {
+    setSelectedClasses(value);
+
+    if (!value.length) {
+      return setFilteredChildData(childUserListData ?? []);
+    }
+
+    setSelectedClassroomGroupIds(value.map((x) => x.id));
+
+    const filteredChildren =
+      childUserListData?.filter((child) =>
+        value.some((x) =>
+          x.value?.learners?.some(
+            (learner) =>
+              learner.childUserId &&
+              learner.childUserId === child.extraData?.userId
+          )
+        )
+      ) || [];
+
+    setFilteredChildData(filteredChildren);
+  };
 
   // we need to find the children over 5 from the original list and not filtered
   const anyChildrenOver5 = children.some(
@@ -109,33 +178,36 @@ export const SelectChildToTrack: React.FC = () => {
           text={'Choose a child below to track progress'}
           type={'h2'}
         />
-        {/* Classroom group filter */}
-        <div className="mt-4 flex flex-row">
-          <RoundIcon
-            backgroundColor="secondary"
-            iconColor="white"
-            icon="SearchIcon"
-            className="mr-4"
-          />
-          <Dropdown
+        <SearchHeader<UserAlertListDataItem>
+          searchItems={filteredChildData || []}
+          onSearchChange={onSearchChange}
+          isTextSearchActive={searchTextActive}
+          onBack={() => setSearchTextActive(false)}
+          onSearchButtonClick={() => setSearchTextActive(true)}
+          className={
+            'flex w-full flex-row items-center overflow-x-auto bg-transparent px-5 py-1'
+          }
+        >
+          <SearchDropDown<ClassroomGroupDto>
+            displayMenuOverlay={true}
+            menuItemClassName={'w-11/12 left-4 -mt-10'}
+            overlayTopOffset="0"
+            className="mr-1"
+            options={classOptions}
+            selectedOptions={selectedClasses}
+            onChange={onFilterClasses}
             placeholder="Class"
-            selectedValue={
-              selectClassroomGroupIds.length > 1
-                ? undefined
-                : selectClassroomGroupIds[0]
-            }
-            list={classroomGroups.map((x) => ({
-              label: x.name,
-              value: x.id,
-            }))}
-            onChange={(item) => {
-              setSelectedClassroomGroupIds([item]);
+            multiple={true}
+            pluralSelectionText="Classes"
+            color="quatenary"
+            info={{
+              name: 'Filter by: Class',
             }}
           />
-        </div>
+        </SearchHeader>
         <StackedList
           className={'mt-4 flex flex-col gap-1'}
-          listItems={childList.length != 0 ? childList : childListWithoutReport}
+          listItems={filteredChildData}
           type={'UserAlertList'}
         />
         {anyChildrenOver5 && (

@@ -8,19 +8,14 @@ import { useAppContext } from '../../../../../walkthrougContext';
 import { Button, Card, SliderPagination, Typography } from '@ecdlink/ui';
 import robot from '../../../../../assets/iconRobot.svg';
 import ROUTES from '../../../../../routes/routes';
-import { useSelector } from 'react-redux';
-import { practitionerSelectors } from '@/store/practitioner';
 import { useAppDispatch } from '@/store';
 import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import { useTranslation } from 'react-i18next';
-import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 
 export default function AttendanceWrapper() {
   const { t } = useTranslation();
   const history = useHistory();
   const appDispatch = useAppDispatch();
-  const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const isTrialPeriod = useIsTrialPeriod();
   const {
     setState,
     state: { run, stepIndex, attendanceStatus, enableButton },
@@ -87,11 +82,18 @@ export default function AttendanceWrapper() {
               </div>
             )}
           </div>
-          <div className="mt-4 flex items-center justify-between gap-4 pl-20">
-            <SliderPagination totalItems={4} activeIndex={index} />
+          <div className="mt-4 flex items-center justify-between">
+            <div className="flex justify-start">
+              <SliderPagination
+                totalItems={4}
+                activeIndex={index}
+                className="p-4"
+              />
+            </div>
             {enableButton && (
-              <div {...primaryProps} className={'flex w-full justify-end'}>
+              <div {...primaryProps}>
                 <Button
+                  size="small"
                   type="filled"
                   color="quatenary"
                   textColor="white"
@@ -148,12 +150,20 @@ export default function AttendanceWrapper() {
         showSkipButton
         disableOverlayClose
         styles={{
-          spotlight: {
-            borderWidth: 4,
-            borderRadius: 20,
-            borderColor: '#FF2180',
-            borderStyle: 'solid',
+          options: {
+            arrowColor: stepIndex === 3 ? 'transparent' : 'white',
           },
+          spotlight:
+            stepIndex === 3
+              ? {
+                  background: 'transparent',
+                }
+              : {
+                  borderWidth: 4,
+                  borderRadius: 20,
+                  borderColor: '#ED145B',
+                  borderStyle: 'solid',
+                },
         }}
       />
     </div>

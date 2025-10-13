@@ -30,7 +30,7 @@ import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router';
 import { useProgressForChildren } from '@/hooks/useProgressForChildren';
 import { ProgressCaregiverReportPdf } from '../caregiver-report-pdf/caregiver-report-pdf';
-import { ReactComponent as Balloons } from '@/assets/balloons.svg';
+import { ReactComponent as CompleteImage } from '@/assets/celebrateIcon.svg';
 
 export type ChildProgressLandingRouteState = {
   childId: string;
@@ -221,7 +221,7 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
     ? 'successMain'
     : 'alertMain';
 
-  const showBalloon: boolean = hasPermissionToCreateProgressReports
+  const showCompleteImage: boolean = hasPermissionToCreateProgressReports
     ? (isWithinReportPeriod && percentageReportsCompleted === 100) ||
       (!isWithinReportPeriod && percentageObservationsCompleted === 100)
     : percentageObservationsCompleted === 100;
@@ -305,35 +305,40 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
             )}
             {/* Show progress bar  */}
             <Card className="bg-uiBg mb-4 mt-4 flex rounded-2xl p-4">
-              <div className="flex w-full justify-center">
-                {showBalloon && (
-                  <div className="mt-6 mr-6 flex justify-center">
-                    <Balloons className="h-20 w-20" />
+              <div className="flex w-full flex-col justify-center">
+                {showCompleteImage && (
+                  <div className="mt-6 flex justify-center">
+                    <CompleteImage className="h-20 w-20" />
                   </div>
                 )}
-                <ProgressBar
-                  label={`${
-                    hasPermissionToCreateProgressReports && isWithinReportPeriod
-                      ? percentageReportsCompleted
-                      : percentageObservationsCompleted
-                  }%`}
-                  hint={
-                    hasPermissionToCreateProgressReports && isWithinReportPeriod
-                      ? 'Reports completed'
-                      : 'Observations completed'
-                  }
-                  subLabel=""
-                  isHiddenSubLabel={true}
-                  value={
-                    hasPermissionToCreateProgressReports && isWithinReportPeriod
-                      ? percentageReportsCompleted
-                      : percentageObservationsCompleted
-                  }
-                  primaryColour={progressBarColour}
-                  secondaryColour="textLight"
-                  textColour="textDark"
-                  className="w-full"
-                />
+                <div className="mt-6 flex justify-center">
+                  <ProgressBar
+                    label={`${
+                      hasPermissionToCreateProgressReports &&
+                      isWithinReportPeriod
+                        ? percentageReportsCompleted
+                        : percentageObservationsCompleted
+                    }%`}
+                    hint={
+                      hasPermissionToCreateProgressReports &&
+                      isWithinReportPeriod
+                        ? 'Reports completed'
+                        : 'Observations completed'
+                    }
+                    subLabel=""
+                    isHiddenSubLabel={true}
+                    value={
+                      hasPermissionToCreateProgressReports &&
+                      isWithinReportPeriod
+                        ? percentageReportsCompleted
+                        : percentageObservationsCompleted
+                    }
+                    primaryColour={progressBarColour}
+                    secondaryColour="textLight"
+                    textColour="textDark"
+                    className="w-full"
+                  />
+                </div>
               </div>
             </Card>
 
@@ -343,15 +348,20 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
               !practitioner?.isPrincipal && <ProgressTabObservationsSummary />}
 
             {/* Within report period */}
-            {/* Permission view */}
-            {!isAllReportsComplete && hasPermissionToCreateProgressReports && (
-              <ProgressTabReportSummary />
+            {isWithinReportPeriod && (
+              <>
+                {/* Permission view */}
+                {!isAllReportsComplete &&
+                  hasPermissionToCreateProgressReports && (
+                    <ProgressTabReportSummary />
+                  )}
+                {/* No permission view */}
+                {!isAllObservationsComplete &&
+                  !hasPermissionToCreateProgressReports && (
+                    <ProgressTabObservationsSummary />
+                  )}
+              </>
             )}
-            {/* No permission view */}
-            {!isAllObservationsComplete &&
-              !hasPermissionToCreateProgressReports && (
-                <ProgressTabObservationsSummary />
-              )}
 
             {isAllObservationsComplete &&
               !isAllReportsComplete &&

@@ -166,6 +166,14 @@ export const ClassDashboard: React.FC = () => {
     [messageReference]
   );
 
+  // setting the current tab to display question mark for walk through
+  useEffect(() => {
+    if (selectedTabIndex !== undefined && selectedTabIndex >= 0) {
+      setCurrentTab(tabItems[selectedTabIndex]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTabIndex]);
+
   const setTabSelected = (tab: TabItem, tabIndex: number) => {
     setPreviousTabIndex(selectedTabIndex);
     setSelectedTabIndex(tabIndex);
