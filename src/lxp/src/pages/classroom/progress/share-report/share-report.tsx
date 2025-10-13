@@ -215,7 +215,8 @@ export const ProgressShareReport: React.FC = () => {
             if (isOnline) {
               generateReport(
                 shareRef.current!,
-                shareRef.current?.offsetWidth || 750
+                shareRef.current?.offsetWidth || 750,
+                ` - ${child?.user?.fullName || child?.user?.firstName}`
               );
             } else {
               showOnlineOnly();

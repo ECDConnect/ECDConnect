@@ -14,8 +14,10 @@ const RoundIcon: React.FC<RoundIconProps> = ({
   iconColor,
   className,
   iconClassName,
+  onClick,
 }) => (
   <div
+    onClick={() => (onClick ? onClick() : false)}
     className={classNames(
       styles.roundIconContainer(size),
       className,

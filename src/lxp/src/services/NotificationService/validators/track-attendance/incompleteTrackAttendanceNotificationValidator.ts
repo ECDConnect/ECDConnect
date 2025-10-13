@@ -126,7 +126,7 @@ export class IncompleteTrackAttendanceNotificationValidator
         viewType: 'Both',
         routeConfig: {
           route: '/classroom',
-          params: { activeTabIndex: 0 },
+          params: { activeTabIndex: 1 },
         },
       },
     ];
