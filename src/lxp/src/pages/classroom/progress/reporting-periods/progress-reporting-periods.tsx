@@ -10,7 +10,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { ProgressReportingPeriodsNumber } from './progress-reporting-periods-number';
 import { useHistory, useLocation } from 'react-router';
 import { useAppDispatch } from '@/store';
-import { classroomsSelectors, classroomsThunkActions } from '@/store/classroom';
+import {
+  classroomsActions,
+  classroomsSelectors,
+  classroomsThunkActions,
+} from '@/store/classroom';
 import { useSelector } from 'react-redux';
 import { useDialog, useSnackbar } from '@ecdlink/core';
 import { ReactComponent as RobotIcon } from '@/assets/iconRobot.svg';
@@ -94,35 +98,47 @@ export const ProgressReportingPeriods: React.FC = () => {
   const classroom = useSelector(classroomsSelectors.getClassroom);
 
   const onSubmit = () => {
-    const save = async () =>
-      appDispatch(
-        await classroomsThunkActions.addChildProgressReportPeriods({
-          classroomId: classroom!.id,
-          childProgressReportPeriods: reportingPeriods.map((x) => ({
-            id: x.id,
-            startDate: new Date(x.startDate),
-            endDate: new Date(x.endDate),
-          })),
-        })
+    const save = async () => {
+      if (isOnline) {
+        appDispatch(
+          await classroomsThunkActions.addChildProgressReportPeriods({
+            classroomId: classroom!.id,
+            childProgressReportPeriods: reportingPeriods.map((x) => ({
+              id: x.id,
+              startDate: new Date(x.startDate),
+              endDate: new Date(x.endDate),
+            })),
+          })
+        );
+      } else {
+        appDispatch(
+          await classroomsActions.addChildProgressReportPeriod({
+            childProgressReportPeriods: reportingPeriods.map((x) => ({
+              id: x.id,
+              startDate: new Date(x.startDate).toISOString(),
+              endDate: new Date(x.endDate).toISOString(),
+            })),
+          })
+        );
+      }
+
+      const notificationsToRemove = notifications?.filter(
+        (item) => item?.message?.reference === messageReference
       );
 
-    const notificationsToRemove = notifications?.filter(
-      (item) => item?.message?.reference === messageReference
-    );
-
-    if (notificationsToRemove && notificationsToRemove?.length > 0) {
-      notificationsToRemove.map((notification) => {
-        if (notification.message?.isFromBackend) {
-          appDispatch(
-            disableBackendNotification({
-              notificationId: notification.message.reference ?? '',
-            })
-          );
-        }
-        appDispatch(notificationActions.removeNotification(notification!));
-      });
-    }
-
+      if (notificationsToRemove && notificationsToRemove?.length > 0) {
+        notificationsToRemove.map((notification) => {
+          if (notification.message?.isFromBackend && isOnline) {
+            appDispatch(
+              disableBackendNotification({
+                notificationId: notification.message.reference ?? '',
+              })
+            );
+          }
+          appDispatch(notificationActions.removeNotification(notification!));
+        });
+      }
+    };
     save();
     showMessage({
       message: 'Reporting dates added!',

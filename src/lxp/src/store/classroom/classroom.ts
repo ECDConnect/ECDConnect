@@ -168,6 +168,29 @@ const classroomsSlice = createSlice({
         }
       }
     },
+    addChildProgressReportPeriod: (
+      state,
+      action: PayloadAction<{
+        childProgressReportPeriods: Array<{
+          id: string;
+          startDate: string;
+          endDate: string;
+        }>;
+      }>
+    ) => {
+      if (state.classroom) {
+        state.classroom = {
+          ...state.classroom,
+          childProgressReportPeriods:
+            action.payload.childProgressReportPeriods.map((x) => ({
+              id: x.id,
+              startDate: x.startDate,
+              endDate: x.endDate,
+              synced: false,
+            })),
+        };
+      }
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(getClassroom.fulfilled, (state, action) => {
@@ -261,7 +284,7 @@ const classroomsSlice = createSlice({
     builder.addCase(
       addChildProgressReportPeriods.fulfilled,
       (state, action) => {
-        if (!!state.classroom) {
+        if (state.classroom) {
           state.classroom = {
             ...state.classroom,
             childProgressReportPeriods:
@@ -269,6 +292,7 @@ const classroomsSlice = createSlice({
                 id: x.id,
                 startDate: x.startDate.toString(),
                 endDate: x.endDate.toString(),
+                synced: true,
               })),
           };
         }

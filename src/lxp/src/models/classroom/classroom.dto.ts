@@ -1,6 +1,7 @@
 import { MessageLogDto } from '@ecdlink/core';
 import { BasePractitionerDto } from './practitioner.dto';
 import { SiteAddressDto } from './site-address.dto';
+import { OfflineUpdate } from '../sync/offline-update';
 
 export type ClassroomDto = {
   id: string;
@@ -14,7 +15,7 @@ export type ClassroomDto = {
   preschoolCode?: string;
   userId?: string;
   isDummySchool?: boolean;
-  childProgressReportPeriods?: ChildProgressReportPeriodDto[];
+  childProgressReportPeriods?: (ChildProgressReportPeriodDto & OfflineUpdate)[];
 };
 
 export type ChildProgressReportPeriodDto = {
