@@ -168,13 +168,15 @@ export const upsertClassroom = createAsyncThunk<
           input.SiteAddressId = addressInput.Id;
         }
 
-        if (classroom!.childProgressReportPeriods?.some((a) => !a.synced)) {
+        if (
+          classroom!.childProgressReportPeriods?.some((a) => a.synced === false)
+        ) {
           await new ClassroomService(
             userAuth?.auth_token
           ).addChildProgressReportPeriods(
             classroom!.id,
             classroom!.childProgressReportPeriods
-              ?.filter((y) => !y.synced)
+              ?.filter((y) => y.synced === false)
               .map((x) => ({
                 id: x.id,
                 startDate: new Date(x.startDate),
