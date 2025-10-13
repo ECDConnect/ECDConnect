@@ -15,6 +15,7 @@ import { SyncOfflineDataProps, SyncOfflineDataReturnType } from './sync.types';
 import { pqaThunkActions } from '../pqa';
 import { calendarThunkActions } from '../calendar';
 import { progressTrackingThunkActions } from '../progress-tracking';
+import { statementsThunkActions } from '../statements';
 
 type SyncStep = {
   title: string;
@@ -89,6 +90,10 @@ export const syncOfflineData = createAsyncThunk<
     {
       title: 'Calendar events',
       action: calendarThunkActions.cancelCalendarEvent,
+    },
+    {
+      title: 'Statements',
+      action: statementsThunkActions.upsertIncomeStatements,
     },
   ];
 
