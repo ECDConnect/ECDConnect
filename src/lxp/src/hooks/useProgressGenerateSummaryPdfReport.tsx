@@ -37,8 +37,7 @@ export const useProgressGenerateSummaryPdfReport = () => {
         type: 'application/pdf',
       }
     );
-
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    if (navigator.share) {
       try {
         await navigator.share({
           title: 'Progress Summary',

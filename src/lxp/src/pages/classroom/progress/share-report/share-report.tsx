@@ -39,6 +39,7 @@ export const ProgressShareReport: React.FC = () => {
   const history = useHistory();
   const appDispatch = useAppDispatch();
   const dialog = useDialog();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const { isOnline } = useOnlineStatus();
 
@@ -122,6 +123,7 @@ export const ProgressShareReport: React.FC = () => {
   );
 
   const handleShare = async () => {
+    setIsLoading(true);
     if (shareRef.current) {
       await generateReportAndShare(
         shareRef.current!,
@@ -129,6 +131,7 @@ export const ProgressShareReport: React.FC = () => {
         ` - ${child?.user?.fullName || child?.user?.firstName}`
       );
     }
+    setIsLoading(false);
   };
 
   return (
@@ -236,6 +239,7 @@ export const ProgressShareReport: React.FC = () => {
           icon={'ShareIcon'}
           text={'Share report'}
           disabled={!selectedReport}
+          isLoading={isLoading}
         />
       </div>
       {!!selectedReport && (
