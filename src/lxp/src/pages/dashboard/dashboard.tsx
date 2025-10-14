@@ -869,34 +869,6 @@ export const Dashboard: React.FC = () => {
   };
 
   useEffect(() => {
-    if (shouldUserSyncOffline) {
-      dialog({
-        position: DialogPosition.Bottom,
-        blocking: true,
-        render: (onSubmitParent, onCancel) => {
-          return (
-            <OfflineSyncTimeExceeded
-              onSubmit={() => {
-                onSubmitParent();
-
-                dialog({
-                  position: DialogPosition.Bottom,
-                  blocking: true,
-                  render: (onSubmit, onCancel) => {
-                    return (
-                      <OfflineSyncModal onSubmit={onSubmit}></OfflineSyncModal>
-                    );
-                  },
-                });
-              }}
-            ></OfflineSyncTimeExceeded>
-          );
-        },
-      });
-    }
-  }, [shouldUserSyncOffline]);
-
-  useEffect(() => {
     if (isOnline && shouldUserSyncOnline) {
       dialog({
         position: DialogPosition.Middle,
