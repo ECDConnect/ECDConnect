@@ -31,6 +31,7 @@ export const ChildrenActions = {
   REFRESH_CAREGIVER_CHILD_TOKEN: 'refreshCaregiverChildToken',
   OPEN_ACCESS_ADD_CHILD_DETAIL: 'openAccessAddChildDetail',
   OPEN_ACCESS_ADD_CHILD: 'openAccessAddChild',
+  REMOVE_CHILD: 'removeChild',
 };
 
 export const getChildren = createAsyncThunk<
@@ -270,6 +271,28 @@ export const updateChild = createAsyncThunk<
       if (userAuth?.auth_token) {
         const input = mapChildInput(child);
         await new ChildService(userAuth?.auth_token).updateChild(input);
+        return child;
+      } else return rejectWithValue('no access token, profile check required');
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const removeChild = createAsyncThunk<
+  ChildDto,
+  UpdateChildRequest,
+  ThunkApiType<RootState>
+>(
+  ChildrenActions.REMOVE_CHILD,
+  async ({ child }, { getState, rejectWithValue }) => {
+    try {
+      const {
+        auth: { userAuth },
+      } = getState();
+      if (userAuth?.auth_token) {
+        const input = mapChildInput(child);
+        await new ChildService(userAuth?.auth_token).removeChild(input);
         return child;
       } else return rejectWithValue('no access token, profile check required');
     } catch (err) {

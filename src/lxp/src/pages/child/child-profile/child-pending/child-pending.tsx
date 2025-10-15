@@ -160,42 +160,46 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
   const onRemoveChild = async () => {
     if (!child) return;
 
-    const updatedChild = { ...child };
-    updatedChild.isActive = false;
-    updatedChild.inactiveDate = new Date();
-    updatedChild.inactivityComments = `Registratation not complete`;
-    dispatch(
-      classroomsActions.deactivateLearner({
-        childUserId: child.userId!,
-        classroomGroupId: childClassroomGroup?.id || classroomGroupId || '',
-      })
-    );
-    dispatch(childrenActions.updateChild(updatedChild));
     if (isOnline) {
+      const updatedChild = { ...child };
+      updatedChild.isActive = false;
+      updatedChild.inactiveDate = new Date();
+      updatedChild.inactivityComments = `Registratation not complete`;
       dispatch(
-        childrenThunkActions.updateChild({
-          child: updatedChild,
-          id: String(updatedChild.id),
+        classroomsActions.deleteLearner({
+          childUserId: child.userId!,
+          classroomGroupId: childClassroomGroup?.id || classroomGroupId || '',
         })
       );
-    }
-
-    showMessage({
-      message: `Child removed`,
-      type: 'success',
-    });
-    if (isPrincipal && practitioners?.length! > 1) {
-      history.push(ROUTES.CLASSROOM.ROOT, {
-        activeTabIndex: TabsItemForPrincipal.CLASSES,
-      });
-    } else {
-      if (isCoach) {
-        history.goBack();
-      } else {
-        history.push(ROUTES.CLASSROOM.ROOT, {
-          activeTabIndex: TabsItems.CLASSES,
-        });
+      dispatch(childrenActions.updateChild(updatedChild));
+      if (isOnline) {
+        dispatch(
+          childrenThunkActions.removeChild({
+            child: updatedChild,
+            id: String(updatedChild.id),
+          })
+        );
       }
+
+      showMessage({
+        message: `Child removed`,
+        type: 'success',
+      });
+      if (isPrincipal && practitioners?.length! > 1) {
+        history.push(ROUTES.CLASSROOM.ROOT, {
+          activeTabIndex: TabsItemForPrincipal.CLASSES,
+        });
+      } else {
+        if (isCoach) {
+          history.goBack();
+        } else {
+          history.push(ROUTES.CLASSROOM.ROOT, {
+            activeTabIndex: TabsItems.CLASSES,
+          });
+        }
+      }
+    } else {
+      showOnlineOnly();
     }
   };
 

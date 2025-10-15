@@ -6,12 +6,14 @@ using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Hierarchy;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,11 +28,16 @@ namespace EcdLink.Api.CoreApi.Services
         private AuthenticationDbContext _dbContext;
         private readonly IPointsEngineService _pointsService;
         private Guid? _applicationUserId;
+        private readonly HierarchyEngine _hierarchyEngine;
+        private readonly ApplicationUserManager _userManager;
+        private ILogger<ChildService> _logger;
 
         public ChildService(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             HierarchyEngine hierarchyEngine,
+            ILogger<ChildService> logger,
+            [Service] ApplicationUserManager userManager,
             [Service] AuthenticationDbContext dbContext,
             [Service] IPointsEngineService pointsService)
         {
@@ -39,10 +46,11 @@ namespace EcdLink.Api.CoreApi.Services
             _childRepo = repoFactory.CreateGenericRepository<Child>(userContext: _applicationUserId);
             _classroomGroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: _applicationUserId);
             _learnerRepo = repoFactory.CreateGenericRepository<Learner>(userContext: _applicationUserId);
-
+            _hierarchyEngine = hierarchyEngine;
+            _userManager = userManager;
             _pointsService = pointsService;
-
             _dbContext = dbContext;
+            _logger = logger;
         }
 
         public List<Child> GetChildrenForClassroomGroup(Guid classroomGroupId)
@@ -195,6 +203,49 @@ namespace EcdLink.Api.CoreApi.Services
             if (isActive && child.WorkflowStatusId == Constants.WorkflowStatus.ActiveId)
             {
                 _pointsService.CalculateChildRegistrationComplete((Guid)_applicationUserId);
+            }
+        }
+
+        public void RemoveChild(UpdateChildAndCaregiverInput input)
+        {
+            var child = _childRepo.GetById(input.Id);
+
+            if (child != null)
+            {
+                try
+                {
+                    var learner = _dbContext.Learners.Where(x => x.UserId == child.UserId).ToList();
+                    if (learner.Any())
+                    {
+                        foreach (var learnerRow in learner)
+                        {
+                            _dbContext.Remove(learnerRow);
+                        }
+                    }
+                    _hierarchyEngine.DeleteHierarchy(child.UserId);
+                    var documents = _dbContext.Documents.Where(x => x.UserId == child.UserId).ToList();
+                    if (documents.Any())
+                    {
+                        foreach (var docRow in documents)
+                        { _dbContext.Remove(docRow); }
+                    }
+
+                    _dbContext.Remove(child);
+                    _dbContext.SaveChanges();
+
+                    var appUser = _userManager.FindByIdAsync(child.UserId.ToString()).Result;
+
+                    var result = _userManager.DeleteAsync(appUser).Result;
+                    if (result.Succeeded)
+                    {
+                        _logger.LogInformation("RemoveChild Succeeded for child Id: {0} and UserId {1}", child.Id, child.UserId);
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "RemoveChild Failed for child Id: {0} on {1}", child.Id, ex.Message);
+                }
             }
         }
 
