@@ -29,34 +29,51 @@ export const useProgressGenerateSummaryPdfReport = () => {
     filenameSuffix?: string
   ) => {
     const blob = await htmlToPdfBlob(src, width);
-
     const file = new File(
       [blob],
       `ProgressSummary${filenameSuffix || ''}.pdf`,
-      {
-        type: 'application/pdf',
-      }
+      { type: 'application/pdf' }
     );
+
+    // Check if Web Share API is available at all
     if (navigator.share) {
       try {
-        await navigator.share({
-          title: 'Progress Summary',
-          text: 'Here is the progress summary PDF.',
-          files: [file],
-        });
-        console.log('Shared successfully');
-      } catch (err) {
-        console.error('Sharing failed', err);
+        // Try sharing with file first
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: 'Progress Summary',
+            text: 'Here is the progress summary PDF.',
+            files: [file],
+          });
+          console.log('Shared successfully');
+        } else {
+          // Fallback: download instead of sharing
+          downloadPdf(blob, filenameSuffix);
+        }
+      } catch (err: any) {
+        if (err.name === 'AbortError') {
+          console.log('Share cancelled by user');
+        } else {
+          console.error('Sharing failed', err);
+          // Fallback to download
+          downloadPdf(blob, filenameSuffix);
+        }
       }
     } else {
-      // Fallback: Download the PDF
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `ProgressSummary${filenameSuffix || ''}.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
+      // No share API - download directly
+      downloadPdf(blob, filenameSuffix);
     }
+  };
+
+  const downloadPdf = (blob: Blob, filenameSuffix?: string) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ProgressSummary${filenameSuffix || ''}.pdf`;
+    document.body.appendChild(a); // Required for Firefox
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   // Functionality without share question/option
