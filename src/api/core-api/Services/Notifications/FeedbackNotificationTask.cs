@@ -5,6 +5,7 @@ using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -54,11 +55,15 @@ namespace EcdLink.Api.CoreApi.Services.Notifications.Portal
 
         public async Task SendNotifications()
         {
-            var practitioners = _practitionerRepo.GetAll().Where(x => x.IsActive && x.IsRegistered.HasValue && x.IsRegistered.Value).ToList();
-            foreach (var item in practitioners)
+            if (TenantExecutionContext.Tenant.TenantType == ECDLink.Tenancy.Enums.TenantType.WhiteLabel)
             {
-                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.FeedbackNotification, DateTime.Now.Date, item.User, "", MessageStatusConstants.Green, null, DateTime.Now.Date.AddDays(14), false, false, null);
+                var practitioners = _practitionerRepo.GetAll().Where(x => x.IsActive && x.IsRegistered.HasValue && x.IsRegistered.Value).ToList();
+                foreach (var item in practitioners)
+                {
+                    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.FeedbackNotification, DateTime.Now.Date, item.User, "", MessageStatusConstants.Green, null, DateTime.Now.Date.AddDays(14), false, false, null);
+                }
             }
+            
         }
     }
 }
