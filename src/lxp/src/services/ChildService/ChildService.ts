@@ -339,6 +339,30 @@ class ChildService {
     return true;
   }
 
+  async removeChild(input: UpdateChildAndCaregiverInput): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { removeChild: boolean };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation RemoveChild($input: UpdateChildAndCaregiverInput) {
+          removeChild(input: $input){
+          }
+        }
+      `,
+      variables: {
+        input: input,
+      },
+    });
+
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error('Removing child failed - Server connection error');
+    }
+
+    return true;
+  }
+
   async calculateChildrenRegistrationRemoval(userId: string): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {

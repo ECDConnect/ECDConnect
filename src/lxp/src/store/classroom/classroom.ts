@@ -83,6 +83,23 @@ const classroomsSlice = createSlice({
           state.classroomGroupData.classroomGroups[i] = payloadUpdated;
       }
     },
+    deleteLearner: (
+      state,
+      action: PayloadAction<{ childUserId: string; classroomGroupId: string }>
+    ) => {
+      state.classroomGroupData.classroomGroups =
+        state.classroomGroupData.classroomGroups.map((classroomGroup) =>
+          classroomGroup.id === action.payload.classroomGroupId
+            ? {
+                ...classroomGroup,
+                learners: classroomGroup.learners.filter(
+                  (learner) =>
+                    learner.childUserId !== action.payload.childUserId
+                ),
+              }
+            : classroomGroup
+        );
+    },
     deactivateLearner: (
       state,
       action: PayloadAction<{ childUserId: string; classroomGroupId: string }>

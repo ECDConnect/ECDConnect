@@ -4520,6 +4520,7 @@ export type Mutation = {
   reassignClassroomsFromHistoryService: Scalars['Boolean'];
   refreshCaregiverChildToken?: Maybe<InitialChildRegistrationModel>;
   remapPrincipalToPrincipal?: Maybe<Practitioner>;
+  removeChild: Scalars['Boolean'];
   removeFromProgramme: Scalars['Boolean'];
   removePermissionsFromNavigation: Scalars['Boolean'];
   removePermissionsFromRole: Scalars['Boolean'];
@@ -6032,6 +6033,10 @@ export type MutationRefreshCaregiverChildTokenArgs = {
 export type MutationRemapPrincipalToPrincipalArgs = {
   newPrincipalId?: InputMaybe<Scalars['String']>;
   oldPrincipalId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationRemoveChildArgs = {
+  input?: InputMaybe<UpdateChildAndCaregiverInput>;
 };
 
 export type MutationRemoveFromProgrammeArgs = {
