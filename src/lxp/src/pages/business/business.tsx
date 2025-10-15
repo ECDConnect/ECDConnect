@@ -2,7 +2,6 @@ import {
   BannerWrapper,
   TabItem,
   TabList,
-  Typography,
   DialogPosition,
   Dialog,
 } from '@ecdlink/ui';
@@ -20,7 +19,6 @@ import { InfoPage } from './money/submit-income-statements/components/info-page'
 import { NavigationNames } from '../navigation';
 import PractitionersList from '../classroom/class-dashboard/practitioners/practitioners-list/practitioners-list';
 import { MoreInformationTypeEnum } from '@ecdlink/core';
-import { ComingSoon } from './components/coming-soon/coming-soon';
 import { Resources } from './components/resources/resources';
 
 export const Business: React.FC = () => {
