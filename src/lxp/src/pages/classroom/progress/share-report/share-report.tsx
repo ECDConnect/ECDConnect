@@ -40,6 +40,7 @@ export const ProgressShareReport: React.FC = () => {
   const appDispatch = useAppDispatch();
   const dialog = useDialog();
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [pdfBlob, setPdfBlob] = useState<Blob>();
 
   const { isOnline } = useOnlineStatus();
 
@@ -47,7 +48,7 @@ export const ProgressShareReport: React.FC = () => {
 
   const { child, detailedReports } = useProgressForChild(routeState.childId);
 
-  const { generateReportAndShare } = usePdfFromHtml();
+  const { generateReportAndReturnBlob, sharePdfReport } = usePdfFromHtml();
 
   const [selectedReport, setSelectedReport] = useState<string | undefined>(
     routeState.reportId
@@ -122,15 +123,24 @@ export const ProgressShareReport: React.FC = () => {
     progressTrackingSelectors?.getCurrentLocaleForReport
   );
 
-  const handleShare = async () => {
-    if (shareRef.current) {
-      await generateReportAndShare(
-        shareRef.current!,
-        shareRef.current?.offsetWidth || 750,
+  const shareReport = async () => {
+    if (pdfBlob) {
+      await sharePdfReport(
+        pdfBlob,
         ` - ${child?.user?.fullName || child?.user?.firstName}`
       );
     }
     setIsLoading(false);
+  };
+
+  const generatePdfReport = async () => {
+    if (shareRef.current) {
+      const pdfBlob = await generateReportAndReturnBlob(
+        shareRef.current,
+        shareRef.current?.offsetWidth || 750
+      );
+      setPdfBlob(pdfBlob);
+    }
   };
 
   return (
@@ -185,7 +195,11 @@ export const ProgressShareReport: React.FC = () => {
               value: x.id,
             }))}
           selectedValue={selectedReport}
-          onChange={(item) => setSelectedReport(item)}
+          onChange={async (item) => {
+            setSelectedReport(item);
+            await new Promise((resolve) => setTimeout(resolve, 0)); // wait a tick for state update
+            await generatePdfReport();
+          }}
           className="my-2"
         />
         <LanguageSelector
@@ -223,10 +237,10 @@ export const ProgressShareReport: React.FC = () => {
           </ul>
         </div>
         <Button
-          onClick={() => {
+          onClick={async () => {
             if (isOnline) {
               setIsLoading(true);
-              handleShare();
+              await shareReport();
             } else {
               showOnlineOnly();
             }
