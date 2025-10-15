@@ -54,18 +54,12 @@ export const useProgressGenerateSummaryPdfReport = () => {
         if (err.name === 'AbortError') {
           console.log('Share cancelled by user');
         } else {
-          alert(
-            'Your device doesn’t support direct sharing. The PDF will be downloaded instead.'
-          );
           console.error('Sharing failed', err);
           // Fallback to download
           downloadPdf(blob, filenameSuffix);
         }
       }
     } else {
-      alert(
-        'Your device doesn’t support direct sharing. The PDF will be downloaded instead.'
-      );
       // No share API - download directly
       downloadPdf(blob, filenameSuffix);
     }
