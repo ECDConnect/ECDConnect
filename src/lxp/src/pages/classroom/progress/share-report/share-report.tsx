@@ -123,7 +123,6 @@ export const ProgressShareReport: React.FC = () => {
   );
 
   const handleShare = async () => {
-    setIsLoading(true);
     if (shareRef.current) {
       await generateReportAndShare(
         shareRef.current!,
@@ -226,6 +225,7 @@ export const ProgressShareReport: React.FC = () => {
         <Button
           onClick={() => {
             if (isOnline) {
+              setIsLoading(true);
               handleShare();
             } else {
               showOnlineOnly();
@@ -237,7 +237,7 @@ export const ProgressShareReport: React.FC = () => {
           textColor="white"
           type="filled"
           icon={'ShareIcon'}
-          text={'Share report'}
+          text={isLoading ? 'Loading report...' : 'Share report'}
           disabled={!selectedReport}
           isLoading={isLoading}
         />
