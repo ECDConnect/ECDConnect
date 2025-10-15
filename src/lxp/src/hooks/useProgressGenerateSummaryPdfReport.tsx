@@ -23,12 +23,14 @@ export const useProgressGenerateSummaryPdfReport = () => {
     });
   };
 
-  const generateReportAndShare = async (
+  const generateReportAndReturnBlob = async (
     src: HTMLElement,
-    width: number,
-    filenameSuffix?: string
+    width: number
   ) => {
-    const blob = await htmlToPdfBlob(src, width);
+    return await htmlToPdfBlob(src, width);
+  };
+
+  const sharePdfReport = async (blob: Blob, filenameSuffix?: string) => {
     const file = new File(
       [blob],
       `ProgressSummary${filenameSuffix || ''}.pdf`,
@@ -105,7 +107,8 @@ export const useProgressGenerateSummaryPdfReport = () => {
   };
 
   return {
-    generateReportAndShare,
+    generateReportAndReturnBlob,
+    sharePdfReport,
     asyncGenerateReport,
   };
 };
