@@ -121,11 +121,6 @@ export const SelectChildToTrack: React.FC = () => {
     return [...childList, ...childListWithoutReport];
   }, [childList, childListWithoutReport]);
 
-  // Commenting this out - this will only return the childList where childReports are available
-  // const childUserListData = useMemo(() => {
-  //    return childList.length !== 0 ? childList : childListWithoutReport;
-  // }, [childList, childListWithoutReport]);
-
   const onSearchChange = (value: string) => {
     const filtered =
       childUserListData?.filter((child) =>
