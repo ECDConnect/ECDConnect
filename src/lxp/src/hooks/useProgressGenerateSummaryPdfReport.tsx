@@ -37,9 +37,9 @@ export const useProgressGenerateSummaryPdfReport = () => {
         type: 'application/pdf',
       }
     );
-    if (navigator.share) {
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
       try {
-        await navigator.share({
+        await navigator?.share({
           title: 'Progress Summary',
           text: 'Here is the progress summary PDF.',
           files: [file],
@@ -49,6 +49,10 @@ export const useProgressGenerateSummaryPdfReport = () => {
         console.error('Sharing failed', err);
       }
     } else {
+      alert(
+        'Your device doesn’t support direct sharing. The PDF will be downloaded instead.'
+      );
+
       // Fallback: Download the PDF
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
