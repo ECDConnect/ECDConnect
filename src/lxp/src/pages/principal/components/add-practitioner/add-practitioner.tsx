@@ -619,7 +619,7 @@ export const AddPractitioner = ({
               {isValidPractitioner === true && (
                 <Button
                   size="normal"
-                  className="mb-12 w-full"
+                  className="mb-4 w-full"
                   type="outlined"
                   color="quatenary"
                   text="Add another practitioner"
