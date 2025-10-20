@@ -52,6 +52,7 @@ import TransparentLayer from '../../../assets/TransparentLayer.png';
 import { format } from 'date-fns';
 import { usePractitionerAbsentees } from '@/hooks/usePractitionerAbsentees';
 import { PractitionerListRouteState } from './practitioner-list/practitioner-list.types';
+import { EditLogo } from './edit-logo/edit-logo';
 
 export const PractitionerProgrammeInformation: React.FC = () => {
   const history = useHistory();
@@ -91,6 +92,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
   const [editProfilePictureVisible, setEditProfilePictureVisible] =
     useState(false);
   const [showEditAddress, setShowEditAddress] = useState(false);
+  const [showEditLogo, setShowEditLogo] = useState(false);
 
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
 
@@ -142,7 +144,8 @@ export const PractitionerProgrammeInformation: React.FC = () => {
   }, [classroom, classroomGroups, otherColleaguesFiltered]);
 
   const displayProfilePicturePrompt = () => {
-    setEditProfilePictureVisible(!editProfilePictureVisible);
+    console.log('Show edit logo : ' + showEditLogo);
+    setShowEditLogo(!showEditLogo);
   };
 
   const closeEditField = () => {
@@ -507,7 +510,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
             onPressed={isPrincipal ? displayProfilePicturePrompt : () => {}}
             hasConsent={true}
             isPreschoolImage={true}
-            canChangeImage={practitioner?.isPrincipal ? true : false}
+            canChangeImage={true}
           />
         </div>
 
@@ -626,6 +629,9 @@ export const PractitionerProgrammeInformation: React.FC = () => {
           setShowEditAddress={setShowEditAddress}
           practitioner={practitioner}
         />
+      </Dialog>
+      <Dialog fullScreen visible={showEditLogo} position={DialogPosition.Full}>
+        <EditLogo setShowEditLogo={setShowEditLogo} />
       </Dialog>
 
       <Dialog

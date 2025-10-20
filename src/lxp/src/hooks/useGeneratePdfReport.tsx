@@ -21,7 +21,8 @@ export const useGeneratePdfReport = () => {
     tableStyles?: UserOptions['styles'],
     footer?: any[],
     tableFootStyles?: UserOptions['footStyles'],
-    pageOriantations?: jsPDFOptions['orientation']
+    pageOriantations?: jsPDFOptions['orientation'],
+    logo?: string
   ) => {
     //make landscape document
     const doc = new jsPDF(pageOriantations ?? 'landscape');
@@ -114,9 +115,10 @@ export const useGeneratePdfReport = () => {
           didDrawPage: (data) => {
             // Add table header to each new page
             // Add left header
+            logo && doc.addImage(logo, 'PNG', 10, 5, 20, 8);
             doc.setFontSize(20);
             doc.setFont('bold');
-            doc.text(content?.pageTitle ?? '', 10, 10);
+            doc.text(content?.pageTitle ?? '', 60, 10);
 
             // Add right header
             doc.setFontSize(16);
