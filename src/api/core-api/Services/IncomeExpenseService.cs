@@ -400,7 +400,7 @@ namespace ECDLink.Core.Services
             pdfDocumentHeader.SiteAddress = siteAddress.ToString();
 
             pdfDocumentHeader.ReportType = "StatementsPDF";
-            var userInfo = _documentManager.GetDocumentHeaderAddress(_userManager, pdfDocumentHeader);
+            var userInfo = _documentManager.GetDocumentHeaderAddress(_userManager, pdfDocumentHeader, filename, classroom?.ClassroomImageUrl);
 
             html += userInfo;
 
@@ -614,7 +614,7 @@ namespace ECDLink.Core.Services
             html += "</body></html>";
 
             // discard result
-            var doc = _documentManager.GetPdfSettings(html, filename, "portrait");
+            var doc = _documentManager.GetPdfSettings(html, "portrait");
             var pdf = _pdfConverter.Convert(doc);
             var base64Result = Convert.ToBase64String(pdf);
 
