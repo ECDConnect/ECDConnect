@@ -52,7 +52,7 @@ export const MonthlyAttendanceReport = () => {
   const dialog = useDialog();
 
   const location = useLocation<MonthlyAttendanceReportRouteState>();
-
+  const classroom = useSelector(classroomsSelectors.getClassroom);
   const selectedMonth = location.state?.selectedMonth;
 
   const errorDialog = useCallback(
@@ -367,6 +367,7 @@ export const MonthlyAttendanceReport = () => {
           downloadDate={today.toDateString()}
           numberOfChildren={attendanceSum}
           tableHeaders={tableHeaders}
+          logo={classroom?.classroomImageUrl}
         />
       </div>
     </BannerWrapper>
