@@ -219,40 +219,44 @@ export const ChildAttendanceReportPage: React.FC = () => {
             </>
           )}
           <table className="text-textDark text-left">
-            <tr className="bg-uiBg border-quatenary border-b">
-              <th className="w-1/2 py-3 pl-4">CLASS</th>
-              <th className="py-3 pl-4">MONTH</th>
-              <th>DAYS PRESENT</th>
-            </tr>
-            {attendanceArrayPerMonthSortedAndFiltered &&
-              attendanceArrayPerMonthSortedAndFiltered.map((report, idx) => {
-                const reportItemColor = getColor(report.attendancePercentage);
-                const reportItemShape = getShape(report.attendancePercentage);
-                if (!report?.expectedAttendance) return null;
+            <thead>
+              <tr className="bg-uiBg border-quatenary border-b">
+                <th className="w-1/2 py-3 pl-4">CLASS</th>
+                <th className="py-3 pl-4">MONTH</th>
+                <th>DAYS PRESENT</th>
+              </tr>
+            </thead>
+            <tbody>
+              {attendanceArrayPerMonthSortedAndFiltered &&
+                attendanceArrayPerMonthSortedAndFiltered.map((report, idx) => {
+                  const reportItemColor = getColor(report.attendancePercentage);
+                  const reportItemShape = getShape(report.attendancePercentage);
+                  if (!report?.expectedAttendance) return null;
 
-                return (
-                  <tr
-                    key={`group-${report.classroomGroup}-month-${report.monthNumber}`}
-                    className={`${idx % 2 === 0 ? 'bg-uiBg' : 'bg-white'}`}
-                  >
-                    <td className="py-3 pl-4">{report.classroomGroup} </td>
-                    <td className="py-3 pl-4">{report.month} </td>
-                    <td className="flex items-center gap-2 py-3">
-                      <div
-                        className={getShapeClass(
-                          reportItemShape,
-                          reportItemColor
-                        )}
-                      />
-                      <Typography
-                        type="body"
-                        color={reportItemColor}
-                        text={`${report.actualAttendance} out of ${report.expectedAttendance}`}
-                      />
-                    </td>
-                  </tr>
-                );
-              })}
+                  return (
+                    <tr
+                      key={`group-${report.classroomGroup}-month-${report.monthNumber}`}
+                      className={`${idx % 2 === 0 ? 'bg-uiBg' : 'bg-white'}`}
+                    >
+                      <td className="py-3 pl-4">{report.classroomGroup} </td>
+                      <td className="py-3 pl-4">{report.month} </td>
+                      <td className="flex items-center gap-2 py-3">
+                        <div
+                          className={getShapeClass(
+                            reportItemShape,
+                            reportItemColor
+                          )}
+                        />
+                        <Typography
+                          type="body"
+                          color={reportItemColor}
+                          text={`${report.actualAttendance} out of ${report.expectedAttendance}`}
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
+            </tbody>
           </table>
           <Button
             color="quatenary"
