@@ -45,7 +45,7 @@ export interface ChildAttendanceOverallReportModel {
   year: number;
   attendance: {
     key: number;
-    value: number;
+    value?: number;
   }[];
 }
 

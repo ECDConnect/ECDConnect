@@ -37,6 +37,8 @@ import {
   ClassDashboardRouteState,
   TabsItems,
 } from '@/pages/classroom/class-dashboard/class-dashboard.types';
+import { useMonthlyAttendanceReport } from '@/hooks/useMonthlyAttendanceReport';
+import { useHolidays } from '@/hooks/useHolidays';
 
 export interface ChildAttendanceReportState {
   childId: string;
@@ -90,6 +92,17 @@ export const MonthlyAttendanceReport = () => {
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const children = useSelector(childrenSelectors.getChildren);
+  const holiday = useHolidays();
+
+  // for offline purposes, get the attendance data for current month
+  const attendanceData = useSelector(attendanceSelectors.getAttendance);
+
+  const { currentMonthAttendanceReport } = useMonthlyAttendanceReport(
+    attendanceData ?? [],
+    classroomGroups,
+    children ?? [],
+    holiday.holidays
+  );
 
   const { hasPermissionToTakeAttendance } = useUserPermissions();
   const isTrialPeriod = useIsTrialPeriod();
@@ -140,6 +153,11 @@ export const MonthlyAttendanceReport = () => {
       classroomGroups
     );
 
+  const tableData =
+    Number(selectedMonth.monthOfYear) == today.getUTCMonth() + 1
+      ? currentMonthAttendanceReport
+      : reportDataWithClassroomGroup;
+
   const {
     attendanceSum,
     finalTableData,
@@ -158,15 +176,16 @@ export const MonthlyAttendanceReport = () => {
   });
 
   useEffect(() => {
-    appDispatch(
-      attendanceThunkActions.getClassroomAttendanceReport({
-        userId: userAuth?.id ?? '',
-        startDate: startDate,
-        endDate: endDate,
-      })
-    );
+    if (isOnline)
+      appDispatch(
+        attendanceThunkActions.getClassroomAttendanceReport({
+          userId: userAuth?.id ?? '',
+          startDate: startDate,
+          endDate: endDate,
+        })
+      );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isOnline]);
 
   useEffect(() => {
     if (!isOnline) return;
@@ -262,7 +281,7 @@ export const MonthlyAttendanceReport = () => {
         text={`Tap a child’s name to see their attendance record.`}
       />
       <Divider className="mt-4" dividerType="dashed" />
-      {reportDataWithClassroomGroup?.map((classroomGroupReport) => (
+      {tableData?.map((classroomGroupReport) => (
         <Fragment key={classroomGroupReport.classroomGroupId}>
           <Typography
             type="h2"
