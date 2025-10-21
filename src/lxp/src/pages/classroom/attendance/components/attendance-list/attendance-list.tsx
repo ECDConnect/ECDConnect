@@ -123,7 +123,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
 
         return (
           child &&
-          !!child.caregiverId &&
+          (!!child.caregiverId || !!child.caregiver) &&
           (!x.stoppedAttendance ||
             new Date(x.stoppedAttendance).getTime() >= endOfDay.getTime())
         );
