@@ -34,13 +34,17 @@ import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { ChildListRouteState } from '@/pages/classroom/child-list/child-list.types';
 import { ChildProfileRouteState } from '../child-profile.types';
 import childRegistrationForm from '@/assets/ECD_connect_registration_form.pdf';
+import {
+  notificationActions,
+  notificationsSelectors,
+} from '@/store/notifications';
 
 export const ChildPending: React.FC<ChildPendingProps> = ({
   child,
   childUser,
 }) => {
   const location = useLocation<ChildProfileRouteState>();
-
+  const notificationReference = location?.state?.notificationReference;
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const [deadlineDateText, setDeadlineDateText] = useState<string>('');
@@ -59,7 +63,7 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
   const isCoach = user?.roles?.some(
     (role) => role.systemName === RoleSystemNameEnum.Coach
   );
-
+  const notifications = useSelector(notificationsSelectors.getAllNotifications);
   const { showMessage } = useSnackbar();
 
   const practitioners = useSelector(
@@ -179,6 +183,14 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
             id: String(updatedChild.id),
           })
         );
+      }
+
+      const hasNotification = notifications?.find(
+        (item) => item?.message?.reference === notificationReference
+      );
+
+      if (hasNotification) {
+        dispatch(notificationActions.removeNotification(hasNotification!));
       }
 
       showMessage({
