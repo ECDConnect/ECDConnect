@@ -177,7 +177,7 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
       const emptyArray = [];
       const inputLimit =
         formType === StoryBookTypes.storyBook
-          ? 10 - storyBookPartsValues?.length
+          ? 15 - storyBookPartsValues?.length
           : 1 - storyBookPartsValues?.length;
       for (let i = 0; i < inputLimit; i++) {
         emptyArray?.push({
@@ -205,7 +205,7 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
   useEffect(() => {
     if (currentStoryBooksPartQuestions && storyBookPartQuestionsIds) {
       const emptyArray = [];
-      const inputLimit = 10;
+      const inputLimit = 15;
       for (let i = 0; i < inputLimit; i++) {
         emptyArray?.push({
           name: '',
