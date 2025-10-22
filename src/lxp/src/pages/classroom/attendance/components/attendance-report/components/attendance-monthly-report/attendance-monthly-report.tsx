@@ -24,21 +24,30 @@ export const AttendanceMonthlyReport: React.FC<
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const dialog = useDialog();
+  const today = new Date();
 
   const handleClick = (attendanceItem: MonthlyAttendanceRecord) => {
-    if (!isOnline) {
-      return dialog({
-        color: 'bg-white',
-        position: DialogPosition.Middle,
-        render: (onSubmit) => {
-          return <OnlineOnlyModal onSubmit={onSubmit} />;
-        },
-      });
-    } else {
-      if (attendanceItem.totalScheduledSessions === 0) return;
+    const navigateToMonthlyReport = () =>
       history.push(ROUTES.CLASSROOM.ATTENDANCE.MONTHLY_REPORT, {
         selectedMonth: attendanceItem,
       } as MonthlyAttendanceReportRouteState);
+
+    if (!isOnline) {
+      const currentMonth = today.getMonth() + 1;
+      const attendanceMonth = Number(attendanceItem.monthOfYear);
+      // you can view your current month's report when you are offline
+      if (attendanceMonth === currentMonth) {
+        navigateToMonthlyReport();
+      } else {
+        return dialog({
+          color: 'bg-white',
+          position: DialogPosition.Middle,
+          render: (onSubmit) => <OnlineOnlyModal onSubmit={onSubmit} />,
+        });
+      }
+    } else {
+      if (attendanceItem.totalScheduledSessions === 0) return;
+      navigateToMonthlyReport();
     }
   };
 
