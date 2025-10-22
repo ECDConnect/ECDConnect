@@ -98,18 +98,17 @@ namespace EcdLink.Api.CoreApi.Services
             // Update child user fields
             if (input.User != null)
             {
-                child.User.FirstName = input.User.FirstName;
-                child.User.Surname = input.User.Surname;
+                if (input.User.FirstName != null) child.User.FirstName = input.User.FirstName;
+                if (input.User.Surname != null) child.User.Surname = input.User.Surname;
+                if (input.User.DateOfBirth != null) child.User.DateOfBirth = input.User.DateOfBirth;
+                if (input.User.GenderId != null) child.User.GenderId = input.User.GenderId;
                 child.User.IsActive = isActive;
                 child.User.IsSouthAfricanCitizen = input.User.IsSouthAfricanCitizen;
                 child.User.IdNumber = input.User.IdNumber;
                 child.User.VerifiedByHomeAffairs = input.User.VerifiedByHomeAffairs;
-                child.User.DateOfBirth = input.User.DateOfBirth;
-                child.User.GenderId = input.User.GenderId;
                 child.User.RaceId = input.User.RaceId;
                 child.User.ContactPreference = input.User.ContactPreference;
                 child.User.ProfileImageUrl = input.User.profileImageUrl;
-                // TODO - do we need to set updated date/by, do we need to check if we updated the user?
             }
 
             // Update caregiver fields
