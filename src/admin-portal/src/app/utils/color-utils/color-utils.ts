@@ -97,6 +97,7 @@ export const hslToHex = (h, s, l) => {
 
 // Function to generate secondary and tertiary colors
 export const lightenColor = (hex, percentage) => {
+  hex = hex.trim();
   if (typeof percentage !== 'number' || percentage < 0 || percentage > 100) {
     throw new Error('Percentage must be a number between 0 and 100');
   }
