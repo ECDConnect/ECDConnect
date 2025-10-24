@@ -120,29 +120,47 @@ namespace ECDLink.ContentManagement.Repositories
                 if (string.IsNullOrWhiteSpace(search))
                 {
                     result = _context.ContentTypes
-                  .Include(x => x.Content.Where(f => f.IsActive == true))
-                      .ThenInclude(x => x.ContentValues.Where(f => f.TenantId == tenantId))
-                          .ThenInclude(x => x.ContentTypeField)
-                  .Include(x => x.Fields.Where(f => f.IsActive))
-                      .ThenInclude(x => x.FieldType)
-                  .Where(ct =>
-                  (ct.TenantId == null || ct.TenantId == tenantId)
-                  && ct.IsActive == true).AsNoTracking().AsQueryable();
+                                .Include(ct => ct.Content
+                                    .Where(c => c.IsActive)
+                                    .Where(c => c.ContentValues.Any(cv => cv.TenantId == tenantId))
+                                )
+                                    .ThenInclude(c => c.ContentValues
+                                        .Where(cv => cv.TenantId == tenantId))
+                                    .ThenInclude(cv => cv.ContentTypeField)
+                                .Include(ct => ct.Fields.Where(f => f.IsActive))
+                                    .ThenInclude(f => f.FieldType)
+                                .Where(ct => 
+                                    (ct.TenantId == null || ct.TenantId == tenantId) &&
+                                    ct.IsActive &&
+                                    ct.Content.Any(c => 
+                                        c.ContentValues.Any(cv => cv.TenantId == tenantId))
+                                )
+                                .AsNoTracking()
+                                .AsQueryable();
                 }
                 else
                 {
                     result = _context.ContentTypes
-                    .Include(x => x.Content.Where(f => f.IsActive == true && f.TenantId == tenantId || f.TenantId == null))
-                        .ThenInclude(x => x.ContentValues.Where(f => f.TenantId == tenantId || f.TenantId == null))
-                            .ThenInclude(x => x.ContentTypeField)
-                    .Include(x => x.Fields.Where(f => f.IsActive))
-                        .ThenInclude(x => x.FieldType)
-                    .Where(ct =>
-                    (ct.TenantId == null || ct.TenantId == tenantId)
-                    && ct.IsActive == true
-                    && (EF.Functions.ILike(ct.Name, $"%{search}%")
-                        || EF.Functions.ILike(ct.Description, $"%{search}%"))
-                    ).AsNoTracking().AsQueryable();
+                                .Include(ct => ct.Content
+                                    .Where(c => c.IsActive)
+                                    .Where(c => c.ContentValues.Any(cv => cv.TenantId == tenantId))
+                                )
+                                    .ThenInclude(c => c.ContentValues
+                                        .Where(cv => cv.TenantId == tenantId))
+                                    .ThenInclude(cv => cv.ContentTypeField)
+                                .Include(ct => ct.Fields.Where(f => f.IsActive))
+                                    .ThenInclude(f => f.FieldType)
+                                .Where(ct =>
+                                    (ct.TenantId == null || ct.TenantId == tenantId) &&
+                                    ct.IsActive &&
+                                    (EF.Functions.ILike(ct.Name, $"%{search}%")
+                                    || EF.Functions.ILike(ct.Description, $"%{search}%")) &&
+                                    ct.Content.Any(c =>
+                                        c.ContentValues.Any(cv => cv.TenantId == tenantId))
+                                    
+                                )
+                                .AsNoTracking()
+                                .AsQueryable();
                 }
             }
             return result;
