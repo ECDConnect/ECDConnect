@@ -21,7 +21,7 @@ INSERT INTO public."ContentTypeField"
 VALUES(nextval('public."ContentTypeField_Id_seq"'),1, 'name', 1, true, '', 40, current_date, current_date, '', null, 'Name', true, true, true);
 INSERT INTO public."ContentTypeField"
 ("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName", "DisplayMainTable", "DisplayPage", "IsRequired")
-VALUES(nextval('public."ContentTypeField_Id_seq"'),2, 'description', 2, true, '', 40, current_date, current_date, '', null, 'Description', true, true, true);
+VALUES(nextval('public."ContentTypeField_Id_seq"'),2, 'description', 1, true, '', 40, current_date, current_date, '', null, 'Description', true, true, true);
 INSERT INTO public."ContentTypeField"
 ("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName", "DisplayMainTable", "DisplayPage", "IsRequired")
 VALUES(nextval('public."ContentTypeField_Id_seq"'),3, 'roleIds', 1, true, '', 40, current_date, current_date, '', null, 'Roles', true, true, true);
@@ -40,7 +40,9 @@ VALUES(nextval('public."ContentTypeField_Id_seq"'),7, 'formPages', 4, true, 'For
 INSERT INTO public."ContentTypeField"
 ("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName", "DisplayMainTable", "DisplayPage", "IsRequired")
 VALUES(nextval('public."ContentTypeField_Id_seq"'),8, 'updatedDate', 1, true, '', 40, current_date, current_date, NULL, NULL, 'Last updated', true, false, false);
-
+INSERT INTO public."ContentTypeField"
+("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName", "DisplayMainTable", "DisplayPage", "IsRequired")
+VALUES(nextval('public."ContentTypeField_Id_seq"'),9, 'adminDescription', 1, true, '', 40, current_date, current_date, '', null, 'Description', true, true, true);
 
 --FormPage
 INSERT INTO public."ContentTypeField"
@@ -479,8 +481,9 @@ DECLARE
     ];
     tenant_id TEXT;
 
-    form_name TEXT := 'Self-assessment';
+    form_name TEXT := 'Self-assessment (SmartStart)';
     form_description TEXT := 'This form will help you think about which parts of your programme you are doing well and if there are any areas that need to get better';
+    form_admin_description TEXT := 'The "Self-assessment" form was developed by SmartStart, who have made the tool free to use for any organisation using ECD Connect.  The tool is not editable, but you can choose whether or not to have it available to users on {AppName}.  The self-assessment form helps practitioners to identify programme highlights & areas for improvement.';
     form_logo TEXT := 'https://ecdconnectstoragedev.blob.core.windows.net/content-image/638968036187153064_themeLogo.png';
     form_roleIds TEXT;
     form_pages TEXT;
@@ -495,6 +498,7 @@ DECLARE
     ctFieldId5 INT := (SELECT "Id" FROM "ContentTypeField" WHERE "FieldName" = 'publishedDate' AND "ContentTypeId" = contentTypeId);
     ctFieldId6 INT := (SELECT "Id" FROM "ContentTypeField" WHERE "FieldName" = 'formPages' AND "ContentTypeId" = contentTypeId);
     ctFieldId7 INT := (SELECT "Id" FROM "ContentTypeField" WHERE "FieldName" = 'logoUrl' AND "ContentTypeId" = contentTypeId);
+    ctFieldId8 INT := (SELECT "Id" FROM "ContentTypeField" WHERE "FieldName" = 'adminDescription' AND "ContentTypeId" = contentTypeId);
 
 BEGIN
 
@@ -546,7 +550,8 @@ BEGIN
             (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId4, 'false', tenant_id::uuid, now(), now()),
             (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId5, '', tenant_id::uuid, now(), now()),
             (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId6, form_pages, tenant_id::uuid, now(), now()),
-            (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId7, form_logo, tenant_id::uuid, now(), now());
+            (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId7, form_logo, tenant_id::uuid, now(), now()),
+            (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId8, form_admin_description, tenant_id::uuid, now(), now());
 
     END LOOP;
 END $$;
