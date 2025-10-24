@@ -3235,6 +3235,7 @@ export type FollowUpVisitModelInput = {
 
 export type Form = {
   __typename?: 'Form';
+  adminDescription?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
   formPages?: Maybe<Array<Maybe<FormPage>>>;
   id?: Maybe<Scalars['Int']>;
@@ -3247,6 +3248,7 @@ export type Form = {
 };
 
 export type FormInput = {
+  adminDescription?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   formPages?: InputMaybe<Scalars['String']>;
   isPublished?: InputMaybe<Scalars['String']>;
