@@ -5,7 +5,7 @@ import SubNavigationLink from '../../components/sub-navigation-link/sub-navigati
 import ROUTES from '../../routes/app.routes-constants';
 import { useTenant } from '../../hooks/useTenant';
 import { UserTypes } from './user.types';
-import { pluralize } from '../pages.utils';
+import { pluralize } from '../../utils/string-utils/pages.utils';
 
 export function Users() {
   const location = useLocation();

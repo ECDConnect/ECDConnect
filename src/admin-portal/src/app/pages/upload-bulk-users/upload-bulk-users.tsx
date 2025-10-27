@@ -18,7 +18,7 @@ import {
 import { useHistory } from 'react-router';
 import { Alert, Button, LoadingSpinner, Typography } from '@ecdlink/ui';
 import { useTenant } from '../../hooks/useTenant';
-import { pluralize } from '../pages.utils';
+import { pluralize } from '../../utils/string-utils/pages.utils';
 import ROUTES from '../../routes/app.routes-constants';
 
 const acceptedFormats = ['xls', 'xlsx'];
