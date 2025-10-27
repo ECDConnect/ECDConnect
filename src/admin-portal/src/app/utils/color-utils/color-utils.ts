@@ -1,5 +1,9 @@
 // Function to convert hex to HSL
 export const hexToHsl = (hex) => {
+  if (!/^#([0-9A-Fa-f]{6})$/.test(hex)) {
+    throw new Error('Invalid HEX color: must be #RRGGBB');
+  }
+
   // Convert hex to RGB
   let r = parseInt(hex.substring(1, 3), 16) / 255;
   let g = parseInt(hex.substring(3, 5), 16) / 255;
@@ -38,6 +42,11 @@ export const hexToHsl = (hex) => {
 
 // Function to convert HSL to hex
 export const hslToHex = (h, s, l) => {
+  // Clamp inputs
+  h = ((h % 360) + 360) % 360; // Ensure hue is in [0, 360]
+  s = Math.max(0, Math.min(100, s)); // Clamp saturation to [0, 100]
+  l = Math.max(0, Math.min(100, l)); // Clamp lightness to [0, 100]
+
   s /= 100;
   l /= 100;
 
@@ -78,12 +87,20 @@ export const hslToHex = (h, s, l) => {
   g = Math.round((g + m) * 255);
   b = Math.round((b + m) * 255);
 
-  let rgb = (r << 16) + (g << 8) + b;
-  return '#' + rgb.toString(16).padStart(6, '0');
+  // Convert each component to a two-digit HEX string
+  const rHex = Math.max(0, Math.min(255, r)).toString(16).padStart(2, '0');
+  const gHex = Math.max(0, Math.min(255, g)).toString(16).padStart(2, '0');
+  const bHex = Math.max(0, Math.min(255, b)).toString(16).padStart(2, '0');
+
+  return `#${rHex}${gHex}${bHex}`;
 };
 
 // Function to generate secondary and tertiary colors
 export const lightenColor = (hex, percentage) => {
+  hex = hex.trim();
+  if (typeof percentage !== 'number' || percentage < 0 || percentage > 100) {
+    throw new Error('Percentage must be a number between 0 and 100');
+  }
   let [h, s, l] = hexToHsl(hex);
   l = Math.min(100, l + (100 - l) * (percentage / 100));
   return hslToHex(h, s, l);

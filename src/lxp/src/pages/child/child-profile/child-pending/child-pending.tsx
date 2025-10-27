@@ -34,13 +34,17 @@ import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { ChildListRouteState } from '@/pages/classroom/child-list/child-list.types';
 import { ChildProfileRouteState } from '../child-profile.types';
 import childRegistrationForm from '@/assets/ECD_connect_registration_form.pdf';
+import {
+  notificationActions,
+  notificationsSelectors,
+} from '@/store/notifications';
 
 export const ChildPending: React.FC<ChildPendingProps> = ({
   child,
   childUser,
 }) => {
   const location = useLocation<ChildProfileRouteState>();
-
+  const notificationReference = location?.state?.notificationReference;
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const [deadlineDateText, setDeadlineDateText] = useState<string>('');
@@ -59,7 +63,7 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
   const isCoach = user?.roles?.some(
     (role) => role.systemName === RoleSystemNameEnum.Coach
   );
-
+  const notifications = useSelector(notificationsSelectors.getAllNotifications);
   const { showMessage } = useSnackbar();
 
   const practitioners = useSelector(
@@ -160,42 +164,54 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
   const onRemoveChild = async () => {
     if (!child) return;
 
-    const updatedChild = { ...child };
-    updatedChild.isActive = false;
-    updatedChild.inactiveDate = new Date();
-    updatedChild.inactivityComments = `Registratation not complete`;
-    dispatch(
-      classroomsActions.deactivateLearner({
-        childUserId: child.userId!,
-        classroomGroupId: childClassroomGroup?.id || classroomGroupId || '',
-      })
-    );
-    dispatch(childrenActions.updateChild(updatedChild));
     if (isOnline) {
+      const updatedChild = { ...child };
+      updatedChild.isActive = false;
+      updatedChild.inactiveDate = new Date();
+      updatedChild.inactivityComments = `Registratation not complete`;
       dispatch(
-        childrenThunkActions.updateChild({
-          child: updatedChild,
-          id: String(updatedChild.id),
+        classroomsActions.deleteLearner({
+          childUserId: child.userId!,
+          classroomGroupId: childClassroomGroup?.id || classroomGroupId || '',
         })
       );
-    }
-
-    showMessage({
-      message: `Child removed`,
-      type: 'success',
-    });
-    if (isPrincipal && practitioners?.length! > 1) {
-      history.push(ROUTES.CLASSROOM.ROOT, {
-        activeTabIndex: TabsItemForPrincipal.CLASSES,
-      });
-    } else {
-      if (isCoach) {
-        history.goBack();
-      } else {
-        history.push(ROUTES.CLASSROOM.ROOT, {
-          activeTabIndex: TabsItems.CLASSES,
-        });
+      dispatch(childrenActions.updateChild(updatedChild));
+      if (isOnline) {
+        dispatch(
+          childrenThunkActions.removeChild({
+            child: updatedChild,
+            id: String(updatedChild.id),
+          })
+        );
       }
+
+      const hasNotification = notifications?.find(
+        (item) => item?.message?.reference === notificationReference
+      );
+
+      if (hasNotification) {
+        dispatch(notificationActions.removeNotification(hasNotification!));
+      }
+
+      showMessage({
+        message: `Child removed`,
+        type: 'success',
+      });
+      if (isPrincipal && practitioners?.length! > 1) {
+        history.push(ROUTES.CLASSROOM.ROOT, {
+          activeTabIndex: TabsItemForPrincipal.CLASSES,
+        });
+      } else {
+        if (isCoach) {
+          history.goBack();
+        } else {
+          history.push(ROUTES.CLASSROOM.ROOT, {
+            activeTabIndex: TabsItems.CLASSES,
+          });
+        }
+      }
+    } else {
+      showOnlineOnly();
     }
   };
 

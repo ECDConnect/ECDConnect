@@ -632,7 +632,7 @@ interface MergedClassProgramme {
   items: Omit<ClassProgrammeDto, 'classroomGroupId'>[];
 }
 
-interface MergedChildAttendanceOverallReportModel {
+export interface MergedChildAttendanceOverallReportModel {
   classroomGroup?: ClassroomGroupDto;
   classroomGroupId: string;
   items: Omit<ChildAttendanceOverallReportModel, 'classgroupId'>[];
@@ -691,3 +691,56 @@ export const mergeMonthlyAttendanceReportWithSameClassroomGroupId = (
 
   return Object.values(mergedObjects);
 };
+
+export function calculateDaysOfClassForMonth(
+  month: Date,
+  day: number, // 0 = Sunday, 6 = Saturday
+  validClassDays: Date[],
+  startBound?: Date,
+  endBound?: Date
+): Date[] {
+  const isInSameMonth = (d1: Date, d2: Date) =>
+    d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth();
+
+  const endOfM = new Date(month.getFullYear(), month.getMonth() + 1, 0);
+  const endOfDay = (d: Date) =>
+    new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
+
+  const today = new Date();
+
+  let actualStart = new Date(month);
+  let actualEnd = endOfM;
+
+  // Apply start bound
+  if (startBound && startBound > actualStart) {
+    if (isInSameMonth(actualStart, startBound)) {
+      actualStart = startBound;
+    } else {
+      return [];
+    }
+  }
+
+  // Apply end bound
+  if (endBound && endBound < actualEnd) {
+    if (isInSameMonth(actualEnd, endBound)) {
+      actualEnd = endBound;
+    } else {
+      return [];
+    }
+  }
+
+  // ✅ Ensure we never count dates beyond today
+  if (actualEnd > today) {
+    if (isInSameMonth(actualEnd, today)) {
+      actualEnd = today;
+    } else if (today < actualStart) {
+      // If today is before the current month, no valid days
+      return [];
+    }
+  }
+
+  // Filter only valid days within actualStart–actualEnd
+  return validClassDays
+    .filter((d) => d >= actualStart && d <= endOfDay(actualEnd))
+    .filter((d) => d.getDay() === day);
+}

@@ -118,7 +118,7 @@ export const SelectChildToTrack: React.FC = () => {
   );
 
   const childUserListData = useMemo(() => {
-    return childList.length !== 0 ? childList : childListWithoutReport;
+    return [...childList, ...childListWithoutReport];
   }, [childList, childListWithoutReport]);
 
   const onSearchChange = (value: string) => {
