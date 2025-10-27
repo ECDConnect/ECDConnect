@@ -19,7 +19,8 @@ export const useGenerateAttendancePdf = () => {
     tableFootStyles?: UserOptions['footStyles'],
     pageOriantations?: jsPDFOptions['orientation'],
     tableHeaders?: any[],
-    outputName?: string
+    outputName?: string,
+    logo?: string
   ) => {
     //make landscape document
     const doc = new jsPDF(pageOriantations ?? 'landscape');
@@ -140,6 +141,8 @@ export const useGenerateAttendancePdf = () => {
         const numberOfChildren = `Number of children who attended all sessions: ${table.totalChildren}`;
         const legend = `* = child was not registered yet OR practitioner did not take attendance`;
 
+        const pageHeight = doc.internal.pageSize.height;
+
         autoTable(doc, {
           headStyles: tableHeadStyles,
           footStyles: tableFootStyles,
@@ -183,11 +186,10 @@ export const useGenerateAttendancePdf = () => {
             }
           },
           didDrawPage: (data) => {
-            // Add table header to each new page
-            // Add left header
+            logo && doc.addImage(logo, 'PNG', 10, 5, 10, 10);
             doc.setFontSize(20);
             doc.setFont('bold');
-            doc.text(content?.pageTitle ?? '', 10, 10);
+            doc.text(content?.pageTitle ?? '', 60, 10);
 
             // Add right header
             doc.setFontSize(16);
@@ -212,8 +214,6 @@ export const useGenerateAttendancePdf = () => {
             doc.text(content.text_column_two_row_three ?? '', 100, 30);
           },
         });
-
-        const pageHeight = doc.internal.pageSize.height;
 
         let afterTable = (doc as any).lastAutoTable.finalY;
         doc.setFontSize(9);

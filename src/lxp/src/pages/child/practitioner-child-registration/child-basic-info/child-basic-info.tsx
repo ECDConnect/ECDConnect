@@ -40,11 +40,8 @@ import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { ChildRegistrationDto } from '@/models/child/child-registration.dto';
 import { copyToClip } from '@utils/common/clipboard.utils';
 import { practitionerSelectors } from '@/store/practitioner';
-import { useHistory, useLocation } from 'react-router';
-import {
-  ChildRegistrationRouteState,
-  ChildRegistrationSteps,
-} from '../../child-registration/child-registration.types';
+import { useHistory } from 'react-router';
+import { ChildRegistrationSteps } from '../../child-registration/child-registration.types';
 import { CaregiverChildRegistrationModal } from '../../components/caregiver-child-registration-modal/caregiver-child-registration-modal';
 import { getUser } from '@/store/user/user.selectors';
 import ROUTES from '@/routes/routes';
@@ -80,7 +77,6 @@ export const ChildBasicInfo: React.FC<
   const dialog = useDialog();
   const dispatch = useAppDispatch();
   const history = useHistory();
-  const location = useLocation<ChildRegistrationRouteState>();
   const [checkChild, setCheckChild] = useState<ChildMatchingDto>();
   const [listItems, setListItems] = useState<UserAlertListDataItem[]>([]);
   const [registeredChild, setRegisteredChild] =
