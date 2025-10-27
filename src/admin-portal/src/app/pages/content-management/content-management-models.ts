@@ -23,6 +23,7 @@ export enum ContentName {
   ProgressTrackingCategory = 'ProgressTrackingCategory',
   ProgressTrackingSkill = 'ProgressTrackingSkill',
   ClassroomBusinessResource = 'ClassroomBusinessResource',
+  Forms = 'Form',
 }
 
 export enum StoryActivitiesTypes {
