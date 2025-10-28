@@ -9,3 +9,11 @@ export const formatDate = (value: string | number | Date) => {
     return '';
   }
 };
+
+export function ToUtcDateString(date: Date): string {
+  // Create a new UTC date using the same year, month, and day
+  const utcDate = new Date(
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+  );
+  return utcDate.toISOString(); // e.g. "2025-10-02T00:00:00.000Z"
+}
