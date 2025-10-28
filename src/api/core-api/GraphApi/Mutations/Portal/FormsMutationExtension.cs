@@ -21,7 +21,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Portal
             var englishId = new Guid("9688cd08-adef-408c-9d34-5d75ae5c44df");
             Dictionary<string, object> updateDict = new Dictionary<string, object>
             {
-                { "isPublished", isPublished }
+                { "isPublished", isPublished },
+                { "publishedDate", isPublished == "true" ? DateTime.Now.Date : ""}
             };
             contentRepo.Update(int.Parse(contentId), englishId, updateDict);
             return true;
