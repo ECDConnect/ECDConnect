@@ -20,10 +20,10 @@ log('Installing');
 clientsClaim();
 
 const wb_manifest = [
-  {
-    revision: null as any as string,
-    url: '/settings.json',
-  } as PrecacheEntry,
+  // {
+  //   revision: null as any as string,
+  //   url: '/settings.json',
+  // } as PrecacheEntry,
   {
     revision: null as any as string,
     url: '/manifest.json',

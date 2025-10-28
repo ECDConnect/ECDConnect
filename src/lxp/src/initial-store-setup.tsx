@@ -67,6 +67,7 @@ import { ClassroomService } from './services/ClassroomService';
 import { pointsActions, pointsThunkActions } from './store/points';
 import { notificationActions } from './store/notifications';
 import { pqaActions } from './store/pqa';
+import { googleLogout } from '@react-oauth/google';
 
 type IntialStoreSetupContextValues = {
   initLoading: boolean;
@@ -104,6 +105,9 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const [otherLoading, setOtherLoading] = useState(false);
 
   const resetAuth = async () => {
+    if (userAuth?.loginType === 'google') {
+      googleLogout();
+    }
     appDispatch(authActions.resetAuthState());
   };
 

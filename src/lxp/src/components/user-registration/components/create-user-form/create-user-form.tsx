@@ -24,7 +24,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FieldError, useForm } from 'react-hook-form';
 import { useHistory } from 'react-router';
 import { VerifyPhoneNumberAuthCode } from '../verify-phone-number';
@@ -34,6 +34,8 @@ interface CreateUserFormProps {
   userId?: string;
   token?: string;
   shareInfoPartners?: boolean;
+  googleEmail?: string;
+  googleCredential?: string;
 }
 
 export const CreateUserForm: React.FC<CreateUserFormProps> = ({
@@ -41,6 +43,8 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
   userId,
   token,
   shareInfoPartners,
+  googleEmail,
+  googleCredential,
 }) => {
   const { isOnline } = useOnlineStatus();
   const { setNotification } = useNotifications();
@@ -59,6 +63,8 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
   const specialCharactersMessageErrorText = `Usernames can only include letters, numbers, . , and @. Please remove any other special characters.`;
   const [isFromAuthCodeScreen, setIsFromAuthCodeScreen] = useState(false);
 
+  const isGoogleAccount = !!googleEmail && !!googleCredential;
+
   const {
     register: passwordRegister,
     watch,
@@ -70,6 +76,12 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
   });
   const { password } = watch();
 
+  useEffect(() => {
+    if (isGoogleAccount) {
+      setUsername(googleEmail);
+    }
+  }, [isGoogleAccount, googleEmail]);
+
   const validateUsername = (name: string): string | null => {
     if (!/^[a-zA-Z0-9.@]+$/.test(name)) {
       return specialCharactersMessageErrorText;
@@ -77,45 +89,46 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
     return null;
   };
 
-  const handleCreateUser = async () => {
+  const updateOaPractitioner = async () => {
     const registerOpenAccessUserInput: RegisterRequestModel = {
       username,
       password,
       phoneNumber,
-      registerType: 'username',
+      registerType: isGoogleAccount ? 'google' : 'username',
       shareInfoPartners: shareInfoPartners,
+      googleToken: googleCredential,
     };
-    if (isFromAuthCodeScreen && isOpenAccess) {
-      setIsLoading(true);
-      const userUpdated = await new AuthService()
-        ?.UpdateOaPractitioner(Config?.authApi, registerOpenAccessUserInput)
-        .catch((error) => {
-          setPhoneMessageError('Phone number already in use!');
-          setIsLoading(false);
-          return;
-        });
-      if (userUpdated) {
-        setIsLoading(false);
-        setOpenVerifyPhoneNumber(true);
-        setNotification({
-          title: ` Successfully registered!`,
-          variant: NOTIFICATION.SUCCESS,
-        });
-      } else {
-        setNotification({
-          title: ` Successfully registered!`,
-          variant: NOTIFICATION.SUCCESS,
-        });
-        setIsLoading(false);
-      }
 
+    setIsLoading(true);
+    const userUpdated = await new AuthService()
+      ?.UpdateOaPractitioner(Config?.authApi, registerOpenAccessUserInput)
+      .catch((error) => {
+        setPhoneMessageError('Phone number already in use!');
+        setIsLoading(false);
+      });
+    if (userUpdated) {
       setIsLoading(false);
-      return;
+      setOpenVerifyPhoneNumber(true);
+      setNotification({
+        title: ` Successfully registered!`,
+        variant: NOTIFICATION.SUCCESS,
+      });
+    } else {
+      setNotification({
+        title: ` Successfully registered!`,
+        variant: NOTIFICATION.SUCCESS,
+      });
+      setIsLoading(false);
     }
 
+    setIsLoading(false);
+  };
+
+  const checkUsernamePhonerNumber = async (): Promise<boolean> => {
     const body: CheckUsernamePhoneNumberModel = {
       username: username,
       userId: userId,
+      googleToken: googleCredential,
     };
     setIsLoading(true);
     const checkUsername = await new AuthService()
@@ -127,59 +140,48 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
           variant: NOTIFICATION.ERROR,
         });
         setIsLoading(false);
-        return;
+      });
+    return !!checkUsername;
+  };
+
+  const registerOpenAccessUser = async (): Promise<boolean> => {
+    const registerOpenAccessUserInput: RegisterRequestModel = {
+      username,
+      password,
+      phoneNumber,
+      registerType: isGoogleAccount ? 'google' : 'username',
+      shareInfoPartners: shareInfoPartners,
+      googleToken: googleCredential,
+    };
+
+    const userCreated = await new AuthService()
+      ?.RegisterOpenAccessUser(Config?.authApi, registerOpenAccessUserInput)
+      .catch((error) => {
+        setNotification({
+          title: `Failed to create the username!`,
+          variant: NOTIFICATION.ERROR,
+        });
+        setIsLoading(false);
       });
 
-    if (isOpenAccess) {
-      const registerOpenAccessUserInput: RegisterRequestModel = {
-        username,
-        password,
-        phoneNumber,
-        registerType: 'username',
-        shareInfoPartners: shareInfoPartners,
-      };
-
-      if (checkUsername) {
-        const validationError = validateUsername(username);
-        if (validationError) {
-          setMessageError(validationError);
-          setIsLoading(false);
-          return;
-        }
-
-        const userCreated = await new AuthService()
-          ?.RegisterOpenAccessUser(Config?.authApi, registerOpenAccessUserInput)
-          .catch((error) => {
-            // setMessageError(specialCharactersMessageErrorText);
-
-            setNotification({
-              title: `Failed to create the username!`,
-              variant: NOTIFICATION.ERROR,
-            });
-            setIsLoading(false);
-            return;
-          });
-
-        if (userCreated) {
-          setIsLoading(false);
-          setOpenVerifyPhoneNumber(true);
-          setNotification({
-            title: `Successfully registered!`,
-            variant: NOTIFICATION.SUCCESS,
-          });
-        } else {
-          setNotification({
-            title: `Registration failed. Please try again.`,
-            variant: NOTIFICATION.ERROR,
-          });
-          setIsLoading(false);
-        }
-      }
-
+    if (userCreated) {
       setIsLoading(false);
-      return;
+      setOpenVerifyPhoneNumber(true);
+      setNotification({
+        title: `Successfully registered!`,
+        variant: NOTIFICATION.SUCCESS,
+      });
+    } else {
+      setNotification({
+        title: `Registration failed. Please try again.`,
+        variant: NOTIFICATION.ERROR,
+      });
+      setIsLoading(false);
     }
+    return !!userCreated;
+  };
 
+  const updateUsername = async (): Promise<boolean> => {
     const updateUserInputModel: UpdateUsernameModel = {
       userId: userId!,
       username,
@@ -188,30 +190,68 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
       shareInfo: true,
     };
 
-    if (checkUsername) {
-      const updateUsername = await new AuthService()
-        ?.UpdateUsername(Config?.authApi, updateUserInputModel)
-        .catch((error) => {
-          // setMessageError(specialCharactersMessageErrorText);
-          setIsLoading(false);
-          return;
-        });
-
-      if (updateUsername) {
+    const result = await new AuthService()
+      ?.UpdateUsername(Config?.authApi, updateUserInputModel)
+      .catch((error) => {
         setIsLoading(false);
-        history.push(ROUTES.LOGIN);
+      });
+
+    return !!result;
+  };
+
+  const handleCreateUser = async () => {
+    if (isFromAuthCodeScreen && isOpenAccess) {
+      await updateOaPractitioner();
+      return;
+    }
+
+    if (!(await checkUsernamePhonerNumber())) {
+      setIsLoading(false);
+      return;
+    }
+
+    if (isOpenAccess) {
+      const validationError = validateUsername(username);
+      if (validationError) {
+        setMessageError(validationError);
+        setIsLoading(false);
+        return;
+      }
+
+      if (await registerOpenAccessUser()) {
+        setIsLoading(false);
+        setOpenVerifyPhoneNumber(true);
         setNotification({
-          title: ` Successfully registered!`,
+          title: `Successfully registered!`,
           variant: NOTIFICATION.SUCCESS,
         });
       } else {
         setNotification({
-          title: ` Successfully registered!`,
-          variant: NOTIFICATION.SUCCESS,
+          title: `Registration failed. Please try again.`,
+          variant: NOTIFICATION.ERROR,
         });
         setIsLoading(false);
       }
+
+      setIsLoading(false);
+      return;
     }
+
+    if (await updateUsername()) {
+      setIsLoading(false);
+      history.push(ROUTES.LOGIN);
+      setNotification({
+        title: ` Successfully registered!`,
+        variant: NOTIFICATION.SUCCESS,
+      });
+    } else {
+      setNotification({
+        title: ` Successfully registered!`,
+        variant: NOTIFICATION.SUCCESS,
+      });
+      setIsLoading(false);
+    }
+
     setIsLoading(false);
   };
 
@@ -229,7 +269,6 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
 
   // Function for cellphone number preventing characters
   const handleKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
-    const inputEvent = event as React.KeyboardEvent<HTMLInputElement>;
     const allowedKeys = [
       'Backspace',
       'Delete',
@@ -269,7 +308,11 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
         <FormInput
           textInputType="input"
           label="Username or email"
-          subLabel="Must be unique. Tip: use something that you will remember."
+          subLabel={
+            isGoogleAccount
+              ? undefined
+              : 'Must be unique. Tip: use something that you will remember.'
+          }
           placeholder="e.g. Nothando_123"
           onChange={(e) => {
             const inputValue = e?.target?.value?.replace(/\s+/g, '');
@@ -323,17 +366,19 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
             )}
           </div>
         )}
-        <div className="mt-4">
-          <PasswordInput
-            label={'Password'}
-            nameProp={'password'}
-            sufficIconColor={'uiMidDark'}
-            value={password}
-            strengthMeterVisible={true}
-            className="mb-5"
-            register={passwordRegister}
-          />
-        </div>
+        {!isGoogleAccount && (
+          <div className="mt-4">
+            <PasswordInput
+              label={'Password'}
+              nameProp={'password'}
+              sufficIconColor={'uiMidDark'}
+              value={password}
+              strengthMeterVisible={true}
+              className="mb-5"
+              register={passwordRegister}
+            />
+          </div>
+        )}
         <div>
           <Button
             className={'mt-3 w-full rounded-2xl'}

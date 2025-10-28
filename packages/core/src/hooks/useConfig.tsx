@@ -6,7 +6,7 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { Config } from '../config';
+import { Config, ConfigType } from '../config';
 
 export interface ConfigContextType {
   children: React.ReactNode | React.ReactNode[] | null;
@@ -15,28 +15,37 @@ export interface ConfigContextType {
 
 const configContext = createContext<ConfigContextType>({} as ConfigContextType);
 
-function ConfigProvider({ children }: { children: ReactNode }): JSX.Element {
-  const [loading, setLoading] = useState<boolean>(true);
+function ConfigProvider({
+  config,
+  children,
+}: {
+  config: ConfigType;
+  children: ReactNode;
+}): JSX.Element {
+  const [loading] = useState<boolean>(false);
 
   const getData = () => {
-    setLoading(true);
-    fetch(`${window.location.origin}/settings.json`)
-      .then(function (res) {
-        return res.json();
-      })
-      .then(function (data) {
-        if (data) {
-          Config.authApi = data.authApi;
-          Config.graphQlApi = data.graphQlApi;
-          Config.themeUrl = data.themeUrl;
-        }
+    Config.authApi = config.authApi;
+    Config.graphQlApi = config.graphQlApi;
+    Config.themeUrl = config.themeUrl;
+    //setLoading(true);
+    // fetch(`${window.location.origin}/settings.json`)
+    //   .then(function (res) {
+    //     return res.json();
+    //   })
+    //   .then(function (data) {
+    //     if (data) {
+    //       Config.authApi = data.authApi;
+    //       Config.graphQlApi = data.graphQlApi;
+    //       Config.themeUrl = data.themeUrl;
+    //     }
 
-        setLoading(false);
-      })
-      .catch(function (err) {
-        console.log(err, ' error');
-        setLoading(false);
-      });
+    //     setLoading(false);
+    //   })
+    //   .catch(function (err) {
+    //     console.log(err, ' error');
+    //     setLoading(false);
+    //   });
   };
 
   useEffect(() => {
