@@ -4724,6 +4724,7 @@ export type Mutation = {
   updateProgressTrackingSkill?: Maybe<ProgressTrackingSkill>;
   updateProgressTrackingSubCategory?: Maybe<ProgressTrackingSubCategory>;
   updateProvince?: Maybe<Province>;
+  updatePublishStatus: Scalars['Boolean'];
   updateRace?: Maybe<Race>;
   updateReasonForLeaving?: Maybe<ReasonForLeaving>;
   updateReasonForPractitionerLeaving?: Maybe<ReasonForPractitionerLeaving>;
@@ -6812,6 +6813,11 @@ export type MutationUpdateProgressTrackingSubCategoryArgs = {
 export type MutationUpdateProvinceArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<ProvinceInput>;
+};
+
+export type MutationUpdatePublishStatusArgs = {
+  contentId?: InputMaybe<Scalars['String']>;
+  isPublished?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationUpdateRaceArgs = {
