@@ -127,7 +127,6 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction, userId }) => {
 
   // Function for cellphone number preventing characters
   const handleKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
-    const inputEvent = event as React.KeyboardEvent<HTMLInputElement>;
     const allowedKeys = [
       'Backspace',
       'Delete',

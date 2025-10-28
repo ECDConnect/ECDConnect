@@ -30,6 +30,7 @@ import { stopReportingRuntimeErrors } from 'react-error-overlay';
 import { useTenant } from './hooks/useTenant';
 import { Helmet } from 'react-helmet';
 import { userActions, userSelectors } from './store/user';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 if (process.env.NODE_ENV === 'development') {
   stopReportingRuntimeErrors();
@@ -246,7 +247,13 @@ const App: React.FC = () => {
     </IonApp>
   );
 
-  return appShell;
+  return (
+    <GoogleOAuthProvider
+      clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID || ''}
+    >
+      {appShell}
+    </GoogleOAuthProvider>
+  );
 };
 
 export default App;

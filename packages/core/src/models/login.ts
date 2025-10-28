@@ -6,6 +6,8 @@ export interface LoginRequestModel {
   preferId?: boolean;
   passportField?: string;
   idField?: string;
+  googleToken?: string;
+  googleCode?: string;
 }
 
 export interface AuthUser {
@@ -13,6 +15,9 @@ export interface AuthUser {
   expires_in: string;
   id: string;
   resetData: boolean;
+  userMustConfirmAuthCode: boolean;
+  loginType: '' | 'google' | 'facebook';
+  userName: string;
 }
 
 export interface RegisterRequestModel {
@@ -26,4 +31,5 @@ export interface RegisterRequestModel {
   phoneNumber?: string;
   registerType?: string;
   shareInfoPartners?: boolean;
+  googleToken?: string;
 }

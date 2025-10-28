@@ -35,7 +35,7 @@ export const Article = ({
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
   const [articleText, setArticleText] = useState<string>('');
-  const [language, setLanguage] = useState({ locale: 'en-za' });
+  const [language] = useState({ locale: 'en-za' });
   const [availableLanguages, setAvailableLanguages] = useState([
     language.locale as LanguageCode,
   ]);

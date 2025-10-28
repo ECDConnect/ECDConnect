@@ -63,6 +63,7 @@
     "@ionic/react-router": "^5.5.0",
     "@reach/window-size": "0.11.2",
     "@react-aria/progress": "^3.4.0",
+    "@react-oauth/google": "^0.12.2",
     "@reduxjs/toolkit": "^1.8.5",
     "@tailwindcss/forms": "^0.3.3",
     "@tailwindcss/postcss7-compat": "^2.2.4",
@@ -144,7 +145,7 @@
     "zxcvbn-typescript": "^5.0.1"
   },
   "devDependencies": {
-    "@babel/plugin-proposal-private-property-in-object":"^7.21.0",
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.0",
     "@capacitor/cli": "3.3.1",
     "@commitlint/cli": "^16.2.3",
     "@commitlint/config-conventional": "^16.2.1",
