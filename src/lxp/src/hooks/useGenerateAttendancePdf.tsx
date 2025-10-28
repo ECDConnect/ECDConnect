@@ -186,7 +186,7 @@ export const useGenerateAttendancePdf = () => {
             }
           },
           didDrawPage: (data) => {
-            logo && doc.addImage(logo, 'PNG', 10, 5, 20, 8);
+            logo && doc.addImage(logo, 'PNG', 10, 5, 10, 10);
             doc.setFontSize(20);
             doc.setFont('bold');
             doc.text(content?.pageTitle ?? '', 60, 10);
