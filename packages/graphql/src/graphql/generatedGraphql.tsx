@@ -3242,6 +3242,7 @@ export type Form = {
   isPublished?: Maybe<Scalars['String']>;
   logoUrl?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
+  provider?: Maybe<Scalars['String']>;
   publishedDate?: Maybe<Scalars['String']>;
   roleIds?: Maybe<Scalars['String']>;
   updatedDate?: Maybe<Scalars['String']>;
@@ -3254,6 +3255,7 @@ export type FormInput = {
   isPublished?: InputMaybe<Scalars['String']>;
   logoUrl?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
+  provider?: InputMaybe<Scalars['String']>;
   publishedDate?: InputMaybe<Scalars['String']>;
   roleIds?: InputMaybe<Scalars['String']>;
   updatedDate?: InputMaybe<Scalars['String']>;
