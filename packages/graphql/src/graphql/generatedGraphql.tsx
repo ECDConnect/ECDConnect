@@ -3233,6 +3233,84 @@ export type FollowUpVisitModelInput = {
   visitTypeId?: InputMaybe<Scalars['UUID']>;
 };
 
+export type Form = {
+  __typename?: 'Form';
+  adminDescription?: Maybe<Scalars['String']>;
+  description?: Maybe<Scalars['String']>;
+  formPages?: Maybe<Array<Maybe<FormPage>>>;
+  id?: Maybe<Scalars['Int']>;
+  isPublished?: Maybe<Scalars['String']>;
+  logoUrl?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  pdfUrl?: Maybe<Scalars['String']>;
+  provider?: Maybe<Scalars['String']>;
+  publishedDate?: Maybe<Scalars['String']>;
+  roleIds?: Maybe<Scalars['String']>;
+  updatedDate?: Maybe<Scalars['String']>;
+};
+
+export type FormInput = {
+  adminDescription?: InputMaybe<Scalars['String']>;
+  description?: InputMaybe<Scalars['String']>;
+  formPages?: InputMaybe<Scalars['String']>;
+  isPublished?: InputMaybe<Scalars['String']>;
+  logoUrl?: InputMaybe<Scalars['String']>;
+  name?: InputMaybe<Scalars['String']>;
+  pdfUrl?: InputMaybe<Scalars['String']>;
+  provider?: InputMaybe<Scalars['String']>;
+  publishedDate?: InputMaybe<Scalars['String']>;
+  roleIds?: InputMaybe<Scalars['String']>;
+  updatedDate?: InputMaybe<Scalars['String']>;
+};
+
+export type FormPage = {
+  __typename?: 'FormPage';
+  description?: Maybe<Scalars['String']>;
+  formQuestions?: Maybe<Array<Maybe<FormQuestion>>>;
+  id?: Maybe<Scalars['Int']>;
+  name?: Maybe<Scalars['String']>;
+  stepNr?: Maybe<Scalars['String']>;
+  updatedDate?: Maybe<Scalars['String']>;
+};
+
+export type FormPageInput = {
+  description?: InputMaybe<Scalars['String']>;
+  formQuestions?: InputMaybe<Scalars['String']>;
+  name?: InputMaybe<Scalars['String']>;
+  stepNr?: InputMaybe<Scalars['String']>;
+  updatedDate?: InputMaybe<Scalars['String']>;
+};
+
+export type FormQuestion = {
+  __typename?: 'FormQuestion';
+  answerType?: Maybe<Scalars['String']>;
+  description?: Maybe<Scalars['String']>;
+  formQuestionOptions?: Maybe<Array<Maybe<FormQuestionOption>>>;
+  id?: Maybe<Scalars['Int']>;
+  name?: Maybe<Scalars['String']>;
+  updatedDate?: Maybe<Scalars['String']>;
+};
+
+export type FormQuestionInput = {
+  answerType?: InputMaybe<Scalars['String']>;
+  description?: InputMaybe<Scalars['String']>;
+  formQuestionOptions?: InputMaybe<Scalars['String']>;
+  name?: InputMaybe<Scalars['String']>;
+  updatedDate?: InputMaybe<Scalars['String']>;
+};
+
+export type FormQuestionOption = {
+  __typename?: 'FormQuestionOption';
+  id?: Maybe<Scalars['Int']>;
+  name?: Maybe<Scalars['String']>;
+  updatedDate?: Maybe<Scalars['String']>;
+};
+
+export type FormQuestionOptionInput = {
+  name?: InputMaybe<Scalars['String']>;
+  updatedDate?: InputMaybe<Scalars['String']>;
+};
+
 export type Gender = {
   __typename?: 'Gender';
   description?: Maybe<Scalars['String']>;
@@ -4300,6 +4378,10 @@ export type Mutation = {
   createDocumentType?: Maybe<DocumentType>;
   createEducation?: Maybe<Education>;
   createFeedbackType?: Maybe<FeedbackType>;
+  createForm?: Maybe<Scalars['String']>;
+  createFormPage?: Maybe<Scalars['String']>;
+  createFormQuestion?: Maybe<Scalars['String']>;
+  createFormQuestionOption?: Maybe<Scalars['String']>;
   createGender?: Maybe<Gender>;
   createGrant?: Maybe<Grant>;
   createHealthPromotion?: Maybe<Scalars['String']>;
@@ -4414,6 +4496,10 @@ export type Mutation = {
   deleteDocumentType?: Maybe<Scalars['Boolean']>;
   deleteEducation?: Maybe<Scalars['Boolean']>;
   deleteFeedbackType?: Maybe<Scalars['Boolean']>;
+  deleteForm?: Maybe<Scalars['Boolean']>;
+  deleteFormPage?: Maybe<Scalars['Boolean']>;
+  deleteFormQuestion?: Maybe<Scalars['Boolean']>;
+  deleteFormQuestionOption?: Maybe<Scalars['Boolean']>;
   deleteGender?: Maybe<Scalars['Boolean']>;
   deleteGrant?: Maybe<Scalars['Boolean']>;
   deleteHealthPromotion?: Maybe<Scalars['Boolean']>;
@@ -4585,6 +4671,10 @@ export type Mutation = {
   updateDocumentType?: Maybe<DocumentType>;
   updateEducation?: Maybe<Education>;
   updateFeedbackType?: Maybe<FeedbackType>;
+  updateForm?: Maybe<Form>;
+  updateFormPage?: Maybe<FormPage>;
+  updateFormQuestion?: Maybe<FormQuestion>;
+  updateFormQuestionOption?: Maybe<FormQuestionOption>;
   updateGender?: Maybe<Gender>;
   updateGrant?: Maybe<Grant>;
   updateHealthPromotion?: Maybe<HealthPromotion>;
@@ -4638,6 +4728,7 @@ export type Mutation = {
   updateProgressTrackingSkill?: Maybe<ProgressTrackingSkill>;
   updateProgressTrackingSubCategory?: Maybe<ProgressTrackingSubCategory>;
   updateProvince?: Maybe<Province>;
+  updatePublishStatus: Scalars['Boolean'];
   updateRace?: Maybe<Race>;
   updateReasonForLeaving?: Maybe<ReasonForLeaving>;
   updateReasonForPractitionerLeaving?: Maybe<ReasonForPractitionerLeaving>;
@@ -5044,6 +5135,30 @@ export type MutationCreateEducationArgs = {
 
 export type MutationCreateFeedbackTypeArgs = {
   input?: InputMaybe<FeedbackTypeInput>;
+};
+
+export type MutationCreateFormArgs = {
+  input: FormInput;
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationCreateFormPageArgs = {
+  input: FormPageInput;
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationCreateFormQuestionArgs = {
+  input: FormQuestionInput;
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationCreateFormQuestionOptionArgs = {
+  input: FormQuestionOptionInput;
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationCreateGenderArgs = {
@@ -5558,6 +5673,30 @@ export type MutationDeleteEducationArgs = {
 
 export type MutationDeleteFeedbackTypeArgs = {
   id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDeleteFormArgs = {
+  id: Scalars['String'];
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationDeleteFormPageArgs = {
+  id: Scalars['String'];
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationDeleteFormQuestionArgs = {
+  id: Scalars['String'];
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationDeleteFormQuestionOptionArgs = {
+  id: Scalars['String'];
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationDeleteGenderArgs = {
@@ -6364,6 +6503,34 @@ export type MutationUpdateFeedbackTypeArgs = {
   input?: InputMaybe<FeedbackTypeInput>;
 };
 
+export type MutationUpdateFormArgs = {
+  id: Scalars['String'];
+  input: FormInput;
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationUpdateFormPageArgs = {
+  id: Scalars['String'];
+  input: FormPageInput;
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationUpdateFormQuestionArgs = {
+  id: Scalars['String'];
+  input: FormQuestionInput;
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationUpdateFormQuestionOptionArgs = {
+  id: Scalars['String'];
+  input: FormQuestionOptionInput;
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationUpdateGenderArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<GenderInput>;
@@ -6650,6 +6817,11 @@ export type MutationUpdateProgressTrackingSubCategoryArgs = {
 export type MutationUpdateProvinceArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<ProvinceInput>;
+};
+
+export type MutationUpdatePublishStatusArgs = {
+  contentId?: InputMaybe<Scalars['String']>;
+  isPublished?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationUpdateRaceArgs = {
@@ -8913,6 +9085,10 @@ export type Query = {
   GetAllDocumentType?: Maybe<Array<Maybe<DocumentType>>>;
   GetAllEducation?: Maybe<Array<Maybe<Education>>>;
   GetAllFeedbackType?: Maybe<Array<Maybe<FeedbackType>>>;
+  GetAllForm: Array<Maybe<Form>>;
+  GetAllFormPage: Array<Maybe<FormPage>>;
+  GetAllFormQuestion: Array<Maybe<FormQuestion>>;
+  GetAllFormQuestionOption: Array<Maybe<FormQuestionOption>>;
   GetAllGender?: Maybe<Array<Maybe<Gender>>>;
   GetAllGrant?: Maybe<Array<Maybe<Grant>>>;
   GetAllHealthPromotion: Array<Maybe<HealthPromotion>>;
@@ -9035,6 +9211,10 @@ export type Query = {
   GetDocumentTypeById?: Maybe<DocumentType>;
   GetEducationById?: Maybe<Education>;
   GetFeedbackTypeById?: Maybe<FeedbackType>;
+  GetFormById: Array<Maybe<Form>>;
+  GetFormPageById: Array<Maybe<FormPage>>;
+  GetFormQuestionById: Array<Maybe<FormQuestion>>;
+  GetFormQuestionOptionById: Array<Maybe<FormQuestionOption>>;
   GetGenderById?: Maybe<Gender>;
   GetGrantById?: Maybe<Grant>;
   GetHealthPromotionById: Array<Maybe<HealthPromotion>>;
@@ -9543,6 +9723,26 @@ export type QueryGetAllFeedbackTypeArgs = {
   order?: InputMaybe<Array<FeedbackTypeSortInput>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<FeedbackTypeFilterInput>;
+};
+
+export type QueryGetAllFormArgs = {
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryGetAllFormPageArgs = {
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryGetAllFormQuestionArgs = {
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryGetAllFormQuestionOptionArgs = {
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryGetAllGenderArgs = {
@@ -10148,6 +10348,30 @@ export type QueryGetEducationByIdArgs = {
 export type QueryGetFeedbackTypeByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<FeedbackTypeFilterInput>;
+};
+
+export type QueryGetFormByIdArgs = {
+  id?: InputMaybe<Scalars['Int']>;
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryGetFormPageByIdArgs = {
+  id?: InputMaybe<Scalars['Int']>;
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryGetFormQuestionByIdArgs = {
+  id?: InputMaybe<Scalars['Int']>;
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryGetFormQuestionOptionByIdArgs = {
+  id?: InputMaybe<Scalars['Int']>;
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryGetGenderByIdArgs = {

@@ -29,9 +29,10 @@ import { useTenant } from '../../hooks/useTenant';
 import { LinksSharedResource } from './components/links-shared/links-shared-resource';
 import ResourceList from './sub-pages/content-list/components/resources/resource-list';
 import StoryBookList from './sub-pages/content-list/components/create-story/story-book-list';
-import { pluralize } from '../pages.utils';
+import { pluralize } from '../../utils/string-utils/pages.utils';
 import ActivityList from './sub-pages/content-list/components/activities/activity-list';
 import ThemeList from './sub-pages/content-list/components/themes/theme-list';
+import FormList from './sub-pages/content-list/components/forms/form-list';
 
 export function ContentManagement() {
   const [selectedType, setSelectedType] = useState<ContentTypeDto>();
@@ -102,6 +103,11 @@ export function ContentManagement() {
         id: ContentManagementTabs.RESOURCES.id,
         href: '',
       },
+      {
+        name: ContentManagementTabs.FORMS.name,
+        id: ContentManagementTabs.FORMS.id,
+        href: '',
+      },
     ];
   };
 
@@ -125,6 +131,11 @@ export function ContentManagement() {
       {
         name: ContentManagementTabs.RESOURCES.name,
         id: ContentManagementTabs.RESOURCES.id,
+        href: '',
+      },
+      {
+        name: ContentManagementTabs.FORMS.name,
+        id: ContentManagementTabs.FORMS.id,
         href: '',
       },
     ];
@@ -175,7 +186,7 @@ export function ContentManagement() {
 
   const refreshParent = () => {
     refetch();
-    refrechDefinitions();
+    // refrechDefinitions();
   };
 
   useEffect(() => {
@@ -481,7 +492,7 @@ export function ContentManagement() {
                     'flex w-5/12 justify-center'
                   )}
                 >
-                  {item.name}
+                  {item.name === 'Form' ? 'Forms' : item.name}
                 </button>
               ))}
             </div>
@@ -537,6 +548,7 @@ export function ContentManagement() {
                       ContentTypes.CLASSROOMBUSINESSRESOURCE &&
                     selectedType.name !==
                       ContentTypes.PROGRESS_TRACKING_SKILL &&
+                    selectedType.name != ContentTypes.FORM &&
                     languages?.GetAllLanguage &&
                     specialType === '' && (
                       <ContentList
@@ -663,6 +675,21 @@ export function ContentManagement() {
                         }}
                       />
                     )}
+                  {selectedType?.name === ContentTypes.FORM && (
+                    <FormList
+                      optionDefinitions={dataDefinitions?.contentDefinitions}
+                      contentType={selectedType}
+                      specialType={specialType}
+                      languages={languages?.GetAllLanguage}
+                      viewContent={getContentValues}
+                      refreshParent={() => refreshParent()}
+                      selectedTab={selectedTab}
+                      onSearch={search}
+                      choosedSectionTitle={choosedSectionTitle}
+                      setSelectedType={setSelectedType}
+                      dataTypes={dataTypes}
+                    />
+                  )}
                   {!!subTabs?.length && !!specialType && (
                     <div className="flex">
                       <StackedList

@@ -22,6 +22,7 @@ import EditSkills from './components/edit-skills/edit-skills';
 import { ContentTypes } from '../../../../constants/content-management';
 import CreateResource from './components/create-resource/create-resource';
 import { ArrowRightIcon } from '@heroicons/react/solid';
+import FormView from '../content-list/components/forms/form-view';
 
 export interface ContentWorkflowProps {
   contentView: ContentManagementView;
@@ -112,6 +113,8 @@ export default function ContentWorkflow({
             ? 'Edit business resource'
             : 'Add new business resource';
         }
+      } else if (item.name === ContentTypes.FORM) {
+        return 'View Form';
       }
       return '';
     },
@@ -126,6 +129,13 @@ export default function ContentWorkflow({
         return choosedSectionTitle;
       }
       return item.description;
+    },
+    [choosedSectionTitle]
+  );
+
+  const breadCrumbFirstName = useCallback(
+    (item: ContentTypeDto) => {
+      return 'Content management';
     },
     [choosedSectionTitle]
   );
@@ -277,6 +287,31 @@ export default function ContentWorkflow({
             </div>
           </>
         );
+      case ContentTypes.FORM:
+        return (
+          <>
+            <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
+              <div className="h-full py-6">
+                <div className="relative h-full" style={{ minHeight: '36rem' }}>
+                  <div className="rounded-lg border-b py-5">
+                    <div key={selectedLanguageId}>
+                      <FormView
+                        optionDefinitions={optionDefinitions}
+                        contentValues={getOrderedContentValues(
+                          currentContent?.contentValues
+                        )}
+                        content={contentView.content}
+                        contentType={contentType}
+                        cancelEdit={() => goBack()}
+                        savedContent={savedContent}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        );
       default:
         return null;
     }
@@ -288,6 +323,7 @@ export default function ContentWorkflow({
         <div className="flex flex-row overflow-auto rounded-md bg-white">
           {!isCompareMode &&
             contentType?.name !== ContentName.Theme &&
+            contentType?.name !== ContentName.Forms &&
             languages
               ?.filter((item) => item?.isActive === true)
               .map((item: LanguageDto, index: number) => (
@@ -318,7 +354,7 @@ export default function ContentWorkflow({
             type="button"
             className="text-secondary outline-none text-14 inline-flex w-full cursor-pointer items-center border border-transparent px-4 py-2 font-medium "
           >
-            Programme
+            {breadCrumbFirstName(contentType)}
             <ArrowRightIcon className="text-secondary ml-1 mr-1 h-4 w-4" />
             {breadCrumbParentName(contentType)}
             <ArrowRightIcon className="text-secondary ml-1 h-4 w-4" />
@@ -333,6 +369,7 @@ export default function ContentWorkflow({
             contentType?.name === ContentName.Theme ||
             contentType?.name === ContentName.ProgressTrackingCategory ||
             contentType?.name === ContentName.ClassroomBusinessResource ||
+            contentType?.name === ContentName.Forms ||
             contentType?.name === ContentName.ProgressTrackingSkill ? (
               handleNoDynamicForms(contentType?.name)
             ) : (

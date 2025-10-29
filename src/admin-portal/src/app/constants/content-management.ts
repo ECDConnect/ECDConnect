@@ -1,7 +1,8 @@
 export const ContentManagementTabs = {
-  PROCESS: { id: 2, name: 'Progress' },
-  PROGRAMMES: { id: 3, name: 'Programme' },
-  RESOURCES: { id: 4, name: 'Resources' },
+  PROCESS: { id: 2, name: 'Progress', displayName: 'Progress' },
+  PROGRAMMES: { id: 3, name: 'Programme', displayName: 'Programme' },
+  RESOURCES: { id: 4, name: 'Resources', displayName: 'Resources' },
+  FORMS: { id: 5, name: 'Form', displayName: 'Forms' },
 };
 
 export const ContentTypes = {
@@ -19,6 +20,7 @@ export const ContentTypes = {
   ACTIVITY: 'Activity',
   CLASSROOMBUSINESSRESOURCE: 'ClassroomBusinessResource',
   STORY_BOOK: 'StoryBook',
+  FORM: 'Form',
 };
 
 export const ContentForms = {
