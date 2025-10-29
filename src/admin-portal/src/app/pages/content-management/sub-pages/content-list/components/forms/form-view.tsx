@@ -92,13 +92,25 @@ export default function FormView({
   }, [dialog]);
 
   const handleDownload = () => {
-    const link = document.createElement('a');
-    link.href = formData?.pdfUrl;
-    link.download = 'Self-assessment Preview.pdf'; // optional: sets the download name
-    link.click();
-  };
+    if (!formData?.pdfUrl) {
+      console.error('No PDF URL found.');
+      return;
+    }
 
-  console.log('content', content);
+    const pdfUrl = formData.pdfUrl;
+
+    // Create an invisible link element
+    const link = document.createElement('a');
+    link.href = pdfUrl;
+    link.download = 'Self-assessment Preview.pdf';
+
+    // Ensure it opens in the same tab if download attribute fails (some browsers)
+    link.target = '_blank';
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const updateForm = async (isPublished: string) => {
     setIsLoading(true);
