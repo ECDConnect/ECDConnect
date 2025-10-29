@@ -492,7 +492,7 @@ DECLARE
     form_description TEXT := 'This form will help you think about which parts of your programme you are doing well and if there are any areas that need to get better';
     form_admin_description TEXT := 'The "Self-assessment" form was developed by SmartStart, who have made the tool free to use for any organisation using ECD Connect.  The tool is not editable, but you can choose whether or not to have it available to users on {AppName}.  The self-assessment form helps practitioners to identify programme highlights & areas for improvement.';
     form_logo TEXT := 'https://ecdconnectstoragesa.blob.core.windows.net/content-image/638968036187153064_themeLogo.png';
-    form_provider TEXT := 'SmartStart'
+    form_provider TEXT := 'SmartStart';
     form_pdf TEXT := 'https://ecdconnectstoragesa.blob.core.windows.net/content-image/Self-assessment%20Preview.pdf';
     form_roleIds TEXT;
     form_pages TEXT;
