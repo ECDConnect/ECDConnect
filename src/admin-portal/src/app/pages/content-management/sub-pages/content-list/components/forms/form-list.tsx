@@ -1,21 +1,13 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { useQuery } from '@apollo/client';
+import { gql, useQuery } from '@apollo/client';
 import {
   ContentDefinitionModelDto,
   ContentTypeDto,
   ContentTypeFieldDto,
   LanguageDto,
-  useDialog,
-  useNotifications,
 } from '@ecdlink/core';
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import { renderIcon, SearchDropDownOption, Table } from '@ecdlink/ui';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { renderIcon, Table } from '@ecdlink/ui';
 import {
   ContentManagementView,
   FieldType,
@@ -53,11 +45,29 @@ export default function FormList({
   const [tableData, setTableData] = useState<any[]>();
   const [roles, setRoles] = useState<any[]>();
   const [languageId, setLanguageId] = useState<string>(LanguageId.enZa);
-  const [searchText, setSearchText] = useState('Search by title or content...');
   const [displayFields, setDisplayFields] = useState<ContentTypeFieldDto[]>();
-  const [typeFilter, setTypeFilter] = useState<SearchDropDownOption<string>[]>(
-    []
-  );
+
+  const fields =
+    contentType?.fields
+      ?.filter((x) => x.fieldName !== 'formPages')
+      .map((x) => x.fieldName) ?? [];
+
+  const getAllCall = `GetAll${contentType?.name}`;
+  const query = gql` 
+    query ${getAllCall} ($localeId: String) {
+      ${getAllCall} (localeId: $localeId) {
+        id
+        ${fields.join('\n')}
+        }
+      }
+  `;
+
+  const { data: formListData } = useQuery(query, {
+    fetchPolicy: 'cache-and-network',
+    variables: {
+      localeId: languageId?.toString(),
+    },
+  });
 
   // get & set roles for forms
   const { data: roleData, refetch } = useQuery(RoleList, {
@@ -133,27 +143,27 @@ export default function FormList({
     }
   }, [choosedSectionTitle, contentType]);
 
-  // let us wait for the roles to populate otherwise the roles for the form is not showing
   useEffect(() => {
-    if (contentType && contentType.content && !!roles) {
-      const rows = contentType.content.map((content) => {
-        const row: Record<string, string> = { id: content.id.toString() };
-        content.contentValues.forEach((cv) => {
-          row[cv.contentTypeField.fieldName] = cv.value || '';
-        });
-        return row;
-      });
-      setTableData(rows);
+    const fetchData = async () => {
+      if (formListData && formListData.GetAllForm && !!roles) {
+        setTableData(formListData.GetAllForm);
+      }
+    };
+
+    fetchData();
+  }, [formListData, roles]);
+
+  useEffect(() => {
+    if (tableData && tableData.length > 0) {
+      handleResetSelectedRows();
     }
-  }, [contentType, roles]);
+  }, [tableData]);
 
   const viewSelectedRow = (item?: any) => {
     const model: ContentManagementView = {
       content: item,
       languageId: languageId,
     };
-    console.log('viewSelectedRow', model);
-
     viewContent(model);
   };
 
@@ -174,7 +184,7 @@ export default function FormList({
       (item) => ({
         ...item,
         key: `form_` + item?.id,
-        title: item?.title,
+        title: `${item?.name} (${item?.provider})`,
         roleComponent: (
           <div className="ml-0 flex cursor-pointer items-center">
             {item?.roleIds.split(',').map((roleId: string) => {
@@ -213,7 +223,7 @@ export default function FormList({
                 : 'text-errorMain'
             }
           >
-            {item?.dataFree === 'true'
+            {item?.isPublished === 'true'
               ? renderIcon('CheckCircleIcon', 'success h-6 w-6')
               : renderIcon('XCircleIcon', 'error h-6 w-6')}
           </p>
@@ -223,7 +233,7 @@ export default function FormList({
 
   const columns: Icolumn[] = [
     {
-      field: 'name',
+      field: 'title',
       use: 'Form title',
     },
     {
@@ -235,6 +245,10 @@ export default function FormList({
       use: 'Published?',
     },
   ];
+
+  const handleResetSelectedRows = () => {
+    tableRef?.current?.resetSelectedRows();
+  };
 
   return (
     <>

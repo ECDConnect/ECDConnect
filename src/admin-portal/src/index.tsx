@@ -1,4 +1,4 @@
-import { ConfigProvider } from '@ecdlink/core';
+import { ConfigProvider, SnackbarProvider } from '@ecdlink/core';
 import ReactDOM from 'react-dom';
 import ConfigWrapper from './app/config-wrapper';
 import './app/i18n';
@@ -7,9 +7,11 @@ import { TenantContextProvider } from './app/hooks/useTenant';
 
 ReactDOM.render(
   <ConfigProvider>
-    <TenantContextProvider>
-      <ConfigWrapper />
-    </TenantContextProvider>
+    <SnackbarProvider>
+      <TenantContextProvider>
+        <ConfigWrapper />
+      </TenantContextProvider>
+    </SnackbarProvider>
   </ConfigProvider>,
   document.getElementById('root')
 );
