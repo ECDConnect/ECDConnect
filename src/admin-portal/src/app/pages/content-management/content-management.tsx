@@ -186,7 +186,7 @@ export function ContentManagement() {
 
   const refreshParent = () => {
     refetch();
-    refrechDefinitions();
+    // refrechDefinitions();
   };
 
   useEffect(() => {
