@@ -151,13 +151,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                                 AppUser = practitioner.User, 
                                 IsRegistered = practitioner.IsRegistered, 
                                 BelongsToPreschool = hasPreschool, 
-                                Note = hasPreschool ? "This practitioner is linked to a different SmartStart programme" : null };
+                                Note = hasPreschool ? "This practitioner is linked to a different programme" : null };
                         }
                         else
                         {
                             return new PractitionerUserAndNote() { 
                                 AppUser = practitioner.User, 
-                                Note = "This practitioner is linked to a different SmartStart programme", 
+                                Note = "This practitioner is linked to a different programme", 
                                 IsRegistered = classroom != null };
                         }
                     }
