@@ -490,9 +490,9 @@ DECLARE
 
     form_name TEXT := 'Self-assessment';
     form_description TEXT := 'This form will help you think about which parts of your programme you are doing well and if there are any areas that need to get better';
-    form_admin_description TEXT := 'The "Self-assessment" form was developed by SmartStart, who have made the tool free to use for any organisation using ECD Connect.  The tool is not editable, but you can choose whether or not to have it available to users on {AppName}.  The self-assessment form helps practitioners to identify programme highlights & areas for improvement.';
+    form_admin_description TEXT := 'The "Self-assessment" form was developed by SmartStart, who have made the tool free to use for any organisation using ECD Connect. The tool is not editable, but you can choose whether or not to have it available to users on {AppName}. The self-assessment form helps practitioners to identify programme highlights & areas for improvement.';
     form_logo TEXT := 'https://ecdconnectstoragesa.blob.core.windows.net/content-image/638968036187153064_themeLogo.png';
-    form_provider TEXT := 'SmartStart'
+    form_provider TEXT := 'SmartStart';
     form_pdf TEXT := 'https://ecdconnectstoragesa.blob.core.windows.net/content-image/Self-assessment%20Preview.pdf';
     form_roleIds TEXT;
     form_pages TEXT;
@@ -512,7 +512,6 @@ DECLARE
     ctFieldId10 INT := (SELECT "Id" FROM "ContentTypeField" WHERE "FieldName" = 'pdfUrl' AND "ContentTypeId" = contentTypeId);
 
 BEGIN
-
     FOREACH tenant_id IN ARRAY tenant_ids LOOP    
         RAISE NOTICE 'tenant_id: %', tenant_id;
 
@@ -521,9 +520,9 @@ BEGIN
             SELECT string_agg("Id"::text, ',')
             FROM (
                 SELECT DISTINCT "Id"
-                FROM "AspNetRoles" anr
-                WHERE anr."Name" IN ('Practitioner', 'Principal')
-                  AND anr."TenantId" = tenant_id::uuid
+                FROM "AspNetRoles"
+                WHERE "Name" IN ('Practitioner', 'Principal')
+                  AND "TenantId" = tenant_id::uuid
                 ORDER BY "Id"
             ) sub
         );
@@ -562,9 +561,8 @@ BEGIN
             (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId5, '', tenant_id::uuid, now(), now()),
             (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId6, form_pages, tenant_id::uuid, now(), now()),
             (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId7, form_logo, tenant_id::uuid, now(), now()),
-            (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId8, form_admin_description, tenant_id::uuid, now(), now(),
-            (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId9, form_provider, tenant_id::uuid, now(), now(),
+            (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId8, form_admin_description, tenant_id::uuid, now(), now()),
+            (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId9, form_provider, tenant_id::uuid, now(), now()),
             (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId10, form_pdf, tenant_id::uuid, now(), now());
-
     END LOOP;
 END $$;

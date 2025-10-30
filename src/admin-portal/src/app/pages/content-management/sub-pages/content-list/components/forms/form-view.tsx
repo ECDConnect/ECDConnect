@@ -233,7 +233,7 @@ export default function FormView({
                   textColor="white"
                   type="filled"
                   isLoading={isLoading}
-                  className="bg-quatenary hover:bg-uiMid focus:outline-none mt-1 inline-flex items-center justify-center rounded-xl border-2 border-transparent px-24 py-2 font-bold text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                  className="bg-quatenary focus:outline-none mt-1 inline-flex items-center justify-center rounded-xl border-2 border-transparent px-24 py-2 font-bold text-white shadow-sm focus:ring-2 focus:ring-offset-2"
                 />
               </div>
             </>
@@ -250,7 +250,7 @@ export default function FormView({
                   textColor="quatenary"
                   color="transparent"
                   isLoading={isLoading}
-                  className="bg-adminPortalBg hover:bg-uiMid focus:outline-none border-quatenary text-quatenary mt-1 inline-flex items-center justify-center rounded-xl border-2 px-24 py-2 font-bold shadow-sm focus:ring-2 focus:ring-offset-2"
+                  className="bg-adminPortalBg focus:outline-none border-quatenary text-quatenary mt-1 inline-flex items-center justify-center rounded-xl border-2 px-24 py-2 font-bold shadow-sm focus:ring-2 focus:ring-offset-2"
                 />
               </div>
             </>
