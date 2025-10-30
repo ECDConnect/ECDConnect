@@ -222,7 +222,8 @@ export const AddPractitioner = ({
             practitionerPhoneNumber,
             classroom?.preschoolCode!,
             classroom?.name!,
-            user?.id!
+            user?.id!,
+            idNumber || passport
           )
           .catch((error) => {
             console.log(error);

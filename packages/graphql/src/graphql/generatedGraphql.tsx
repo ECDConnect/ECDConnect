@@ -3641,6 +3641,79 @@ export type InputValidationError = {
   row: Scalars['Int'];
 };
 
+export type Invite = {
+  __typename?: 'Invite';
+  acceptedDate?: Maybe<Scalars['DateTime']>;
+  id: Scalars['UUID'];
+  insertedDate: Scalars['DateTime'];
+  isAccepted?: Maybe<Scalars['Boolean']>;
+  isActive: Scalars['Boolean'];
+  practitioner?: Maybe<Practitioner>;
+  practitionerId?: Maybe<Scalars['UUID']>;
+  principal?: Maybe<Practitioner>;
+  principalId: Scalars['UUID'];
+  rejectedDate?: Maybe<Scalars['DateTime']>;
+  status?: Maybe<Scalars['String']>;
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+  user?: Maybe<ApplicationUser>;
+  userId?: Maybe<Scalars['UUID']>;
+};
+
+export type InviteFilterInput = {
+  acceptedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  and?: InputMaybe<Array<InviteFilterInput>>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  isAccepted?: InputMaybe<BooleanOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  or?: InputMaybe<Array<InviteFilterInput>>;
+  practitioner?: InputMaybe<PractitionerFilterInput>;
+  practitionerId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  principal?: InputMaybe<PractitionerFilterInput>;
+  principalId?: InputMaybe<ComparableGuidOperationFilterInput>;
+  rejectedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  status?: InputMaybe<StringOperationFilterInput>;
+  updatedBy?: InputMaybe<StringOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  user?: InputMaybe<ApplicationUserFilterInput>;
+  userId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+};
+
+export type InviteInput = {
+  AcceptedDate?: InputMaybe<Scalars['DateTime']>;
+  Id?: InputMaybe<Scalars['UUID']>;
+  IsAccepted?: InputMaybe<Scalars['Boolean']>;
+  IsActive: Scalars['Boolean'];
+  Practitioner?: InputMaybe<PractitionerInput>;
+  PractitionerId?: InputMaybe<Scalars['UUID']>;
+  Principal?: InputMaybe<PractitionerInput>;
+  PrincipalId: Scalars['UUID'];
+  RejectedDate?: InputMaybe<Scalars['DateTime']>;
+  Status?: InputMaybe<Scalars['String']>;
+  UpdatedBy?: InputMaybe<Scalars['String']>;
+  User?: InputMaybe<ApplicationUserInput>;
+  UserId?: InputMaybe<Scalars['UUID']>;
+};
+
+export type InviteSortInput = {
+  acceptedDate?: InputMaybe<SortEnumType>;
+  id?: InputMaybe<SortEnumType>;
+  insertedDate?: InputMaybe<SortEnumType>;
+  isAccepted?: InputMaybe<SortEnumType>;
+  isActive?: InputMaybe<SortEnumType>;
+  practitioner?: InputMaybe<PractitionerSortInput>;
+  practitionerId?: InputMaybe<SortEnumType>;
+  principal?: InputMaybe<PractitionerSortInput>;
+  principalId?: InputMaybe<SortEnumType>;
+  rejectedDate?: InputMaybe<SortEnumType>;
+  status?: InputMaybe<SortEnumType>;
+  updatedBy?: InputMaybe<SortEnumType>;
+  updatedDate?: InputMaybe<SortEnumType>;
+  user?: InputMaybe<ApplicationUserSortInput>;
+  userId?: InputMaybe<SortEnumType>;
+};
+
 export type KeyValuePairOfInt32AndNullableOfInt32 = {
   __typename?: 'KeyValuePairOfInt32AndNullableOfInt32';
   key: Scalars['Int'];
@@ -4388,6 +4461,7 @@ export type Mutation = {
   createHierarchyEntity?: Maybe<HierarchyEntity>;
   createIncomeStatements?: Maybe<Scalars['String']>;
   createInfographics?: Maybe<Scalars['String']>;
+  createInvite?: Maybe<Invite>;
   createLanguage?: Maybe<Language>;
   createLearner?: Maybe<Learner>;
   createMeetingType?: Maybe<MeetingType>;
@@ -4506,6 +4580,7 @@ export type Mutation = {
   deleteHierarchyEntity?: Maybe<Scalars['Boolean']>;
   deleteIncomeStatements?: Maybe<Scalars['Boolean']>;
   deleteInfographics?: Maybe<Scalars['Boolean']>;
+  deleteInvite?: Maybe<Scalars['Boolean']>;
   deleteLanguage?: Maybe<Scalars['Boolean']>;
   deleteLearner?: Maybe<Scalars['Boolean']>;
   deleteMeetingType?: Maybe<Scalars['Boolean']>;
@@ -4682,6 +4757,7 @@ export type Mutation = {
   updateIncomeStatement?: Maybe<IncomeStatementModel>;
   updateIncomeStatements?: Maybe<IncomeStatements>;
   updateInfographics?: Maybe<Infographics>;
+  updateInvite?: Maybe<Invite>;
   updateLanguage?: Maybe<Language>;
   updateLearner?: Maybe<Learner>;
   updateLearnerHierarchy?: Maybe<Learner>;
@@ -5189,6 +5265,10 @@ export type MutationCreateInfographicsArgs = {
   input: InfographicsInput;
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationCreateInviteArgs = {
+  input?: InputMaybe<InviteInput>;
 };
 
 export type MutationCreateLanguageArgs = {
@@ -5727,6 +5807,10 @@ export type MutationDeleteInfographicsArgs = {
   id: Scalars['String'];
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationDeleteInviteArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
 };
 
 export type MutationDeleteLanguageArgs = {
@@ -6276,6 +6360,7 @@ export type MutationSendPractitionerInviteToApplicationArgs = {
 };
 
 export type MutationSendPractitionerInviteToPreSchoolArgs = {
+  idOrPassport?: InputMaybe<Scalars['String']>;
   practitionerPhoneNumber?: InputMaybe<Scalars['String']>;
   preSchoolName?: InputMaybe<Scalars['String']>;
   preSchoolNameCode?: InputMaybe<Scalars['String']>;
@@ -6569,6 +6654,11 @@ export type MutationUpdateInfographicsArgs = {
   input: InfographicsInput;
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationUpdateInviteArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  input?: InputMaybe<InviteInput>;
 };
 
 export type MutationUpdateLanguageArgs = {
@@ -9095,6 +9185,7 @@ export type Query = {
   GetAllHierarchyEntity?: Maybe<Array<Maybe<HierarchyEntity>>>;
   GetAllIncomeStatements: Array<Maybe<IncomeStatements>>;
   GetAllInfographics: Array<Maybe<Infographics>>;
+  GetAllInvite?: Maybe<Array<Maybe<Invite>>>;
   GetAllLanguage?: Maybe<Array<Maybe<Language>>>;
   GetAllLearner?: Maybe<Array<Maybe<Learner>>>;
   GetAllMeetingType?: Maybe<Array<Maybe<MeetingType>>>;
@@ -9221,6 +9312,7 @@ export type Query = {
   GetHierarchyEntityById?: Maybe<HierarchyEntity>;
   GetIncomeStatementsById: Array<Maybe<IncomeStatements>>;
   GetInfographicsById: Array<Maybe<Infographics>>;
+  GetInviteById?: Maybe<Invite>;
   GetLanguageById?: Maybe<Language>;
   GetLearnerById?: Maybe<Learner>;
   GetMeetingTypeById?: Maybe<MeetingType>;
@@ -9386,6 +9478,7 @@ export type Query = {
   countGender?: Maybe<Scalars['Int']>;
   countGrant?: Maybe<Scalars['Int']>;
   countHierarchyEntity?: Maybe<Scalars['Int']>;
+  countInvite?: Maybe<Scalars['Int']>;
   countLanguage?: Maybe<Scalars['Int']>;
   countLearner?: Maybe<Scalars['Int']>;
   countMeetingType?: Maybe<Scalars['Int']>;
@@ -9456,6 +9549,9 @@ export type Query = {
   incomeStatementPdf?: Maybe<Scalars['String']>;
   incomeStatements?: Maybe<Array<Maybe<IncomeStatementModel>>>;
   infographics: Array<Maybe<Infographics>>;
+  inviteByPractitionerId?: Maybe<Invite>;
+  inviteByPractitionerIdNum?: Maybe<Invite>;
+  invitesByPrincipalId?: Maybe<Array<Maybe<Invite>>>;
   lastPractitionerInviteDate?: Maybe<Scalars['String']>;
   latestUrlInviteForUser?: Maybe<Scalars['String']>;
   mapPractitionerToPrincipal?: Maybe<Principal>;
@@ -9776,6 +9872,12 @@ export type QueryGetAllIncomeStatementsArgs = {
 export type QueryGetAllInfographicsArgs = {
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryGetAllInviteArgs = {
+  order?: InputMaybe<Array<InviteSortInput>>;
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<InviteFilterInput>;
 };
 
 export type QueryGetAllLanguageArgs = {
@@ -10405,6 +10507,11 @@ export type QueryGetInfographicsByIdArgs = {
   id?: InputMaybe<Scalars['Int']>;
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryGetInviteByIdArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  where?: InputMaybe<InviteFilterInput>;
 };
 
 export type QueryGetLanguageByIdArgs = {
@@ -11203,6 +11310,11 @@ export type QueryCountHierarchyEntityArgs = {
   where?: InputMaybe<ComparableInt32OperationFilterInput>;
 };
 
+export type QueryCountInviteArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
 export type QueryCountLanguageArgs = {
   pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ComparableInt32OperationFilterInput>;
@@ -11530,6 +11642,18 @@ export type QueryIncomeStatementsArgs = {
 export type QueryInfographicsArgs = {
   locale?: InputMaybe<Scalars['String']>;
   section?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryInviteByPractitionerIdArgs = {
+  id?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryInviteByPractitionerIdNumArgs = {
+  idNum?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryInvitesByPrincipalIdArgs = {
+  id?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryLastPractitionerInviteDateArgs = {

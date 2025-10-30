@@ -15,9 +15,12 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Namotion.Reflection;
+using Org.BouncyCastle.Math.EC.Rfc7748;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static EcdLink.Api.CoreApi.Constants;
 
 namespace ECDLink.Core.Services
 {
@@ -135,7 +138,25 @@ namespace ECDLink.Core.Services
                                         (!x.DateAccepted.HasValue && x.DateLinked.HasValue && x.DateLinked.Value.Date < sevenDaysBack.Date))
                                         .OrderBy(x => x.InsertedDate)
                                         .ToList();
+            var inviteRepo = _repositoryFactory.CreateRepository<Invite>(userContext: _applicationUserId);
+            var invitesToExpire = inviteRepo.GetAll().Where(x => x.Status == InviteStatus.Pending && x.InsertedDate < sevenDaysBack.Date).ToList();
 
+            if (invitesToExpire.Any())
+            {
+                foreach (var invite in invitesToExpire)
+                {
+                    var expireUser = _userManager.FindByIdAsync(invite.UserId).Result;
+                    if (expireUser != null)
+                    {
+                        invite.Status = InviteStatus.Expired;
+                        invite.IsActive = false;
+                        invite.UserId = null; 
+                        inviteRepo.Update(invite);
+                    
+                        _userManager.DeleteAsync(expireUser);
+                     }
+                }
+            }
             if (pracsToExpire.Count > 0)
             {
                 foreach (var prac in pracsToExpire)
@@ -144,15 +165,15 @@ namespace ECDLink.Core.Services
                     {
                         //Reassign all classes and programmes back to principal
                         AddReassignmentForPractitioner(
-                            prac.UserId.ToString(), 
-                            prac.PrincipalHierarchy.ToString(), 
-                            "Removing link between Principal and Practitioner", 
+                            prac.UserId.ToString(),
+                            prac.PrincipalHierarchy.ToString(),
+                            "Removing link between Principal and Practitioner",
                             DateTime.Now,
-                            _applicationUserId.ToStringOrNull(), 
-                            null, 
+                            _applicationUserId.ToStringOrNull(),
+                            null,
                             true);
 
-                        _notificationService.ExpireNotificationsTypesForUser(prac.PrincipalHierarchy.ToString(), TemplateTypeConstants.RejectedInvitation, prac.User.FirstName + " " + prac.User.Surname );
+                        _notificationService.ExpireNotificationsTypesForUser(prac.PrincipalHierarchy.ToString(), TemplateTypeConstants.RejectedInvitation, prac.User.FirstName + " " + prac.User.Surname);
                     }
 
                     prac.DateToBeRemoved = null;
@@ -163,7 +184,7 @@ namespace ECDLink.Core.Services
                     prac.PrincipalHierarchy = null;
                     prac.ShareInfo = false;
 
-                    practiRepo.Update(prac);                    
+                    practiRepo.Update(prac);
                 }
             }
         }
