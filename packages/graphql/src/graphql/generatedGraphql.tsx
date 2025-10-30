@@ -3641,6 +3641,14 @@ export type InputValidationError = {
   row: Scalars['Int'];
 };
 
+export type JourneyTimeline = {
+  __typename?: 'JourneyTimeline';
+  dateCompleted?: Maybe<Scalars['String']>;
+  dateValue: Scalars['DateTime'];
+  iconName?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+};
+
 export type KeyValuePairOfInt32AndNullableOfInt32 = {
   __typename?: 'KeyValuePairOfInt32AndNullableOfInt32';
   key: Scalars['Int'];
@@ -9456,6 +9464,7 @@ export type Query = {
   incomeStatementPdf?: Maybe<Scalars['String']>;
   incomeStatements?: Maybe<Array<Maybe<IncomeStatementModel>>>;
   infographics: Array<Maybe<Infographics>>;
+  journeyTimeline?: Maybe<Array<Maybe<JourneyTimeline>>>;
   lastPractitionerInviteDate?: Maybe<Scalars['String']>;
   latestUrlInviteForUser?: Maybe<Scalars['String']>;
   mapPractitionerToPrincipal?: Maybe<Principal>;
@@ -11530,6 +11539,10 @@ export type QueryIncomeStatementsArgs = {
 export type QueryInfographicsArgs = {
   locale?: InputMaybe<Scalars['String']>;
   section?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryJourneyTimelineArgs = {
+  userId: Scalars['UUID'];
 };
 
 export type QueryLastPractitionerInviteDateArgs = {
