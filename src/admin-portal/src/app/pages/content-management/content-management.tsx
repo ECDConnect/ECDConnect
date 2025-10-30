@@ -675,7 +675,7 @@ export function ContentManagement() {
                         }}
                       />
                     )}
-                  {selectedType?.name === ContentTypes.FORM && (
+                  {selectedType?.name === ContentTypes.FORM && !specialType && (
                     <FormList
                       optionDefinitions={dataDefinitions?.contentDefinitions}
                       contentType={selectedType}
