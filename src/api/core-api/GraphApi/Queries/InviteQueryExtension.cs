@@ -94,18 +94,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public Invite GetInviteByPractitionerIdNum(
+        public Invite GetInviteByPhoneNumber(
         [Service] IHttpContextAccessor contextAccessor,
         IGenericRepositoryFactory repoFactory,
-        string idNum)
+        string phoneNumber)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateRepository<Invite>(userContext: uId);
 
             var invite = dbRepo.GetAll()
-                .Include(x => x.Practitioner)
-                .ThenInclude(x => x.User)
-                .FirstOrDefault(x => !x.IsAccepted.HasValue && x.Practitioner.User.IdNumber.Equals(idNum) && DateTime.Now <= x.InsertedDate.AddDays(30));
+                .Include(x => x.User)
+                .FirstOrDefault(x => x.IsActive && !x.IsAccepted.HasValue && x.User.PhoneNumber.Equals(phoneNumber));
 
             return invite;
         }

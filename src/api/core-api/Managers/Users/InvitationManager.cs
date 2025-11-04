@@ -96,6 +96,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users
                 invite.Status = InviteStatus.Rejected;
                 invite.RejectedDate = DateTime.UtcNow;
                 invite.IsAccepted = false;
+                invite.IsActive = false;
                 _inviteRepo.Update(invite);
             }
             return true;
@@ -119,6 +120,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users
                 invite.Status = InviteStatus.Accepted;
                 invite.AcceptedDate = DateTime.UtcNow;
                 invite.IsAccepted = true;
+                invite.IsActive = false;
                 _inviteRepo.Update(invite);
             }
             return true;
@@ -146,6 +148,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users
                 invite.Status = InviteStatus.Accepted;
                 invite.AcceptedDate = DateTime.UtcNow;
                 invite.IsAccepted = true;
+                invite.IsActive = false;
                 _inviteRepo.Update(invite);
             } else
             {
@@ -156,7 +159,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users
                     UserId = userId,
                     PractitionerId = practitionerId,
                     PrincipalId = principalId,
-                    Status = InviteStatus.Accepted_Preschool
+                    Status = InviteStatus.Accepted_Preschool,
+                    IsActive = false,
                 };
 
                 _inviteRepo.Insert(newInvite);
