@@ -1,11 +1,20 @@
+using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.ContentManagement.Repositories;
+using ECDLink.DataAccessLayer.Context;
+using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
+using ECDLink.Security.Extensions;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Portal
 {
@@ -27,5 +36,69 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Portal
             contentRepo.Update(int.Parse(contentId), englishId, updateDict);
             return true;
         }
+
+        public async Task<AssessmentReport> SubmitJourneyAssessmentFormData(
+            [Service] IJourneyService journeyService,
+            [Service] IHttpContextAccessor contextAccessor,
+            AuthenticationDbContext dbContext,
+            string formId,
+            string formName,
+            List<AssessmentPageInput> input)
+        {
+            if (!input.Any())
+                return null;
+
+            var applicationUserId = contextAccessor.HttpContext.GetUser()?.Id;
+            if (applicationUserId == null) return null;
+
+            var visitType = dbContext.VisitTypes.FirstOrDefault(x => x.NormalizedName.ToLower() == formName.ToLower() && x.TenantId == TenantExecutionContext.Tenant.Id);
+            var practitioner = dbContext.Practitioners.FirstOrDefault(x => x.UserId == applicationUserId);
+
+            if (visitType == null || practitioner == null)
+                return null;
+
+            if (!int.TryParse(formId, out var parsedFormId))
+                return null;
+
+            var newVisit = new Visit
+            {
+                Id = Guid.NewGuid(),
+                VisitTypeId = visitType.Id,
+                PractitionerId = practitioner.Id,
+                Attended = true,
+                PlannedVisitDate = DateTime.Now,
+                ActualVisitDate = DateTime.Now,
+                DueDate = DateTime.Now,
+                FormContentId = parsedFormId,
+                TenantId = TenantExecutionContext.Tenant.Id,
+                Risk = "normal"
+            };
+
+            await dbContext.Visits.AddAsync(newVisit);
+
+            var visitData = input.SelectMany(page => page.FormQuestions.Select(question =>
+            {
+                int.TryParse(question.Id, out int questionContentId);
+                return new VisitData
+                {
+                    Id = Guid.NewGuid(),
+                    VisitId = newVisit.Id,
+                    VisitName = formName,
+                    VisitSection = page.Name,
+                    Question = question.Name,
+                    QuestionContentId = questionContentId,
+                    QuestionAnswer = question.Answer,
+                    AnswerContentId = question.AnswerId,
+                    TenantId = TenantExecutionContext.Tenant.Id
+                };
+            })).ToList();
+
+            await dbContext.VisitData.AddRangeAsync(visitData);
+
+            await dbContext.SaveChangesAsync();
+
+            return journeyService.GetJourneyAssessmentReport(newVisit.Id);
+        }
     }
+
 }

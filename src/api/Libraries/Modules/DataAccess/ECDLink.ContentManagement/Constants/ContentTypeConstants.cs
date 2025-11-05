@@ -29,7 +29,10 @@ namespace ECDLink.ContentManagement.Constants
         public const string ProgressTrackingAgeGroup = "ProgressTrackingAgeGroup";
         public const string ResourceLink = "ResourceLink";
         public const string ClassroomBusinessResource = "ClassroomBusinessResource";
-
+        public const string Form = "Form";
+        public const string FormPage = "FormPage";
+        public const string FormQuestion = "FormQuestion";
+        public const string FormQuestionOption = "FormQuestionOption";
 
         public const int ProgrammeRoutineId = 1;
         public const int ProgrammeRoutineItemId = 2;

@@ -3,6 +3,7 @@ import { RootState, ThunkApiType } from '../types';
 import { PQAService } from '@/services/PQAService';
 import {
   FollowUpVisitModelInput,
+  JourneyTimeline,
   PractitionerTimeline,
   SupportVisitModelInput,
   UpdateVisitPlannedVisitDateModelInput,
@@ -11,6 +12,10 @@ import {
   VisitModelInput,
 } from '@ecdlink/graphql';
 import { MergedCmsVisitDataInputModelInput, PQAFormType } from './pqa.types';
+import {
+  AssessmentFormDto,
+  AssessmentReportDto,
+} from '@/models/journey/Journey.dto';
 
 export const PqaActions = {
   GET_PRACTITIONER_TIMELINE: 'getPractitionerTimeline',
@@ -24,6 +29,11 @@ export const PqaActions = {
   ADD_SELF_ASSESSMENT_FOR_PRACTITIONER: 'addSelfAssessmentForPractitioner',
   UPDATE_PLANNEDVISITDATE: 'updatePlannedVisitDate',
   ADD_COACH_VISIT_INVITE_FOR_PRACTITIONER: 'addCoachVisitInviteForPractitioner',
+  GET_JOURNEY_TIMELINE: 'getJourneyTimeline',
+  GET_JOURNEY_PUBLISHED_ASSESSMENT_FORMS: 'getJourneyPublishedAssessmentForms',
+  GET_JOURNEY_ASSESSMENT_FORM_DATA: 'getJourneyAssessmentFormData',
+  SUBMIT_JOURNEY_ASSESSMENT_FORM_DATA: 'submitJourneyAssessmentFormData',
+  GET_JOURNEY_ASSESSMENT_REPORT: 'getJourneyAssessmentReport',
 };
 
 export const addVisitFormData = createAsyncThunk<
@@ -363,6 +373,131 @@ export const getVisitDataForVisitId = createAsyncThunk<
         return await new PQAService(
           userAuth?.auth_token
         ).getVisitDataForVisitId(visitId);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getJourneyTimeline = createAsyncThunk<
+  JourneyTimeline[],
+  { userId: string },
+  ThunkApiType<RootState>
+>(
+  PqaActions.GET_JOURNEY_TIMELINE,
+  async ({ userId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new PQAService(userAuth?.auth_token).getJourneyTimeline(
+          userId
+        );
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getJourneyPublishedAssessmentForms = createAsyncThunk<
+  AssessmentFormDto[],
+  {},
+  ThunkApiType<RootState>
+>(
+  PqaActions.GET_JOURNEY_PUBLISHED_ASSESSMENT_FORMS,
+  async ({}, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new PQAService(
+          userAuth?.auth_token
+        ).getJourneyPublishedAssessmentForms();
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getJourneyAssessmentFormData = createAsyncThunk<
+  AssessmentFormDto,
+  { id: number },
+  ThunkApiType<RootState>
+>(
+  PqaActions.GET_JOURNEY_ASSESSMENT_FORM_DATA,
+  async ({ id }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new PQAService(
+          userAuth?.auth_token
+        ).getJourneyAssessmentFormData(id);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getJourneyAssessmentReport = createAsyncThunk<
+  AssessmentReportDto,
+  { visitId: string },
+  ThunkApiType<RootState>
+>(
+  PqaActions.GET_JOURNEY_ASSESSMENT_REPORT,
+  async ({ visitId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new PQAService(
+          userAuth?.auth_token
+        ).getJourneyAssessmentReport(visitId);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const submitJourneyAssessmentFormData = createAsyncThunk<
+  any,
+  { formId: string; formName: string; input: any[] },
+  ThunkApiType<RootState>
+>(
+  PqaActions.SUBMIT_JOURNEY_ASSESSMENT_FORM_DATA,
+  async ({ formId, formName, input }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new PQAService(
+          userAuth?.auth_token
+        ).submitJourneyAssessmentFormData(formId, formName, input);
       } else {
         return rejectWithValue('no access token, profile check required');
       }

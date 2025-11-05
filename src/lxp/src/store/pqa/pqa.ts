@@ -11,6 +11,10 @@ import {
   getPractitionerTimeline,
   getVisitDataForVisitId,
   updateVisitPlannedVisitDate,
+  getJourneyTimeline,
+  getJourneyPublishedAssessmentForms,
+  getJourneyAssessmentFormData,
+  getJourneyAssessmentReport,
 } from './pqa.actions';
 import { PQAFormType, PQAState } from './pqa.types';
 import {
@@ -53,6 +57,10 @@ const pqaSlice = createSlice({
       state.reAccreditationFollowUpVisitFormData = [];
       state.selfAssessmentFormData = [];
       state.selfAssessmentPreviousFormData = [];
+      state.journeyTimeline = [];
+      state.journeyPublishedAssessmentForms = [];
+      state.journeyAssessmentFormData = {};
+      state.journeyAssessmentReport = [];
     },
     updateVisitPlannedVisitDate: (
       state,
@@ -260,6 +268,63 @@ const pqaSlice = createSlice({
         ];
       }
     });
+    builder.addCase(getJourneyTimeline.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+      const userId = action.meta.arg.userId;
+
+      if (state.journeyTimeline?.length) {
+        if (!state.journeyTimeline.some((item) => item.userId === userId)) {
+          state.journeyTimeline = [
+            ...state.journeyTimeline,
+            { userId, timeline: action.payload },
+          ];
+          return;
+        }
+
+        const newState = state?.journeyTimeline?.map((item) => {
+          if (item.userId === userId) {
+            return { ...item, timeline: action.payload };
+          }
+
+          return item;
+        });
+
+        state.journeyTimeline = newState;
+      } else {
+        state.journeyTimeline = [
+          {
+            userId,
+            timeline: action.payload,
+          },
+        ];
+      }
+    });
+    builder.addCase(
+      getJourneyPublishedAssessmentForms.fulfilled,
+      (state, action) => {
+        state.journeyPublishedAssessmentForms = action.payload;
+      }
+    );
+    builder.addCase(getJourneyAssessmentFormData.fulfilled, (state, action) => {
+      state.journeyAssessmentFormData = action.payload;
+    });
+    builder.addCase(getJourneyAssessmentReport.fulfilled, (state, action) => {
+      const { visitId } = action.payload;
+
+      // Initialize the array if it's not defined
+      if (!Array.isArray(state.journeyAssessmentReport)) {
+        state.journeyAssessmentReport = [];
+      }
+
+      const exists = state.journeyAssessmentReport.some(
+        (item) => item.visitId === visitId
+      );
+
+      if (!exists) {
+        state.journeyAssessmentReport.push(action.payload);
+      }
+    });
+
     builder.addCase(getPractitionersForCoach.fulfilled, (state, action) => {
       // @ts-ignore
       state.coachPractitionersTimeline = action?.payload?.map((item) => ({

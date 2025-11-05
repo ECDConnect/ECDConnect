@@ -21,7 +21,8 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         public string VisitSection { get; set; }
         public string Question { get; set; }
         public string QuestionAnswer { get; set; }
-
+        public int? QuestionContentId { get; set; }
+        public string AnswerContentId { get; set; }
         public virtual ICollection<VisitDataStatus> VisitDataStatus { get; set; }
     }
 
