@@ -1,4 +1,7 @@
--- remove visitTypes not in use
+-- remove GG visitTypes not in use
+delete from "Visit" where "VisitTypeId" in (select vt."Id"  from "VisitType" vt where "Type" in ('child', 'mother'));
+delete from "VisitData" where "VisitId" in (select "Id" from "Visit" where "VisitTypeId" in (select vt."Id"  from "VisitType" vt where "Type" in ('child', 'mother')));
+delete from "VisitDataStatus" where "VisitDataId" in (select "Id" from "VisitData" where "VisitId" in (select "Id" from "Visit" where "VisitTypeId" in (select vt."Id"  from "VisitType" vt where "Type" in ('child', 'mother'))));
 delete from "VisitType" where "Type" in ('child', 'mother');
 
 ALTER TABLE public."Visit" ADD "FormContentId" int NULL;
