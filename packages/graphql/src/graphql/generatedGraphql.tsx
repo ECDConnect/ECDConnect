@@ -3709,6 +3709,79 @@ export type InputValidationError = {
   row: Scalars['Int'];
 };
 
+export type Invite = {
+  __typename?: 'Invite';
+  acceptedDate?: Maybe<Scalars['DateTime']>;
+  id: Scalars['UUID'];
+  insertedDate: Scalars['DateTime'];
+  isAccepted?: Maybe<Scalars['Boolean']>;
+  isActive: Scalars['Boolean'];
+  practitioner?: Maybe<Practitioner>;
+  practitionerId?: Maybe<Scalars['UUID']>;
+  principal?: Maybe<Practitioner>;
+  principalId: Scalars['UUID'];
+  rejectedDate?: Maybe<Scalars['DateTime']>;
+  status?: Maybe<Scalars['String']>;
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+  user?: Maybe<ApplicationUser>;
+  userId?: Maybe<Scalars['UUID']>;
+};
+
+export type InviteFilterInput = {
+  acceptedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  and?: InputMaybe<Array<InviteFilterInput>>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  isAccepted?: InputMaybe<BooleanOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  or?: InputMaybe<Array<InviteFilterInput>>;
+  practitioner?: InputMaybe<PractitionerFilterInput>;
+  practitionerId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  principal?: InputMaybe<PractitionerFilterInput>;
+  principalId?: InputMaybe<ComparableGuidOperationFilterInput>;
+  rejectedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  status?: InputMaybe<StringOperationFilterInput>;
+  updatedBy?: InputMaybe<StringOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  user?: InputMaybe<ApplicationUserFilterInput>;
+  userId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+};
+
+export type InviteInput = {
+  AcceptedDate?: InputMaybe<Scalars['DateTime']>;
+  Id?: InputMaybe<Scalars['UUID']>;
+  IsAccepted?: InputMaybe<Scalars['Boolean']>;
+  IsActive: Scalars['Boolean'];
+  Practitioner?: InputMaybe<PractitionerInput>;
+  PractitionerId?: InputMaybe<Scalars['UUID']>;
+  Principal?: InputMaybe<PractitionerInput>;
+  PrincipalId: Scalars['UUID'];
+  RejectedDate?: InputMaybe<Scalars['DateTime']>;
+  Status?: InputMaybe<Scalars['String']>;
+  UpdatedBy?: InputMaybe<Scalars['String']>;
+  User?: InputMaybe<ApplicationUserInput>;
+  UserId?: InputMaybe<Scalars['UUID']>;
+};
+
+export type InviteSortInput = {
+  acceptedDate?: InputMaybe<SortEnumType>;
+  id?: InputMaybe<SortEnumType>;
+  insertedDate?: InputMaybe<SortEnumType>;
+  isAccepted?: InputMaybe<SortEnumType>;
+  isActive?: InputMaybe<SortEnumType>;
+  practitioner?: InputMaybe<PractitionerSortInput>;
+  practitionerId?: InputMaybe<SortEnumType>;
+  principal?: InputMaybe<PractitionerSortInput>;
+  principalId?: InputMaybe<SortEnumType>;
+  rejectedDate?: InputMaybe<SortEnumType>;
+  status?: InputMaybe<SortEnumType>;
+  updatedBy?: InputMaybe<SortEnumType>;
+  updatedDate?: InputMaybe<SortEnumType>;
+  user?: InputMaybe<ApplicationUserSortInput>;
+  userId?: InputMaybe<SortEnumType>;
+};
+
 export type JourneyTimeline = {
   __typename?: 'JourneyTimeline';
   dateCompleted?: Maybe<Scalars['String']>;
@@ -9561,6 +9634,9 @@ export type Query = {
   incomeStatementPdf?: Maybe<Scalars['String']>;
   incomeStatements?: Maybe<Array<Maybe<IncomeStatementModel>>>;
   infographics: Array<Maybe<Infographics>>;
+  inviteByPhoneNumber?: Maybe<Invite>;
+  inviteByPractitionerId?: Maybe<Invite>;
+  invitesByPrincipalId?: Maybe<Array<Maybe<Invite>>>;
   journeyAssessmentFormData?: Maybe<AssessmentForm>;
   journeyAssessmentReport?: Maybe<AssessmentReport>;
   journeyPublishedAssessmentForms?: Maybe<Array<Maybe<AssessmentForm>>>;
@@ -11655,6 +11731,18 @@ export type QueryIncomeStatementsArgs = {
 export type QueryInfographicsArgs = {
   locale?: InputMaybe<Scalars['String']>;
   section?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryInviteByPhoneNumberArgs = {
+  phoneNumber?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryInviteByPractitionerIdArgs = {
+  id?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryInvitesByPrincipalIdArgs = {
+  id?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryJourneyAssessmentFormDataArgs = {
