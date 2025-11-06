@@ -197,6 +197,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<SecurityNotificationManager>();
             services.AddTransient<InvitationNotificationManager>();
             services.AddTransient<CaregiverManager>();
+            services.AddTransient<InvitationManager>();
             services.AddTransient<VisitManager>();
             services.AddTransient<VisitDataManager>();
             services.AddTransient<VisitDataStatusManager>();

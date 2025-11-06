@@ -740,7 +740,7 @@ namespace ECDLink.Api.CoreApi.Services
             return true;
         }
 
-        public Practitioner AddOAPractitioner(Guid userId, string userName)
+        public Practitioner AddOAPractitioner(Guid userId, string userName, Guid? principalId)
         {
             var practitioner = _practiRepo.Insert(
                 new Practitioner
@@ -751,20 +751,24 @@ namespace ECDLink.Api.CoreApi.Services
                     InsertedDate = DateTime.Now,
                     UpdatedDate = DateTime.Now,
                     UpdatedBy = _applicationUserId.ToString(),
+                    PrincipalHierarchy = principalId,
                 });
 
-            // also create a dummy pre-school (classroom) for practitioner to test with
-            _classRepo.Insert(new Classroom
+            if (principalId == Guid.Empty)
             {
-                Id = Guid.NewGuid(),
-                Name = userName + "'s testing pre-school",
-                UserId = userId,
-                NumberPractitioners = 0,
-                NumberOfAssistants = 0,
-                NumberOfOtherAssistants = 0,
-                IsDummySchool = true,
-                Hierarchy = practitioner.Hierarchy
-            });
+                // also create a dummy pre-school (classroom) for practitioner to test with
+                _classRepo.Insert(new Classroom
+                {
+                    Id = Guid.NewGuid(),
+                    Name = userName + "'s testing pre-school",
+                    UserId = userId,
+                    NumberPractitioners = 0,
+                    NumberOfAssistants = 0,
+                    NumberOfOtherAssistants = 0,
+                    IsDummySchool = true,
+                    Hierarchy = practitioner.Hierarchy
+                });
+            }
 
             return practitioner;
         }
