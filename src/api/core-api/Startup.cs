@@ -224,6 +224,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<INotificationTasksService, NotificationTasksService>();
             services.AddTransient<IClassroomService, ClassroomService>();
             services.AddTransient<ICommunityService, CommunityService>();
+            services.AddTransient<IJourneyService, JourneyService>();
             services.AddTransient<IChildProgressReportService, ChildProgressReportService>();
             services.AddTransient<IAbsenteeService, AbsenteeService>();
             services.AddTransient<IPointsEngineService, PointsEngineService>();

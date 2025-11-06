@@ -20,7 +20,6 @@ import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import ROUTES from '@routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
-import { PractitionerJourney } from './practitioner-journey';
 import { usePrevious } from 'react-use';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
@@ -30,9 +29,13 @@ import { JoinOrAddPreschoolModal } from '@/components/join-or-add-preschool-moda
 import { useTenant } from '@/hooks/useTenant';
 import { ReassignClassPageState } from '@/pages/classroom/class-dashboard/practitioners/reassign-class/reassign-class.types';
 import { AbsenceCard } from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-profile/components/absence-card/absence-card';
+import { JourneyTimeline } from './practitioner-journey/journey-timeline-index';
+import { PublishedFormsList } from './practitioner-journey/published-forms';
+import { ViewPublishedForm } from './practitioner-journey/published-forms/published-form-view';
 
 export const PractitionerProfile: React.FC = () => {
   const [isJourneyFormOpen, setIsJourneyFormOpen] = useState(false);
+  const [isJourneyReportOpen, setIsJourneyReportOpen] = useState(false);
   const user = useSelector(userSelectors.getUser);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const isPrincipal = practitioner?.isPrincipal;
@@ -54,9 +57,11 @@ export const PractitionerProfile: React.FC = () => {
   const location = useLocation<PractitionerProfileRouteState>();
 
   const wasJourneyFormOpen = usePrevious(isJourneyFormOpen);
+  const wasJourneyReportOpen = usePrevious(isJourneyReportOpen);
 
   const selectedTab =
-    wasJourneyFormOpen && !isJourneyFormOpen
+    (wasJourneyFormOpen && !isJourneyFormOpen) ||
+    (wasJourneyReportOpen && !isJourneyReportOpen)
       ? 1
       : location.state?.tabIndex || undefined;
 
@@ -243,13 +248,26 @@ export const PractitionerProfile: React.FC = () => {
       title: 'Journey',
       initActive: false,
       child: (
-        <PractitionerJourney onIsDisplayFormChange={setIsJourneyFormOpen} />
+        <JourneyTimeline
+          onIsDisplayFormChange={setIsJourneyFormOpen}
+          onIsDisplayReportChange={setIsJourneyReportOpen}
+          tenantName={tenant.tenant?.applicationName || ''}
+        />
       ),
     },
   ];
 
+  const handleOnBack = useCallback(() => {
+    setIsJourneyFormOpen(false);
+    setIsJourneyReportOpen(false);
+  }, []);
+
   if (isJourneyFormOpen) {
-    return <PractitionerJourney onIsDisplayFormChange={setIsJourneyFormOpen} />;
+    return <PublishedFormsList onBack={handleOnBack} />;
+  }
+
+  if (isJourneyReportOpen) {
+    return <ViewPublishedForm onBack={handleOnBack} />;
   }
 
   return (

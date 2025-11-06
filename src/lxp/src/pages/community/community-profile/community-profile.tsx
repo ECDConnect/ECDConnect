@@ -10,7 +10,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
-import { useHistory, useLocation } from 'react-router';
+import { useHistory } from 'react-router';
 import { CompleteProfilePerc } from './components/complete-procile-perc/complete-profile-perc';
 import { ConnectionsCard } from './components/connections-card/connections-card';
 import { DetailsCard } from './components/details-card/details-card';
@@ -37,7 +37,6 @@ export const CommunityProfile = () => {
   const appName = tenant?.tenant?.applicationName;
   const user = useSelector(userSelectors.getUser);
   const communityProfile = useSelector(communitySelectors.getCommunityProfile);
-  const { theme } = useTheme();
   const history = useHistory();
   const [openContactDetails, setOpenContactDetails] = useState(false);
   const [openAboutDescription, setOpenAboutDescription] = useState(false);
