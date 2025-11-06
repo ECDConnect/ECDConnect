@@ -604,10 +604,11 @@ export type AssessmentReport = {
   dailyActivities?: Maybe<Array<Maybe<Scalars['String']>>>;
   generatedAt: Scalars['DateTime'];
   greenQuestions?: Maybe<Array<Maybe<Scalars['String']>>>;
+  name?: Maybe<Scalars['String']>;
   skippedActivities?: Maybe<Array<Maybe<Scalars['String']>>>;
-  summary?: Maybe<Scalars['String']>;
   textAnswer?: Maybe<Scalars['String']>;
   textQuestion?: Maybe<Scalars['String']>;
+  visitId: Scalars['UUID'];
 };
 
 export type Attendance = {
