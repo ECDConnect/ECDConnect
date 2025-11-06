@@ -8,6 +8,7 @@ import {
   FollowUpType,
   VisitType,
   PQAStateKeys,
+  JourneyTimelineState,
 } from './pqa.types';
 import { getSectionQuestions } from '@/pages/practitioner/practitioner-profile/practitioner-journey/utils';
 import {
@@ -17,6 +18,27 @@ import {
 import { chunkArray } from '@ecdlink/core';
 import { Maybe, PqaRating, Visit } from '@ecdlink/graphql';
 import { sortVisits } from '@/pages/coach/coach-practitioner-journey/timeline/utils';
+import {
+  AssessmentFormDto,
+  AssessmentReportDto,
+} from '@/models/journey/Journey.dto';
+
+export const getJourneyTimelineByIdSelector = (userId: string) => {
+  return createSelector(
+    (state: RootState) => state.pqa.journeyTimeline,
+    (items: JourneyTimelineState[] | undefined) => {
+      return items?.find((item) => item.userId === userId)?.timeline;
+    }
+  );
+};
+
+export const getJourneyTimelinePublishedFormsSelector = (
+  state: RootState
+): AssessmentFormDto[] => state.pqa.journeyPublishedAssessmentForms || [];
+
+export const getJourneyTimelineAssessmentFormDataSelector = (
+  state: RootState
+): AssessmentFormDto => state.pqa.journeyAssessmentFormData || {};
 
 export const getPractitionerTimelineByIdSelector = (userId: string) => {
   return createSelector(
@@ -26,6 +48,13 @@ export const getPractitionerTimelineByIdSelector = (userId: string) => {
     }
   );
 };
+
+export const getJourneyAssessmentReportByIdSelector = (visitId: string) =>
+  createSelector(
+    (state: RootState) => state.pqa.journeyAssessmentReport,
+    (items: AssessmentReportDto[] | undefined) =>
+      items?.find((item) => item?.visitId === visitId)
+  );
 
 export const getReAccreditationFormDataByIdSelector = (userId: string) => {
   return createSelector(
