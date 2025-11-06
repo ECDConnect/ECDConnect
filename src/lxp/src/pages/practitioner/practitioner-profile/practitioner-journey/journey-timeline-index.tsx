@@ -8,29 +8,41 @@ import {
   getJourneyTimelineByIdSelector,
 } from '@/store/pqa/pqa.selectors';
 import { getUser } from '@/store/user/user.selectors';
-import { Alert, Button, LoadingSpinner, Steps } from '@ecdlink/ui';
+import {
+  Alert,
+  Button,
+  DialogPosition,
+  LoadingSpinner,
+  Steps,
+} from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { RoleSystemNameEnum } from '@ecdlink/core';
+import { RoleSystemNameEnum, useDialog } from '@ecdlink/core';
 import { useHistory, useLocation } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
 import { journeyTimelineSteps } from './timeline/journey-timeline-steps';
 import { PractitionerProfileRouteState } from '../practitioner-profile.types';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+import { format } from 'date-fns';
 
 interface PractitionerJourneyProps {
   onIsDisplayFormChange: (value: boolean) => void;
   onIsDisplayReportChange: (value: boolean) => void;
+  tenantName: string;
 }
 
 export const JourneyTimeline = ({
   onIsDisplayFormChange,
   onIsDisplayReportChange,
+  tenantName,
 }: PractitionerJourneyProps) => {
   const [visitId, setVisitId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isFetchingReport, setIsFetchingReport] = useState(false);
 
+  const { isOnline } = useOnlineStatus();
+  const dialog = useDialog();
   const history = useHistory();
   const appDispatch = useAppDispatch();
   const location = useLocation<PractitionerProfileRouteState>();
@@ -46,7 +58,7 @@ export const JourneyTimeline = ({
   // Fetch journey timeline
   useEffect(() => {
     const fetchTimeline = async () => {
-      if (!userId) return;
+      if (!userId || !isOnline) return;
       setIsLoading(true);
       try {
         await appDispatch(getJourneyTimeline({ userId })).unwrap();
@@ -56,32 +68,52 @@ export const JourneyTimeline = ({
         setIsLoading(false);
       }
     };
-    fetchTimeline();
-  }, [appDispatch, userId]);
 
-  // Fetch report when visitId changes
+    fetchTimeline();
+  }, [appDispatch, userId, isOnline]);
+
   useEffect(() => {
     const fetchReport = async () => {
-      if (!visitId || !userId) return;
-      if (timelineReport?.visitId === visitId) {
-        onIsDisplayReportChange(true);
+      if (!visitId || !userId || !isOnline) {
+        onIsDisplayReportChange(false);
+        setIsLoading(false);
         return;
       }
-      setIsFetchingReport(true);
+
+      // If we already have the report for this visitId, skip fetch
+      if (timelineReport?.visitId === visitId) {
+        onIsDisplayReportChange(true);
+        setIsLoading(false); // Ensure loader is off
+        return;
+      }
+
+      setIsLoading(true);
+      onIsDisplayReportChange(false); // Hide report until we have data
+
       try {
         await appDispatch(getJourneyAssessmentReport({ visitId })).unwrap();
+
+        // After successful fetch, check if report actually has data
+        const hasReport =
+          !!timelineReport && timelineReport.visitId === visitId;
+        onIsDisplayReportChange(hasReport);
       } catch (error) {
         console.error('Failed to fetch journey report:', error);
+        onIsDisplayReportChange(false); // No report on error
       } finally {
-        setIsFetchingReport(false);
-        onIsDisplayReportChange(true);
+        setIsLoading(false); // Always stop loader
       }
     };
+
     fetchReport();
-  }, [visitId, userId, appDispatch]);
+  }, [visitId, userId, isOnline, appDispatch, timelineReport]);
 
   // Handle view button click
   const onView = (newVisitId: string) => {
+    if (!isOnline) {
+      showOnlineOnly();
+      return;
+    }
     setVisitId(newVisitId);
     history.replace({
       ...location,
@@ -89,17 +121,35 @@ export const JourneyTimeline = ({
     });
   };
 
+  const showOnlineOnly = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit) => {
+        return (
+          <OnlineOnlyModal
+            overrideText={'You need to go online to use this feature.'}
+            onSubmit={onSubmit}
+          ></OnlineOnlyModal>
+        );
+      },
+    });
+  };
+
   const renderAlert = () =>
     !!practitioner?.coachHierarchy && (
       <Alert
-        className="mt-2"
+        className="mb-4"
         type="info"
         variant="flat"
         title={`Need help? Contact your ${RoleSystemNameEnum.Coach} or ask for a visit.`}
         customMessage={
           <div className="mt-4">
             <Button
-              onClick={() => history.push(ROUTES.COACH.ROOT)}
+              onClick={() =>
+                history.push(ROUTES.PRACTITIONER.CONTACT_COACH, {
+                  comingFromJourneyTab: true,
+                })
+              }
               icon="UserIcon"
               text={`See ${RoleSystemNameEnum.Coach}`}
               size="normal"
@@ -112,38 +162,42 @@ export const JourneyTimeline = ({
       />
     );
 
-  if (isLoading || isFetchingReport) {
-    return (
-      <LoadingSpinner
-        size="medium"
-        spinnerColor="primary"
-        backgroundColor="uiLight"
-        className="pt-4"
-      />
-    );
-  }
-
   return (
     <div className="p-4">
-      {renderAlert()}
-      <Button
-        className="mb-4 w-full"
-        color="quatenary"
-        type="outlined"
-        textColor="quatenary"
-        icon="ClipboardListIcon"
-        text="Fill in a form"
-        onClick={() => onIsDisplayFormChange(true)}
-      />
-      {!!timelineItems && (
-        <Steps
-          items={journeyTimelineSteps({
-            timelineItems: timelineItems ?? [],
-            isLoading: isLoading,
-            onView: onView,
-          })}
-          typeColor={{ completed: 'successMain' }}
+      {isLoading ? (
+        <LoadingSpinner
+          size="medium"
+          spinnerColor="primary"
+          backgroundColor="uiLight"
+          className="pt-4"
         />
+      ) : (
+        <>
+          {renderAlert()}
+          <Button
+            className="mb-4 w-full"
+            color="quatenary"
+            type="outlined"
+            textColor="quatenary"
+            icon="ClipboardListIcon"
+            text="Fill in a form"
+            onClick={() =>
+              isOnline ? onIsDisplayFormChange(true) : showOnlineOnly()
+            }
+          />
+          <Steps
+            items={journeyTimelineSteps({
+              timelineItems: timelineItems ?? [],
+              isLoading: isLoading,
+              onView: onView,
+              tenantName: tenantName,
+              startDate:
+                format(new Date(practitioner?.startDate!), 'dd MMMM yyyy') ??
+                '',
+            })}
+            typeColor={{ completed: 'successMain' }}
+          />
+        </>
       )}
     </div>
   );

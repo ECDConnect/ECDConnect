@@ -15,6 +15,7 @@ import {
   getJourneyPublishedAssessmentForms,
   getJourneyAssessmentFormData,
   getJourneyAssessmentReport,
+  submitJourneyAssessmentFormData,
 } from './pqa.actions';
 import { PQAFormType, PQAState } from './pqa.types';
 import {
@@ -308,6 +309,27 @@ const pqaSlice = createSlice({
     builder.addCase(getJourneyAssessmentFormData.fulfilled, (state, action) => {
       state.journeyAssessmentFormData = action.payload;
     });
+    builder.addCase(
+      submitJourneyAssessmentFormData.fulfilled,
+      (state, action) => {
+        const { visitId } = action.payload.visitId;
+
+        console.log('pqa.submitJourneyAssessmentFormData', action.payload);
+
+        // Initialize the array if it's not defined
+        if (!Array.isArray(state.journeyAssessmentReport)) {
+          state.journeyAssessmentReport = [];
+        }
+
+        const exists = state.journeyAssessmentReport.some(
+          (item) => item.visitId === visitId
+        );
+
+        if (!exists) {
+          state.journeyAssessmentReport.push(action.payload);
+        }
+      }
+    );
     builder.addCase(getJourneyAssessmentReport.fulfilled, (state, action) => {
       const { visitId } = action.payload;
 

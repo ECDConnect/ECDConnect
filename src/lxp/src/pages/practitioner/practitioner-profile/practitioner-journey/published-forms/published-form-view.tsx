@@ -62,6 +62,7 @@ const FeedbackSection: React.FC<FeedbackSectionProps> = ({
           showIcon
           showDivider={false}
           withBorderRadius
+          className="no-hand-cursor"
         />
       ))}
       <Divider dividerType="dashed" className="my-2" />
@@ -125,6 +126,7 @@ export const ViewPublishedForm: React.FC<ViewPublishedFormProps> = ({
         />
         <Typography
           type="body"
+          color="textMid"
           text={`${user?.firstName ?? ''} ${user?.surname ?? ''}`}
         />
         <Divider dividerType="dashed" className="my-2" />
@@ -133,7 +135,7 @@ export const ViewPublishedForm: React.FC<ViewPublishedFormProps> = ({
         {timelineReport?.textQuestion && (
           <>
             <Typography
-              className="mt-3 mb-4"
+              className="mt-3"
               type="h3"
               weight="bold"
               text={timelineReport.textQuestion}
@@ -141,6 +143,7 @@ export const ViewPublishedForm: React.FC<ViewPublishedFormProps> = ({
             <Typography
               className="mt-3 mb-4"
               type="body"
+              color="textMid"
               text={timelineReport.textAnswer}
             />
             <Divider dividerType="dashed" className="my-2" />
@@ -199,6 +202,7 @@ export const ViewPublishedForm: React.FC<ViewPublishedFormProps> = ({
                 iconColor="successMain"
                 showIcon
                 dividerType="none"
+                className="no-hand-cursor"
               />
             ))}
             <Divider dividerType="dashed" className="my-2" />
@@ -221,6 +225,7 @@ export const ViewPublishedForm: React.FC<ViewPublishedFormProps> = ({
                 iconColor="errorMain"
                 showIcon
                 dividerType="none"
+                className="no-hand-cursor"
               />
             ))}
             <Divider dividerType="dashed" className="my-2" />

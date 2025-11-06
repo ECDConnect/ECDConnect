@@ -63,7 +63,7 @@ export const PractitionerProfile: React.FC = () => {
     (wasJourneyFormOpen && !isJourneyFormOpen) ||
     (wasJourneyReportOpen && !isJourneyReportOpen)
       ? 1
-      : location.state?.tabIndex || 0;
+      : location.state?.tabIndex || undefined;
 
   useEffect(() => {
     if (!isOnline) {
@@ -251,6 +251,7 @@ export const PractitionerProfile: React.FC = () => {
         <JourneyTimeline
           onIsDisplayFormChange={setIsJourneyFormOpen}
           onIsDisplayReportChange={setIsJourneyReportOpen}
+          tenantName={tenant.tenant?.applicationName || ''}
         />
       ),
     },

@@ -11,7 +11,7 @@ import {
   getJourneyTimelinePublishedFormsSelector,
 } from '@/store/pqa/pqa.selectors';
 import { useSelector } from 'react-redux';
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAppDispatch } from '@/store';
 import AlienImage from '@/assets/ECD_Connect_alien2.svg';
 import { useTenant } from '@/hooks/useTenant';
@@ -46,10 +46,9 @@ export const PublishedFormsList = ({ onBack }: FormProps) => {
         setIsLoading(false);
       }
     };
-    if (publishedForms.length === 0) {
-      fetchPublishedForms();
-    }
-  }, [appDispatch, publishedForms]);
+
+    fetchPublishedForms();
+  }, [appDispatch]); // only run once on mount
 
   const formItemlist: StackedListItemType[] = publishedForms
     ? publishedForms.map((formItem) => ({
@@ -96,16 +95,14 @@ export const PublishedFormsList = ({ onBack }: FormProps) => {
       title="Fill in a form"
       displayOffline={!isOnline}
     >
-      {isLoading && (
+      {isLoading ? (
         <LoadingSpinner
           size="medium"
           spinnerColor="primary"
           backgroundColor="uiLight"
           className="tex pt-4"
         />
-      )}
-
-      {publishedForms.length !== 0 ? (
+      ) : publishedForms?.length > 0 ? (
         <>
           <Typography
             className="mt-3 mb-4"

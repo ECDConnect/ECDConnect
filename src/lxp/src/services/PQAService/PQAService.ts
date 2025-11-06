@@ -564,6 +564,14 @@ class PQAService {
        mutation submitJourneyAssessmentFormData($formId: String!, $formName: String!,$input: [AssessmentPageInput]) {
           submitJourneyAssessmentFormData(formId: $formId, formName: $formName, input: $input) {
             name 
+            greenQuestions
+            blueQuestions
+            amberQuestions
+            dailyActivities
+            skippedActivities
+            textQuestion
+            textAnswer
+            visitId 
           }        
         }
       `,

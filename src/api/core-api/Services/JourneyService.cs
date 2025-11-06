@@ -6,7 +6,9 @@ using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace EcdLink.Api.CoreApi.Services
@@ -54,8 +56,7 @@ namespace EcdLink.Api.CoreApi.Services
 
         public AssessmentReport GetJourneyAssessmentReport(Guid visitId)
         {
-            var visit = _dbContext.Visits
-                        .FirstOrDefault(x => x.Id == visitId);
+            var visit = _dbContext.Visits.AsNoTracking().FirstOrDefault(x => x.Id == visitId);
 
             if (visit == null)
                 return null;
@@ -68,15 +69,24 @@ namespace EcdLink.Api.CoreApi.Services
         
         private AssessmentReport GetSelfAssessmentReport(Guid visitId)
         {
-            var generalAnswers = new[] { AnswerCategories.AllTheTime, AnswerCategories.MostOfTheTime, AnswerCategories.Sometimes };
-            var visitData = _dbContext.VisitData.Where(x => x.VisitId == visitId).ToList();
+            var generalAnswers = new[]
+            {
+                AnswerCategories.AllTheTime,
+                AnswerCategories.MostOfTheTime,
+                AnswerCategories.Sometimes
+            };
 
-            var formOptionsTypeId = _CMSContext.ContentTypes
+            var visitData = _dbContext.VisitData
+                .AsNoTracking()
+                .Where(x => x.VisitId == visitId)
+                .ToList();
+
+            var formOptionsTypeId = _CMSContext.ContentTypes.AsNoTracking()
                 .Where(x => x.Name == ContentTypeConstants.FormQuestionOption)
                 .Select(x => x.Id)
                 .FirstOrDefault();
 
-            var allFormOptions = _CMSContext.ContentValues
+            var allFormOptions = _CMSContext.ContentValues.AsNoTracking()
                 .Where(x => x.Content.ContentTypeId == formOptionsTypeId
                             && x.TenantId == TenantExecutionContext.Tenant.Id
                             && !generalAnswers.Contains(x.Value))
@@ -85,14 +95,36 @@ namespace EcdLink.Api.CoreApi.Services
 
             var formName = visitData.Select(x => x.VisitName).FirstOrDefault();
             var textAnswer = visitData.FirstOrDefault(x => x.AnswerContentId == "text");
-            var greenAnswers = visitData.Where(x => x.QuestionAnswer == AnswerCategories.AllTheTime).Select(x => x.Question).ToList();
-            var blueAnswers = visitData.Where(x => x.QuestionAnswer == AnswerCategories.MostOfTheTime).Select(x => x.Question).ToList();
-            var amberAnswers = visitData.Where(x => x.QuestionAnswer == AnswerCategories.Sometimes).Select(x => x.Question).ToList();
 
-            var doActivitiesAnswer = visitData.FirstOrDefault(x => x.Question == Questions.DailyActivities)?.QuestionAnswer;
+            var greenAnswers = visitData
+                .Where(x => x.QuestionAnswer == AnswerCategories.AllTheTime)
+                .Select(x => x.Question)
+                .ToList();
 
-            var doActivities = doActivitiesAnswer?.Split("|", StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
-            var dontActivities = allFormOptions.Except(doActivities).Where(x => x != "None").ToList();
+            var blueAnswers = visitData
+                .Where(x => x.QuestionAnswer == AnswerCategories.MostOfTheTime)
+                .Select(x => x.Question)
+                .ToList();
+
+            var amberAnswers = visitData
+                .Where(x => x.QuestionAnswer == AnswerCategories.Sometimes)
+                .Select(x => x.Question)
+                .ToList();
+
+            // Handle activities and exclude "None"
+            var doActivitiesAnswer = visitData
+                .FirstOrDefault(x => x.Question == Questions.DailyActivities)
+                ?.QuestionAnswer;
+
+            var doActivities = (doActivitiesAnswer?
+                .Split('|', StringSplitOptions.RemoveEmptyEntries)
+                .Where(x => !string.Equals(x, "None", StringComparison.OrdinalIgnoreCase))
+                .ToList()) ?? new List<string>();
+
+            var dontActivities = allFormOptions
+                .Where(x => !doActivities.Contains(x, StringComparer.OrdinalIgnoreCase)
+                            && !string.Equals(x, "None", StringComparison.OrdinalIgnoreCase))
+                .ToList();
 
             return new AssessmentReport
             {
@@ -100,13 +132,14 @@ namespace EcdLink.Api.CoreApi.Services
                 GreenQuestions = greenAnswers,
                 BlueQuestions = blueAnswers,
                 AmberQuestions = amberAnswers,
-                DailyActivities = doActivities.Where(x => x !=  "None").ToList(),
+                DailyActivities = doActivities,
                 SkippedActivities = dontActivities,
                 TextQuestion = Questions.DiffrentQuestion,
-                TextAnswer = textAnswer.QuestionAnswer,
+                TextAnswer = textAnswer?.QuestionAnswer,
                 VisitId = visitId
             };
         }
+
 
     }
 }

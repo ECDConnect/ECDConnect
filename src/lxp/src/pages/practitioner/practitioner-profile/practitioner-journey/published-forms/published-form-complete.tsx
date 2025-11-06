@@ -7,7 +7,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { format } from 'date-fns';
-import { useRef, useState, useMemo } from 'react';
+import { useRef, useState, useMemo, useEffect } from 'react';
 import { PublishedFormStep } from './published-form-step';
 import {
   AssessmentFormDto,
@@ -37,6 +37,12 @@ export const CompletePublishedForm: React.FC<CompletePublishedFormProps> = ({
   const [formPagesData, setFormPagesData] =
     useState<AssessmentPageDto[]>(formPages);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (assessmentFormData?.formPages?.length) {
+      setFormPagesData(assessmentFormData.formPages);
+    }
+  }, [assessmentFormData.formPages]);
 
   const currentPageIndex = currentStep - 2;
   const currentStepData =
@@ -76,8 +82,10 @@ export const CompletePublishedForm: React.FC<CompletePublishedFormProps> = ({
 
   const handleNext = async () => {
     if (currentStep < totalSteps) {
+      // Prevent moving forward if data for next step isn’t ready yet
+      if (currentStep === 1 && formPagesData.length === 0) return;
+
       if (wrapperRef.current) {
-        // SCroll div to top
         wrapperRef.current.scrollTop = 0;
       }
       setCurrentStep((prev) => prev + 1);

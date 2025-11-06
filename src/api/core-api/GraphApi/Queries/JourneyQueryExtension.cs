@@ -8,10 +8,10 @@ using ECDLink.DataAccessLayer.Entities;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
-using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,62 +23,72 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     public class JourneyQueryExtension
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<JourneyTimeline> GetJourneyTimeline(
+        public async Task<List<JourneyTimeline>> GetJourneyTimelineAsync(
             [Service] IHttpContextAccessor contextAccessor,
             AuthenticationDbContext dbContext,
             Guid userId)
         {
             var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
             var timeline = new List<JourneyTimeline>();
-            var practitioner = dbContext.Practitioners.FirstOrDefault(x => x.UserId == userId && x.IsActive);
 
-            // Registration
-            timeline.Add(new JourneyTimeline()
+            var practitioner = await dbContext.Practitioners
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.UserId == userId && x.IsActive);
+
+            if (practitioner == null)
+                return timeline; // or throw if this should never happen
+
+            var startOfYear = new DateTime(DateTime.Now.Year, 1, 1);
+            var endOfYear = new DateTime(DateTime.Now.Year, 12, 31);
+
+            var courses = await dbContext.UserTrainingCourses
+                .AsNoTracking()
+                .Where(x => x.UserId == userId && x.IsActive &&
+                            x.CompletedDate >= startOfYear && x.CompletedDate <= endOfYear)
+                .OrderByDescending(x => x.CompletedDate)
+                .Select(x => new
+                {
+                    x.CourseName,
+                    x.CompletedDate
+                })
+                .ToListAsync();
+
+            timeline.AddRange(courses.Select(x => new JourneyTimeline
             {
-                Name = $"Registered for {TenantExecutionContext.Tenant.ApplicationName}",
-                DateCompleted = practitioner.StartDate.Value.ToString("dd MMMM yyyy"),
-                IconName = "CheckIcon",
-                DateValue = practitioner.StartDate.Value,
-                Type = "Registration"
-            });
+                Name = $"Course completed: {x.CourseName}",
+                DateCompleted = x.CompletedDate.ToString("dd MMMM yyyy"),
+                IconName = "AcademicCapIcon",
+                DateValue = x.CompletedDate,
+                Type = "Course"
+            }));
 
-            // Courses completed
-            var courses = dbContext.UserTrainingCourses.Where(x => x.UserId == userId && x.IsActive && x.CompletedDate.Year == DateTime.Now.Year)
-                                                        .OrderByDescending(x => x.CompletedDate)
-                                                        .Select(x => new JourneyTimeline
-                                                        {
-                                                            Name = $"Course completed: {x.CourseName}",
-                                                            DateCompleted = x.CompletedDate.ToString("dd MMMM yyyy"),
-                                                            IconName = "AcademicCapIcon",
-                                                            DateValue = x.CompletedDate,
-                                                            Type = "Course"
-                                                        });
-            if (courses.Any())
-            {
-                timeline.AddRange(courses);
-            }
-            // Self-assessment completed
-            var selfAssessments = dbContext.Visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_self_assessment && x.PractitionerId == practitioner.Id && x.IsActive)
-                                                    .OrderByDescending(x => x.ActualVisitDate)
-                                                    .Select(x => new JourneyTimeline
-                                                    {
-                                                        Name = "Self-assessment form completed",
-                                                        DateCompleted = x.ActualVisitDate.Value.ToString("dd MMMM yyyy"),
-                                                        IconName = "CheckIcon",
-                                                        DateValue = x.ActualVisitDate.Value,
-                                                        Type = "Self-assessment",
-                                                        VisitId = x.Id
-                                                    }); ;
+            var selfAssessments = await dbContext.Visits
+                .AsNoTracking()
+                .Where(x => x.VisitType.Name == Constants.SSSettings.visitType_self_assessment &&
+                            x.PractitionerId == practitioner.Id && x.IsActive)
+                .OrderByDescending(x => x.ActualVisitDate)
+                .Select(x => new
+                {
+                    x.Id,
+                    x.ActualVisitDate
+                })
+                .ToListAsync();
 
-            if (selfAssessments.Any())
-            {
-                timeline.AddRange(selfAssessments);
-            }
+            timeline.AddRange(selfAssessments
+                .Where(x => x.ActualVisitDate.HasValue)
+                .Select(x => new JourneyTimeline
+                {
+                    Name = "Self-assessment form completed",
+                    DateCompleted = x.ActualVisitDate.Value.ToString("dd MMMM yyyy"),
+                    IconName = "CheckIcon",
+                    DateValue = x.ActualVisitDate.Value,
+                    Type = "Self-assessment",
+                    VisitId = x.Id
+                }));
 
-            return timeline
-                .OrderBy(x => x.DateValue)
-                .ToList();
+            return timeline.OrderBy(x => x.DateValue).ToList();
         }
+
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public async Task<List<AssessmentForm>> GetJourneyPublishedAssessmentFormsAsync(
@@ -86,12 +96,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] IHttpContextAccessor contextAccessor,
             AuthenticationDbContext dbContext)
         {
-            var englishId = new Guid("9688cd08-adef-408c-9d34-5d75ae5c44df");
+            var english = dbContext.Languages.FirstOrDefault(x => x.Description == "English"); 
             var userId = contextAccessor.HttpContext.GetUser().Id;
             var userRoleIds = dbContext.UserRoles.Where(x => x.UserId == userId).Select(x => x.RoleId.ToString()).ToList();
 
             var contentTypeId = contentRepo.GetContentTypeIdForName(ContentTypeConstants.Form);
-            return contentRepo.GetAll(contentTypeId, englishId)
+            return contentRepo.GetAll(contentTypeId, english.Id)
                             .Select(x => new AssessmentForm(x))
                             .Where(x => x.IsPublished == "true" 
                                 && x.RoleIds.Split(',').Any(roleId => userRoleIds.Contains(roleId)))
@@ -102,10 +112,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public AssessmentForm GetJourneyAssessmentFormData(
             [Service] ContentManagementRepository contentRepo,
+            AuthenticationDbContext dbContext,
             int id)
         {
-            var englishId = new Guid("9688cd08-adef-408c-9d34-5d75ae5c44df");
-            var assessmentForm = new AssessmentForm(contentRepo.GetById(id, englishId));
+            var english = dbContext.Languages.FirstOrDefault(x => x.Description == "English"); 
+            var assessmentForm = new AssessmentForm(contentRepo.GetById(id, english.Id));
 
             // Helper local function to parse CSV safely
             static int[] ParseIds(string csv) =>
@@ -121,7 +132,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 var pageContentTypeId = contentRepo.GetContentTypeIdForName(ContentTypeConstants.FormPage);
                 var pageContentIds = ParseIds(assessmentForm.FormPagesIds);
                 assessmentForm.FormPages = contentRepo
-                    .GetByIds(pageContentTypeId, englishId, pageContentIds)
+                    .GetByIds(pageContentTypeId, english.Id, pageContentIds)
                     .Select(x => new AssessmentPage(x))
                     .ToList();
 
@@ -134,7 +145,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     {
                         var questionContentIds = ParseIds(form.FormQuestionsIds);
                         form.FormQuestions = contentRepo
-                            .GetByIds(questionContentTypeId, englishId, questionContentIds)
+                            .GetByIds(questionContentTypeId, english.Id, questionContentIds)
                             .Select(x => new AssessmentQuestion(x))
                             .ToList();
 
@@ -144,7 +155,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                             {
                                 var optionContentIds = ParseIds(question.FormQuestionOptionsIds);
                                 question.FormQuestionOptions = contentRepo
-                                    .GetByIds(optionContentTypeId, englishId, optionContentIds)
+                                    .GetByIds(optionContentTypeId, english.Id, optionContentIds)
                                     .Select(x => new AssessmentOption(x))
                                     .ToList();
                             }
