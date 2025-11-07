@@ -3,4 +3,5 @@ export interface InvitedPractitionerRouteState {
   phoneNumber: string;
   dateInvited: Date | string | undefined;
   setPractitionerInviteModal?: any;
+  setInvites?: any;
 }

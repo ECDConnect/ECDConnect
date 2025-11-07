@@ -29,6 +29,7 @@ import { InviteService } from '@/services/InviteService';
 import { InviteDto } from '@ecdlink/core/src/models/dto/Invite/invite.dto';
 import { InvitedPractitioner } from './invited-practitioner/invited-practitioner';
 import { formatPhonenumberLocal } from '@utils/common/contact-details.utils';
+import { useTenant } from '@/hooks/useTenant';
 
 export const PractitionerList: React.FC<PractitionerListProps> = () => {
   const location = useLocation<PractitionerListRouteState>();
@@ -54,6 +55,8 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
   const [invites, setInvites] = useState<InviteDto[]>([]);
   const [selectedInvite, setSelectedInvite] = useState<InviteDto>();
   const [isLoading, setIsLoading] = useState(false);
+  const tenant = useTenant();
+  const isOpenAccess = tenant?.isOpenAccess;
 
   const getPractitionerColleagues = async () => {
     // Check if the practitioner exists
@@ -66,10 +69,13 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
       practitionerColleagues = await new PractitionerService(
         userAuth?.auth_token
       ).practitionerColleagues(user?.id!);
-      invites = await new InviteService(
-        userAuth?.auth_token
-      ).getInvitesByPrincipalId(user?.id!);
-      setInvites(invites);
+      if (isOpenAccess) {
+        invites = await new InviteService(
+          userAuth?.auth_token
+        ).getInvitesByPrincipalId(user?.id!);
+        setInvites(invites);
+      }
+
       setIsLoading(false);
     }
 
