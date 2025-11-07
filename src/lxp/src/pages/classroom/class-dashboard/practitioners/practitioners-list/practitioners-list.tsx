@@ -85,7 +85,7 @@ export const PractitionersList: React.FC = () => {
   };
 
   const getPractitionerColleagues = async () => {
-    if (userAuth) {
+    if (userAuth && isOnline) {
       await appDispatch(
         practitionerThunkActions.getAllPractitioners({})
       ).unwrap();
@@ -213,6 +213,19 @@ export const PractitionersList: React.FC = () => {
     history.push('principal/practitioner-reassign-class');
   };
 
+  const offlineDialog = () => {
+    if (!isOnline) {
+      return dialog({
+        color: 'bg-white',
+        position: DialogPosition.Middle,
+        blocking: true,
+        render: (onSubmit) => {
+          return <OnlineOnlyModal onSubmit={onSubmit} />;
+        },
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <LoadingSpinner
@@ -243,11 +256,15 @@ export const PractitionersList: React.FC = () => {
           type="filled"
           color="quatenary"
           className={'mb-6 w-full'}
-          onClick={
-            isTrialPeriod
-              ? () => showTrialPeriodCompleteProfileBlockingDialog()
-              : () => history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST)
-          }
+          onClick={() => {
+            if (!isOnline) {
+              offlineDialog();
+            } else if (isTrialPeriod) {
+              showTrialPeriodCompleteProfileBlockingDialog();
+            } else {
+              history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST);
+            }
+          }}
         >
           {renderIcon('PlusCircleIcon', 'w-5 h-5 color-white text-white mr-2')}
           <Typography
