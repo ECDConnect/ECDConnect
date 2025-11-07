@@ -35,6 +35,7 @@ import { authSelectors } from '@/store/auth';
 import { userSelectors } from '@/store/user';
 import { InvitedPractitioner } from '@/pages/practitioner/practitioner-programme-information/practitioner-list/invited-practitioner/invited-practitioner';
 import { formatPhonenumberLocal } from '@utils/common/contact-details.utils';
+import { useTenant } from '@/hooks/useTenant';
 
 export const PractitionersList: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -53,6 +54,8 @@ export const PractitionersList: React.FC = () => {
   const practitionersList = practitioners?.filter(
     (item) => item.userId !== practitioner?.userId
   );
+  const tenant = useTenant();
+  const isOpenAccess = tenant?.isOpenAccess;
 
   const { isLoading, isRejected: isGetPractitionerRejected } =
     useThunkFetchCall(
@@ -89,11 +92,13 @@ export const PractitionersList: React.FC = () => {
       await appDispatch(
         practitionerThunkActions.getAllPractitioners({})
       ).unwrap();
-      setInvites(
-        await new InviteService(userAuth?.auth_token).getInvitesByPrincipalId(
-          user?.id!
-        )
-      );
+      if (isOpenAccess) {
+        setInvites(
+          await new InviteService(userAuth?.auth_token).getInvitesByPrincipalId(
+            user?.id!
+          )
+        );
+      }
     }
   };
 
@@ -129,7 +134,7 @@ export const PractitionersList: React.FC = () => {
       setPractitionerListData(practitionerListItem);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [practitionersList?.length, practitionersMessages]);
+  }, [practitionersList?.length, practitionersMessages, invites]);
 
   const classroomsDetailsForPractitioner = async () => {
     if (isOnline) {
@@ -353,6 +358,7 @@ export const PractitionersList: React.FC = () => {
           userId={selectedInvite?.user.id || ''}
           phoneNumber={selectedInvite?.user.phoneNumber || ''}
           dateInvited={selectedInvite?.insertedDate}
+          setInvites={setInvites}
         />
       </Dialog>
     </>
