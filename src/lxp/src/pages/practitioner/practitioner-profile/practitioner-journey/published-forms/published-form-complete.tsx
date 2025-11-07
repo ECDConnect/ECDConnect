@@ -133,71 +133,73 @@ export const CompletePublishedForm: React.FC<CompletePublishedFormProps> = ({
       renderOverflow
       onClose={() => onBack(false)}
     >
-      {currentStep === 1 ? (
-        <>
-          <Typography
-            className="mt-3"
-            type="h5"
-            text={`About the ${assessmentFormData?.name} form`}
-          />
-          <Typography
-            className=""
-            type="small"
-            text={`${format(today, 'dd MMMM yyyy')}`}
-            color="textLight"
-          />
-          <Divider dividerType="dashed" className="my-2" />
-          <Typography
-            className="mt-3"
-            type="body"
-            text={`${assessmentFormData?.description}`}
-          />
-          <div className="mt-7 mb-7 flex">
+      <div className="w-12/12 ml-4 mr-4 mt-5">
+        {currentStep === 1 ? (
+          <>
+            <Typography
+              className="mt-3"
+              type="h5"
+              text={`About the ${assessmentFormData?.name} form`}
+            />
+            <Typography
+              className=""
+              type="small"
+              text={`${format(today, 'dd MMMM yyyy')}`}
+              color="textLight"
+            />
+            <Divider dividerType="dashed" className="my-2" />
             <Typography
               className="mt-3"
               type="body"
-              text={`This content is powered by:`}
+              text={`${assessmentFormData?.description}`}
             />
-            {assessmentFormData?.logoUrl && (
-              <img
-                src={assessmentFormData.logoUrl}
-                alt="Form provider logo"
-                className="ml-6 h-auto w-36"
+            <div className="mt-7 mb-7 flex">
+              <Typography
+                className="mt-3"
+                type="body"
+                text={`This content is powered by:`}
               />
-            )}
-          </div>
-        </>
-      ) : currentStepData ? (
-        <PublishedFormStep
-          stepData={currentStepData}
-          onStepChange={handleStepChange}
-        />
-      ) : (
-        <Typography text="No questions found for this step." type={'small'} />
-      )}
+              {assessmentFormData?.logoUrl && (
+                <img
+                  src={assessmentFormData.logoUrl}
+                  alt="Form provider logo"
+                  className="ml-6 h-auto w-36"
+                />
+              )}
+            </div>
+          </>
+        ) : currentStepData ? (
+          <PublishedFormStep
+            stepData={currentStepData}
+            onStepChange={handleStepChange}
+          />
+        ) : (
+          <Typography text="No questions found for this step." type={'small'} />
+        )}
 
-      <div className="mt-auto mb-4">
-        <Button
-          onClick={handleNext}
-          disabled={!isStepComplete || isSubmitting}
-          className="w-full"
-          size="normal"
-          color="quatenary"
-          type="filled"
-          icon={
-            currentStep === totalSteps ? 'SaveIcon' : 'ArrowCircleRightIcon'
-          }
-          text={
-            isSubmitting
-              ? 'Saving...'
-              : currentStep === 1
-              ? 'Start'
-              : currentStep === totalSteps
-              ? 'Save'
-              : 'Next'
-          }
-          textColor="white"
-        />
+        <div className="mt-auto mb-4">
+          <Button
+            onClick={handleNext}
+            disabled={!isStepComplete || isSubmitting}
+            className="w-full"
+            size="normal"
+            color="quatenary"
+            type="filled"
+            icon={
+              currentStep === totalSteps ? 'SaveIcon' : 'ArrowCircleRightIcon'
+            }
+            text={
+              isSubmitting
+                ? 'Saving...'
+                : currentStep === 1
+                ? 'Start'
+                : currentStep === totalSteps
+                ? 'Save'
+                : 'Next'
+            }
+            textColor="white"
+          />
+        </div>
       </div>
     </BannerWrapper>
   );
