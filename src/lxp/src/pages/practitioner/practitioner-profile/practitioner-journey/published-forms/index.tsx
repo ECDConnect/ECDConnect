@@ -95,50 +95,52 @@ export const PublishedFormsList = ({ onBack }: FormProps) => {
       title="Fill in a form"
       displayOffline={!isOnline}
     >
-      {isLoading ? (
-        <LoadingSpinner
-          size="medium"
-          spinnerColor="primary"
-          backgroundColor="uiLight"
-          className="tex pt-4"
-        />
-      ) : publishedForms?.length > 0 ? (
-        <>
-          <Typography
-            className="mt-3 mb-4"
-            type={'h5'}
-            text="Which form would you like to fill?"
+      <div className="w-12/12 ml-4 mr-4 mt-5">
+        {isLoading ? (
+          <LoadingSpinner
+            size="medium"
+            spinnerColor="primary"
+            backgroundColor="uiLight"
+            className="tex pt-4"
           />
-          <StackedList
-            listItems={formItemlist}
-            className="-mt-0.5 flex w-full flex-col gap-1 rounded-2xl"
-            type="MenuList"
-          />
-        </>
-      ) : (
-        <>
-          <Typography
-            className="mt-3 mb-4"
-            type={'h5'}
-            text="No forms available yet"
-          />
-          <div className="grid grid-cols-1 justify-center gap-8">
-            <div className="flex justify-center">
-              <img src={AlienImage} alt="alien" />
-            </div>
-            <div className="flex justify-center">
-              <div className="flex w-8/12 justify-center">
-                <Typography
-                  type="h5"
-                  color="textDark"
-                  text={`There are no forms availabe on ${tenant?.tenant?.applicationName}`}
-                  className={'text-center'}
-                />
+        ) : publishedForms?.length > 0 ? (
+          <>
+            <Typography
+              className="mt-3 mb-4"
+              type={'h5'}
+              text="Which form would you like to fill?"
+            />
+            <StackedList
+              listItems={formItemlist}
+              className="-mt-0.5 flex w-full flex-col gap-1 rounded-2xl"
+              type="MenuList"
+            />
+          </>
+        ) : (
+          <>
+            <Typography
+              className="mt-3 mb-4"
+              type={'h5'}
+              text="No forms available yet"
+            />
+            <div className="grid grid-cols-1 justify-center gap-8">
+              <div className="flex justify-center">
+                <img src={AlienImage} alt="alien" />
+              </div>
+              <div className="flex justify-center">
+                <div className="flex w-8/12 justify-center">
+                  <Typography
+                    type="h5"
+                    color="textDark"
+                    text={`There are no forms availabe on ${tenant?.tenant?.applicationName}`}
+                    className={'text-center'}
+                  />
+                </div>
               </div>
             </div>
-          </div>
-        </>
-      )}
+          </>
+        )}
+      </div>
     </BannerWrapper>
   );
 };
