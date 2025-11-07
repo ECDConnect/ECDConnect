@@ -275,7 +275,7 @@ export const InvitedPractitioner: React.FC<InvitedPractitionerRouteState> = ({
           disabled={
             isLoading ||
             (!!inviteDates &&
-              (inviteDates.length >= 3 || timeSinceLastInvite < 60))
+              (inviteDates.length >= 5 || timeSinceLastInvite < 60))
           }
           text="Re-send invitation"
           icon="PaperAirplaneIcon"
