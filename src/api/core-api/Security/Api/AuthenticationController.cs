@@ -568,7 +568,7 @@ namespace ECDLink.Security.Api
             }
 
             // Step4: add user to practitioner table
-            var newPractitioner = _personnelService.AddOAPractitioner(user.Id, user.UserName, invite.PrincipalId);
+            var newPractitioner = _personnelService.AddOAPractitioner(user.Id, user.UserName, invite?.PrincipalId);
             if (newPractitioner == null)
             {
                 return BadRequest(new FailedVerificationModel
