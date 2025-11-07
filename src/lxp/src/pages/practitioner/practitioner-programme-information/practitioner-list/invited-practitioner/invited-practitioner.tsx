@@ -26,12 +26,14 @@ import { useHistory } from 'react-router';
 import { copyToClip } from '@utils/common/clipboard.utils';
 import { useTenant } from '@/hooks/useTenant';
 import { formatPhonenumberLocal } from '@utils/common/contact-details.utils';
+import { InviteService } from '@/services/InviteService';
 
 export const InvitedPractitioner: React.FC<InvitedPractitionerRouteState> = ({
   setPractitionerInviteModal,
   userId,
   phoneNumber,
   dateInvited,
+  setInvites,
 }) => {
   const { isOnline } = useOnlineStatus();
   const [showAlert, setShowAlert] = useState(false);
@@ -48,7 +50,6 @@ export const InvitedPractitioner: React.FC<InvitedPractitionerRouteState> = ({
   const { showMessage } = useSnackbar();
   const history = useHistory();
   const tenant = useTenant();
-  const isOpenAccess = tenant?.isOpenAccess;
 
   const getTimeSinceLastInvite = (invite: Date) => {
     return Math.abs(differenceInMinutes(new Date(invite as Date), new Date()));
@@ -116,9 +117,12 @@ export const InvitedPractitioner: React.FC<InvitedPractitionerRouteState> = ({
       practitionerThunkActions.getAllPractitioners({})
     ).unwrap();
 
-    history.push(ROUTES.BUSINESS, {
-      activeTabIndex: BusinessTabItems.STAFF,
-    });
+    setInvites(
+      await new InviteService(
+        userAuth?.auth_token || ''
+      ).getInvitesByPrincipalId(practitioner?.id!)
+    );
+
     showMessage({
       message: `${formatPhonenumberLocal(phoneNumber!!)} removed`,
     });
@@ -128,7 +132,7 @@ export const InvitedPractitioner: React.FC<InvitedPractitionerRouteState> = ({
     setIsLoading(true);
 
     const linkCopied = await copyToClip(
-      `https://` + tenant?.tenant?.siteAddress
+      `${practitioner?.user?.firstName} practitioner has invited you to register. Tap this link to register: ${tenant?.tenant?.siteAddress}`
     );
 
     const whatsapp = () => {
@@ -291,7 +295,13 @@ export const InvitedPractitioner: React.FC<InvitedPractitionerRouteState> = ({
           text="Remove practitioner"
           textColor="quatenary"
           icon="TrashIcon"
-          onClick={removePractitioner}
+          onClick={() => {
+            removePractitioner();
+            setPractitionerInviteModal(false);
+            history.push(ROUTES.BUSINESS, {
+              activeTabIndex: BusinessTabItems.STAFF,
+            });
+          }}
         />
       </div>
     </BannerWrapper>
