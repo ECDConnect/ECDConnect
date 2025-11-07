@@ -221,7 +221,8 @@ export const Steps = ({ items, typeColor }: StepsProps) => {
                 {item.showAccordion && isOpen && item.accordionContent}
               </div>
               {item.showActionButton && (
-                <div className="absolute right-0 flex w-32 justify-end">
+                // <div className="absolute right-0 flex w-32 justify-end">
+                <div className="right-0 flex w-32 flex-shrink-0 justify-end">
                   <Button
                     type={item?.actionButtonType || 'filled'}
                     color={item.actionButtonColor || 'primary'}
