@@ -22,34 +22,43 @@ function ConfigProvider({
   config: ConfigType;
   children: ReactNode;
 }): JSX.Element {
-  const [loading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const getData = () => {
+  if (Config.authApi === '') {
     Config.authApi = config.authApi;
     Config.graphQlApi = config.graphQlApi;
     Config.themeUrl = config.themeUrl;
-    //setLoading(true);
-    // fetch(`${window.location.origin}/settings.json`)
-    //   .then(function (res) {
-    //     return res.json();
-    //   })
-    //   .then(function (data) {
-    //     if (data) {
-    //       Config.authApi = data.authApi;
-    //       Config.graphQlApi = data.graphQlApi;
-    //       Config.themeUrl = data.themeUrl;
-    //     }
+  }
 
-    //     setLoading(false);
-    //   })
-    //   .catch(function (err) {
-    //     console.log(err, ' error');
-    //     setLoading(false);
-    //   });
+  const getData = () => {
+    setLoading(true);
+    Config.authApi = config.authApi;
+    Config.graphQlApi = config.graphQlApi;
+    Config.themeUrl = config.themeUrl;
+    setLoading(false);
+    fetch(`${window.location.origin}/settings.json`)
+      .then(function (res) {
+        return res.json();
+      })
+      .then(function (data) {
+        if (data) {
+          Config.authApi = data.authApi;
+          Config.graphQlApi = data.graphQlApi;
+          Config.themeUrl = data.themeUrl;
+        }
+
+        setLoading(false);
+      })
+      .catch(function (err) {
+        console.log(err, ' error');
+        setLoading(false);
+      });
   };
 
   useEffect(() => {
-    getData();
+    if (!config.authApi) {
+      getData();
+    }
   }, []);
 
   const memoedValue = useMemo(

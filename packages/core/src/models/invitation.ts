@@ -1,3 +1,5 @@
+import { LoginType } from './login';
+
 export interface AcceptInvitationModel {
   username: string;
   token: string;
@@ -47,6 +49,7 @@ export interface UpdateUsernameModel {
   password?: string;
   token?: string;
   shareInfo?: boolean;
+  registerType?: LoginType;
 }
 
 export interface PortalConsentModel {

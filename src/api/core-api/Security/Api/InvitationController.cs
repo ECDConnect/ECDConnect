@@ -403,6 +403,7 @@ namespace ECDLink.Security.Api
             // Update user with new username
             user.UserName = input.UserName;
             user.UpdatedDate = DateTime.Now;
+            user.RegisterType = string.IsNullOrEmpty(input.RegisterType) ? "username": input.RegisterType;
             var updateResult = _userManager.UpdateAsync(user).Result;
             if (!updateResult.Succeeded)
             {
