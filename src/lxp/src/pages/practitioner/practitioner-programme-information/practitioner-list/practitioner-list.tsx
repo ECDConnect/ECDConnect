@@ -140,8 +140,9 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
         practitioner,
         ...(practitioners || []),
         ...(invites || []).map((invite) => ({
-          id: invite.id,
+          id: null,
           user: {
+            id: invite.id,
             firstName: formatPhonenumberLocal(invite.user?.phoneNumber!!),
             userName: formatPhonenumberLocal(invite.user?.phoneNumber!!),
           },
@@ -163,8 +164,8 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
         buttonType:
           !!practitioners && practitioners.length ? 'filled' : 'ghost',
         onActionClick: () => {
-          if (item.dateLinked === null) {
-            handleInvitedPractitioner(item?.id);
+          if (item.dateLinked === null && item?.id === null) {
+            handleInvitedPractitioner(item?.user?.id);
           } else {
             handleEditPractitioner(item?.id);
           }
