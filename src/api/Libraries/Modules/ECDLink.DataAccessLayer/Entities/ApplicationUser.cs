@@ -132,6 +132,10 @@ namespace ECDLink.DataAccessLayer.Entities
 
         [GraphIgnoreInput]
         public virtual ICollection<UserTrainingCourse> TrainingCourses { get; set; }
+
+        public bool GoogleAccount { get; set; }
+
+        public bool FacebookAccount { get; set; }
     }
 
     public interface ApplicationUserJoin

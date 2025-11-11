@@ -1,4 +1,10 @@
-export const Config = {
+export type ConfigType = {
+  graphQlApi: string;
+  authApi: string;
+  themeUrl: string;
+};
+
+export const Config: ConfigType = {
   graphQlApi: '',
   authApi: '',
   themeUrl: '',

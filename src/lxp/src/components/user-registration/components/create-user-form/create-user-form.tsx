@@ -1,14 +1,9 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useTenant } from '@/hooks/useTenant';
 import ROUTES from '@/routes/routes';
-import { AuthService } from '@/services/AuthService';
 import {
-  CheckUsernamePhoneNumberModel,
-  Config,
-  NOTIFICATION,
-  RegisterRequestModel,
-  UpdateUsernameModel,
   initialPasswordValue,
+  NOTIFICATION,
   passwordSchema,
   useNotifications,
   useTheme,
@@ -24,16 +19,25 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FieldError, useForm } from 'react-hook-form';
 import { useHistory } from 'react-router';
 import { VerifyPhoneNumberAuthCode } from '../verify-phone-number';
+import {
+  createUser,
+  CreateUserResult,
+  updateOpenAccessPractitioner,
+  validateUsername,
+} from '@/utils/user/user-registration.utils';
 
+const specialCharactersMessageErrorText = `Usernames can only include letters, numbers, . , and @. Please remove any other special characters.`;
 interface CreateUserFormProps {
   closeAction?: (item: boolean) => void;
   userId?: string;
   token?: string;
   shareInfoPartners?: boolean;
+  googleEmail?: string;
+  googleCredential?: string;
 }
 
 export const CreateUserForm: React.FC<CreateUserFormProps> = ({
@@ -41,6 +45,8 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
   userId,
   token,
   shareInfoPartners,
+  googleEmail,
+  googleCredential,
 }) => {
   const { isOnline } = useOnlineStatus();
   const { setNotification } = useNotifications();
@@ -55,9 +61,10 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
   const [messageError, setMessageError] = useState('');
   const [phoneMessageError, setPhoneMessageError] = useState('');
   const [openVerifyPhoneNumber, setOpenVerifyPhoneNumber] = useState(false);
-  const usernameMessageErrorText = `Username already exists! Try using your email address, phone number, or add a number/letter`;
-  const specialCharactersMessageErrorText = `Usernames can only include letters, numbers, . , and @. Please remove any other special characters.`;
   const [isFromAuthCodeScreen, setIsFromAuthCodeScreen] = useState(false);
+
+  const isGoogleAccount = !!googleEmail && !!googleCredential;
+  const registerType = isGoogleAccount ? 'google' : 'username';
 
   const {
     register: passwordRegister,
@@ -70,155 +77,93 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
   });
   const { password } = watch();
 
-  const validateUsername = (name: string): string | null => {
-    if (!/^[a-zA-Z0-9.@]+$/.test(name)) {
-      return specialCharactersMessageErrorText;
+  useEffect(() => {
+    if (isGoogleAccount) {
+      setUsername(googleEmail);
     }
-    return null;
-  };
+  }, [isGoogleAccount, googleEmail]);
 
   const handleCreateUser = async () => {
-    const registerOpenAccessUserInput: RegisterRequestModel = {
-      username,
-      password,
-      phoneNumber,
-      registerType: 'username',
-      shareInfoPartners: shareInfoPartners,
-    };
-    if (isFromAuthCodeScreen && isOpenAccess) {
-      setIsLoading(true);
-      const userUpdated = await new AuthService()
-        ?.UpdateOaPractitioner(Config?.authApi, registerOpenAccessUserInput)
-        .catch((error) => {
-          setPhoneMessageError('Phone number already in use!');
-          setIsLoading(false);
-          return;
-        });
-      if (userUpdated) {
-        setIsLoading(false);
+    setIsLoading?.(true);
+    const result =
+      isFromAuthCodeScreen && isOpenAccess
+        ? await updateOpenAccessPractitioner({
+            username,
+            password,
+            phoneNumber,
+            registerType,
+            shareInfoPartners,
+            googleToken: googleCredential,
+          })
+        : await createUser({
+            userId: userId as any as string,
+            username,
+            password,
+            phoneNumber,
+            registerType,
+            shareInfoPartners,
+            token,
+            googleToken: googleCredential,
+            tenant,
+          });
+    switch (result) {
+      case CreateUserResult.PhoneNumberExists:
+        setPhoneMessageError('Phone number already in use!');
+        break;
+      case CreateUserResult.SuccessRegisteredVerifyPhoneNumber:
         setOpenVerifyPhoneNumber(true);
         setNotification({
           title: ` Successfully registered!`,
           variant: NOTIFICATION.SUCCESS,
         });
-      } else {
+        break;
+      case CreateUserResult.Success:
+      case CreateUserResult.SuccessRegistered:
         setNotification({
           title: ` Successfully registered!`,
           variant: NOTIFICATION.SUCCESS,
         });
-        setIsLoading(false);
-      }
-
-      setIsLoading(false);
-      return;
-    }
-
-    const body: CheckUsernamePhoneNumberModel = {
-      username: username,
-      userId: userId,
-    };
-    setIsLoading(true);
-    const checkUsername = await new AuthService()
-      .CheckUsernamePhoneNumber(Config.authApi, body)
-      .catch((error) => {
-        setMessageError(usernameMessageErrorText);
+        break;
+      case CreateUserResult.UsernameInvalid:
+        setMessageError(specialCharactersMessageErrorText);
+        break;
+      case CreateUserResult.UsernameExists:
+        setMessageError(
+          `Username already exists! Try using your email address, phone number, or add a number/letter`
+        );
         setNotification({
           title: ` Failed to check the username!`,
           variant: NOTIFICATION.ERROR,
         });
-        setIsLoading(false);
-        return;
-      });
-
-    if (isOpenAccess) {
-      const registerOpenAccessUserInput: RegisterRequestModel = {
-        username,
-        password,
-        phoneNumber,
-        registerType: 'username',
-        shareInfoPartners: shareInfoPartners,
-      };
-
-      if (checkUsername) {
-        const validationError = validateUsername(username);
-        if (validationError) {
-          setMessageError(validationError);
-          setIsLoading(false);
-          return;
-        }
-
-        const userCreated = await new AuthService()
-          ?.RegisterOpenAccessUser(Config?.authApi, registerOpenAccessUserInput)
-          .catch((error) => {
-            // setMessageError(specialCharactersMessageErrorText);
-
-            setNotification({
-              title: `Failed to create the username!`,
-              variant: NOTIFICATION.ERROR,
-            });
-            setIsLoading(false);
-            return;
-          });
-
-        if (userCreated) {
-          setIsLoading(false);
-          setOpenVerifyPhoneNumber(true);
-          setNotification({
-            title: `Successfully registered!`,
-            variant: NOTIFICATION.SUCCESS,
-          });
-        } else {
-          setNotification({
-            title: `Registration failed. Please try again.`,
-            variant: NOTIFICATION.ERROR,
-          });
-          setIsLoading(false);
-        }
-      }
-
-      setIsLoading(false);
-      return;
-    }
-
-    const updateUserInputModel: UpdateUsernameModel = {
-      userId: userId!,
-      username,
-      password,
-      token,
-      shareInfo: true,
-    };
-
-    if (checkUsername) {
-      const updateUsername = await new AuthService()
-        ?.UpdateUsername(Config?.authApi, updateUserInputModel)
-        .catch((error) => {
-          // setMessageError(specialCharactersMessageErrorText);
-          setIsLoading(false);
-          return;
+        break;
+      case CreateUserResult.FailedCreateUsername:
+        setNotification({
+          title: `Failed to create the username!`,
+          variant: NOTIFICATION.ERROR,
         });
-
-      if (updateUsername) {
-        setIsLoading(false);
+        break;
+      case CreateUserResult.RegistrationFailed:
+        setNotification({
+          title: `Registration failed. Please try again.`,
+          variant: NOTIFICATION.ERROR,
+        });
+        break;
+      case CreateUserResult.SuccessLogin:
         history.push(ROUTES.LOGIN);
         setNotification({
           title: ` Successfully registered!`,
           variant: NOTIFICATION.SUCCESS,
         });
-      } else {
-        setNotification({
-          title: ` Successfully registered!`,
-          variant: NOTIFICATION.SUCCESS,
-        });
-        setIsLoading(false);
-      }
+        break;
     }
-    setIsLoading(false);
+
+    setIsLoading?.(false);
   };
 
   const handleCellphoneChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    const inputValue = e.target.value.replace(/[^0-9+]/g, '');
+    const inputValue = e.target.value.replaceAll(/[^0-9+]/g, '');
     setPhoneNumber(inputValue);
 
     // Regular expression for South African cellphone number validation
@@ -229,7 +174,6 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
 
   // Function for cellphone number preventing characters
   const handleKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
-    const inputEvent = event as React.KeyboardEvent<HTMLInputElement>;
     const allowedKeys = [
       'Backspace',
       'Delete',
@@ -253,7 +197,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
   return (
     <BannerWrapper
       size="small"
-      onBack={() => closeAction && closeAction(false)}
+      onBack={() => closeAction?.(false)}
       color="primary"
       className={'h-screen'}
       menuLogoUrl={theme?.images?.logoUrl}
@@ -269,13 +213,17 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
         <FormInput
           textInputType="input"
           label="Username or email"
-          subLabel="Must be unique. Tip: use something that you will remember."
+          subLabel={
+            isGoogleAccount
+              ? undefined
+              : 'Must be unique. Tip: use something that you will remember.'
+          }
           placeholder="e.g. Nothando_123"
           onChange={(e) => {
-            const inputValue = e?.target?.value?.replace(/\s+/g, '');
+            const inputValue = e?.target?.value?.replaceAll(/\s+/g, '');
             setUsername(inputValue);
-            const error = validateUsername(inputValue);
-            setMessageError(error || '');
+            const error = !validateUsername(inputValue);
+            setMessageError(error ? specialCharactersMessageErrorText : '');
           }}
           value={username}
           error={messageError as unknown as FieldError}
@@ -323,17 +271,19 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
             )}
           </div>
         )}
-        <div className="mt-4">
-          <PasswordInput
-            label={'Password'}
-            nameProp={'password'}
-            sufficIconColor={'uiMidDark'}
-            value={password}
-            strengthMeterVisible={true}
-            className="mb-5"
-            register={passwordRegister}
-          />
-        </div>
+        {!isGoogleAccount && (
+          <div className="mt-4">
+            <PasswordInput
+              label={'Password'}
+              nameProp={'password'}
+              sufficIconColor={'uiMidDark'}
+              value={password}
+              strengthMeterVisible={true}
+              className="mb-5"
+              register={passwordRegister}
+            />
+          </div>
+        )}
         <div>
           <Button
             className={'mt-3 w-full rounded-2xl'}

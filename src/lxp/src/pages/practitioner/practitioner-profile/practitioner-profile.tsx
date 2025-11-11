@@ -56,14 +56,9 @@ export const PractitionerProfile: React.FC = () => {
   const isOpenAccess = tenant?.isOpenAccess;
   const location = useLocation<PractitionerProfileRouteState>();
 
-  const wasJourneyFormOpen = usePrevious(isJourneyFormOpen);
-  const wasJourneyReportOpen = usePrevious(isJourneyReportOpen);
-
-  const selectedTab =
-    (wasJourneyFormOpen && !isJourneyFormOpen) ||
-    (wasJourneyReportOpen && !isJourneyReportOpen)
-      ? 1
-      : location.state?.tabIndex || undefined;
+  const [selectedTabIndex, setSelectedTabIndex] = useState<number>(
+    location.state?.tabIndex !== undefined ? location.state?.tabIndex : 0
+  );
 
   useEffect(() => {
     if (!isOnline) {
@@ -262,6 +257,10 @@ export const PractitionerProfile: React.FC = () => {
     setIsJourneyReportOpen(false);
   }, []);
 
+  const setTabSelected = (tabIndex: number) => {
+    setSelectedTabIndex(tabIndex);
+  };
+
   if (isJourneyFormOpen) {
     return <PublishedFormsList onBack={handleOnBack} />;
   }
@@ -285,7 +284,8 @@ export const PractitionerProfile: React.FC = () => {
       <TabList
         className="bg-uiBg mb-1 bg-white"
         tabItems={tabItem}
-        setSelectedIndex={selectedTab}
+        setSelectedIndex={selectedTabIndex}
+        tabSelected={(_, tabIndex: number) => setTabSelected(tabIndex)}
       />
       {displayError && (
         <Alert
@@ -294,7 +294,7 @@ export const PractitionerProfile: React.FC = () => {
           type={'error'}
         />
       )}
-      {practitioner?.isPrincipal && (
+      {practitioner?.isPrincipal && selectedTabIndex === 0 && (
         <AbsenceCard
           className="w-12/12 ml-4 mr-4 mt-5 shadow"
           practitioner={practitioner!}

@@ -11,7 +11,7 @@ import '@ionic/react/css/core.css';
 import '@ionic/react/css/display.css';
 import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/float-elements.css';
-import { default as React, useEffect, useState } from 'react';
+import { default as React, useEffect } from 'react';
 import ReactGA from 'react-ga4';
 import TagManager from 'react-gtm-module';
 import { useSelector } from 'react-redux';
@@ -21,8 +21,7 @@ import InitialStoreSetup from './initial-store-setup';
 import { LoginModal } from './pages/auth/login-modal/login-modal';
 import { authSelectors } from './store/auth';
 import { settingActions } from './store/settings';
-// import BackgroundSync from './components/background-sync/background-sync';
-import { differenceInHours, getTime, isSameDay } from 'date-fns';
+import { differenceInHours, isSameDay } from 'date-fns';
 import { syncThunkActions } from './store/sync';
 import { useAppDispatch } from './store';
 import { practitionerSelectors } from './store/practitioner';
@@ -31,7 +30,7 @@ import { stopReportingRuntimeErrors } from 'react-error-overlay';
 import { useTenant } from './hooks/useTenant';
 import { Helmet } from 'react-helmet';
 import { userActions, userSelectors } from './store/user';
-import { useOnlineStatus } from './hooks/useOnlineStatus';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 if (process.env.NODE_ENV === 'development') {
   stopReportingRuntimeErrors();
@@ -44,17 +43,11 @@ const App: React.FC = () => {
   const dispatch = useAppDispatch();
   const user = useSelector(authSelectors.getAuthUser);
   const userExpired = useSelector(authSelectors.getUserExpired);
-  const userLocalxpiration = JSON.parse(
-    localStorage?.getItem('userLocalxpiration')!
-  );
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
-  const { isOnline } = useOnlineStatus();
   const userUnstableConnection = useSelector(
     userSelectors.getUserUnstableConnection
   );
-
-  const [expirationTime, setExpirationTime] = useState<number>();
 
   const getTitle = () => {
     const env = process.env.REACT_APP_RUNENVIRONMENT || '';
@@ -65,19 +58,6 @@ const App: React.FC = () => {
         ? `${tenant.tenant?.applicationName} - ECD Connect`
         : tenant.tenant?.applicationName) || 'ECD Connect';
     return title;
-  };
-
-  useEffect(() => {
-    const intervalId = setInterval(updateTime, 3600000);
-
-    // Clean up the interval when the component unmounts
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, []);
-
-  const updateTime = () => {
-    setExpirationTime(getTime(new Date()));
   };
 
   useEffect(() => {
@@ -141,7 +121,7 @@ const App: React.FC = () => {
         preloadFavicon.src = theme.images.faviconUrl;
       } catch (e) {}
     }
-  }, [theme?.images]);
+  }, [theme, theme?.images]);
 
   useEffect(() => {
     if (userExpired) {
@@ -149,9 +129,7 @@ const App: React.FC = () => {
         position: DialogPosition.Middle,
         blocking: true,
         render: (onSubmit, onClose) => {
-          return (
-            <LoginModal loginSuccessful={onSubmit} updateTime={updateTime} />
-          );
+          return <LoginModal loginSuccessful={onSubmit} />;
         },
       });
     }
@@ -215,7 +193,7 @@ const App: React.FC = () => {
         },
       });
     }
-  }, [userUnstableConnection]);
+  }, [dialog, dispatch, userUnstableConnection]);
 
   const handleSync = async () => {
     if (practitioner?.isPrincipal === true) {
@@ -260,16 +238,20 @@ const App: React.FC = () => {
   };
 
   return (
-    <IonApp className="m-auto max-w-4xl bg-white">
-      <Helmet>
-        <title>{getTitle()}</title>
-      </Helmet>
-      <IonReactRouter>
-        <AppErrorHandler>
-          <IonRouterOutlet>{getRoutes()}</IonRouterOutlet>
-        </AppErrorHandler>
-      </IonReactRouter>
-    </IonApp>
+    <GoogleOAuthProvider
+      clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID || ''}
+    >
+      <IonApp className="m-auto max-w-4xl bg-white">
+        <Helmet>
+          <title>{getTitle()}</title>
+        </Helmet>
+        <IonReactRouter>
+          <AppErrorHandler>
+            <IonRouterOutlet>{getRoutes()}</IonRouterOutlet>
+          </AppErrorHandler>
+        </IonReactRouter>
+      </IonApp>
+    </GoogleOAuthProvider>
   );
 };
 
