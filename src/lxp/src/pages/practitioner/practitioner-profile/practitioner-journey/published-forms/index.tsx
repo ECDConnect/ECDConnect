@@ -107,7 +107,8 @@ export const PublishedFormsList = ({ onBack }: FormProps) => {
           <>
             <Typography
               className="mt-3 mb-4"
-              type={'h5'}
+              color="textDark"
+              type={'h3'}
               text="Which form would you like to fill?"
             />
             <StackedList
@@ -120,7 +121,8 @@ export const PublishedFormsList = ({ onBack }: FormProps) => {
           <>
             <Typography
               className="mt-3 mb-4"
-              type={'h5'}
+              color="textDark"
+              type={'h3'}
               text="No forms available yet"
             />
             <div className="grid grid-cols-1 justify-center gap-8">
@@ -130,8 +132,8 @@ export const PublishedFormsList = ({ onBack }: FormProps) => {
               <div className="flex justify-center">
                 <div className="flex w-8/12 justify-center">
                   <Typography
-                    type="h5"
                     color="textDark"
+                    type={'h3'}
                     text={`There are no forms availabe on ${tenant?.tenant?.applicationName}`}
                     className={'text-center'}
                   />
