@@ -509,7 +509,7 @@ export const Dashboard: React.FC = () => {
         },
         {
           name: NavigationNames.Profile.Help,
-          href: ROUTES.PRACTITIONER.HELP.ROOT,
+          href: isOpenAccess ? ROUTES.PRACTITIONER.HELP.ROOT : ROUTES.HELP,
           onNavigation: onNavigation,
           current: false,
         },
