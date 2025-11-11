@@ -520,7 +520,7 @@ export const Dashboard: React.FC = () => {
           name: NavigationNames.Profile.Journey,
           href: ROUTES.PRACTITIONER.PROFILE.ROOT,
           onNavigation: onNavigation,
-          params: { tabIndex: 1 },
+          params: { tabIndex: 1, visitId: '' },
           current: false,
         },
       ],
@@ -703,6 +703,7 @@ export const Dashboard: React.FC = () => {
       icon: styles.profileIconName,
       current: false,
       showDivider: true,
+      params: { tabIndex: 0, visitId: '' },
     },
     {
       name: NavigationNames.Practitioners,
@@ -903,7 +904,7 @@ export const Dashboard: React.FC = () => {
       ? ROUTES.COACH.PROFILE.ROOT
       : ROUTES.PRACTITIONER.PROFILE.ROOT;
 
-    history.push(profileRoute);
+    history.push(profileRoute, { tabIndex: 0, visitId: '' });
   };
 
   const goToClassroom = () => {

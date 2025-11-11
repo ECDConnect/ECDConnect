@@ -39,7 +39,7 @@ import { TableRefMethods } from '@ecdlink/ui/lib/components/table/types';
 import { ConnectUsage, Status } from '../../user.types';
 import { columnColor } from '../../../../utils/app-usage/app-usage-utils';
 import { useTenant } from '../../../../hooks/useTenant';
-import { pluralize } from '../../../pages.utils';
+import { pluralize } from '../../../../utils/string-utils/pages.utils';
 import {
   CoachRouteState,
   CoachesRouteState,

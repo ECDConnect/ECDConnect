@@ -42,7 +42,14 @@ INSERT INTO public."ContentTypeField"
 VALUES(nextval('public."ContentTypeField_Id_seq"'),8, 'updatedDate', 1, true, '', 40, current_date, current_date, NULL, NULL, 'Last updated', true, false, false);
 INSERT INTO public."ContentTypeField"
 ("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName", "DisplayMainTable", "DisplayPage", "IsRequired")
-VALUES(nextval('public."ContentTypeField_Id_seq"'),9, 'adminDescription', 1, true, '', 40, current_date, current_date, '', null, 'Description', true, true, true);
+VALUES(nextval('public."ContentTypeField_Id_seq"'),9, 'adminDescription', 1, true, '', 40, current_date, current_date, '', null, 'Admin Description', true, true, true);
+INSERT INTO public."ContentTypeField"
+("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName", "DisplayMainTable", "DisplayPage", "IsRequired")
+VALUES(nextval('public."ContentTypeField_Id_seq"'),10, 'provider', 1, true, '', 40, current_date, current_date, '', null, 'Provider', true, true, true);
+INSERT INTO public."ContentTypeField"
+("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName", "DisplayMainTable", "DisplayPage", "IsRequired")
+VALUES(nextval('public."ContentTypeField_Id_seq"'),11, 'pdfUrl', 3, true, '', 40, current_date, current_date, '', null, 'Pdf', true, true, true);
+
 
 --FormPage
 INSERT INTO public."ContentTypeField"
@@ -176,6 +183,9 @@ DECLARE
     ctFieldId3 INT := (select "Id" from "ContentTypeField" WHERE "FieldName" = 'formQuestionOptions' and "ContentTypeId" = contentTypeId);
     ctFieldId4 INT := (select "Id" from "ContentTypeField" WHERE "FieldName" = 'description' and "ContentTypeId" = contentTypeId);
 
+    optionContentTypeId INT := (select "Id" from "ContentType" WHERE "Name" = 'FormQuestionOption');
+    optionCtFieldId1 INT := (select "Id" from "ContentTypeField" WHERE "FieldName" = 'name' and "ContentTypeId" = optionContentTypeId);
+
     optionIds1 TEXT;
     optionIds2 TEXT;
 
@@ -196,7 +206,7 @@ BEGIN
 					        SELECT DISTINCT "ContentId"
 					        FROM "ContentValue" cv
 					        WHERE cv."Value" IN ('Sometimes', 'Most of the time', 'All the time')
-					          AND cv."TenantId" = tenant_id::uuid
+					          AND cv."TenantId" = tenant_id::uuid AND cv."ContentTypeFieldId" = optionCtFieldId1
 					        ORDER BY "ContentId"
 					    ) sub
 					);
@@ -206,7 +216,7 @@ BEGIN
 					        SELECT DISTINCT "ContentId"
 					        FROM "ContentValue" cv
 					        WHERE cv."Value" IN ('Greeting time','Morning ring or message board','Teacher-directed small group activity','Free play time','Large group time (songs, big group activities)','Story time','Outside time','None')
-					          AND cv."TenantId" = tenant_id::uuid
+					          AND cv."TenantId" = tenant_id::uuid AND cv."ContentTypeFieldId" = optionCtFieldId1
 					        ORDER BY "ContentId"
 					    ) sub
 					);
@@ -481,10 +491,12 @@ DECLARE
     ];
     tenant_id TEXT;
 
-    form_name TEXT := 'Self-assessment (SmartStart)';
+    form_name TEXT := 'Self-assessment';
     form_description TEXT := 'This form will help you think about which parts of your programme you are doing well and if there are any areas that need to get better';
-    form_admin_description TEXT := 'The "Self-assessment" form was developed by SmartStart, who have made the tool free to use for any organisation using ECD Connect.  The tool is not editable, but you can choose whether or not to have it available to users on {AppName}.  The self-assessment form helps practitioners to identify programme highlights & areas for improvement.';
-    form_logo TEXT := 'https://ecdconnectstoragedev.blob.core.windows.net/content-image/638968036187153064_themeLogo.png';
+    form_admin_description TEXT := 'The "Self-assessment" form was developed by SmartStart, who have made the tool free to use for any organisation using ECD Connect. The tool is not editable, but you can choose whether or not to have it available to users on {AppName}. The self-assessment form helps practitioners to identify programme highlights & areas for improvement.';
+    form_logo TEXT := 'https://ecdconnectstoragesa.blob.core.windows.net/content-image/638968036187153064_themeLogo.png';
+    form_provider TEXT := 'SmartStart';
+    form_pdf TEXT := 'https://ecdconnectstoragesa.blob.core.windows.net/content-image/Self-assessment%20Preview.pdf';
     form_roleIds TEXT;
     form_pages TEXT;
     
@@ -499,9 +511,10 @@ DECLARE
     ctFieldId6 INT := (SELECT "Id" FROM "ContentTypeField" WHERE "FieldName" = 'formPages' AND "ContentTypeId" = contentTypeId);
     ctFieldId7 INT := (SELECT "Id" FROM "ContentTypeField" WHERE "FieldName" = 'logoUrl' AND "ContentTypeId" = contentTypeId);
     ctFieldId8 INT := (SELECT "Id" FROM "ContentTypeField" WHERE "FieldName" = 'adminDescription' AND "ContentTypeId" = contentTypeId);
+    ctFieldId9 INT := (SELECT "Id" FROM "ContentTypeField" WHERE "FieldName" = 'provider' AND "ContentTypeId" = contentTypeId);
+    ctFieldId10 INT := (SELECT "Id" FROM "ContentTypeField" WHERE "FieldName" = 'pdfUrl' AND "ContentTypeId" = contentTypeId);
 
 BEGIN
-
     FOREACH tenant_id IN ARRAY tenant_ids LOOP    
         RAISE NOTICE 'tenant_id: %', tenant_id;
 
@@ -510,9 +523,9 @@ BEGIN
             SELECT string_agg("Id"::text, ',')
             FROM (
                 SELECT DISTINCT "Id"
-                FROM "AspNetRoles" anr
-                WHERE anr."Name" IN ('Practitioner', 'Principal')
-                  AND anr."TenantId" = tenant_id::uuid
+                FROM "AspNetRoles"
+                WHERE "Name" IN ('Practitioner', 'Principal')
+                  AND "TenantId" = tenant_id::uuid
                 ORDER BY "Id"
             ) sub
         );
@@ -551,7 +564,34 @@ BEGIN
             (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId5, '', tenant_id::uuid, now(), now()),
             (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId6, form_pages, tenant_id::uuid, now(), now()),
             (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId7, form_logo, tenant_id::uuid, now(), now()),
-            (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId8, form_admin_description, tenant_id::uuid, now(), now());
+            (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId8, form_admin_description, tenant_id::uuid, now(), now()),
+            (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId9, form_provider, tenant_id::uuid, now(), now()),
+            (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId10, form_pdf, tenant_id::uuid, now(), now());
+    END LOOP;
+END $$;
 
+
+-- Adding visit type record for each tenant
+DO $$
+DECLARE
+    tenant_ids TEXT[] := ARRAY[
+        '258a15e6-3736-45ea-875c-48d9377de4c8',
+        'e8f571eb-1972-4e71-a20f-347c65d059bb'
+    ];
+    tenant_id TEXT;
+
+    typeName TEXT := 'self_assessment';
+    typeNormalizedName TEXT := 'Self-Assessment';
+    typeDescription TEXT := 'Self-Assessment';
+    typeType TEXT := 'form';
+
+    new_content_id INT;
+BEGIN
+    FOREACH tenant_id IN ARRAY tenant_ids LOOP
+
+        INSERT INTO public."VisitType"
+        ("Id", "Name", "NormalizedName", "Description", "IsActive", "InsertedDate", "UpdatedDate", "UpdatedBy", "Order", "Type", "TenantId")
+        VALUES(gen_random_uuid() , typeName, typeNormalizedName, typeDescription, true, current_date, current_date, '', 1, typeType, tenant_id::uuid);
+        
     END LOOP;
 END $$;

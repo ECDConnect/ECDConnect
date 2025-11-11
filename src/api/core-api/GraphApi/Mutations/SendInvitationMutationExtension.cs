@@ -1,5 +1,6 @@
 using EcdLink.Api.CoreApi.GraphApi.Models.Users;
 using EcdLink.Api.CoreApi.Managers.Notifications;
+using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Security.Managers;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using ECDLink.Abstractrions.Constants;
@@ -7,6 +8,7 @@ using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Helpers;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Managers;
+using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
@@ -17,10 +19,12 @@ using HotChocolate;
 using HotChocolate.Execution;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using static EcdLink.Api.CoreApi.Constants;
 
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
@@ -131,11 +135,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 [Service] ITokenManager<ApplicationUser, OpenAccessTokenManager> tokenManager,
                 [Service] InvitationNotificationManager notificationManager,
                 [Service] ApplicationUserManager userManager,
+                [Service] InvitationManager inviteManager,
                 [Service] IHttpContextAccessor httpContext,
                  string practitionerPhoneNumber,
                  string preSchoolNameCode,
                  string preSchoolName,
-                 Guid principalUserId)
+                 Guid principalUserId,
+                 string? idOrPassport)
         {
             if (string.IsNullOrEmpty(practitionerPhoneNumber))
             {
@@ -164,10 +170,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 IsActive = true,
                 TenantId = tenantId,
                 PhoneNumber = UserHelper.NormalizePhoneNumber(practitionerPhoneNumber),
-                ContactPreference = MessageTypeConstants.SMS
+                ContactPreference = MessageTypeConstants.SMS,
+                IdNumber = idOrPassport
             };
-            await userManager.CreateAsync(user);
 
+            await userManager.CreateAsync(user);
+            inviteManager.CreateUserInvitation(user.Id, principal.Id);
+            
             var tokenWrapper = new PrincipalPractitionerTokenWrapperModel
             {
                 AddedByUserId = userId,

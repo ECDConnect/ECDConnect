@@ -543,6 +543,74 @@ export enum ApplyPolicy {
   BeforeResolver = 'BEFORE_RESOLVER',
 }
 
+export type AssessmentForm = {
+  __typename?: 'AssessmentForm';
+  description?: Maybe<Scalars['String']>;
+  formPages?: Maybe<Array<Maybe<AssessmentPage>>>;
+  formPagesIds?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  isPublished?: Maybe<Scalars['String']>;
+  logoUrl?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  provider?: Maybe<Scalars['String']>;
+  publishedDate?: Maybe<Scalars['String']>;
+  roleIds?: Maybe<Scalars['String']>;
+};
+
+export type AssessmentOption = {
+  __typename?: 'AssessmentOption';
+  id?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+};
+
+export type AssessmentPage = {
+  __typename?: 'AssessmentPage';
+  description?: Maybe<Scalars['String']>;
+  formQuestions?: Maybe<Array<Maybe<AssessmentQuestion>>>;
+  formQuestionsIds?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  stepNr?: Maybe<Scalars['String']>;
+};
+
+export type AssessmentPageInput = {
+  formQuestions?: InputMaybe<Array<InputMaybe<AssessmentQuestionInput>>>;
+  id?: InputMaybe<Scalars['String']>;
+  name?: InputMaybe<Scalars['String']>;
+};
+
+export type AssessmentQuestion = {
+  __typename?: 'AssessmentQuestion';
+  answer?: Maybe<Scalars['String']>;
+  answerType?: Maybe<Scalars['String']>;
+  description?: Maybe<Scalars['String']>;
+  formQuestionOptions?: Maybe<Array<Maybe<AssessmentOption>>>;
+  formQuestionOptionsIds?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+};
+
+export type AssessmentQuestionInput = {
+  answer?: InputMaybe<Scalars['String']>;
+  answerId?: InputMaybe<Scalars['String']>;
+  id?: InputMaybe<Scalars['String']>;
+  name?: InputMaybe<Scalars['String']>;
+};
+
+export type AssessmentReport = {
+  __typename?: 'AssessmentReport';
+  amberQuestions?: Maybe<Array<Maybe<Scalars['String']>>>;
+  blueQuestions?: Maybe<Array<Maybe<Scalars['String']>>>;
+  dailyActivities?: Maybe<Array<Maybe<Scalars['String']>>>;
+  generatedAt: Scalars['DateTime'];
+  greenQuestions?: Maybe<Array<Maybe<Scalars['String']>>>;
+  name?: Maybe<Scalars['String']>;
+  skippedActivities?: Maybe<Array<Maybe<Scalars['String']>>>;
+  textAnswer?: Maybe<Scalars['String']>;
+  textQuestion?: Maybe<Scalars['String']>;
+  visitId: Scalars['UUID'];
+};
+
 export type Attendance = {
   __typename?: 'Attendance';
   attendanceDate: Scalars['DateTime'];
@@ -3242,6 +3310,8 @@ export type Form = {
   isPublished?: Maybe<Scalars['String']>;
   logoUrl?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
+  pdfUrl?: Maybe<Scalars['String']>;
+  provider?: Maybe<Scalars['String']>;
   publishedDate?: Maybe<Scalars['String']>;
   roleIds?: Maybe<Scalars['String']>;
   updatedDate?: Maybe<Scalars['String']>;
@@ -3254,6 +3324,8 @@ export type FormInput = {
   isPublished?: InputMaybe<Scalars['String']>;
   logoUrl?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
+  pdfUrl?: InputMaybe<Scalars['String']>;
+  provider?: InputMaybe<Scalars['String']>;
   publishedDate?: InputMaybe<Scalars['String']>;
   roleIds?: InputMaybe<Scalars['String']>;
   updatedDate?: InputMaybe<Scalars['String']>;
@@ -3635,6 +3707,16 @@ export type InputValidationError = {
   errorDescription?: Maybe<Scalars['String']>;
   errors?: Maybe<Array<Maybe<Scalars['String']>>>;
   row: Scalars['Int'];
+};
+
+export type JourneyTimeline = {
+  __typename?: 'JourneyTimeline';
+  dateCompleted?: Maybe<Scalars['String']>;
+  dateValue?: Maybe<Scalars['DateTime']>;
+  iconName?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  type?: Maybe<Scalars['String']>;
+  visitId?: Maybe<Scalars['UUID']>;
 };
 
 export type KeyValuePairOfInt32AndNullableOfInt32 = {
@@ -4628,6 +4710,7 @@ export type Mutation = {
   sendPractitionerRemovedFromProgrammeNotification: Scalars['Boolean'];
   sendPrincipalInviteToApplication?: Maybe<Scalars['String']>;
   sendPromotedToPrincipalFAAProgrammeNotification: Scalars['Boolean'];
+  submitJourneyAssessmentFormData?: Maybe<AssessmentReport>;
   switchPrincipal: Scalars['Boolean'];
   trackAttendance: Scalars['Boolean'];
   updateAbsentees?: Maybe<Absentees>;
@@ -4724,6 +4807,7 @@ export type Mutation = {
   updateProgressTrackingSkill?: Maybe<ProgressTrackingSkill>;
   updateProgressTrackingSubCategory?: Maybe<ProgressTrackingSubCategory>;
   updateProvince?: Maybe<Province>;
+  updatePublishStatus: Scalars['Boolean'];
   updateRace?: Maybe<Race>;
   updateReasonForLeaving?: Maybe<ReasonForLeaving>;
   updateReasonForPractitionerLeaving?: Maybe<ReasonForPractitionerLeaving>;
@@ -6293,6 +6377,12 @@ export type MutationSendPromotedToPrincipalFaaProgrammeNotificationArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationSubmitJourneyAssessmentFormDataArgs = {
+  formId?: InputMaybe<Scalars['String']>;
+  formName?: InputMaybe<Scalars['String']>;
+  input?: InputMaybe<Array<InputMaybe<AssessmentPageInput>>>;
+};
+
 export type MutationSwitchPrincipalArgs = {
   newPrincipalUserId?: InputMaybe<Scalars['String']>;
   oldPrincipalUserId?: InputMaybe<Scalars['String']>;
@@ -6812,6 +6902,11 @@ export type MutationUpdateProgressTrackingSubCategoryArgs = {
 export type MutationUpdateProvinceArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<ProvinceInput>;
+};
+
+export type MutationUpdatePublishStatusArgs = {
+  contentId?: InputMaybe<Scalars['String']>;
+  isPublished?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationUpdateRaceArgs = {
@@ -9446,6 +9541,10 @@ export type Query = {
   incomeStatementPdf?: Maybe<Scalars['String']>;
   incomeStatements?: Maybe<Array<Maybe<IncomeStatementModel>>>;
   infographics: Array<Maybe<Infographics>>;
+  journeyAssessmentFormData?: Maybe<AssessmentForm>;
+  journeyAssessmentReport?: Maybe<AssessmentReport>;
+  journeyPublishedAssessmentForms?: Maybe<Array<Maybe<AssessmentForm>>>;
+  journeyTimeline?: Maybe<Array<Maybe<JourneyTimeline>>>;
   lastPractitionerInviteDate?: Maybe<Scalars['String']>;
   latestUrlInviteForUser?: Maybe<Scalars['String']>;
   mapPractitionerToPrincipal?: Maybe<Principal>;
@@ -11520,6 +11619,18 @@ export type QueryIncomeStatementsArgs = {
 export type QueryInfographicsArgs = {
   locale?: InputMaybe<Scalars['String']>;
   section?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryJourneyAssessmentFormDataArgs = {
+  id: Scalars['Int'];
+};
+
+export type QueryJourneyAssessmentReportArgs = {
+  visitId: Scalars['UUID'];
+};
+
+export type QueryJourneyTimelineArgs = {
+  userId: Scalars['UUID'];
 };
 
 export type QueryLastPractitionerInviteDateArgs = {
@@ -13876,6 +13987,7 @@ export type Visit = {
   dueDate?: Maybe<Scalars['DateTime']>;
   event?: Maybe<CalendarEvent>;
   eventId?: Maybe<Scalars['UUID']>;
+  formContentId?: Maybe<Scalars['Int']>;
   hasAnswerData: Scalars['Boolean'];
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
@@ -13900,11 +14012,13 @@ export type Visit = {
 
 export type VisitData = {
   __typename?: 'VisitData';
+  answerContentId?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
   question?: Maybe<Scalars['String']>;
   questionAnswer?: Maybe<Scalars['String']>;
+  questionContentId?: Maybe<Scalars['Int']>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
   visit?: Maybe<Visit>;
@@ -13916,12 +14030,14 @@ export type VisitData = {
 
 export type VisitDataFilterInput = {
   and?: InputMaybe<Array<VisitDataFilterInput>>;
+  answerContentId?: InputMaybe<StringOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   or?: InputMaybe<Array<VisitDataFilterInput>>;
   question?: InputMaybe<StringOperationFilterInput>;
   questionAnswer?: InputMaybe<StringOperationFilterInput>;
+  questionContentId?: InputMaybe<ComparableNullableOfInt32OperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   visit?: InputMaybe<VisitFilterInput>;
@@ -13932,10 +14048,12 @@ export type VisitDataFilterInput = {
 };
 
 export type VisitDataInput = {
+  AnswerContentId?: InputMaybe<Scalars['String']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   Question?: InputMaybe<Scalars['String']>;
   QuestionAnswer?: InputMaybe<Scalars['String']>;
+  QuestionContentId?: InputMaybe<Scalars['Int']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
   Visit?: InputMaybe<VisitInput>;
   VisitDataStatus?: InputMaybe<Array<InputMaybe<VisitDataStatusInput>>>;
@@ -13945,11 +14063,13 @@ export type VisitDataInput = {
 };
 
 export type VisitDataSortInput = {
+  answerContentId?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
   question?: InputMaybe<SortEnumType>;
   questionAnswer?: InputMaybe<SortEnumType>;
+  questionContentId?: InputMaybe<SortEnumType>;
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
   visit?: InputMaybe<VisitSortInput>;
@@ -14030,6 +14150,7 @@ export type VisitFilterInput = {
   dueDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   event?: InputMaybe<CalendarEventFilterInput>;
   eventId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  formContentId?: InputMaybe<ComparableNullableOfInt32OperationFilterInput>;
   hasAnswerData?: InputMaybe<BooleanOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
@@ -14063,6 +14184,7 @@ export type VisitInput = {
   DueDate?: InputMaybe<Scalars['DateTime']>;
   Event?: InputMaybe<CalendarEventInput>;
   EventId?: InputMaybe<Scalars['UUID']>;
+  FormContentId?: InputMaybe<Scalars['Int']>;
   HasAnswerData: Scalars['Boolean'];
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
@@ -14109,6 +14231,7 @@ export type VisitSortInput = {
   dueDate?: InputMaybe<SortEnumType>;
   event?: InputMaybe<CalendarEventSortInput>;
   eventId?: InputMaybe<SortEnumType>;
+  formContentId?: InputMaybe<SortEnumType>;
   hasAnswerData?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;

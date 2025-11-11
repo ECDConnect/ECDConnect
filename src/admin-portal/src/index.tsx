@@ -1,4 +1,4 @@
-import { ConfigProvider } from '@ecdlink/core';
+import { ConfigProvider, SnackbarProvider } from '@ecdlink/core';
 import ReactDOM from 'react-dom';
 import ConfigWrapper from './app/config-wrapper';
 import './app/i18n';
@@ -14,9 +14,11 @@ ReactDOM.render(
       themeUrl: process.env.REACT_APP_THEME || '',
     }}
   >
-    <TenantContextProvider>
-      <ConfigWrapper />
-    </TenantContextProvider>
+    <SnackbarProvider>
+      <TenantContextProvider>
+        <ConfigWrapper />
+      </TenantContextProvider>
+    </SnackbarProvider>
   </ConfigProvider>,
   document.getElementById('root')
 );

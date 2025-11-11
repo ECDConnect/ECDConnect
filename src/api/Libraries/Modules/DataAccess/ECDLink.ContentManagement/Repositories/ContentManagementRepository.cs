@@ -335,6 +335,12 @@ namespace ECDLink.ContentManagement.Repositories
             return content.ContentType;
         }
 
+        public int GetContentTypeIdForName(string name)
+        {
+            var content = _context.ContentTypes.FirstOrDefault(x => x.Name == name && x.IsActive);
+            return content.Id;
+        }
+
         public IEnumerable<object> GetByIds(int contentTypeId, Guid localeId, params int[] contentIds)
         {
             var currentTenant = TenantExecutionContext.Tenant.Id;

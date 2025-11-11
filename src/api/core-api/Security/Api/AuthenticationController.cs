@@ -43,6 +43,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using static EcdLink.Api.CoreApi.Constants;
 
 namespace ECDLink.Security.Api
 {
@@ -60,6 +61,8 @@ namespace ECDLink.Security.Api
         private readonly AuthenticationDbContext _dbContext;
         private readonly Guid _applicationUserId;
         private readonly IGenericRepository<UserHelp, Guid> _userHelpRepo;
+
+        private readonly IGenericRepository<Invite, Guid> _inviteRepo;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly AuthenticationGoogleConfig _googleConfig;
 
@@ -81,6 +84,7 @@ namespace ECDLink.Security.Api
             _applicationUserId = contextAccessor.HttpContext != null && contextAccessor.HttpContext.GetUser() != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();
 
             _userHelpRepo = repoFactory.CreateGenericRepository<UserHelp>(userContext: _applicationUserId);
+            _inviteRepo = repoFactory.CreateGenericRepository<Invite>(userContext: _applicationUserId);
 
             _securityManager = securityManager;
             _userManager = userManager;
@@ -506,11 +510,52 @@ namespace ECDLink.Security.Api
         public async Task<IActionResult> AddOAPractitioner([FromBody] OAPractitionerModel addOAPractitionerModel)
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
-            var userId = Guid.NewGuid();
+            Guid userId = Guid.NewGuid();
             ApplicationUser newUser = null;
+            var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(addOAPractitionerModel.PhoneNumber);
 
-            // Step 1 - create User
-            if (RegisterTypeConstants.USERNAME == addOAPractitionerModel.RegisterType)
+            //First see if there was an invite created for this user
+            var invite = await _inviteRepo.GetAll().Include(x => x.User)
+                .FirstOrDefaultAsync(x => x.IsActive && !x.IsAccepted.HasValue && x.User.PhoneNumber.Equals(normalizePhoneNumber) && x.Status == InviteStatus.Pending);
+
+            if (invite != null)
+            {
+                invite.Status = InviteStatus.Accepted;
+                invite.AcceptedDate = DateTime.UtcNow;
+                invite.IsAccepted = true;
+                invite.IsActive = false;
+                _inviteRepo.Update(invite);
+
+                var existingUser = await _userManager.FindByIdAsync(invite.UserId);
+                userId = existingUser.Id;
+                existingUser.UserName = addOAPractitionerModel.Username;
+                existingUser.PendingPhoneNumber = normalizePhoneNumber;
+                existingUser.PhoneNumberConfirmed = false;
+                existingUser.TenantId = tenantId;
+                existingUser.IsActive = true;
+                existingUser.RegisterType = addOAPractitionerModel.RegisterType;
+                existingUser.ShareInfoPartners = addOAPractitionerModel.ShareInfoPartners;
+
+                // Validate password for user
+                if (!await _passwordManager.IsPasswordSecureAsync(existingUser, addOAPractitionerModel.Password))
+                {
+                    return BadRequest(new FailedVerificationModel
+                    {
+                        ErrorCode = 1,
+                        Error = "Add password failure"
+                    });
+                }
+                var updated = await _userManager.UpdateAsync(existingUser);
+                if (!updated.Succeeded)
+                {
+                    return BadRequest(new FailedVerificationModel
+                    {
+                        ErrorCode = 2,
+                        Error = "Update user failure"
+                    });
+                }
+            }    
+            else if (RegisterTypeConstants.USERNAME == addOAPractitionerModel.RegisterType)
             {
                 newUser = new ApplicationUser()
                 {
@@ -536,7 +581,6 @@ namespace ECDLink.Security.Api
                         Error = "Add password failure"
                     });
                 }
-
             }
             else if (RegisterTypeConstants.GOOGLE ==  addOAPractitionerModel.RegisterType)
             {
@@ -555,7 +599,7 @@ namespace ECDLink.Security.Api
                     ShareInfoPartners = addOAPractitionerModel.ShareInfoPartners,
                 };
             }
-            /*else if (RegisterTypeConstants.FACEBOOK == addOAPractitionerModel.RegisterType)
+            else if (RegisterTypeConstants.FACEBOOK == addOAPractitionerModel.RegisterType)
             {  // faceBook signs up with phone number
 
                 newUser = new ApplicationUser()
@@ -570,20 +614,22 @@ namespace ECDLink.Security.Api
                     RegisterType = addOAPractitionerModel.RegisterType,
                     ShareInfoPartners = addOAPractitionerModel.ShareInfoPartners,
                 };
-            }*/
-
-            var created = await _userManager.CreateAsync(newUser);
-            if (!created.Succeeded)
+            }
+            if (newUser != null)
             {
-                return BadRequest(new FailedVerificationModel
+                var created = await _userManager.CreateAsync(newUser);
+                if (!created.Succeeded)
                 {
-                    ErrorCode = 2,
-                    Error = "Add new user failure"
-                });
+                    return BadRequest(new FailedVerificationModel
+                    {
+                        ErrorCode = 2,
+                        Error = "Add new user failure"
+                    });
+                }
             }
 
             // Get newly created user
-            var user = await _securityManager.GetUserByNameAsync(addOAPractitionerModel.Username);
+            var user = await _securityManager.GetUserByIdAsync(userId);
 
             // Step 2 - create password
             if (RegisterTypeConstants.USERNAME == addOAPractitionerModel.RegisterType)
@@ -603,7 +649,7 @@ namespace ECDLink.Security.Api
             }
 
             // Step4: add user to practitioner table
-            var newPractitioner = _personnelService.AddOAPractitioner(user.Id, user.UserName);
+            var newPractitioner = _personnelService.AddOAPractitioner(user.Id, user.UserName, invite?.PrincipalId);
             if (newPractitioner == null)
             {
                 return BadRequest(new FailedVerificationModel

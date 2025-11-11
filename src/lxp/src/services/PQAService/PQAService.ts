@@ -1,7 +1,9 @@
 import { Config } from '@ecdlink/core';
 import {
+  AssessmentForm,
   CmsVisitDataInputModelInput,
   FollowUpVisitModelInput,
+  JourneyTimeline,
   PractitionerTimeline,
   SupportVisitModelInput,
   UpdateVisitPlannedVisitDateModelInput,
@@ -10,6 +12,11 @@ import {
   VisitModelInput,
 } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
+import {
+  AssessmentFormDto,
+  AssessmentPageDto,
+  AssessmentReportDto,
+} from '@/models/journey/Journey.dto';
 
 class PQAService {
   _accessToken: string;
@@ -395,6 +402,198 @@ class PQAService {
       );
     }
     return response.data.data.practitionerTimeline;
+  }
+
+  async getJourneyTimeline(userId: string): Promise<JourneyTimeline[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { journeyTimeline: JourneyTimeline[] };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetJourneyTimeline ($userId: UUID!) {
+          journeyTimeline(userId: $userId) {
+            name
+            dateCompleted
+            dateValue
+            iconName
+            type
+            visitId
+          }
+        }
+          `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Get Journey Timeline Failed - Server connection error');
+    }
+    return response.data.data.journeyTimeline;
+  }
+
+  async getJourneyPublishedAssessmentForms(): Promise<AssessmentFormDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { journeyPublishedAssessmentForms: AssessmentFormDto[] };
+      errors?: {};
+    }>(``, {
+      query: `
+        query getJourneyPublishedAssessmentForms() {
+          journeyPublishedAssessmentForms() {
+              id
+              name
+              description
+              roleIds
+              isPublished
+              publishedDate
+              logoUrl
+              provider
+          }
+        }
+          `,
+      variables: {},
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Get Published Assessment Forms Failed - Server connection error'
+      );
+    }
+    return response.data.data.journeyPublishedAssessmentForms;
+  }
+
+  async getJourneyAssessmentFormData(id: number): Promise<AssessmentFormDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { journeyAssessmentFormData: AssessmentFormDto };
+      errors?: {};
+    }>(``, {
+      query: `
+        query getJourneyAssessmentFormData($id: Int!) {
+          journeyAssessmentFormData(id: $id) {
+            id
+            name
+            description
+            roleIds
+            isPublished
+            publishedDate
+            logoUrl
+            provider 
+            formPages {
+                id
+                name
+                description
+                stepNr
+                formQuestions {
+                    id
+                    name
+                    description
+                    answerType
+                    formQuestionOptions {
+                        id
+                        name
+                    }
+                }
+
+            }
+          }
+        }
+          `,
+      variables: {
+        id,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Get Journey Assessment Form Data Failed - Server connection error'
+      );
+    }
+    return response.data.data.journeyAssessmentFormData;
+  }
+
+  async getJourneyAssessmentReport(
+    visitId: string
+  ): Promise<AssessmentReportDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { journeyAssessmentReport: AssessmentReportDto };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetJourneyAssessmentReport($visitId: UUID!) {
+            journeyAssessmentReport(visitId: $visitId) {
+              name 
+              greenQuestions
+              blueQuestions
+              amberQuestions
+              dailyActivities
+              skippedActivities
+              textQuestion
+              textAnswer
+              visitId
+            }        
+        }
+          `,
+      variables: {
+        visitId,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Get Journey Assessment Report Failed - Server connection error'
+      );
+    }
+    return response.data.data.journeyAssessmentReport;
+  }
+
+  async submitJourneyAssessmentFormData(
+    formId: string,
+    formName: string,
+    input: AssessmentPageDto[]
+  ): Promise<AssessmentReportDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { submitJourneyAssessmentFormData: AssessmentReportDto };
+      errors?: {};
+    }>(``, {
+      query: `
+       mutation submitJourneyAssessmentFormData($formId: String!, $formName: String!,$input: [AssessmentPageInput]) {
+          submitJourneyAssessmentFormData(formId: $formId, formName: $formName, input: $input) {
+            name 
+            greenQuestions
+            blueQuestions
+            amberQuestions
+            dailyActivities
+            skippedActivities
+            textQuestion
+            textAnswer
+            visitId 
+          }        
+        }
+      `,
+      variables: {
+        formId,
+        formName,
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Submit Journey Assessment Form Data failed - Server connection error'
+      );
+    }
+
+    console.log(
+      'pqaservice.submitJourneyAssessmentFormData',
+      response.data.data
+    );
+
+    return response.data.data.submitJourneyAssessmentFormData;
   }
 
   async updateVisitPlannedVisitDate(

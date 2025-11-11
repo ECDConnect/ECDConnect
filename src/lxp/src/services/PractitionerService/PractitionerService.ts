@@ -1567,13 +1567,14 @@ class PractitionerService {
     practitionerPhoneNumber: string,
     preSchoolNameCode: string,
     preSchoolName: string,
-    principalUserId: string
+    principalUserId: string,
+    idOrPassport?: string
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        mutation SendPractitionerInviteToPreSchool($practitionerPhoneNumber: String!, $preSchoolNameCode: String!, $preSchoolName: String!, $principalUserId: UUID!) {
-    sendPractitionerInviteToPreSchool(practitionerPhoneNumber: $practitionerPhoneNumber, preSchoolNameCode: $preSchoolNameCode, preSchoolName: $preSchoolName, principalUserId: $principalUserId) {
+        mutation SendPractitionerInviteToPreSchool($practitionerPhoneNumber: String!, $preSchoolNameCode: String!, $preSchoolName: String!, $principalUserId: UUID!, $idOrPassport: String) {
+    sendPractitionerInviteToPreSchool(practitionerPhoneNumber: $practitionerPhoneNumber, preSchoolNameCode: $preSchoolNameCode, preSchoolName: $preSchoolName, principalUserId: $principalUserId, idOrPassport: $idOrPassport) {
     }
 }
       `,
@@ -1582,6 +1583,7 @@ class PractitionerService {
         preSchoolNameCode,
         preSchoolName,
         principalUserId,
+        idOrPassport,
       },
     });
 
