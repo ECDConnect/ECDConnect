@@ -237,10 +237,25 @@ const App: React.FC = () => {
     }
   };
 
-  return (
-    <GoogleOAuthProvider
-      clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID || ''}
-    >
+  if (process.env.REACT_APP_GOOGLE_CLIENT_ID) {
+    return (
+      <GoogleOAuthProvider
+        clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID || ''}
+      >
+        <IonApp className="m-auto max-w-4xl bg-white">
+          <Helmet>
+            <title>{getTitle()}</title>
+          </Helmet>
+          <IonReactRouter>
+            <AppErrorHandler>
+              <IonRouterOutlet>{getRoutes()}</IonRouterOutlet>
+            </AppErrorHandler>
+          </IonReactRouter>
+        </IonApp>
+      </GoogleOAuthProvider>
+    );
+  } else {
+    return (
       <IonApp className="m-auto max-w-4xl bg-white">
         <Helmet>
           <title>{getTitle()}</title>
@@ -251,8 +266,8 @@ const App: React.FC = () => {
           </AppErrorHandler>
         </IonReactRouter>
       </IonApp>
-    </GoogleOAuthProvider>
-  );
+    );
+  }
 };
 
 export default App;
