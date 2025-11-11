@@ -13,6 +13,7 @@ using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
+using ECDLink.Security.Api.Constants;
 using ECDLink.Security.Extensions;
 using ECDLink.Security.Helpers;
 using ECDLink.Security.JwtSecurity.Enums;
@@ -403,7 +404,7 @@ namespace ECDLink.Security.Api
             // Update user with new username
             user.UserName = input.UserName;
             user.UpdatedDate = DateTime.Now;
-            user.RegisterType = string.IsNullOrEmpty(input.RegisterType) ? "username": input.RegisterType;
+            user.RegisterType = string.IsNullOrEmpty(input.RegisterType) ? RegisterTypeConstants.USERNAME : input.RegisterType;
             var updateResult = _userManager.UpdateAsync(user).Result;
             if (!updateResult.Succeeded)
             {
