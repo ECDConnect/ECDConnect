@@ -109,6 +109,7 @@ import { ProgressReportingPeriods } from '@/pages/classroom/progress/reporting-p
 import { ObservationsForChild } from '@/pages/classroom/progress/observations-for-child/observations-for-child';
 import { ObservationsForChildNotes } from '@/pages/classroom/progress/observations-for-child-landing/observations-for-child-landing-notes';
 import { ObservationsForChildLanding } from '@/pages/classroom/progress/observations-for-child-landing/observations-for-child-landing';
+import { HelpForm } from '@/components/help-form/help-form';
 
 const PublicRoutes: React.FC = () => {
   const tenant = useTenant();
@@ -141,7 +142,7 @@ const PublicRoutes: React.FC = () => {
         component={PasswordReset}
         exact={true}
       />
-      <Route path={ROUTES.HELP} component={PractitionerHelp} exact={true} />
+      <Route path={ROUTES.HELP} component={HelpForm} exact={true} />
       <Route path={ROUTES.NEW_PASSWORD} component={NewPassword} exact={true} />
       <Route
         path={ROUTES.SIGN_UP}
@@ -186,7 +187,7 @@ const AuthRoutes: React.FC = () => {
         component={PasswordReset}
         exact={true}
       />
-      <Route path={ROUTES.HELP} component={PractitionerHelp} exact={true} />
+      <Route path={ROUTES.HELP} component={HelpForm} exact={true} />
       <Route path={ROUTES.NEW_PASSWORD} component={NewPassword} exact={true} />
       <Route path={ROUTES.SIGN_UP} component={SignUp} exact={true} />
       <Route

@@ -152,7 +152,7 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction, userId }) => {
     <div>
       <BannerWrapper
         size="small"
-        onBack={() => closeAction && closeAction(false)}
+        onBack={() => (closeAction ? closeAction(false) : history.goBack())}
         color="primary"
         className={'h-screen'}
         title={`Get help`}

@@ -474,6 +474,27 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     }
   }, [appDispatch, userData, isCoach, isPrincipal]);
 
+  const handleNoClassroomForInvitedUser = useCallback(async () => {
+    const classroom = await new ClassroomService(
+      userAuth?.auth_token!
+    ).getClassroomForUser(practitioner?.principalHierarchy!);
+    if (classroom) {
+      localStorage.setItem(
+        LocalStorageKeys.classroomForInvitedUser,
+        classroom?.name
+      );
+    }
+  }, [practitioner?.principalHierarchy, userAuth?.auth_token]);
+
+  useEffect(() => {
+    if (userData && practitioner?.principalHierarchy && !classroomForUser)
+      handleNoClassroomForInvitedUser();
+  }, [
+    classroomForUser,
+    handleNoClassroomForInvitedUser,
+    practitioner?.principalHierarchy,
+  ]);
+
   useEffect(() => {
     if (userData) {
       if (practitioner?.coachHierarchy) {
@@ -527,27 +548,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appDispatch, userData, isCoach]);
-
-  const handleNoClassroomForInvitedUser = useCallback(async () => {
-    const classroom = await new ClassroomService(
-      userAuth?.auth_token!
-    ).getClassroomForUser(practitioner?.principalHierarchy!);
-    if (classroom) {
-      localStorage.setItem(
-        LocalStorageKeys.classroomForInvitedUser,
-        classroom?.name
-      );
-    }
-  }, [practitioner?.principalHierarchy, userAuth?.auth_token]);
-
-  useEffect(() => {
-    if (userData && practitioner?.principalHierarchy && !classroomForUser)
-      handleNoClassroomForInvitedUser();
-  }, [
-    classroomForUser,
-    handleNoClassroomForInvitedUser,
-    practitioner?.principalHierarchy,
-  ]);
 
   return (
     <IntialStoreSetupContext.Provider value={values}>

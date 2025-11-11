@@ -64,7 +64,8 @@ export class IncompletePractitionerInformationNotificationValidator
         // practitioner assigned to principal, which you need to accept
         if (
           practitionerState?.practitioner?.principalHierarchy &&
-          !practitionerState?.practitioner?.dateAccepted
+          !practitionerState?.practitioner?.dateAccepted &&
+          (classroomState?.classroom || principalClassroom)
         ) {
           return [
             {

@@ -563,12 +563,21 @@ namespace EcdLink.Api.CoreApi
             public const string MoreThanHundred = "More than 100 likes";
         }
 
-        public static class PermissionNames 
+        public static class PermissionNames
         {
-            public const string  NanageChildren = "manage_children";
-            public const string  TakeAttendance = "take_attendance";
-            public const string  CreateProgressReports = "create_progress_reports";
-            public const string  PlanClassroomActivities = "plan_classroom_activities";
+            public const string NanageChildren = "manage_children";
+            public const string TakeAttendance = "take_attendance";
+            public const string CreateProgressReports = "create_progress_reports";
+            public const string PlanClassroomActivities = "plan_classroom_activities";
+        }
+        
+         public static class InviteStatus 
+        {
+            public const string  Pending = "Pending";
+            public const string  Accepted = "Accepted invitation";
+            public const string  Accepted_Preschool = "Accepted invitation with preschool code";
+            public const string  Rejected = "Rejected invitation";
+            public const string  Expired = "Expired";
         }
     }
 }

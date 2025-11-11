@@ -197,6 +197,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<SecurityNotificationManager>();
             services.AddTransient<InvitationNotificationManager>();
             services.AddTransient<CaregiverManager>();
+            services.AddTransient<InvitationManager>();
             services.AddTransient<VisitManager>();
             services.AddTransient<VisitDataManager>();
             services.AddTransient<VisitDataStatusManager>();
@@ -223,6 +224,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<INotificationTasksService, NotificationTasksService>();
             services.AddTransient<IClassroomService, ClassroomService>();
             services.AddTransient<ICommunityService, CommunityService>();
+            services.AddTransient<IJourneyService, JourneyService>();
             services.AddTransient<IChildProgressReportService, ChildProgressReportService>();
             services.AddTransient<IAbsenteeService, AbsenteeService>();
             services.AddTransient<IPointsEngineService, PointsEngineService>();
