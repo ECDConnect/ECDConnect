@@ -5,7 +5,8 @@ import {
   getProgressAgeGroupForChild,
   mapProgressReportDetails,
 } from '@/utils/child/child-progress-report.utils';
-import { differenceInMonths, format, isBefore } from 'date-fns';
+import { differenceInMonths, format, isBefore, parseISO } from 'date-fns';
+import { isAfter } from 'date-fns/esm';
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -34,6 +35,10 @@ export const useProgressForChildren = (useNextPeriod?: boolean) => {
 
   const isReportWindowSet = useSelector(
     classroomsSelectors.getIsReportingPeriodsSet()
+  );
+
+  const allReportingPeriods = useSelector(
+    classroomsSelectors.getAllProgressReportPeriods()
   );
 
   const isWithinReportPeriod = useMemo(() => {
@@ -147,6 +152,19 @@ export const useProgressForChildren = (useNextPeriod?: boolean) => {
     );
   }, [baseChildren, reportingPeriod, childReports]);
 
+  const lastReport = useMemo(() => {
+    if (!allReportingPeriods || allReportingPeriods.length === 0) return null;
+    // sort by endDate (most recent last)
+    const sorted = [...allReportingPeriods].sort(
+      (a, b) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime()
+    );
+    return sorted[sorted.length - 1];
+  }, [allReportingPeriods]);
+
+  const isAfterLastReport = lastReport
+    ? isAfter(new Date(), lastReport.endDate)
+    : false;
+
   return {
     isAllObservationsComplete,
     isAllReportsComplete,
@@ -159,5 +177,6 @@ export const useProgressForChildren = (useNextPeriod?: boolean) => {
     percentageObservationsCompleted,
     ageGroupsAvailableForTracking,
     currentReportingPeriodForSummary,
+    isAfterLastReport,
   };
 };
