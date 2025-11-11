@@ -699,7 +699,7 @@ namespace ECDLink.Security.Api
                 });
             }
 
-            bool isSSOAccount = user.RegisterType != "username";
+            bool isSSOAccount = user.RegisterType != RegisterTypeConstants.USERNAME;
             if (!isSSOAccount)
             {
                 if (string.IsNullOrEmpty(input.Password))
