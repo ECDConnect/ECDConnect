@@ -14,13 +14,16 @@ using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
-using ECDLink.PostgresTenancy.Services;
 using ECDLink.Security.Api.Constants;
 using ECDLink.Security.Extensions;
 using ECDLink.Security.Helpers;
 using ECDLink.Security.JwtSecurity.Enums;
 using ECDLink.Security.Managers;
+using ECDLink.Security.SSO.Google.Configuration;
 using ECDLink.Tenancy.Context;
+using Google.Apis.Auth;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Auth.OAuth2.Flows;
 using HotChocolate;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -29,11 +32,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using static EcdLink.Api.CoreApi.Constants;
 
@@ -56,6 +64,7 @@ namespace ECDLink.Security.Api
 
         private readonly IGenericRepository<Invite, Guid> _inviteRepo;
         private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly AuthenticationGoogleConfig _googleConfig;
 
         public AuthenticationController(
             SignInManager<ApplicationUser> signInManager,
@@ -69,7 +78,8 @@ namespace ECDLink.Security.Api
             PersonnelService personnelService,
             HierarchyEngine hierarchyEngine,
             AuthenticationDbContext dbContext,
-            IServiceScopeFactory serviceScopeFactory)
+            IServiceScopeFactory serviceScopeFactory,
+            IOptions<AuthenticationGoogleConfig> googleConfig)
         {
             _applicationUserId = contextAccessor.HttpContext != null && contextAccessor.HttpContext.GetUser() != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();
 
@@ -84,6 +94,7 @@ namespace ECDLink.Security.Api
             _securityCodeManager = securityCodeManager;
             _dbContext = dbContext;
             _serviceScopeFactory = serviceScopeFactory;
+            _googleConfig = googleConfig.Value;
         }
 
         // POST api/auth/login
@@ -94,7 +105,6 @@ namespace ECDLink.Security.Api
             [FromServices] ApplicationUserManager _userManager,
             [FromBody] LoginRequestModel login)
         {
-
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -113,6 +123,14 @@ namespace ECDLink.Security.Api
                 || (login?.Username?.StartsWith('<') ?? true))
             {
                 return LoginUnauthorizedResult();
+            }
+
+            bool isGoogleAccount = !string.IsNullOrEmpty(login.GoogleToken) || !string.IsNullOrEmpty(login.GoogleCode);
+            if (isGoogleAccount)
+            {
+                var result = await ValidateGoogleLogin(login.Username, login.GoogleToken, login.GoogleCode);
+                if (result.Unauthorized != null) return result.Unauthorized;
+                login.Username = result.Email;
             }
 
             ApplicationUser user;
@@ -142,7 +160,7 @@ namespace ECDLink.Security.Api
                 return LoginUnauthorizedResult(lockedOut: true);
             }
 
-            if (!await _securityManager.IsPasswordValidAsync(user, login.Password))
+            if (!isGoogleAccount && !await _securityManager.IsPasswordValidAsync(user, login.Password))
             {
                 return LoginUnauthorizedResult(lockedOut: await _userManager.IsLockedOutAsync(user));
             }
@@ -181,9 +199,29 @@ namespace ECDLink.Security.Api
 
             var jwt = await _securityManager.GenerateJwtForUserAsync(user, JwtEncoderEnum.Standard);
             var jwtObj = JsonConvert.DeserializeObject<JwtObject>(jwt);
+
+            // If the user reaches the confirm auth code screen, but for some reason leaves the flow. And after that, the user tries to log in directly with the username,
+            // we should check the auth code status. If it's not confirmed yet, we should redirect the user to the confirm auth code screen again.
+            var latestMessage = await (from m in _dbContext.MessageLogs
+                                       where m.TenantId == tenantData.Id
+                                            && (m.To == user.PendingPhoneNumber || m.To == user.PhoneNumber)
+                                            && m.MessageTemplateType == TemplateTypeConstants.OAWLAuthCode
+                                       select new { m.Id, m.InsertedDate, m.IsActive }
+                                       )
+                                       .OrderByDescending(x => x.InsertedDate)
+                                       .FirstOrDefaultAsync();
+            if (latestMessage != null)
+            {
+                jwtObj.userMustConfirmAuthCode = latestMessage.IsActive;
+            }
+            jwtObj.loginType = isGoogleAccount ? "google" : "";
+            jwtObj.userName = user.UserName;
+
             var package = new OkObjectResult(jwtObj);
             return package;
         }
+
+
 
         private static bool ValidateTenantForUser(Guid? userTenantId, Guid? tenantId)
         {
@@ -361,8 +399,10 @@ namespace ECDLink.Security.Api
         [Route("check-username-phone-number")]
         [AllowAnonymous]
         [HttpPost]
-        public IActionResult CheckUsernamePhoneNumber([FromBody] OAVerifyUsernamePhoneNumberModel verifyModel)
+        public async Task<IActionResult> CheckUsernamePhoneNumber([FromBody] OAVerifyUsernamePhoneNumberModel verifyModel)
         {
+            bool isGoogleAccount = !string.IsNullOrEmpty(verifyModel.GoogleToken);
+
             // if both are empty, return error
             if (!string.IsNullOrEmpty(verifyModel.Username) && !string.IsNullOrEmpty(verifyModel.PhoneNumber))
             {
@@ -373,10 +413,29 @@ namespace ECDLink.Security.Api
                 });
             }
 
+            if (isGoogleAccount)
+            {
+                var result = await ValidateGoogleLogin(verifyModel.Username, verifyModel.GoogleToken, null);
+                if (result.Unauthorized != null)
+                {
+                    return BadRequest(new FailedVerificationModel
+                    {
+                        ErrorCode = 1,
+                        Error = "Invalid Google token."
+                    });
+                }
+            }
+
             if (!string.IsNullOrEmpty(verifyModel.Username))
             {
                 // we use _dbContext to exclude tenantId validation
-                var userByUsername = _dbContext.Users.Where(user => user.UserName == verifyModel.Username).FirstOrDefault();
+                var userByUsername = await _dbContext.Users
+                    .Where(user => user.UserName == verifyModel.Username)
+                    .Select(x => new
+                    {
+                        x.Id
+                    })
+                    .FirstOrDefaultAsync();
 
                 if (userByUsername != null)
                 {
@@ -384,7 +443,14 @@ namespace ECDLink.Security.Api
                     {
                         if (!string.IsNullOrEmpty(verifyModel.UserId))
                         {
-                            var user = _dbContext.Users.Where(user => user.Id.ToString() == verifyModel.UserId).FirstOrDefault();
+                            var user = await _dbContext.Users
+                                .Where(user => user.Id.ToString() == verifyModel.UserId)
+                                .Select(x => new
+                                {
+                                    x.Id,
+                                    x.IdNumber
+                                })
+                                .FirstOrDefaultAsync();
                             if (user.IdNumber != verifyModel.Username)
                             {
                                 return BadRequest(new FailedVerificationModel
@@ -418,7 +484,13 @@ namespace ECDLink.Security.Api
             {
                 // we use _dbContext to exclude tenantId validation
                 var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(verifyModel.PhoneNumber);
-                var userByPhoneNumber = _dbContext.Users.Where(user => user.UserName == normalizePhoneNumber).FirstOrDefault();
+                var userByPhoneNumber = await _dbContext.Users
+                    .Where(user => user.UserName == normalizePhoneNumber)
+                    .Select(x => new
+                    {
+                        x.Id
+                    })
+                    .FirstOrDefaultAsync();
                 if (userByPhoneNumber != null)
                 {
                     return BadRequest(new FailedVerificationModel
@@ -438,8 +510,8 @@ namespace ECDLink.Security.Api
         public async Task<IActionResult> AddOAPractitioner([FromBody] OAPractitionerModel addOAPractitionerModel)
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
-            var userId = Guid.NewGuid();
-            var newUser = new ApplicationUser();
+            Guid userId = Guid.NewGuid();
+            ApplicationUser newUser = null;
             var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(addOAPractitionerModel.PhoneNumber);
 
             //First see if there was an invite created for this user
@@ -454,17 +526,18 @@ namespace ECDLink.Security.Api
                 invite.IsActive = false;
                 _inviteRepo.Update(invite);
 
-                newUser = await _userManager.FindByIdAsync(invite.UserId);
-                newUser.UserName = addOAPractitionerModel.Username;
-                newUser.PendingPhoneNumber = normalizePhoneNumber;
-                newUser.PhoneNumberConfirmed = false;
-                newUser.TenantId = tenantId;
-                newUser.IsActive = true;
-                newUser.RegisterType = addOAPractitionerModel.RegisterType;
-                newUser.ShareInfoPartners = addOAPractitionerModel.ShareInfoPartners;
+                var existingUser = await _userManager.FindByIdAsync(invite.UserId);
+                userId = existingUser.Id;
+                existingUser.UserName = addOAPractitionerModel.Username;
+                existingUser.PendingPhoneNumber = normalizePhoneNumber;
+                existingUser.PhoneNumberConfirmed = false;
+                existingUser.TenantId = tenantId;
+                existingUser.IsActive = true;
+                existingUser.RegisterType = addOAPractitionerModel.RegisterType;
+                existingUser.ShareInfoPartners = addOAPractitionerModel.ShareInfoPartners;
 
                 // Validate password for user
-                if (!await _passwordManager.IsPasswordSecureAsync(newUser, addOAPractitionerModel.Password))
+                if (!await _passwordManager.IsPasswordSecureAsync(existingUser, addOAPractitionerModel.Password))
                 {
                     return BadRequest(new FailedVerificationModel
                     {
@@ -472,7 +545,7 @@ namespace ECDLink.Security.Api
                         Error = "Add password failure"
                     });
                 }
-                var updated = await _userManager.UpdateAsync(newUser);
+                var updated = await _userManager.UpdateAsync(existingUser);
                 if (!updated.Succeeded)
                 {
                     return BadRequest(new FailedVerificationModel
@@ -481,7 +554,6 @@ namespace ECDLink.Security.Api
                         Error = "Update user failure"
                     });
                 }
-
             }    
             else if (RegisterTypeConstants.USERNAME == addOAPractitionerModel.RegisterType)
             {
@@ -509,16 +581,23 @@ namespace ECDLink.Security.Api
                         Error = "Add password failure"
                     });
                 }
-                var created = await _userManager.CreateAsync(newUser);
-                if (!created.Succeeded)
+            }
+            else if (RegisterTypeConstants.GOOGLE ==  addOAPractitionerModel.RegisterType)
+            {
+                newUser = new ApplicationUser()
                 {
-                    return BadRequest(new FailedVerificationModel
-                    {
-                        ErrorCode = 2,
-                        Error = "Add new user failure"
-                    });
-                }
-
+                    Id = userId,
+                    UserName = addOAPractitionerModel.Username,
+                    PhoneNumber = addOAPractitionerModel.PhoneNumber,
+                    PendingPhoneNumber = UserHelper.NormalizePhoneNumber(addOAPractitionerModel.PhoneNumber),
+                    PhoneNumberConfirmed = false,
+                    ContactPreference = MessageTypeConstants.SMS,
+                    TenantId = tenantId,
+                    InsertedDate = DateTime.Now,
+                    IsActive = true,
+                    RegisterType = addOAPractitionerModel.RegisterType,
+                    ShareInfoPartners = addOAPractitionerModel.ShareInfoPartners,
+                };
             }
             else if (RegisterTypeConstants.FACEBOOK == addOAPractitionerModel.RegisterType)
             {  // faceBook signs up with phone number
@@ -535,7 +614,9 @@ namespace ECDLink.Security.Api
                     RegisterType = addOAPractitionerModel.RegisterType,
                     ShareInfoPartners = addOAPractitionerModel.ShareInfoPartners,
                 };
-
+            }
+            if (newUser != null)
+            {
                 var created = await _userManager.CreateAsync(newUser);
                 if (!created.Succeeded)
                 {
@@ -548,7 +629,7 @@ namespace ECDLink.Security.Api
             }
 
             // Get newly created user
-            var user = await _securityManager.GetUserByNameAsync(addOAPractitionerModel.Username);
+            var user = await _securityManager.GetUserByIdAsync(userId);
 
             // Step 2 - create password
             if (RegisterTypeConstants.USERNAME == addOAPractitionerModel.RegisterType)
@@ -606,14 +687,6 @@ namespace ECDLink.Security.Api
                     Error = "Username unavailable"
                 });
             }
-            if (string.IsNullOrEmpty(input.Password))
-            {
-                return BadRequest(new FailedVerificationModel
-                {
-                    ErrorCode = 2,
-                    Error = "Password unavailable"
-                });
-            }
 
             var user = await _securityManager.GetUserByNameAsync(input.Username);
 
@@ -626,24 +699,37 @@ namespace ECDLink.Security.Api
                 });
             }
 
-            // Validate password for user
-            if (!await _passwordManager.IsPasswordSecureAsync(user, input.Password))
+            bool isSSOAccount = user.RegisterType != RegisterTypeConstants.USERNAME;
+            if (!isSSOAccount)
             {
-                return BadRequest(new FailedVerificationModel
+                if (string.IsNullOrEmpty(input.Password))
                 {
-                    ErrorCode = 4,
-                    Error = "Password insecure"
-                });
-            }
+                    return BadRequest(new FailedVerificationModel
+                    {
+                        ErrorCode = 2,
+                        Error = "Password unavailable"
+                    });
+                }
 
-            // Change password
-            if (string.IsNullOrWhiteSpace(user.PasswordHash))
-            {
-                await _passwordManager.AddPasswordAsync(user, input.Password);
-            }
-            else
-            {
-                await _securityManager.ChangePasswordAsync(user, input.Password);
+                // Validate password for user
+                if (!await _passwordManager.IsPasswordSecureAsync(user, input.Password))
+                {
+                    return BadRequest(new FailedVerificationModel
+                    {
+                        ErrorCode = 4,
+                        Error = "Password insecure"
+                    });
+                }
+
+                // Change password
+                if (string.IsNullOrWhiteSpace(user.PasswordHash))
+                {
+                    await _passwordManager.AddPasswordAsync(user, input.Password);
+                }
+                else
+                {
+                    await _securityManager.ChangePasswordAsync(user, input.Password);
+                }
             }
 
             // Change phone number
@@ -811,6 +897,61 @@ namespace ECDLink.Security.Api
             return Ok(user.Id);
         }
 
+        private sealed class ValidateGoogleLoginResult
+        {
+            public UnauthorizedObjectResult Unauthorized { get; set; }
+            public string Email { get; set; }
+
+        }
+        private async Task<ValidateGoogleLoginResult> ValidateGoogleLogin(string username, string token, string code)
+        {
+            if (_googleConfig == null || string.IsNullOrEmpty(_googleConfig.ClientId) || string.IsNullOrEmpty(_googleConfig.ClientSecret))
+            {
+                return new ValidateGoogleLoginResult { Unauthorized = LoginUnauthorizedResult(message: "Google Client secrets configuration is missing.") };
+            }
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                var googlePayload = await GoogleJsonWebSignature.ValidateAsync(token);
+                if (googlePayload == null)
+                {
+                    return new ValidateGoogleLoginResult { Unauthorized = LoginUnauthorizedResult(message: "Invalid Google token.") };
+                }
+                return new ValidateGoogleLoginResult { Email = username };
+            }
+            
+            if (!string.IsNullOrEmpty(code))
+            {
+                var initializer = new GoogleAuthorizationCodeFlow.Initializer
+                {
+                    ClientSecrets = new Google.Apis.Auth.OAuth2.ClientSecrets
+                    {
+                        ClientId = _googleConfig.ClientId,
+                        ClientSecret = _googleConfig.ClientSecret
+                    }
+                };
+                var flow = new GoogleAuthorizationCodeFlow(initializer);
+
+                var tokenResponse = await flow.ExchangeCodeForTokenAsync(
+                    userId: "me",
+                    code: code,
+                    redirectUri: "postmessage",
+                    taskCancellationToken: CancellationToken.None);
+
+                var handler = new JwtSecurityTokenHandler();
+                var jsonToken = handler.ReadJwtToken(tokenResponse.IdToken);
+
+                var emailClaim = jsonToken.Claims.FirstOrDefault(x => x.Type == "email");
+                if (emailClaim != null)
+                {
+                    return new ValidateGoogleLoginResult { Email = emailClaim.Value };
+                }
+
+                return new ValidateGoogleLoginResult { Unauthorized = LoginUnauthorizedResult(message: "No email address for Google code.") };
+            }
+
+            return new ValidateGoogleLoginResult { Unauthorized = LoginUnauthorizedResult(message: "Invalid Google token or code.") };
+        }
 
 
     }

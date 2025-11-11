@@ -140,6 +140,14 @@ namespace EcdLink.Api.CoreApi.Security.Managers
             return true;
         }
 
+        public async Task<ApplicationUser> GetUserByIdAsync(Guid id)
+        {
+            return await (from u in _dbContext.Users
+                    where u.Id == id
+                        && u.TenantId == TenantExecutionContext.Tenant.Id
+                    select u).FirstOrDefaultAsync();
+        }
+
         public async Task<ApplicationUser> GetUserByNameAsync(string username)
         {
             if (string.IsNullOrWhiteSpace(username))

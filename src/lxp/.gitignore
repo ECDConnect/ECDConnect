@@ -16,6 +16,8 @@
 .env.local
 .env.development.local
 .env.test.local
+.env.qa.local
+.env.staging.local
 .env.production.local
 .vscode
 .idea

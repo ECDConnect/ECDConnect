@@ -33,13 +33,11 @@ const { version } = require('../../../../package.json');
 
 interface LoginModalProps {
   loginSuccessful: () => void;
-  updateTime?: () => void;
   isLocalExpiration?: boolean;
 }
 
 export const LoginModal: React.FC<LoginModalProps> = ({
   loginSuccessful,
-  updateTime,
   isLocalExpiration,
 }) => {
   const appDispatch = useAppDispatch();
