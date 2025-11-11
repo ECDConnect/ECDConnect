@@ -247,13 +247,17 @@ const App: React.FC = () => {
     </IonApp>
   );
 
-  return (
-    <GoogleOAuthProvider
-      clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID || ''}
-    >
-      {appShell}
-    </GoogleOAuthProvider>
-  );
+  if (process.env.REACT_APP_GOOGLE_CLIENT_ID) {
+    return (
+      <GoogleOAuthProvider
+        clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID || ''}
+      >
+        {appShell}
+      </GoogleOAuthProvider>
+    );
+  } else {
+    return appShell;
+  }
 };
 
 export default App;
