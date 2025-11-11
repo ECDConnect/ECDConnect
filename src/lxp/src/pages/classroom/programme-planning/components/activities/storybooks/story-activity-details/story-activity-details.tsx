@@ -570,16 +570,18 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
                       className={'mt-2 flex flex-row items-start'}
                       key={question.id}
                     >
-                      <div
-                        className={'mr-4 flex w-1/12 flex-row justify-center'}
-                      >
-                        <RoundIcon
-                          size={{ h: '8', w: '8' }}
-                          icon={'PhotographIcon'}
-                          iconSize={{ h: '5', w: '5' }}
-                          className={'bg-primary text-white'}
-                        />
-                      </div>
+                      {question.question && (
+                        <div
+                          className={'mr-4 flex w-1/12 flex-row justify-center'}
+                        >
+                          <RoundIcon
+                            size={{ h: '8', w: '8' }}
+                            icon={'PhotographIcon'}
+                            iconSize={{ h: '5', w: '5' }}
+                            className={'bg-primary text-white'}
+                          />
+                        </div>
+                      )}
                       <div className={'flex w-11/12 flex-col'}>
                         <Typography
                           type={'unspecified'}

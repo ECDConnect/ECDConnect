@@ -53,8 +53,6 @@ import { ReactComponent as EmojiBlueSmile } from '../../assets/neutral_blue_emot
 import { ReactComponent as EmojiOrangeSmile } from '../../assets/mehFace.svg';
 import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
 import { syncThunkActions } from '@store/sync';
-import { settingActions } from '@/store/settings';
-
 import {
   TabsItemForPrincipal,
   TabsItems,
@@ -511,7 +509,7 @@ export const Dashboard: React.FC = () => {
         },
         {
           name: NavigationNames.Profile.Help,
-          href: ROUTES.PRACTITIONER.HELP.ROOT,
+          href: isOpenAccess ? ROUTES.PRACTITIONER.HELP.ROOT : ROUTES.HELP,
           onNavigation: onNavigation,
           current: false,
         },
@@ -519,7 +517,7 @@ export const Dashboard: React.FC = () => {
           name: NavigationNames.Profile.Journey,
           href: ROUTES.PRACTITIONER.PROFILE.ROOT,
           onNavigation: onNavigation,
-          params: { tabIndex: 1 },
+          params: { tabIndex: 1, visitId: '' },
           current: false,
         },
       ],
@@ -702,6 +700,7 @@ export const Dashboard: React.FC = () => {
       icon: styles.profileIconName,
       current: false,
       showDivider: true,
+      params: { tabIndex: 0, visitId: '' },
     },
     {
       name: NavigationNames.Practitioners,
@@ -902,7 +901,7 @@ export const Dashboard: React.FC = () => {
       ? ROUTES.COACH.PROFILE.ROOT
       : ROUTES.PRACTITIONER.PROFILE.ROOT;
 
-    history.push(profileRoute);
+    history.push(profileRoute, { tabIndex: 0, visitId: '' });
   };
 
   const goToClassroom = () => {

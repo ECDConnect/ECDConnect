@@ -78,13 +78,26 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             IGenericRepositoryFactory repoFactory,
             string userId)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var dbRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
-            Coach coach = dbRepo.GetByUserId(userId);
+            if (string.IsNullOrWhiteSpace(userId))
+                return null;
 
-            List<Visit> visits = visitManager.GetVisitsForClient(userId, Constants.SSSettings.client_coach);
+            var currentUserId = contextAccessor.HttpContext?.GetUser()?.Id;
+            var dbRepo = repoFactory.CreateGenericRepository<Coach>(userContext: currentUserId);
+            var coach = dbRepo.GetByUserId(userId) ?? dbRepo.GetById(new Guid(userId));
 
-            coach.PractitionerVisits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_practitioner_visit || x.VisitType.Name == Constants.SSSettings.visitType_practitioner_call).ToList();
+            if (coach == null)
+                return null;
+
+            // Cache constants to avoid repeated string comparison
+            const string PractitionerVisit = Constants.SSSettings.visitType_practitioner_visit;
+            const string PractitionerCall = Constants.SSSettings.visitType_practitioner_call;
+
+            var practitionerVisits = visitManager
+                .GetVisitsForClient(userId, Constants.SSSettings.client_coach)
+                .Where(v => v.VisitType?.Name is PractitionerVisit or PractitionerCall)
+                .ToList();
+
+            coach.PractitionerVisits = practitionerVisits;
 
             return coach;
         }

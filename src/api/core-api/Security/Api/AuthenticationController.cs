@@ -26,6 +26,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -34,6 +35,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using static EcdLink.Api.CoreApi.Constants;
 
 namespace ECDLink.Security.Api
 {
@@ -51,6 +53,8 @@ namespace ECDLink.Security.Api
         private readonly AuthenticationDbContext _dbContext;
         private readonly Guid _applicationUserId;
         private readonly IGenericRepository<UserHelp, Guid> _userHelpRepo;
+
+        private readonly IGenericRepository<Invite, Guid> _inviteRepo;
         private readonly IServiceScopeFactory _serviceScopeFactory;
 
         public AuthenticationController(
@@ -70,6 +74,7 @@ namespace ECDLink.Security.Api
             _applicationUserId = contextAccessor.HttpContext != null && contextAccessor.HttpContext.GetUser() != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();
 
             _userHelpRepo = repoFactory.CreateGenericRepository<UserHelp>(userContext: _applicationUserId);
+            _inviteRepo = repoFactory.CreateGenericRepository<Invite>(userContext: _applicationUserId);
 
             _securityManager = securityManager;
             _userManager = userManager;
@@ -435,9 +440,50 @@ namespace ECDLink.Security.Api
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             var userId = Guid.NewGuid();
             var newUser = new ApplicationUser();
+            var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(addOAPractitionerModel.PhoneNumber);
 
-            // Step 1 - create User
-            if (RegisterTypeConstants.USERNAME == addOAPractitionerModel.RegisterType)
+            //First see if there was an invite created for this user
+            var invite = await _inviteRepo.GetAll().Include(x => x.User)
+                .FirstOrDefaultAsync(x => x.IsActive && !x.IsAccepted.HasValue && x.User.PhoneNumber.Equals(normalizePhoneNumber) && x.Status == InviteStatus.Pending);
+
+            if (invite != null)
+            {
+                invite.Status = InviteStatus.Accepted;
+                invite.AcceptedDate = DateTime.UtcNow;
+                invite.IsAccepted = true;
+                invite.IsActive = false;
+                _inviteRepo.Update(invite);
+
+                newUser = await _userManager.FindByIdAsync(invite.UserId);
+                newUser.UserName = addOAPractitionerModel.Username;
+                newUser.PendingPhoneNumber = normalizePhoneNumber;
+                newUser.PhoneNumberConfirmed = false;
+                newUser.TenantId = tenantId;
+                newUser.IsActive = true;
+                newUser.RegisterType = addOAPractitionerModel.RegisterType;
+                newUser.ShareInfoPartners = addOAPractitionerModel.ShareInfoPartners;
+
+                // Validate password for user
+                if (!await _passwordManager.IsPasswordSecureAsync(newUser, addOAPractitionerModel.Password))
+                {
+                    return BadRequest(new FailedVerificationModel
+                    {
+                        ErrorCode = 1,
+                        Error = "Add password failure"
+                    });
+                }
+                var updated = await _userManager.UpdateAsync(newUser);
+                if (!updated.Succeeded)
+                {
+                    return BadRequest(new FailedVerificationModel
+                    {
+                        ErrorCode = 2,
+                        Error = "Update user failure"
+                    });
+                }
+
+            }    
+            else if (RegisterTypeConstants.USERNAME == addOAPractitionerModel.RegisterType)
             {
                 newUser = new ApplicationUser()
                 {
@@ -463,6 +509,15 @@ namespace ECDLink.Security.Api
                         Error = "Add password failure"
                     });
                 }
+                var created = await _userManager.CreateAsync(newUser);
+                if (!created.Succeeded)
+                {
+                    return BadRequest(new FailedVerificationModel
+                    {
+                        ErrorCode = 2,
+                        Error = "Add new user failure"
+                    });
+                }
 
             }
             else if (RegisterTypeConstants.FACEBOOK == addOAPractitionerModel.RegisterType)
@@ -480,16 +535,16 @@ namespace ECDLink.Security.Api
                     RegisterType = addOAPractitionerModel.RegisterType,
                     ShareInfoPartners = addOAPractitionerModel.ShareInfoPartners,
                 };
-            }
 
-            var created = await _userManager.CreateAsync(newUser);
-            if (!created.Succeeded)
-            {
-                return BadRequest(new FailedVerificationModel
+                var created = await _userManager.CreateAsync(newUser);
+                if (!created.Succeeded)
                 {
-                    ErrorCode = 2,
-                    Error = "Add new user failure"
-                });
+                    return BadRequest(new FailedVerificationModel
+                    {
+                        ErrorCode = 2,
+                        Error = "Add new user failure"
+                    });
+                }
             }
 
             // Get newly created user
@@ -513,7 +568,7 @@ namespace ECDLink.Security.Api
             }
 
             // Step4: add user to practitioner table
-            var newPractitioner = _personnelService.AddOAPractitioner(user.Id, user.UserName);
+            var newPractitioner = _personnelService.AddOAPractitioner(user.Id, user.UserName, invite?.PrincipalId);
             if (newPractitioner == null)
             {
                 return BadRequest(new FailedVerificationModel
