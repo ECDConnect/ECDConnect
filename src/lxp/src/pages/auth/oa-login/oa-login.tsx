@@ -38,10 +38,10 @@ import { useTenant } from '@/hooks/useTenant';
 import { getLogo, LogoSvgs } from '@/utils/common/svg.utils';
 import { HelpForm } from '@/components/help-form/help-form';
 import {
-  CodeResponse,
+  /*CodeResponse,*/
   CredentialResponse,
-  GoogleLogin,
-  useGoogleLogin,
+  GoogleLogin /*,
+  useGoogleLogin,*/,
 } from '@react-oauth/google';
 import jwtDecode from 'jwt-decode';
 
@@ -68,17 +68,19 @@ export const OaLogin: React.FC = () => {
   const tenant = useTenant();
   const { resetAppStore, resetAuth, resetUser } = useStoreSetup();
 
-  const googleLogin = useGoogleLogin({
-    onSuccess: (
-      tokenResponse: Omit<
-        CodeResponse,
-        'error' | 'error_description' | 'error_uri'
-      >
-    ) => onGoogleLoginSuccessAuthFlow(tokenResponse),
-    flow: 'auth-code',
-    scope:
-      'openid email profile https://www.googleapis.com/auth/user.phonenumbers.read',
-  });
+  // const googleLogin = process.env.REACT_APP_GOOGLE_CLIENT_ID
+  //   ? useGoogleLogin({
+  //       onSuccess: (
+  //         tokenResponse: Omit<
+  //           CodeResponse,
+  //           'error' | 'error_description' | 'error_uri'
+  //         >
+  //       ) => onGoogleLoginSuccessAuthFlow(tokenResponse),
+  //       flow: 'auth-code',
+  //       scope:
+  //         'openid email profile https://www.googleapis.com/auth/user.phonenumbers.read',
+  //     })
+  //   : () => {};
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
@@ -392,22 +394,22 @@ export const OaLogin: React.FC = () => {
     history.push('/');
   };
 
-  const onGoogleLoginCustom = async () => {
-    googleLogin();
-  };
+  // const onGoogleLoginCustom = async () => {
+  //   googleLogin();
+  // };
 
-  const onGoogleLoginSuccessAuthFlow = (
-    tokenResponse: Omit<
-      CodeResponse,
-      'error' | 'error_description' | 'error_uri'
-    >
-  ) => {
-    preLogin({
-      username: 'google',
-      password: '',
-      googleCode: tokenResponse.code,
-    });
-  };
+  // const onGoogleLoginSuccessAuthFlow = (
+  //   tokenResponse: Omit<
+  //     CodeResponse,
+  //     'error' | 'error_description' | 'error_uri'
+  //   >
+  // ) => {
+  //   preLogin({
+  //     username: 'google',
+  //     password: '',
+  //     googleCode: tokenResponse.code,
+  //   });
+  // };
 
   const onGoogleLoginSuccess = (response: CredentialResponse) => {
     const credential = response.credential || '';
