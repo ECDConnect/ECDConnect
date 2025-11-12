@@ -65,9 +65,6 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
     isAfterLastReport,
   } = useProgressForChildren(true);
 
-  console.log('isAllReportsComplete', isAllReportsComplete);
-  console.log('isReportWindowSet', isReportWindowSet);
-
   const [generatedReports, setGeneratedReports] = useState<{
     [reportId: string]: boolean;
   }>({});
@@ -231,40 +228,11 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
       (!isWithinReportPeriod && percentageObservationsCompleted === 100)
     : percentageObservationsCompleted === 100;
 
-  console.log('isAfterLastReport', isAfterLastReport);
-
   return (
     <>
       {/* Report period set, all reports completed && current period undefined */}
       {isAllReportsComplete && isReportWindowSet && isAfterLastReport && (
-        <>
-          <ProgressTabReportPeriodsCompleted />
-          <Button
-            onClick={() => generateAllReports()}
-            className="mt-auto w-full"
-            size="small"
-            color="quatenary"
-            textColor="white"
-            type="filled"
-            icon={generatingReports ? undefined : 'DownloadIcon'}
-            text={generateButtonLabel()}
-            disabled={generatingReports || !isOnline}
-          />
-          <Button
-            onClick={() =>
-              history.replace(
-                ROUTES.PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP
-              )
-            }
-            className="mt-4 w-full"
-            size="small"
-            color="quatenary"
-            textColor="quatenary"
-            type="outlined"
-            icon={'EyeIcon'}
-            text={'See Summary'}
-          />
-        </>
+        <ProgressTabReportPeriodsCompleted />
       )}
 
       {/* No report periods defined and principal */}
