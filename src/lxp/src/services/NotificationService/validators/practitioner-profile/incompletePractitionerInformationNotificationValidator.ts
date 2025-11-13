@@ -119,7 +119,10 @@ export class IncompletePractitionerInformationNotificationValidator
 
         if (
           practitionerState?.practitioner?.progress === 1 ||
-          practitionerState?.practitioner?.progress === 1.0
+          practitionerState?.practitioner?.progress === 1.0 ||
+          (practitionerState?.practitioner?.progress === 2 &&
+            !practitionerState?.practitioner?.principalHierarchy &&
+            !practitionerState.practitioner?.isPrincipal)
         ) {
           return [
             {
