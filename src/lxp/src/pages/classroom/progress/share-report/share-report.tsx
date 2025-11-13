@@ -129,6 +129,22 @@ export const ProgressShareReport: React.FC = () => {
         pdfBlob,
         ` - ${child?.user?.fullName || child?.user?.firstName}`
       );
+    } else {
+      if (routeState.reportId) {
+        generatePdfReport();
+        if (shareRef.current) {
+          const newPdfBlob = await generateReportAndReturnBlob(
+            shareRef.current,
+            shareRef.current?.offsetWidth || 750
+          );
+          if (newPdfBlob) {
+            await sharePdfReport(
+              newPdfBlob,
+              ` - ${child?.user?.fullName || child?.user?.firstName}`
+            );
+          }
+        }
+      }
     }
     setIsLoading(false);
   };
