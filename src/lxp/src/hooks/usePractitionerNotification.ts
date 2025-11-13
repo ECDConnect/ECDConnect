@@ -69,6 +69,12 @@ export const usePractitionerNotification = () => {
       practitionerNotification.push(joinAddSchool);
     } else if (practitioner?.progress === 1) {
       practitionerNotification.push(joinTeam);
+    } else if (
+      practitioner?.progress === 2 &&
+      !practitioner.principalHierarchy &&
+      !practitioner?.isPrincipal
+    ) {
+      practitionerNotification.push(joinTeam);
     }
 
     return { practitionerNotification };
