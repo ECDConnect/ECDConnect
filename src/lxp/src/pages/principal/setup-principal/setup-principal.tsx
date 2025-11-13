@@ -256,6 +256,12 @@ export const SetupPrincipal: React.FC = () => {
             progress: 2.0,
           })
         );
+
+        if (!practitioner?.isPrincipal && !practitioner?.principalHierarchy) {
+          await appDispatch(
+            notificationActions.addNotifications(practitionerNotification)
+          );
+        }
         stopService();
       }
 
