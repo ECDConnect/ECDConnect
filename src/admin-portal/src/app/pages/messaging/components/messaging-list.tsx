@@ -197,9 +197,10 @@ export default function MessageList() {
           <div className="mb-3 flex w-full flex-row flex-wrap items-center">
             <div className="relative inline-block pr-2 text-left">
               <SearchDropDown<any>
-                displayMenuOverlay
                 menuItemClassName="w-11/12 left-4"
-                color={'adminPortalBg'}
+                className="mb-2 h-11 border-2 border-transparent"
+                color="quatenary"
+                bgColor="white"
                 options={
                   roleData.map((x) => {
                     return {
@@ -227,22 +228,25 @@ export default function MessageList() {
               />
             </div>
             <div className="relative inline-block pr-2 text-left">
-              <Dropdown
-                fillType="filled"
-                textColor="textMid"
-                fillColor="adminPortalBg"
-                placeholder="Status"
-                labelColor="textMid"
-                selectedValue={statusFilter}
-                list={[
-                  { label: 'Scheduled', value: 'scheduled' },
-                  { label: 'Sent', value: 'sent' },
+              <SearchDropDown<string>
+                // displayMenuOverlay
+                menuItemClassName="w-11/12 left-4"
+                className="mb-2 h-11 border-2 border-transparent"
+                color="quatenary"
+                bgColor="white"
+                options={[
+                  { id: '1', label: 'Scheduled', value: 'scheduled' },
+                  { id: '2', label: 'Sent', value: 'sent' },
                 ]}
                 onChange={(item) => {
-                  setStatusFilter(item);
+                  setStatusFilter(item[0].value);
                   getAllMessageLogsForAdmin();
                 }}
-                className="text-xs"
+                placeholder={'Status'}
+                pluralSelectionText={'Status'}
+                info={{
+                  name: `Filter by: Status`,
+                }}
               />
             </div>
             <div>
