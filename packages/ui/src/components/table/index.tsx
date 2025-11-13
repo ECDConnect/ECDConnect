@@ -267,9 +267,9 @@ export const Table = forwardRef<TableRefMethods, TableProps>(
                 {!!filters?.length && (
                   <Button
                     type="filled"
-                    color="adminPortalBg"
-                    textColor="textMid"
-                    className="text-textMid  mt-1 h-11 min-w-max whitespace-normal break-normal rounded-md px-2 py-0"
+                    color="quatenary"
+                    textColor="white"
+                    className="mt-1 h-11 min-w-max whitespace-normal break-normal rounded-md px-2 py-0 font-semibold text-white"
                     onClick={() => setOpenFilters(!openFilters)}
                   >
                     {!!selectedFilters?.length
@@ -278,7 +278,7 @@ export const Table = forwardRef<TableRefMethods, TableProps>(
                     Filter
                     {renderIcon(
                       openFilters ? 'ChevronUpIcon' : 'ChevronDownIcon',
-                      'text-textMid h-6 w-6'
+                      'text-white h-6 w-6'
                     )}
                   </Button>
                 )}
@@ -328,8 +328,6 @@ export const Table = forwardRef<TableRefMethods, TableProps>(
                     <SearchDropDown<string>
                       isFullWidth={false}
                       key={`filter-${index}`}
-                      bgColor="adminPortalBg"
-                      color="adminPortalBg"
                       displayMenuOverlay
                       {...(filterProps as SearchDropDownProps<string>)}
                     />

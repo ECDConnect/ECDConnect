@@ -319,23 +319,24 @@ export default function ApplicationAdmins() {
                         selectsRange={true}
                         inline
                         shouldCloseOnSelect={true}
+                        className="mt-1 h-11 w-64 border-2 border-transparent"
                       />
                     )}
 
                     <div className="items-left mr-2 flex gap-2">
                       <SearchDropDown<string>
                         displayMenuOverlay={true}
-                        className={'mr-1'}
-                        menuItemClassName={
-                          'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
-                        }
+                        menuItemClassName="w-11/12 left-4"
+                        className="mb-2 h-11 border-2 border-transparent"
+                        color="quatenary"
+                        bgColor="white"
                         overlayTopOffset={'120'}
                         options={sortByClientStatusOptions}
                         selectedOptions={statusFilter}
                         onChange={setStatusFilter}
                         placeholder={'Status'}
                         multiple={true}
-                        color={'adminPortalBg'}
+                        // color={'adminPortalBg'}
                         info={{
                           name: `Status:`,
                         }}
@@ -367,16 +368,14 @@ export default function ApplicationAdmins() {
                       <Typography
                         className="truncate"
                         type="help"
-                        color={numberOfFilters ? 'textDark' : 'textLight'}
+                        color={numberOfFilters ? 'white' : 'textLight'}
                         text={renderFilterButtonText}
                       />
                       {!showFilter ? (
                         <span>
                           <ChevronDownIcon
                             className={`h-6 w-6 ${
-                              numberOfFilters
-                                ? 'text-textMid'
-                                : 'text-textLight'
+                              numberOfFilters ? 'text-white' : 'text-textLight'
                             }`}
                           />
                         </span>
@@ -384,9 +383,7 @@ export default function ApplicationAdmins() {
                         <span>
                           <ChevronUpIcon
                             className={`h-6 w-6 ${
-                              numberOfFilters
-                                ? 'text-textMid'
-                                : 'text-textLight'
+                              numberOfFilters ? 'text-white' : 'text-textLight'
                             }`}
                           />
                         </span>
