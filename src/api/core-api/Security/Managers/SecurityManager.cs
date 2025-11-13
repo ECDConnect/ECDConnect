@@ -180,10 +180,12 @@ namespace EcdLink.Api.CoreApi.Security.Managers
                 return default;
             }
             var tenantId = TenantExecutionContext.Tenant.Id;
-            var user = await _userManager.Users.FirstOrDefaultAsync(
-                user => user.IsActive
-                    && user.PhoneNumber == phoneNumber
-                    && user.TenantId == tenantId);
+            var user = await _userManager.Users
+                        .Where(u => u.IsActive 
+                            && u.PhoneNumber == phoneNumber 
+                            && u.TenantId == tenantId)
+                        .OrderByDescending(u => u.InsertedDate)
+                        .FirstOrDefaultAsync();
             return user;
         }
 
