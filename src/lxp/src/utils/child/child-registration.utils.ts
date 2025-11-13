@@ -34,7 +34,7 @@ export const mapChildUserDto = (
 ): UserDto => {
   const dateOfBirth = new Date(
     childInformationForm.dobYear ?? 0,
-    childInformationForm.dobMonth - 1 ?? 0,
+    childInformationForm.dobMonth ?? 0,
     childInformationForm.dobDay ?? 0,
     new Date().getHours()
   );

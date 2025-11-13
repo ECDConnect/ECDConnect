@@ -24,17 +24,22 @@ import {
   childBasicInfoFormSchema,
   ChildBasicInfoModel,
 } from '@schemas/child/child-registration/child-basic-info';
-import { classroomsSelectors, classroomsThunkActions } from '@store/classroom';
+import {
+  classroomsActions,
+  classroomsSelectors,
+  classroomsThunkActions,
+} from '@store/classroom';
 import { format } from 'date-fns';
 import { authSelectors } from '@/store/auth';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { ChildMatchingDto } from './child-basic-info.types';
 import { useAppDispatch } from '@/store';
-import { childrenThunkActions } from '@/store/children';
+import { childrenActions, childrenThunkActions } from '@/store/children';
 import { debounce } from 'lodash';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { ChildrenActions } from '@/store/children/children.actions';
 import iconRobot from '../../../../assets/iconRobot.svg';
+import walkthroughImage from '../../../../assets/walktroughImage.png';
 import childRegistrationForm from '@/assets/ECD_connect_registration_form.pdf';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { ChildRegistrationDto } from '@/models/child/child-registration.dto';
@@ -52,6 +57,10 @@ import {
 import { ClassDashboardRouteState } from '@/pages/business/business.types';
 import { ChildProfileRouteState } from '../../child-profile/child-profile.types';
 import { EditPlaygroupsRouteState } from '@/pages/practitioner/save-practitioner-playgroups/save-practitioner-playgroups.types';
+import { newGuid } from '@/utils/common/uuid.utils';
+import { WorkflowStatusEnum } from '@ecdlink/graphql';
+import * as childRegisterUtils from '@utils/child/child-registration.utils';
+import { useStaticData } from '@/hooks/useStaticData';
 
 export const ChildBasicInfo: React.FC<
   FormComponentProps<ChildBasicInfoModel>
@@ -77,6 +86,7 @@ export const ChildBasicInfo: React.FC<
   const dialog = useDialog();
   const dispatch = useAppDispatch();
   const history = useHistory();
+  const { getWorkflowStatusIdByEnum } = useStaticData();
   const [checkChild, setCheckChild] = useState<ChildMatchingDto>();
   const [listItems, setListItems] = useState<UserAlertListDataItem[]>([]);
   const [registeredChild, setRegisteredChild] =
@@ -84,7 +94,6 @@ export const ChildBasicInfo: React.FC<
   const [childRegistrationDetails, setChildRegistrationDetails] =
     useState<ChildRegistrationDto>();
   const [loadingLink, setLoadingLink] = useState(false);
-
   const allClassroomGroups = useSelector(
     classroomsSelectors?.getClassroomGroups
   );
@@ -184,11 +193,7 @@ export const ChildBasicInfo: React.FC<
   };
 
   const onUploadSelf = async (newChild: ChildRegistrationDto) => {
-    if (isOnline) {
-      await goToChildRegistration(newChild);
-    } else {
-      showOnlineOnly();
-    }
+    await goToChildRegistration(newChild);
   };
 
   const showOnlineOnly = () => {
@@ -211,23 +216,86 @@ export const ChildBasicInfo: React.FC<
 
   // This should just sync children and classgroups (to get the newly created child)
   const refetchData = async () => {
-    await dispatch(childrenThunkActions.getChildren({ overrideCache: true }));
-    await dispatch(
-      classroomsThunkActions.getClassroomGroups({ overrideCache: true })
-    );
+    if (isOnline) {
+      await dispatch(childrenThunkActions.getChildren({ overrideCache: true }));
+      await dispatch(
+        classroomsThunkActions.getClassroomGroups({ overrideCache: true })
+      );
+    }
   };
 
   const generateCaregiverChildToken = async () => {
-    const newChild = await dispatch(
-      childrenThunkActions.generateCaregiverChildToken({
-        firstName: firstName,
-        surname: surname,
-        classgroupId: getSelectedClassroomGroupId(),
-      })
-    ).unwrap();
+    let newChild;
+    if (isOnline) {
+      newChild = await dispatch(
+        childrenThunkActions.generateCaregiverChildToken({
+          firstName: firstName,
+          surname: surname,
+          classgroupId: getSelectedClassroomGroupId(),
+        })
+      ).unwrap();
+    } else {
+      newChild = {
+        childId: newGuid(),
+        childUserId: newGuid(),
+        addedByUserId: '',
+        classroomGroupId: getSelectedClassroomGroupId(),
+        caregiverRegistrationUrl: '',
+      };
+      createLocalUser(newChild);
+    }
     setRegisteredChild(newChild);
     showMenuOptions(newChild);
     refetchData();
+  };
+
+  const createLocalUser = async (newChild: ChildRegistrationDto) => {
+    const childInformation = {
+      dobDay: 1,
+      dobMonth: 1,
+      dobYear: 2015,
+      firstname: firstName,
+      surname: surname,
+      playgroupId: getSelectedClassroomGroupId(),
+      otherReason: '',
+    };
+
+    let userInputModel = childRegisterUtils.mapChildUserDto(childInformation);
+
+    userInputModel = {
+      ...userInputModel,
+      id: newChild.childUserId,
+    };
+
+    const childExternalWorflowStatusId = getWorkflowStatusIdByEnum(
+      WorkflowStatusEnum.ChildPending
+    );
+
+    const childExtraInformation = { childFirstname: firstName || '' };
+
+    let childInputModel = childRegisterUtils.mapChildDto(
+      newChild.childUserId,
+      childExternalWorflowStatusId ?? '',
+      {},
+      childExtraInformation
+    );
+
+    childInputModel = {
+      ...childInputModel,
+      id: newChild.childId,
+      user: {
+        ...userInputModel,
+        isActive: true,
+      },
+    };
+
+    dispatch(childrenActions.createChild(childInputModel));
+    dispatch(
+      classroomsActions.createLearner({
+        childUserId: newChild.childUserId,
+        newClassroomGroupId: getSelectedClassroomGroupId(),
+      })
+    );
   };
 
   const onExit = () => {
@@ -247,62 +315,63 @@ export const ChildBasicInfo: React.FC<
   };
 
   const createLink = async (newChild: ChildRegistrationDto) => {
-    setLoadingLink(true);
-    const childDetails = await dispatch(
-      childrenThunkActions.refreshCaregiverChildToken({
-        childId: newChild?.childId,
-        classgroupId: newChild?.classroomGroupId,
-      })
-    ).unwrap();
-    setChildRegistrationDetails(childDetails);
+    if (isOnline) {
+      setLoadingLink(true);
+      let childDetails: ChildRegistrationDto;
+      if (registeredChild?.childId) {
+        childDetails = await dispatch(
+          childrenThunkActions.refreshCaregiverChildToken({
+            childId: newChild?.childId,
+            classgroupId: newChild?.classroomGroupId,
+          })
+        ).unwrap();
+      } else {
+        childDetails = await dispatch(
+          childrenThunkActions.generateCaregiverChildToken({
+            firstName: firstName,
+            surname: surname,
+            classgroupId: newChild?.classroomGroupId,
+          })
+        ).unwrap();
+      }
+      setChildRegistrationDetails(childDetails);
 
-    const linkCopied = await copyToClip(childDetails.caregiverRegistrationUrl);
+      const linkCopied = await copyToClip(
+        childDetails.caregiverRegistrationUrl
+      );
 
-    const selectedClassroom = allClassroomGroups.find(
-      (x) => x.id === getSelectedClassroomGroupId()
-    );
+      const selectedClassroom = allClassroomGroups.find(
+        (x) => x.id === getSelectedClassroomGroupId()
+      );
 
-    const whatsapp = () => {
-      const textMessage = `${practitioner?.user?.firstName} practitioner has invited you to register you child at their care centre. Tap this link to register ${firstName} for ${selectedClassroom?.name}: ${childDetails.caregiverRegistrationUrl}`;
-      const whatsAppLink = `whatsapp://send?text=${textMessage}`;
-      window.open(whatsAppLink);
-    };
+      const whatsapp = () => {
+        const textMessage = `${practitioner?.user?.firstName} practitioner has invited you to register you child at their care centre. Tap this link to register ${firstName} for ${selectedClassroom?.name}: ${childDetails.caregiverRegistrationUrl}`;
+        const whatsAppLink = `whatsapp://send?text=${textMessage}`;
+        window.open(whatsAppLink);
+      };
 
-    setLoadingLink(false);
-    dialog({
-      color: 'bg-white',
-      render: (onSubmit, onCancel) => {
-        // if (!!practitioner?.id) {
-        //   return (
-        //     <CaregiverMultipleChildrenModal
-        //       title="Link copied!"
-        //       onSubmit={() => {
-        //         history.goBack();
-        //         onSubmit();
-        //       }}
-        //       onCancel={() => {
-        //         onExit();
-        //         onCancel();
-        //       }}
-        //     />
-        //   );
-        // }
-
-        return (
-          <CaregiverChildRegistrationModal
-            onSubmit={whatsapp}
-            onCancel={() => {
-              onExit();
-              onCancel();
-            }}
-            firstName={firstName || ''}
-            caregiverUrl={newChild?.caregiverRegistrationUrl || ''}
-            couldCopyToClipboard={linkCopied}
-          />
-        );
-      },
-      position: DialogPosition.Middle,
-    });
+      setLoadingLink(false);
+      dialog({
+        color: 'bg-white',
+        render: (onSubmit, onCancel) => {
+          return (
+            <CaregiverChildRegistrationModal
+              onSubmit={whatsapp}
+              onCancel={() => {
+                onExit();
+                onCancel();
+              }}
+              firstName={firstName || ''}
+              caregiverUrl={newChild?.caregiverRegistrationUrl || ''}
+              couldCopyToClipboard={linkCopied}
+            />
+          );
+        },
+        position: DialogPosition.Middle,
+      });
+    } else {
+      showOnlineOnly();
+    }
   };
 
   const gotoChildProfile = (childId: string, classroomGroupId: string) => {
@@ -372,7 +441,7 @@ export const ChildBasicInfo: React.FC<
             customIcon={
               <div className="text-center">
                 <img
-                  src={iconRobot}
+                  src={isOnline ? iconRobot : walkthroughImage}
                   alt="robot"
                   className="mb-2 mr-6 h-24 w-24"
                 />

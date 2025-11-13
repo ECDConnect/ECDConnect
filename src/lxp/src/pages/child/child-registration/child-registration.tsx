@@ -184,9 +184,11 @@ export const ChildRegistration: React.FC = () => {
     if (!child) return;
 
     appDispatch(childrenActions.updateChild(child));
-    await appDispatch(
-      childrenThunkActions.updateChild({ child: child, id: String(child.id) })
-    ).unwrap();
+    if (isOnline) {
+      await appDispatch(
+        childrenThunkActions.updateChild({ child: child, id: String(child.id) })
+      ).unwrap();
+    }
   };
 
   const onSaveChildAndCaregiver = async (
@@ -357,7 +359,6 @@ export const ChildRegistration: React.FC = () => {
             }
           }}
           onClose={exitRegistrationPrompt}
-          isOnline={isOnline}
         >
           <Step
             stepKey={ChildRegistrationSteps.registrationForm}
