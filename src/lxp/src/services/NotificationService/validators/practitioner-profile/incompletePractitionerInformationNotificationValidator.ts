@@ -92,7 +92,10 @@ export class IncompletePractitionerInformationNotificationValidator
           ];
         }
 
-        if (practitionerState?.practitioner?.progress === 0) {
+        if (
+          practitionerState?.practitioner?.progress === 0 ||
+          classroomState?.classroom?.isDummySchool
+        ) {
           return [
             {
               reference: `practitioner-profile`,
