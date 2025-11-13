@@ -28,6 +28,7 @@ class ClassroomService {
             numberOfAssistants
             numberOfOtherAssistants
             preschoolCode
+            isDummySchool
             siteAddress {
               id
               area
