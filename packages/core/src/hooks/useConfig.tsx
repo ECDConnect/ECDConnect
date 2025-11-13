@@ -22,20 +22,10 @@ function ConfigProvider({
   config: ConfigType;
   children: ReactNode;
 }): JSX.Element {
-  const [loading, setLoading] = useState<boolean>(false);
-
-  if (Config.authApi === '') {
-    Config.authApi = config.authApi;
-    Config.graphQlApi = config.graphQlApi;
-    Config.themeUrl = config.themeUrl;
-  }
+  const [loading, setLoading] = useState<boolean>(true);
 
   const getData = () => {
     setLoading(true);
-    Config.authApi = config.authApi;
-    Config.graphQlApi = config.graphQlApi;
-    Config.themeUrl = config.themeUrl;
-    setLoading(false);
     fetch(`${window.location.origin}/settings.json`)
       .then(function (res) {
         return res.json();
@@ -56,7 +46,12 @@ function ConfigProvider({
   };
 
   useEffect(() => {
-    if (!config.authApi) {
+    if (config.authApi) {
+      setLoading(false);
+      Config.authApi = config.authApi;
+      Config.graphQlApi = config.graphQlApi;
+      Config.themeUrl = config.themeUrl;
+    } else {
       getData();
     }
   }, []);
