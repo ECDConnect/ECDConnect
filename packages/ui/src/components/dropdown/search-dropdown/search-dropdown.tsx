@@ -178,7 +178,7 @@ export function SearchDropDown<T>({
                 color={
                   open || !hasSelectedValue() || !touched
                     ? 'textLight'
-                    : 'textMid'
+                    : 'white'
                 }
                 text={selectedLabel || placeholder || ''}
               />
