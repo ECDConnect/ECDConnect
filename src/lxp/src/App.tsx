@@ -218,55 +218,45 @@ const App: React.FC = () => {
   //   }
   // };
 
-  const getRoutes = () => {
-    if (user && user.isTempUser !== true) {
-      return (
-        <InitialStoreSetup>
-          <SnackbarProvider>
-            <DialogServiceProvider>
+  const routerContent = (
+    <IonReactRouter>
+      <AppErrorHandler>
+        <IonRouterOutlet>
+          {user && user.isTempUser !== true ? (
+            <InitialStoreSetup>
               <InitialNotificationSetup>
                 <AuthRoutes />
-                {/* <BackgroundSync /> */}
               </InitialNotificationSetup>
-            </DialogServiceProvider>
-          </SnackbarProvider>
-        </InitialStoreSetup>
-      );
-    } else {
-      return <PublicRoutes />;
-    }
-  };
+            </InitialStoreSetup>
+          ) : (
+            <PublicRoutes />
+          )}
+        </IonRouterOutlet>
+      </AppErrorHandler>
+    </IonReactRouter>
+  );
+
+  const appShell = (
+    <IonApp className="m-auto max-w-4xl bg-white">
+      <Helmet>
+        <title>{getTitle()}</title>
+      </Helmet>
+      <SnackbarProvider>
+        <DialogServiceProvider>{routerContent}</DialogServiceProvider>
+      </SnackbarProvider>
+    </IonApp>
+  );
 
   if (process.env.REACT_APP_GOOGLE_CLIENT_ID) {
     return (
       <GoogleOAuthProvider
         clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID || ''}
       >
-        <IonApp className="m-auto max-w-4xl bg-white">
-          <Helmet>
-            <title>{getTitle()}</title>
-          </Helmet>
-          <IonReactRouter>
-            <AppErrorHandler>
-              <IonRouterOutlet>{getRoutes()}</IonRouterOutlet>
-            </AppErrorHandler>
-          </IonReactRouter>
-        </IonApp>
+        {appShell}
       </GoogleOAuthProvider>
     );
   } else {
-    return (
-      <IonApp className="m-auto max-w-4xl bg-white">
-        <Helmet>
-          <title>{getTitle()}</title>
-        </Helmet>
-        <IonReactRouter>
-          <AppErrorHandler>
-            <IonRouterOutlet>{getRoutes()}</IonRouterOutlet>
-          </AppErrorHandler>
-        </IonReactRouter>
-      </IonApp>
-    );
+    return appShell;
   }
 };
 
