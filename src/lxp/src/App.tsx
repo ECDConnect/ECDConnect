@@ -247,25 +247,6 @@ const App: React.FC = () => {
     </IonApp>
   );
 
-  const getRoutes = () => {
-    if (user && user.isTempUser !== true) {
-      return (
-        <InitialStoreSetup>
-          <SnackbarProvider>
-            <DialogServiceProvider>
-              <InitialNotificationSetup>
-                <AuthRoutes />
-                {/* <BackgroundSync /> */}
-              </InitialNotificationSetup>
-            </DialogServiceProvider>
-          </SnackbarProvider>
-        </InitialStoreSetup>
-      );
-    } else {
-      return <PublicRoutes />;
-    }
-  };
-
   if (process.env.REACT_APP_GOOGLE_CLIENT_ID) {
     return (
       <GoogleOAuthProvider
@@ -275,18 +256,7 @@ const App: React.FC = () => {
       </GoogleOAuthProvider>
     );
   } else {
-    return (
-      <IonApp className="m-auto max-w-4xl bg-white">
-        <Helmet>
-          <title>{getTitle()}</title>
-        </Helmet>
-        <IonReactRouter>
-          <AppErrorHandler>
-            <IonRouterOutlet>{getRoutes()}</IonRouterOutlet>
-          </AppErrorHandler>
-        </IonReactRouter>
-      </IonApp>
-    );
+    return appShell;
   }
 };
 
