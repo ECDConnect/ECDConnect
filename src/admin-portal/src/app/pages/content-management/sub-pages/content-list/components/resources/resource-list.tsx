@@ -644,7 +644,10 @@ export default function ResourceList({
               },
               {
                 type: 'search-dropdown',
-                menuItemClassName: 'ml-20 w-11/12',
+                menuItemClassName: 'w-11/12 left-4',
+                className: 'h-11 mb-2 border-2 border-transparent',
+                color: 'quatenary',
+                bgColor: 'white',
                 options: sortByDataFreeOptions,
                 selectedOptions: dataFreeFilter,
                 onChange: setDataFreeFilter,
@@ -654,7 +657,10 @@ export default function ResourceList({
               },
               {
                 type: 'search-dropdown',
-                menuItemClassName: 'ml-20 w-11/12',
+                menuItemClassName: 'w-11/12 left-4',
+                className: 'h-11 mb-2 border-2 border-transparent',
+                color: 'quatenary',
+                bgColor: 'white',
                 options: sortByLikeOptions,
                 selectedOptions: likesFilter,
                 onChange: setLikesFilter,
