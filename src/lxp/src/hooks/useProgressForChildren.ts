@@ -1,10 +1,12 @@
 import { childrenSelectors } from '@/store/children';
 import { classroomsSelectors } from '@/store/classroom';
 import { progressTrackingSelectors } from '@/store/progress-tracking';
+import { staticDataSelectors } from '@/store/static-data';
 import {
   getProgressAgeGroupForChild,
   mapProgressReportDetails,
 } from '@/utils/child/child-progress-report.utils';
+import { WorkflowStatusEnum } from '@ecdlink/graphql';
 import { differenceInMonths, format, isBefore, parseISO } from 'date-fns';
 import { isAfter } from 'date-fns/esm';
 import { useMemo } from 'react';
@@ -12,6 +14,12 @@ import { useSelector } from 'react-redux';
 
 export const useProgressForChildren = (useNextPeriod?: boolean) => {
   const baseChildren = useSelector(childrenSelectors.getChildren);
+
+  const workflowStatus = useSelector(staticDataSelectors.getWorkflowStatuses);
+
+  const childActiveWorkflow = workflowStatus?.find(
+    (x) => x.enumId === WorkflowStatusEnum.ChildActive
+  );
 
   const allAgeGroups = useSelector(
     progressTrackingSelectors.getProgressAgeGroups()
@@ -73,25 +81,29 @@ export const useProgressForChildren = (useNextPeriod?: boolean) => {
   );
 
   const children = useMemo(() => {
-    return (baseChildren || []).map((child) => ({
-      childId: child.id || '',
-      childUserId: child.userId || '',
-      childFirstName: child.user?.firstName || '',
-      childProfileImageUrl: child.user?.profileImageUrl,
-      childFullName: `${child.user?.firstName} ${child.user?.surname}`,
-      ageInMonths:
-        !!child.user?.dateOfBirth &&
-        format(new Date(child?.user?.dateOfBirth), 'yyyy') != '0001'
-          ? differenceInMonths(new Date(), new Date(child?.user?.dateOfBirth))
+    return (baseChildren || [])
+      .filter(
+        (x) => x.workflowStatusId === childActiveWorkflow?.workflowStatusTypeId
+      )
+      .map((child) => ({
+        childId: child.id || '',
+        childUserId: child.userId || '',
+        childFirstName: child.user?.firstName || '',
+        childProfileImageUrl: child.user?.profileImageUrl,
+        childFullName: `${child.user?.firstName} ${child.user?.surname}`,
+        ageInMonths:
+          !!child.user?.dateOfBirth &&
+          format(new Date(child?.user?.dateOfBirth), 'yyyy') != '0001'
+            ? differenceInMonths(new Date(), new Date(child?.user?.dateOfBirth))
+            : undefined,
+        ageGroup: !!reportingPeriod
+          ? getProgressAgeGroupForChild(
+              reportingPeriod.endDate,
+              child!,
+              allAgeGroups
+            )
           : undefined,
-      ageGroup: !!reportingPeriod
-        ? getProgressAgeGroupForChild(
-            reportingPeriod.endDate,
-            child!,
-            allAgeGroups
-          )
-        : undefined,
-    }));
+      }));
   }, [baseChildren, reportingPeriod]);
 
   const childReports = useMemo(() => {
