@@ -13,6 +13,7 @@ import {
   AuthCodeModel,
   ResendAuthCodeModel,
   VerifyPrincipalInvitationModel,
+  VerifyPasswordTokenModel,
 } from '@ecdlink/core';
 import { NewPasswordRequest } from '@models/auth/login/NewPasswordRequest';
 import { PasswordResetRequestReceived } from '@models/auth/login/PasswordResetRequestReceived';
@@ -42,6 +43,26 @@ class AuthService {
 
     if (response.status !== 200) {
       throw new Error('Login failed - Server connection error');
+    }
+
+    return response.data;
+  }
+
+  async VerifyPasswordToken(
+    baseEndPoint: string,
+    body: VerifyPasswordTokenModel
+  ) {
+    const apiInstance = api(baseEndPoint);
+    const response = await apiInstance.post(
+      APIs.verifyPasswordToken,
+      JSON.stringify(body),
+      {
+        headers: headers,
+      }
+    );
+
+    if (response.status !== 200) {
+      throw new Error('VerifyPasswordToken failed - Server connection error');
     }
 
     return response.data;
