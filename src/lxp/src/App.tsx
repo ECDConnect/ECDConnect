@@ -246,11 +246,7 @@ const App: React.FC = () => {
     </IonApp>
   );
 
-  if (process.env.REACT_APP_GOOGLE_CLIENT_ID) {
-    return <>{appShell}</>;
-  } else {
-    return appShell;
-  }
+  return appShell;
 };
 
 export default App;
