@@ -379,7 +379,7 @@ namespace ECDLink.Security.Api
             //RequestVerifyEmailAsync
             var tokenResult = await _passwordManager.IsResetTokenValidAsync(user, token);
             if (tokenResult)
-                return new OkObjectResult(true);
+                return new OkObjectResult(tokenResult);
 
             return Ok(false);
         }
