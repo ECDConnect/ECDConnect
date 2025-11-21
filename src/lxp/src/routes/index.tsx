@@ -12,6 +12,7 @@ import { ContactCaregivers } from '@child-p/contact-caregivers/contact-caregiver
 import { ContactChildCaregiver } from '@child-p/contact-child-caregiver/contact-child-caregiver';
 import { EditChildInformation } from '@child-p/edit-child-information/edit-child-information';
 import RemoveChild from '@child-p/remove-child/remove-child';
+import PreschoolFees from '@/pages/child/child-preschool-fees/preschool-fees';
 import { ClassDashboard } from '@classroom-p/class-dashboard/class-dashboard';
 import ProgrammeTutorial from '@programme-planning-p/programme-planning-information/programme-tutorial/programme-tutorial';
 import ProgrammePlanningDailyRoutine from '@programme-planning-p/programme-planning-information/sub-pages/programme-planning-daily-routine/programme-planning-daily-routine';
@@ -413,6 +414,7 @@ const AuthRoutes: React.FC = () => {
         component={ChildAttendanceReportPage}
       />
       <Route path={ROUTES.REMOVE_CHILD} component={RemoveChild} />
+      <Route path={ROUTES.CHILD_PRESCHOOL_FEES} component={PreschoolFees} />
 
       <Route
         path={ROUTES.PROGRESS_SETUP_REPORTING_PERIODS}
