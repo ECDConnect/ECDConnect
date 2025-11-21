@@ -160,6 +160,7 @@ namespace EcdLink.Api.CoreApi.Services
                 child.Caregiver.AdditionalFirstName = input.Caregiver.AdditionalFirstName;
                 child.Caregiver.AdditionalSurname = input.Caregiver.AdditionalSurname;
                 child.Caregiver.AdditionalPhoneNumber = input.Caregiver.AdditionalPhoneNumber;
+                child.Caregiver.TenantId = tenantId;
                 
                 if (input.Caregiver.SiteAddress != null)
                 {
