@@ -26,7 +26,7 @@ import {
   Typography,
   UserAlertListDataItem,
 } from '@ecdlink/ui';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { ReactComponent as JoinCommunity } from '@/assets/joinCommunity.svg';
 import { CommunityConnectInputModelInput } from '@ecdlink/graphql';
@@ -84,10 +84,10 @@ export const ECDHeroes: React.FC<ECDHeroesProps> = ({ onClose }) => {
   const [provincesFiltered, setProvincesFiltered] = useState<
     SearchDropDownOption<string>[]
   >([]);
-  const filteredProvinces = useMemo(
-    () => provincesFiltered?.map((item) => item?.id),
-    [provincesFiltered]
-  );
+
+  const filteredProvinces = useMemo(() => {
+    return provincesFiltered.map((x) => x.id);
+  }, [provincesFiltered]);
 
   const [profileSkills, setProfileSkills] = useState<
     SearchDropDownOption<string>[]
@@ -117,6 +117,25 @@ export const ECDHeroes: React.FC<ECDHeroesProps> = ({ onClose }) => {
     label: item,
     value: item,
   }));
+
+  const hasInitializedDefaultProvince = useRef(false);
+
+  useEffect(() => {
+    if (
+      !hasInitializedDefaultProvince.current &&
+      provinces?.length > 0 &&
+      communityProfile?.provinceId &&
+      provincesFiltered.length === 0
+    ) {
+      const defaultProvince = provinces.find(
+        (p) => p.id === communityProfile.provinceId
+      );
+      if (defaultProvince) {
+        setProvincesFiltered([defaultProvince]);
+      }
+      hasInitializedDefaultProvince.current = true;
+    }
+  }, [provinces, communityProfile?.provinceId, provincesFiltered.length]);
 
   useEffect(() => {
     if (provincesData?.length > 0) {
@@ -166,22 +185,6 @@ export const ECDHeroes: React.FC<ECDHeroesProps> = ({ onClose }) => {
     }
   }, [profileSkillsData]);
 
-  useEffect(() => {
-    if (
-      communityProfile ||
-      filteredProvinces ||
-      filteredProfileSkills ||
-      filteredConnectionsType
-    ) {
-      handleConnectionsQuery();
-    }
-  }, [
-    communityProfile,
-    filteredProvinces,
-    filteredProfileSkills,
-    filteredConnectionsType,
-  ]);
-
   const handleConnectionsQuery = useCallback(async () => {
     if (communityProfile) {
       setIsLoading(true);
@@ -215,6 +218,10 @@ export const ECDHeroes: React.FC<ECDHeroesProps> = ({ onClose }) => {
     filteredConnectionsType,
     filteredProfileSkills,
   ]);
+
+  useEffect(() => {
+    handleConnectionsQuery();
+  }, [handleConnectionsQuery]);
 
   const handleUsersList = useCallback(() => {
     const communityUsersList: UserAlertListDataItem[] = [];
