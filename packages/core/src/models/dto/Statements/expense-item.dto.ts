@@ -8,4 +8,5 @@ export type ExpenseItemMinDto = {
 export type ExpenseItemDto = ExpenseItemMinDto & {
   notes?: string;
   photoProof?: string;
+  isActive?: boolean;
 };
