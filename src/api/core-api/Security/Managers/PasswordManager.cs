@@ -9,6 +9,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers
     public class PasswordManager : IPasswordManager<ApplicationUser>
     {
         private readonly ApplicationUserManager _userManager;
+        public const string ResetPasswordTokenPurpose = "ResetPassword";
 
         public PasswordManager(ApplicationUserManager userManager)
         {
@@ -89,7 +90,9 @@ namespace EcdLink.Api.CoreApi.Security.Managers
 
         public async Task<bool> IsResetTokenValidAsync(ApplicationUser user, string token)
         {
-            return await _userManager.VerifyUserTokenAsync(user, _userManager.Options.Tokens.PasswordResetTokenProvider, "PasswordReset", token);
+            return await _userManager.VerifyUserTokenAsync(user, _userManager.Options.Tokens.PasswordResetTokenProvider, ResetPasswordTokenPurpose, token);
         }
+
+        
     }
 }
