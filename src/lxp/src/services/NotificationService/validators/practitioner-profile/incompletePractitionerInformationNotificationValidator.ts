@@ -92,7 +92,10 @@ export class IncompletePractitionerInformationNotificationValidator
           ];
         }
 
-        if (practitionerState?.practitioner?.progress === 0) {
+        if (
+          practitionerState?.practitioner?.progress === 0 ||
+          classroomState?.classroom?.isDummySchool
+        ) {
           return [
             {
               reference: `practitioner-profile`,
@@ -116,7 +119,10 @@ export class IncompletePractitionerInformationNotificationValidator
 
         if (
           practitionerState?.practitioner?.progress === 1 ||
-          practitionerState?.practitioner?.progress === 1.0
+          practitionerState?.practitioner?.progress === 1.0 ||
+          (practitionerState?.practitioner?.progress === 2 &&
+            !practitionerState?.practitioner?.principalHierarchy &&
+            !practitionerState.practitioner?.isPrincipal)
         ) {
           return [
             {

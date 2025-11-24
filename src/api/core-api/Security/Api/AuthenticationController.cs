@@ -320,6 +320,32 @@ namespace ECDLink.Security.Api
             return Ok(changeResult);
         }
 
+        [Route("verify-password-token")]
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> VerifyPasswordToken([FromBody] VerifyPasswordTokenModel verifyPasswordTokenModel)
+        {
+            if (verifyPasswordTokenModel.Username == "" || verifyPasswordTokenModel.Token == "")
+            {
+                return BadRequest();
+            }
+            
+            var user = await _securityManager.GetUserByNameAsync(verifyPasswordTokenModel.Username);
+            var token = TokenHelper.DecodeToken(verifyPasswordTokenModel.Token);
+
+            if (user == null)
+            {
+                return BadRequest();
+            }
+
+            //RequestVerifyEmailAsync
+            var tokenResult = await _passwordManager.IsResetTokenValidAsync(user, token);
+            if (tokenResult)
+                return new OkObjectResult(true);
+
+            return Ok(false);
+        }
+
         [Route("verify-cellphone-number")]
         [AllowAnonymous]
         [HttpPost]

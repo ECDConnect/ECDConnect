@@ -16,7 +16,7 @@ export const StepViewer: React.FC<StepViewProps> = ({
   onBack,
   onClose,
   children,
-  isOnline,
+  isOnline = true,
   showOfflineCard = true,
   showStepCount = true,
 }) => {

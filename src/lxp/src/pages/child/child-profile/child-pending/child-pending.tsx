@@ -89,11 +89,7 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
   }, [child, childExpiryTime]);
 
   const completeRegistration = async () => {
-    if (isOnline) {
-      goToChildRegistration();
-    } else {
-      showOnlineOnly();
-    }
+    goToChildRegistration();
   };
 
   const goToChildRegistration = () => {
