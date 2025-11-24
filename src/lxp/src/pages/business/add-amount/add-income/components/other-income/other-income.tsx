@@ -62,13 +62,14 @@ export const OtherIncome: React.FC<AddIncomeProps> = ({
     ? lastDayOfMonth(new Date(incomeItem.dateReceived))
     : lastDayOfMonth(new Date());
 
-  const sendIncomeUpdate = async () => {
+  const sendIncomeUpdate = async (activeStatus: boolean) => {
     const incomeInput: IncomeItemDto = {
       id: incomeItem?.id ?? newGuid(),
       dateReceived: dateReceived!,
       amount: !!amount ? Number(moneyInputFormat(amount)) : 0,
       incomeTypeId: IncomeTypeIds.OTHER_INCOME_ID,
       notes: notes,
+      isActive: activeStatus,
     };
 
     onSubmit(incomeInput);
@@ -162,23 +163,38 @@ export const OtherIncome: React.FC<AddIncomeProps> = ({
           disabled={disabled}
         />
         {!disabled && (
-          <Button
-            type="filled"
-            color="quatenary"
-            className={'mx-auto mt-8 w-full rounded-2xl'}
-            onClick={() => {
-              sendIncomeUpdate();
-            }}
-            disabled={!isValid || disabled}
-          >
-            {renderIcon('SaveIcon', styles.buttonIcon)}
-            <Typography
-              type="help"
-              className="mr-2"
-              color="white"
-              text={'Save'}
-            ></Typography>
-          </Button>
+          <>
+            <Button
+              type="filled"
+              color="quatenary"
+              className={'mx-auto mt-8 w-full rounded-2xl'}
+              onClick={() => {
+                sendIncomeUpdate(true);
+              }}
+              disabled={!isValid || disabled}
+            >
+              {renderIcon('SaveIcon', styles.buttonIcon)}
+              <Typography
+                type="help"
+                className="mr-2"
+                color="white"
+                text={'Save'}
+              ></Typography>
+            </Button>
+            {!!incomeItem?.id && (
+              <Button
+                icon="TrashIcon"
+                type={'outlined'}
+                color={'quatenary'}
+                textColor="quatenary"
+                text="Delete"
+                className="mt-4 w-full"
+                onClick={() => {
+                  sendIncomeUpdate(false);
+                }}
+              />
+            )}
+          </>
         )}
         {disabled && (
           <Button
