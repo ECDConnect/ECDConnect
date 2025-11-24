@@ -201,7 +201,8 @@ namespace ECDLink.Core.Services
             #region Update Income Items
 
             // Deletes
-            var removedItems = exisitingStatement.IncomeItems.Where(x => !input.IncomeItems.Any(y => y.Id == x.Id)).ToList();
+            var removedIncomeIds = input.IncomeItems.Where(x => !x.IsActive).Select(x => x.Id);
+            var removedItems = exisitingStatement.IncomeItems.Where(x => removedIncomeIds.Contains(x.Id)).ToList();
             foreach (var item in removedItems)
             {
                 _statementsIncomeRepo.Delete(item.Id);
@@ -288,8 +289,9 @@ namespace ECDLink.Core.Services
 
             #region Update Expense Items
             // Deletes
-            var removedExpenses = exisitingStatement.ExpenseItems.Where(x => input.ExpenseItems.Any(y => y.Id == x.Id)).ToList();
-            foreach (var item in removedItems)
+            var removedExpensesIds = input.ExpenseItems.Where(x => !x.IsActive).Select(x => x.Id);
+            var removedExpenses = exisitingStatement.ExpenseItems.Where(x => removedExpensesIds.Contains(x.Id)).ToList();
+            foreach (var item in removedExpenses)
             {
                 _statementsExpensesRepo.Delete(item.Id);
             }
@@ -362,6 +364,10 @@ namespace ECDLink.Core.Services
 
         public string CreateIncomeStatementPDFDocument(string userId, StatementsIncomeStatement statement)
         {
+            // Filter only active items
+            statement.IncomeItems = statement.IncomeItems.Where(i => i.IsActive).ToList();
+            statement.ExpenseItems = statement.ExpenseItems.Where(e => e.IsActive).ToList();
+
             // update statement Download field
             if (statement?.Downloaded == false)
             {
@@ -621,13 +627,16 @@ namespace ECDLink.Core.Services
             return base64Result;
         }
 
-        public List<IncomeExpensePDFTableModel> GetStatementsIncomeExpensesPDFData(Guid statementId)
+       public List<IncomeExpensePDFTableModel> GetStatementsIncomeExpensesPDFData(Guid statementId)
         {
             var statement = _statementsRepo.GetAll()
                 .Include(x => x.IncomeItems)
                 .Include(x => x.ExpenseItems)
                 .Where(x => x.Id == statementId)
                 .First();
+            // Filter only active items
+            statement.IncomeItems = statement.IncomeItems.Where(i => i.IsActive).ToList();
+            statement.ExpenseItems = statement.ExpenseItems.Where(e => e.IsActive).ToList();
 
             return GetStatementsIncomeExpensesPDFData(statement);
         }
