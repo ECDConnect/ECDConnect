@@ -21,7 +21,6 @@ import {
   initialPasswordValue,
   initialUserDetailsValues,
   passwordSchema,
-  userSchema,
   siteAddressSchema,
   initialSiteAddressValues,
   RoleSystemNameEnum,
@@ -34,7 +33,10 @@ import UserPanelSave from '../../../components/user-panel-save/user-panel-save';
 import { UserPanelCreateProps } from '../../../components/users';
 import { newGuid } from '../../../../../utils/uuid.utils';
 import {
+  ActionModal,
   Alert,
+  Dialog,
+  DialogPosition,
   Divider,
   SA_CELL_REGEX,
   SA_ID_REGEX,
@@ -42,13 +44,17 @@ import {
 } from '@ecdlink/ui';
 import { idTypeEnum } from '../../../../view-user/view-user.types';
 import { useTenant } from '../../../../../hooks/useTenant';
+import { XIcon } from '@heroicons/react/solid';
 
-export default function CoachPanelCreate(props: UserPanelCreateProps) {
+export default function CoachPanelCreate(
+  props: Readonly<UserPanelCreateProps>
+) {
   const { setNotification } = useNotifications();
   const tenant = useTenant();
   const emitCloseDialog = (value: boolean) => {
     props.closeDialog(value);
   };
+  const [displayFormIsDirty, setDisplayFormIsDirty] = useState(false);
 
   const { data: roleData } = useQuery(RoleList, {
     fetchPolicy: 'cache-and-network',
@@ -71,17 +77,13 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
     []
   );
 
-  const {
-    data: coachData,
-    refetch,
-    loading,
-  } = useQuery(GetAllPortalCoaches, {
+  const { data: coachData } = useQuery(GetAllPortalCoaches, {
     variables: coachQueryVariables,
     fetchPolicy: 'network-only',
   });
 
   useEffect(() => {
-    if (roleData && roleData.roles) {
+    if (roleData?.roles) {
       addUserRole();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -94,7 +96,7 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
   const [sendInviteToApplication] = useMutation(SendInviteToApplication);
   const [userAlreadyExits, setUserAlreadyExits] = useState(false);
 
-  const [selectedUserRoles, setUserRoles] = useState<RoleDto[]>([]);
+  const [selectedUserRoles, setSelectedUserRoles] = useState<RoleDto[]>([]);
 
   const [isLoading, setIsLoading] = useState(false);
   const [idType, setIdType] = useState<string>('idNumber');
@@ -131,44 +133,33 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
     mode: 'onBlur',
   });
 
-  const { errors: userDetailFormErrors, isValid: isUserDetailValid } =
-    userDetailFormState;
+  const {
+    errors: userDetailFormErrors,
+    isValid: isUserDetailValid,
+    isDirty: userDetailsIsDirty,
+  } = userDetailFormState;
 
   // PASSWORD FORMS
-  const {
-    register: passwordRegister,
-    formState: passwordFormState,
-    getValues: passwordGetValues,
-  } = useForm({
+  const { getValues: passwordGetValues } = useForm({
     resolver: yupResolver(passwordSchema),
     defaultValues: initialPasswordValue,
     mode: 'onBlur',
   });
 
-  const { errors: passwordFormErrors } = passwordFormState;
-
   // COACH FORMS
-  const {
-    register: coachRegister,
-    formState: coachFormState,
-    getValues: coachGetValues,
-  } = useForm({
+  const { formState: coachFormState, getValues: coachGetValues } = useForm({
     resolver: yupResolver(coachSchema),
     defaultValues: { ...initialCoachValues, sendInvite: false },
     mode: 'onBlur',
   });
-  const { errors: coachFormErrors, isValid: isCoachValid } = coachFormState;
+  const { isValid: isCoachValid, isDirty } = coachFormState;
 
   // SITE ADDRESS FORMS
-  const { register: siteAddressRegister, getValues: siteAddressGetValues } =
-    useForm({
-      resolver: yupResolver(siteAddressSchema),
-      defaultValues: { ...initialSiteAddressValues, sendInvite: false },
-      mode: 'onBlur',
-    });
-  const { errors: siteAddressFormErrors } = coachFormState;
-
-  // END FORMS
+  const { getValues: siteAddressGetValues } = useForm({
+    resolver: yupResolver(siteAddressSchema),
+    defaultValues: { ...initialSiteAddressValues, sendInvite: false },
+    mode: 'onBlur',
+  });
 
   const onSave = async () => {
     await saveUser();
@@ -186,10 +177,9 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
       idNumber: userDetailForm.idNumber,
       verifiedByHomeAffairs: userDetailForm.verifiedByHomeAffairs,
       dateOfBirth: userDetailForm.dateOfBirth,
-      genderId:
-        userDetailForm.genderId && userDetailForm.genderId.length
-          ? userDetailForm.genderId
-          : null,
+      genderId: userDetailForm.genderId?.length
+        ? userDetailForm.genderId
+        : null,
       firstName: userDetailForm.firstName,
       surname: userDetailForm.surname,
       contactPreference: userDetailForm.contactPreference,
@@ -243,7 +233,7 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
         },
       });
 
-      if (returnSiteAddress && returnSiteAddress.data) {
+      if (returnSiteAddress?.data) {
         setNotification({
           title: 'Successfully Created Address!',
           variant: NOTIFICATION.SUCCESS,
@@ -324,18 +314,29 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
     if (!copy.some((x) => x.id === role.id)) {
       copy.push(role);
     }
-    setUserRoles(copy);
+    setSelectedUserRoles(copy);
   };
 
   const getIsValid = () => {
     let isValid = isUserDetailValid;
     if (!isCoachValid) isValid = false;
-    return isValid ? true : false;
+    return !!isValid;
   };
 
   const getComponent = () => {
     return (
       <>
+        {(isDirty || userDetailsIsDirty) && (
+          <div className="focus:outline-none focus:ring-primary absolute right-5 -top-20 z-10 mt-6 flex h-7 items-center rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2">
+            <button
+              className="focus:outline-none focus:ring-primary rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2"
+              onClick={() => setDisplayFormIsDirty(true)}
+            >
+              <span className="sr-only">Close panel</span>
+              <XIcon className="h-6 w-6" aria-hidden="true" />
+            </button>
+          </div>
+        )}
         <div className="rounded-lg border-b border-gray-200 bg-white px-4 py-5">
           <div className="pb-2">
             <h3 className="text-uiMidDark text-lg font-medium leading-6">
@@ -401,6 +402,40 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
             errors={passwordFormErrors}
           />
         </div> */}
+        <Dialog
+          className={'mb-16 px-4'}
+          stretch
+          visible={displayFormIsDirty}
+          position={DialogPosition.Middle}
+        >
+          <ActionModal
+            icon={'InformationCircleIcon'}
+            iconColor="alertMain"
+            iconBorderColor="alertBg"
+            importantText={`Discard unsaved changes?`}
+            detailText={'If you leave now, you will lose all of your changes.'}
+            actionButtons={[
+              {
+                text: 'Keep editing',
+                textColour: 'secondary',
+                colour: 'secondary',
+                type: 'outlined',
+                onClick: () => setDisplayFormIsDirty(false),
+                leadingIcon: 'PencilIcon',
+              },
+              {
+                text: 'Discard changes',
+                textColour: 'white',
+                colour: 'secondary',
+                type: 'filled',
+                onClick: () => {
+                  emitCloseDialog(false);
+                },
+                leadingIcon: 'TrashIcon',
+              },
+            ]}
+          />
+        </Dialog>
       </>
     );
   };
