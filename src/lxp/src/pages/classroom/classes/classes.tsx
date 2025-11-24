@@ -80,6 +80,7 @@ export const Classes = ({ setSelectedTabIndex }: ClassMenuProps) => {
             className={name}
             onClose={onClose}
             setSelectedTabIndex={setSelectedTabIndex}
+            history={history}
           />
         );
       },

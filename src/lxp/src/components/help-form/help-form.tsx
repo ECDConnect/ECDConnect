@@ -11,7 +11,7 @@ import {
   renderIcon,
 } from '@ecdlink/ui';
 import { options, phoneNumberOrEmailOptions } from './help-form-types';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Config,
   HelpFormModel,
