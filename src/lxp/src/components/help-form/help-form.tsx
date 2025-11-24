@@ -23,8 +23,6 @@ import { useHistory } from 'react-router-dom';
 import { isEmail } from '@/utils/common/string.utils';
 import { useRemoveNotifications } from '@/hooks/useRemoveNotifications';
 import { notificationTagConfig } from '@/constants/notifications';
-import { useTenant } from '@/hooks/useTenant';
-import ROUTES from '@/routes/routes';
 
 interface HelpFormProps {
   closeAction?: (item: boolean) => void;
@@ -51,7 +49,6 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction, userId }) => {
   const [isValidCellphone, setIsValidCellphone] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const history = useHistory();
-  const tenant = useTenant();
 
   const helpService = new HelpService(Config.authApi);
 
@@ -150,10 +147,6 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction, userId }) => {
       event.preventDefault();
     }
   };
-
-  useEffect(() => {
-    if (tenant?.isOpenAccess) history.push(ROUTES.PRACTITIONER.HELP.ROOT);
-  }, []);
 
   return (
     <div>
