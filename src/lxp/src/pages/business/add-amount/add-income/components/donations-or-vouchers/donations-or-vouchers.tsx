@@ -78,7 +78,7 @@ export const DonationsOrVouchers: React.FC<AddIncomeProps> = ({
     ? lastDayOfMonth(new Date(incomeItem.dateReceived))
     : lastDayOfMonth(new Date());
 
-  const sendIncomeUpdate = async () => {
+  const sendIncomeUpdate = async (activeStatus: boolean) => {
     const incomeInput: IncomeItemDto = {
       id: !!incomeItem ? incomeItem.id : newGuid(),
       dateReceived: dateReceived!,
@@ -87,6 +87,7 @@ export const DonationsOrVouchers: React.FC<AddIncomeProps> = ({
       payTypeId: payType,
       notes: notes,
       description: description,
+      isActive: activeStatus,
     };
 
     onSubmit(incomeInput);
@@ -238,31 +239,46 @@ export const DonationsOrVouchers: React.FC<AddIncomeProps> = ({
           disabled={disabled}
         />
         {!disabled && (
-          <Button
-            id="saveDonationsOrVouchers"
-            type="filled"
-            color="quatenary"
-            className={'mx-auto mt-8 w-full rounded-2xl'}
-            onClick={() => {
-              if (isWalkthrough) {
-                setState({ stepIndex: 7 });
-                return history.push(ROUTES.BUSINESS, {
-                  activeTabIndex: BusinessTabItems.MONEY,
-                });
-              }
+          <>
+            <Button
+              id="saveDonationsOrVouchers"
+              type="filled"
+              color="quatenary"
+              className={'mx-auto mt-8 w-full rounded-2xl'}
+              onClick={() => {
+                if (isWalkthrough) {
+                  setState({ stepIndex: 7 });
+                  return history.push(ROUTES.BUSINESS, {
+                    activeTabIndex: BusinessTabItems.MONEY,
+                  });
+                }
 
-              sendIncomeUpdate();
-            }}
-            disabled={(!isValid || disabled) && !isWalkthrough}
-          >
-            {renderIcon('SaveIcon', styles.buttonIcon)}
-            <Typography
-              type="help"
-              className="mr-2"
-              color="white"
-              text={'Save'}
-            ></Typography>
-          </Button>
+                sendIncomeUpdate(true);
+              }}
+              disabled={(!isValid || disabled) && !isWalkthrough}
+            >
+              {renderIcon('SaveIcon', styles.buttonIcon)}
+              <Typography
+                type="help"
+                className="mr-2"
+                color="white"
+                text={'Save'}
+              ></Typography>
+            </Button>
+            {!!incomeItem?.id && (
+              <Button
+                icon="TrashIcon"
+                type={'outlined'}
+                color={'quatenary'}
+                textColor="quatenary"
+                text="Delete"
+                className="mt-4 w-full"
+                onClick={() => {
+                  sendIncomeUpdate(false);
+                }}
+              />
+            )}
+          </>
         )}
         {disabled && (
           <Button
