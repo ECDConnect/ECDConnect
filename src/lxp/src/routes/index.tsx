@@ -142,7 +142,11 @@ const PublicRoutes: React.FC = () => {
         component={PasswordReset}
         exact={true}
       />
-      <Route path={ROUTES.HELP} component={HelpForm} exact={true} />
+      <Route
+        path={ROUTES.HELP}
+        component={isOpenAccessUrl ? PractitionerHelp : HelpForm}
+        exact={true}
+      />
       <Route path={ROUTES.NEW_PASSWORD} component={NewPassword} exact={true} />
       <Route
         path={ROUTES.SIGN_UP}
