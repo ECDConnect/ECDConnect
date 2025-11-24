@@ -1,14 +1,21 @@
-import { LoginRequestModel, PasswordResetModel } from '@ecdlink/core';
+import {
+  Config,
+  PasswordResetModel,
+  useDialog,
+  VerifyPasswordTokenModel,
+} from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
+  ActionModal,
   Alert,
   BannerWrapper,
   Button,
+  DialogPosition,
   Divider,
   PasswordInput,
   Typography,
 } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory, useLocation } from 'react-router-dom';
 import * as styles from './new-password.styles';
@@ -17,84 +24,127 @@ import {
   NewPasswordModel,
   newPasswordSchema,
 } from '@schemas/auth/password/new-password';
-import { authThunkActions } from '@store/auth';
-import { useAppDispatch } from '@store';
 import AuthService from '@services/AuthService/AuthService';
 import { useStoreSetup } from '@hooks/useStoreSetup';
 import ROUTES from '@/routes/routes';
 
 export const NewPassword: React.FC = () => {
-  const appDispatch = useAppDispatch();
   const { resetAppStore, resetAuth } = useStoreSetup();
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [displayError, setDisplayError] = useState<boolean>(false);
-  const [displaySuccess, setDisplaySuccess] = useState<boolean>(false);
-  const [submitButtonDisabled, setSubmitButtonDisabled] =
-    useState<boolean>(true);
-  const [hasSubmitted, setHasSubmitted] = useState<boolean>(false);
+  const dialog = useDialog();
   const history = useHistory();
-  const queryParams = useLocation().search;
+
+  // --- Query Params ---
+  const params = new URLSearchParams(useLocation().search);
+  const paramToken = params.get('token') ?? '';
+  const paramUsername = params.get('username') ?? '';
+
+  // --- Local State ---
+  const [isLoading, setIsLoading] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+
+  // --- React Hook Form ---
   const {
-    register: newPasswordRegister,
-    formState: newPasswordFormState,
-    getValues: newPasswordFormGetValues,
+    register,
     watch,
-  } = useForm({
+    getValues,
+    formState: { isValid },
+  } = useForm<NewPasswordModel>({
     resolver: yupResolver(newPasswordSchema),
     defaultValues: initialNewPasswordValues,
     mode: 'onChange',
   });
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { password } = watch();
-  const { isValid } = newPasswordFormState;
-  useEffect(() => {
-    if (!hasSubmitted) {
-      setSubmitButtonDisabled(!isValid);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isValid]);
 
+  const { password } = watch();
+
+  // Use memoized AuthService to avoid recreating it
+  const authService = useMemo(() => new AuthService(), []);
+
+  // Disable submit button unless form is valid and not submitted
+  const isSubmitDisabled = !isValid && !hasSubmitted;
+
+  // --- Reset app/auth once on mount ---
   useEffect(() => {
     if (resetAppStore) {
       resetAppStore(false);
       resetAuth();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [resetAppStore, resetAuth]);
 
+  // --- Expired link dialog ---
+  const handleLinkExpired = useCallback(() => {
+    dialog({
+      position: DialogPosition.Middle,
+      blocking: true,
+      color: 'bg-white',
+      render: (onClose) => (
+        <ActionModal
+          title="Link expired!"
+          detailText="The link has expired. Get a new one to reset your password."
+          icon="ExclamationCircleIcon"
+          iconColor="alertMain"
+          iconSize={20}
+          className="mx-4"
+          actionButtons={[
+            {
+              text: 'Get new link',
+              textColour: 'white',
+              colour: 'quatenary',
+              type: 'filled',
+              leadingIcon: 'LinkIcon',
+              onClick: () => {
+                history.push(ROUTES.PASSWORD_RESET);
+                onClose();
+              },
+            },
+          ]}
+        />
+      ),
+    });
+  }, [dialog, history]);
+
+  // --- Verify Token on load ---
+  const verifyToken = useCallback(async () => {
+    if (!paramToken || !paramUsername) return;
+
+    const body: VerifyPasswordTokenModel = {
+      Username: paramUsername,
+      Token: paramToken,
+    };
+
+    const valid = await authService.VerifyPasswordToken(Config.authApi, body);
+
+    if (!valid) handleLinkExpired();
+  }, [authService, paramToken, paramUsername, handleLinkExpired]);
+
+  useEffect(() => {
+    verifyToken();
+  }, [verifyToken]);
+
+  // --- Submit (Reset Password) ---
   const submitForm = async () => {
     setHasSubmitted(true);
-    if (isValid) {
-      setIsLoading(true);
-      const params = new URLSearchParams(queryParams);
-      const newPasswordToken = params.get('token') ?? '';
-      const username = params.get('username') ?? '';
-      const body: PasswordResetModel = {
-        username: username,
-        password: newPasswordFormGetValues().password,
-        resetToken: newPasswordToken,
-      };
 
-      const response = await new AuthService().SendNewPasswordRequest(body);
+    if (!isValid) return;
 
-      if (response.valid) {
-        setSubmitButtonDisabled(true);
+    setIsLoading(true);
 
-        // const body: LoginRequestModel = {
-        //   username: username,
-        //   password: password,
-        // };
+    const body: PasswordResetModel = {
+      username: paramUsername,
+      password: getValues().password,
+      resetToken: paramToken,
+    };
 
-        // const isAuthenticated: any = await appDispatch(
-        //   authThunkActions.login(body)
-        // ).unwrap();
+    const response = await authService.SendNewPasswordRequest(body);
 
-        history.push(ROUTES.LOGIN);
-      } else {
-        setDisplayError(true);
-      }
-      setIsLoading(false);
+    setIsLoading(false);
+
+    if (!response.valid) {
+      setShowError(true);
+      return;
     }
+
+    history.push(ROUTES.LOGIN);
   };
 
   return (
@@ -102,51 +152,40 @@ export const NewPassword: React.FC = () => {
       <BannerWrapper
         showBackground={false}
         size="normal"
-        renderBorder={true}
+        renderBorder
         color="primary"
       >
         <div className={styles.wrapper}>
           <PasswordInput<NewPasswordModel>
-            label={'Enter new password'}
-            nameProp={'password'}
-            sufficIconColor={'primary'}
+            label="Enter new password"
+            nameProp="password"
             value={password}
-            register={newPasswordRegister}
-            strengthMeterVisible={true}
+            register={register}
+            sufficIconColor="primary"
+            strengthMeterVisible
           />
-          <div className={'mt-6'}>
-            <Divider dividerType="solid"></Divider>
+
+          <div className="mt-6">
+            <Divider dividerType="solid" />
           </div>
 
-          {displayError && (
+          {showError && (
             <Alert
-              className={'mt-8'}
-              title={
-                'Password reset was unsuccessful. Please contact an administrator.'
-              }
-              type={'error'}
+              className="mt-8"
+              type="error"
+              title="Password reset was unsuccessful. Please contact an administrator."
             />
           )}
-          {displaySuccess && (
-            <Alert
-              className={'mt-8'}
-              title={'Password reset successfully'}
-              type={'success'}
-            />
-          )}
+
           <Button
             className={styles.formButton}
             type="filled"
             color="quatenary"
-            disabled={submitButtonDisabled}
+            disabled={isSubmitDisabled}
             isLoading={isLoading}
             onClick={submitForm}
           >
-            <Typography
-              type="help"
-              color="white"
-              text={'Reset password'}
-            ></Typography>
+            <Typography type="help" color="white" text="Reset password" />
           </Button>
         </div>
       </BannerWrapper>

@@ -5,7 +5,6 @@ import {
   usePrevious,
 } from '@ecdlink/core';
 import {
-  DialogPosition,
   FADButton,
   SearchDropDown,
   StackedList,
@@ -28,8 +27,6 @@ import * as styles from './child-list.styles';
 import { attendanceSelectors } from '@store/attendance';
 import { useStaticData } from '@hooks/useStaticData';
 import { WorkflowStatusEnum } from '@ecdlink/graphql';
-import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
-import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { IconInformationIndicator } from '../programme-planning/components/icon-information-indicator/icon-information-indicator';
 import ROUTES from '@/routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
@@ -83,9 +80,6 @@ const sortOptions: SearchSortOptions = {
 };
 
 export const ChildList: React.FC<ComponentBaseProps> = () => {
-  const { isOnline } = useOnlineStatus();
-  const dialog = useDialog();
-
   const { getWorkflowStatusIdByEnum } = useStaticData();
   const childPendingWorkflowStatusId = getWorkflowStatusIdByEnum(
     WorkflowStatusEnum.ChildPending
@@ -173,7 +167,6 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
           )
         )
       ) || [];
-
     setFilteredChildData(filteredChildren);
   };
 
@@ -278,11 +271,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   };
 
   const registerNewChild = () => {
-    if (isOnline) {
-      history.push(ROUTES.CHILD_REGISTRATION_LANDING);
-    } else {
-      showOnlineOnly();
-    }
+    history.push(ROUTES.CHILD_REGISTRATION_LANDING);
   };
 
   const onSearchChange = (value: string) => {
@@ -291,15 +280,6 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
         x.title.toLowerCase()?.includes(value.toLowerCase())
       ) || []
     );
-  };
-
-  const showOnlineOnly = () => {
-    dialog({
-      position: DialogPosition.Middle,
-      render: (onSubmit) => {
-        return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
-      },
-    });
   };
 
   const populateClassOptions = useCallback(() => {
@@ -327,7 +307,16 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
             learner.isActive
         )
       ) ?? [];
-
+    const mappedLearners =
+      classroomGroup?.learners?.filter((learner) =>
+        mappedChildren?.some(
+          (child) =>
+            (learner.childUserId === child.extraData?.userId ||
+              learner.childUserId === child.extraData?.user?.id) &&
+            learner.isActive
+        )
+      ) ?? [];
+    setLearners(mappedLearners);
     setChildUserListData(mappedChildren);
     setFilteredChildData(mappedChildrenForRedirectedClass);
   }, [children, classroomGroup?.learners, mapUserListDataItem]);
@@ -352,23 +341,6 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   useEffect(() => {
     populateInitialState();
   }, [populateInitialState]);
-
-  useEffect(() => {
-    if (classroomGroupId) {
-      dispatch(
-        childrenThunkActions.getChildrenForClassroomGroup({
-          classroomGroupId,
-        }) as unknown as AnyAction
-      )
-        .unwrap()
-        .then((response: any) => {
-          setLearners(response.childrenTest);
-        })
-        .catch((error: unknown) => {
-          console.error('Failed to fetch children:', error);
-        });
-    }
-  }, [classroomGroupId, dispatch]);
 
   return (
     <BannerWrapper

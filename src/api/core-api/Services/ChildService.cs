@@ -13,10 +13,12 @@ using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -87,9 +89,19 @@ namespace EcdLink.Api.CoreApi.Services
 
         public void UpdateChild(UpdateChildAndCaregiverInput input)
         {
-            var child = _childRepo.GetById(input.Id);
-            var isActive = child.IsActive && child.User.IsActive && input.IsActive;
+            
+            bool isNew = false;
+         
+            Child child = _childRepo.GetById(input.Id);
+          
+            if (child == null)
+            {
+                child = new Child();
+                isNew = true;
+                child.Id = input.Id;
+            }
             var tenantId = TenantExecutionContext.Tenant.Id;
+            var isActive = isNew ? input.IsActive : (child.IsActive && child.User.IsActive && input.IsActive);
 
             // Update child fields
             child.IsActive = isActive;
@@ -98,14 +110,21 @@ namespace EcdLink.Api.CoreApi.Services
             child.OtherHealthConditions = input.OtherHealthConditions;
             child.WorkflowStatusId = input.WorkflowStatusId;
             child.OtherLanguages = input.OtherLanguages;
+
             if (input.ReasonForLeavingId != null) child.ReasonForLeavingId = input.ReasonForLeavingId;
             if (input.InactiveDate != null) child.InactiveDate = input.InactiveDate;
             if (input.InactiveReason != null) child.InactiveReason = input.InactiveReason;
             if (input.InactivityComments != null) child.InactivityComments = input.InactivityComments;
-
             // Update child user fields
             if (input.User != null)
             {
+                if (isNew)
+                {
+                    child.User = new ApplicationUser();
+                    child.User.Id = input.User.Id;
+                    child.User.UserName = $"External_Edit_{input.User.Id}";
+                    child.User.TenantId = tenantId;
+                }
                 if (input.User.FirstName != null) child.User.FirstName = input.User.FirstName;
                 if (input.User.Surname != null) child.User.Surname = input.User.Surname;
                 if (input.User.DateOfBirth != null) child.User.DateOfBirth = input.User.DateOfBirth;
@@ -116,9 +135,7 @@ namespace EcdLink.Api.CoreApi.Services
                 child.User.VerifiedByHomeAffairs = input.User.VerifiedByHomeAffairs;
                 child.User.RaceId = input.User.RaceId;
                 child.User.ContactPreference = input.User.ContactPreference;
-                child.User.ProfileImageUrl = input.User.profileImageUrl;
             }
-
             // Update caregiver fields
             if (input.Caregiver != null)
             {
@@ -127,7 +144,6 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     child.Caregiver = new Caregiver();
                 }
-
                 child.Caregiver.IdNumber = input.Caregiver.IdNumber;
                 child.Caregiver.FirstName = input.Caregiver.FirstName;
                 child.Caregiver.Surname = input.Caregiver.Surname;
@@ -144,15 +160,13 @@ namespace EcdLink.Api.CoreApi.Services
                 child.Caregiver.AdditionalFirstName = input.Caregiver.AdditionalFirstName;
                 child.Caregiver.AdditionalSurname = input.Caregiver.AdditionalSurname;
                 child.Caregiver.AdditionalPhoneNumber = input.Caregiver.AdditionalPhoneNumber;
-                // TODO - do we need to set updated date/by, do we need to check if we updated the caregiver?
-
+                
                 if (input.Caregiver.SiteAddress != null)
                 {
                     if (child.Caregiver.SiteAddress == null)
                     {
                         child.Caregiver.SiteAddress = new SiteAddress();
                     }
-
                     child.Caregiver.SiteAddress.AddressLine1 = input.Caregiver.SiteAddress.AddressLine1;
                     child.Caregiver.SiteAddress.AddressLine2 = input.Caregiver.SiteAddress.AddressLine2;
                     child.Caregiver.SiteAddress.AddressLine3 = input.Caregiver.SiteAddress.AddressLine3;
@@ -160,24 +174,27 @@ namespace EcdLink.Api.CoreApi.Services
                     child.Caregiver.SiteAddress.Ward = input.Caregiver.SiteAddress.Ward;
                     child.Caregiver.SiteAddress.PostalCode = input.Caregiver.SiteAddress.PostalCode;
                     child.Caregiver.SiteAddress.ProvinceId = input.Caregiver.SiteAddress.ProvinceId;
-                    // TODO - do we need to set updated date/by, do we need to check if we updated the caregiver?
                 }
             }
-
-            _childRepo.Update(child);
-
+            if (isNew)
+            {
+                _childRepo.Insert(child);
+                _userManager.AddToRoleAsync(child.User, "Child");
+            }
+            else
+            {
+                _childRepo.Update(child);
+            }
             // Add new grants
             if (input.Caregiver != null && input.Caregiver.GrantIds != null)
             {
                 UpdateCaregiverGrants(child.UserId.Value, input.Caregiver.GrantIds, tenantId);
             }
-
             // Add home languages
             if (input.HomeLanguageIds != null && input.HomeLanguageIds.Any())
             {
                 UpdateChildLanguages(child.UserId.Value, input.HomeLanguageIds, tenantId);
             }
-
             // If child is deactivated, ensure all learner records are also disabled
             if (!isActive)
             {
@@ -191,13 +208,11 @@ namespace EcdLink.Api.CoreApi.Services
                             learner.IsActive = false;
                             learner.StoppedAttendance = DateTime.Now;
                             _learnerRepo.Update(learner);
-
                         }
                     }
                     _pointsService.CalculateChildRemovedFromPreschool((Guid)_applicationUserId);
                 }
             }
-
             // Calculate points for practitioner
             if (isActive && child.WorkflowStatusId == Constants.WorkflowStatus.ActiveId)
             {

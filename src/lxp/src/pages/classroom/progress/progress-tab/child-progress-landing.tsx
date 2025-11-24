@@ -31,6 +31,7 @@ import { useHistory } from 'react-router';
 import { useProgressForChildren } from '@/hooks/useProgressForChildren';
 import { ProgressCaregiverReportPdf } from '../caregiver-report-pdf/caregiver-report-pdf';
 import { ReactComponent as CompleteImage } from '@/assets/celebrateIcon.svg';
+import { ProgressTabReportPeriodsCompleted } from './progress-tab-report-periods-completed';
 
 export type ChildProgressLandingRouteState = {
   childId: string;
@@ -61,6 +62,7 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
     percentageObservationsCompleted,
     isAllObservationsComplete,
     isAllReportsComplete,
+    isAfterLastReport,
   } = useProgressForChildren(true);
 
   const [generatedReports, setGeneratedReports] = useState<{
@@ -228,6 +230,11 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
 
   return (
     <>
+      {/* Report period set, all reports completed && current period undefined */}
+      {isAllReportsComplete && isReportWindowSet && isAfterLastReport && (
+        <ProgressTabReportPeriodsCompleted />
+      )}
+
       {/* No report periods defined and principal */}
       {!isReportWindowSet && !!practitioner?.isPrincipal && (
         <ProgressTabNoReportPeriodAndPrincipal
@@ -252,6 +259,7 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
       {isReportWindowSet &&
         !!children.length &&
         !!childrenUnder5Years.length &&
+        !isAfterLastReport &&
         childReports.every((x) => x.isNotStarted) && (
           <ProgressTabNoReports
             trackProgress={handleContinueTrackingProgress}
