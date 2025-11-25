@@ -5,7 +5,6 @@ import './app/i18n';
 import './styles.css';
 import { TenantContextProvider } from './app/hooks/useTenant';
 
-console.log(process.env);
 ReactDOM.render(
   <ConfigProvider
     config={{

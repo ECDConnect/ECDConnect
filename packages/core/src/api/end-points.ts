@@ -9,6 +9,8 @@ export const APIs = {
   refreshJwtToken: `api/authentication/refresh-token`,
   onlineCheck: `api/authentication/online-check`,
   verifyCellPhoneNumber: 'api/authentication/verify-cellphone-number',
+  verifySignupCellPhoneNumber:
+    'api/authentication/verify-signup-cellphone-number',
   verifyPasswordToken: 'api/authentication/verify-password-token',
   submitUserHelpForm: 'api/authentication/submit-user-help-form',
   tenantCurrent: 'api/tenancy/current',

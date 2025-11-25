@@ -21,13 +21,13 @@ import { useStoreSetup } from '@hooks/useStoreSetup';
 import { useAppDispatch } from '@store';
 import { staticDataThunkActions } from '@store/static-data';
 import * as styles from './oa-sign-up-or-login.types';
-import { UserService } from '@/services/UserService';
 import { useTenant } from '@/hooks/useTenant';
 import { OAAgreements } from './components/oa-agreements/oa-agreements';
 import Banner1 from '../../../assets/banner-ss2.svg';
 import Banner3 from '../../../assets/banner2-ss-svg.svg';
 import { AuthService } from '@/services/AuthService';
 import TransparentLayer from '../../../assets/TransparentLayer.png';
+import ROUTES from '@/routes/routes';
 
 const token = new URLSearchParams(window.location.search).get('token');
 
@@ -39,7 +39,6 @@ export const OASignUpOrLogin: React.FC = () => {
   const { resetAppStore, resetAuth, resetUser } = useStoreSetup();
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
-  const [setUserDetails] = useState<any>();
   const isWhitelabel = tenant?.isWhiteLabel;
   const applicationName = tenant?.tenant?.applicationName;
 
@@ -70,26 +69,9 @@ export const OASignUpOrLogin: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const getUserDetailsByToken = async () => {
-    let user_details_from_request;
-    if (token) {
-      user_details_from_request = await new UserService('').getUserByToken(
-        token
-      );
-      setUserDetails(user_details_from_request);
-    } else {
-      console.log('user not found');
-    }
-  };
-  useEffect(() => {
-    if (token) {
-      getUserDetailsByToken();
-    }
-  }, []);
-
   const verifyInvitedPrincipalToken = async () => {
     const input: VerifyPrincipalInvitationModel = {
-      token: token!,
+      token: token as any as string,
     };
     if (token) {
       const principalToken = await new AuthService().VerifyPrincipalToken(
@@ -164,7 +146,7 @@ export const OASignUpOrLogin: React.FC = () => {
             type="outlined"
             color="quatenary"
             disabled={!isOnline}
-            onClick={() => history.push('./oa-login')}
+            onClick={() => history.push(ROUTES.LOGIN)}
           >
             <Typography
               type="help"

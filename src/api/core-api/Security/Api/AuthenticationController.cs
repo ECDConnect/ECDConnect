@@ -33,6 +33,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Abstractions;
 using Newtonsoft.Json;
 using NPOI.SS.Formula.Functions;
 using System;
@@ -44,6 +45,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using static EcdLink.Api.CoreApi.Constants;
+using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace ECDLink.Security.Api
 {
@@ -422,6 +424,40 @@ namespace ECDLink.Security.Api
         // Open-access
         #region OpenAccess
 
+        [Route("verify-signup-cellphone-number")]
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> VerifySignupCellphoneNumber([FromBody] VerifySignupCellphoneNumberModel model)
+        {
+            if (string.IsNullOrEmpty(model.Cellphone))
+            {
+                return BadRequest();
+            }
+
+            var user = new ApplicationUser()
+            {
+                Id = Guid.NewGuid(),
+                UserName = "",
+                FirstName = "",
+                PhoneNumber = UserHelper.NormalizePhoneNumber(model.Cellphone),
+                PhoneNumberConfirmed = true,
+                ContactPreference = MessageTypeConstants.SMS
+            };
+            
+            if (!string.IsNullOrEmpty(model.AuthCode) && !string.IsNullOrEmpty(model.Token))
+            {
+                user.SecurityStamp = model.Token;
+                var tokenVerification = await _securityCodeManager.VerifyTokenAsync(user, model.AuthCode);
+                return tokenVerification ? Ok("") : Unauthorized();
+            }
+            else
+            {
+                var token = await _securityCodeManager.GenerateTokenAsync(user);
+                // await _notificationManager.SendOAWLAuthenticationCodeAsync(user, token);
+                return Ok(user.SecurityStamp);
+            }
+        }
+
         [Route("check-username-phone-number")]
         [AllowAnonymous]
         [HttpPost]
@@ -588,8 +624,8 @@ namespace ECDLink.Security.Api
                     Id = userId,
                     UserName = addOAPractitionerModel.Username,
                     PhoneNumber = UserHelper.NormalizePhoneNumber(addOAPractitionerModel.PhoneNumber),
-                    PendingPhoneNumber = UserHelper.NormalizePhoneNumber(addOAPractitionerModel.PhoneNumber),
-                    PhoneNumberConfirmed = false,
+                    //PendingPhoneNumber = UserHelper.NormalizePhoneNumber(addOAPractitionerModel.PhoneNumber),
+                    PhoneNumberConfirmed = true,
                     ContactPreference = MessageTypeConstants.SMS,
                     TenantId = tenantId,
                     InsertedDate = DateTime.Now,
@@ -615,8 +651,8 @@ namespace ECDLink.Security.Api
                     Id = userId,
                     UserName = addOAPractitionerModel.Username,
                     PhoneNumber = addOAPractitionerModel.PhoneNumber,
-                    PendingPhoneNumber = UserHelper.NormalizePhoneNumber(addOAPractitionerModel.PhoneNumber),
-                    PhoneNumberConfirmed = false,
+                    //PendingPhoneNumber = UserHelper.NormalizePhoneNumber(addOAPractitionerModel.PhoneNumber),
+                    PhoneNumberConfirmed = true,
                     ContactPreference = MessageTypeConstants.SMS,
                     TenantId = tenantId,
                     InsertedDate = DateTime.Now,
@@ -632,7 +668,8 @@ namespace ECDLink.Security.Api
                 {
                     Id = userId,
                     UserName = addOAPractitionerModel.Username,
-                    PhoneNumber = UserHelper.NormalizePhoneNumber(addOAPractitionerModel.Username),
+                    PhoneNumber = addOAPractitionerModel.PhoneNumber,
+                    PhoneNumberConfirmed = true,
                     ContactPreference = MessageTypeConstants.SMS,
                     TenantId = tenantId,
                     InsertedDate = DateTime.Now,
@@ -685,19 +722,20 @@ namespace ECDLink.Security.Api
                 });
             }
 
-            var token = await _securityCodeManager.GenerateTokenAsync(user);
-            if (string.IsNullOrWhiteSpace(token))
-            {
-                return BadRequest(new FailedVerificationModel
-                {
-                    ErrorCode = 5,
-                    Error = "Generate of token failure"
-                });
-            }
+            //var token = await _securityCodeManager.GenerateTokenAsync(user);
+            //if (string.IsNullOrWhiteSpace(token))
+            //{
+            //    return BadRequest(new FailedVerificationModel
+            //    {
+            //        ErrorCode = 5,
+            //        Error = "Generate of token failure"
+            //    });
+            //}
+            //flow changed - cellphone number obtained earlied and verified before trying to create user.
+            //await _notificationManager.SendOAWLAuthenticationCodeAsync(user, token);
+            //return new OkObjectResult(token);
 
-            await _notificationManager.SendOAWLAuthenticationCodeAsync(user, token);
-
-            return new OkObjectResult(token);
+            return Ok();
         }
 
         [Route("update-oa-practitioner")]
