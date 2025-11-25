@@ -5,6 +5,7 @@ import {
   LoginType,
   RegisterRequestModel,
   UpdateUsernameModel,
+  VerifySignupCellPhoneNumberModel,
 } from '@ecdlink/core';
 
 export enum CreateUserResult {
@@ -129,6 +130,9 @@ export const registerOpenAccessUser = async (
 
   const userCreated = await new AuthService()
     .RegisterOpenAccessUser(registerOpenAccessUserInput)
+    .then(() => {
+      return CreateUserResult.SuccessRegistered;
+    })
     .catch((error) => {
       return CreateUserResult.FailedCreateUsername;
     });
@@ -136,7 +140,8 @@ export const registerOpenAccessUser = async (
   if (userCreated === CreateUserResult.FailedCreateUsername)
     return CreateUserResult.FailedCreateUsername;
 
-  if (userCreated) return CreateUserResult.SuccessRegisteredVerifyPhoneNumber;
+  if (userCreated === CreateUserResult.SuccessRegistered)
+    return CreateUserResult.SuccessLogin;
 
   return CreateUserResult.RegistrationFailed;
 };
@@ -196,8 +201,41 @@ export const createUser = async (
       shareInfoPartners ?? false,
       registerType
     )
-  )
+  ) {
     return CreateUserResult.SuccessLogin;
+  }
 
   return CreateUserResult.RegistrationFailed;
+};
+
+export const generateSignupCellPhoneNumberToken = async (
+  cellphone: string
+): Promise<string | undefined> => {
+  const input: VerifySignupCellPhoneNumberModel = {
+    Cellphone: cellphone,
+  };
+  const token = await new AuthService()
+    .VerifySignupCellPhoneNumber(input)
+    .catch((error) => {
+      return undefined;
+    });
+  return token;
+};
+
+export const verifySignupCellPhoneNumberToken = async (
+  cellphone: string,
+  token: string,
+  authCode: string
+): Promise<boolean> => {
+  const input: VerifySignupCellPhoneNumberModel = {
+    Cellphone: cellphone,
+    Token: token,
+    AuthCode: authCode,
+  };
+  const result = await new AuthService()
+    .VerifySignupCellPhoneNumber(input)
+    .catch((error) => {
+      return undefined;
+    });
+  return result !== undefined;
 };

@@ -1,4 +1,5 @@
 import {
+  AppErrorHandler,
   DialogServiceProvider,
   SnackbarProvider,
   useDialog,
@@ -25,7 +26,6 @@ import { differenceInHours, isSameDay } from 'date-fns';
 import { syncThunkActions } from './store/sync';
 import { useAppDispatch } from './store';
 import { practitionerSelectors } from './store/practitioner';
-import { AppErrorHandler } from '@ecdlink/core';
 import { stopReportingRuntimeErrors } from 'react-error-overlay';
 import { useTenant } from './hooks/useTenant';
 import { Helmet } from 'react-helmet';
@@ -35,6 +35,48 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 if (process.env.NODE_ENV === 'development') {
   stopReportingRuntimeErrors();
 }
+
+const AppRoutes = ({ isTempUser }: { isTempUser: boolean | undefined }) => {
+  if (isTempUser) {
+    return (
+      <InitialStoreSetup>
+        <SnackbarProvider>
+          <DialogServiceProvider>
+            <InitialNotificationSetup>
+              <AuthRoutes />
+              {/* <BackgroundSync /> */}
+            </InitialNotificationSetup>
+          </DialogServiceProvider>
+        </SnackbarProvider>
+      </InitialStoreSetup>
+    );
+  } else {
+    return <PublicRoutes />;
+  }
+};
+
+const AppContent = ({
+  title,
+  isTempUser,
+}: {
+  title: string;
+  isTempUser: boolean | undefined;
+}) => {
+  return (
+    <IonApp className="m-auto max-w-4xl bg-white">
+      <Helmet>
+        <title>{title}</title>
+      </Helmet>
+      <IonReactRouter>
+        <AppErrorHandler>
+          <IonRouterOutlet>
+            <AppRoutes isTempUser={isTempUser} />
+          </IonRouterOutlet>
+        </AppErrorHandler>
+      </IonReactRouter>
+    </IonApp>
+  );
+};
 
 const App: React.FC = () => {
   const tenant = useTenant();
@@ -51,7 +93,7 @@ const App: React.FC = () => {
 
   const getTitle = () => {
     const env = process.env.REACT_APP_RUNENVIRONMENT || '';
-    var title = env;
+    let title = env;
     if (title !== '') title += ' ';
     title +=
       (tenant.isWhiteLabel
@@ -61,22 +103,20 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
-    if (!!tenant && !!tenant.tenant) {
-      if (!!tenant.tenant.googleAnalyticsTag) {
+    if (tenant?.tenant) {
+      if (tenant.tenant.googleAnalyticsTag) {
         ReactGA.initialize([
           {
             trackingId: tenant.tenant.googleAnalyticsTag,
             gaOptions: {
               debug_mode:
-                (window.location.host.indexOf('localhost') > 0
-                  ? true
-                  : false) || !!process.env.REACT_APP_GADEBUGMODE,
+                window.location.host.indexOf('localhost') > 0 ||
+                !!process.env.REACT_APP_GADEBUGMODE,
             },
             gtagOptions: {
               debug_mode:
-                (window.location.host.indexOf('localhost') > 0
-                  ? true
-                  : false) || !!process.env.REACT_APP_GADEBUGMODE,
+                window.location.host.indexOf('localhost') > 0 ||
+                !!process.env.REACT_APP_GADEBUGMODE,
             },
           },
           // {
@@ -90,7 +130,7 @@ const App: React.FC = () => {
         });
       }
 
-      if (!!tenant.tenant.googleTagManager) {
+      if (tenant.tenant.googleTagManager) {
         const tagManagerArgs = {
           gtmId: tenant.tenant.googleTagManager,
         };
@@ -102,13 +142,13 @@ const App: React.FC = () => {
   }, [tenant]);
 
   useEffect(() => {
-    if (theme && theme.images) {
+    if (theme?.images) {
       try {
         let favicons = document.querySelectorAll('link[rel~="icon"]');
         favicons.forEach(function (favicon) {
           favicon?.parentNode?.removeChild(favicon);
         });
-        var favicon_link_html = document.createElement('link');
+        let favicon_link_html = document.createElement('link');
         favicon_link_html.rel = 'icon';
         favicon_link_html.href = theme.images.faviconUrl;
         favicon_link_html.type = 'image/x-icon';
