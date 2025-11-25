@@ -201,15 +201,15 @@ namespace ECDLink.Core.Services
             #region Update Income Items
 
             // Deletes
-            var removedIncomeIds = input.IncomeItems.Where(x => !x.IsActive).Select(x => x.Id);
+            var removedIncomeIds = input.IncomeItems.Where(x => !x.IsActive).Select(x => x.Id).ToList();
             var removedItems = exisitingStatement.IncomeItems.Where(x => removedIncomeIds.Contains(x.Id)).ToList();
             foreach (var item in removedItems)
             {
-                _statementsIncomeRepo.Delete(item.Id);
+                item.IsActive = false;
             }
 
             // Updates
-            foreach (var item in exisitingStatement.IncomeItems)
+            foreach (var item in exisitingStatement.IncomeItems.Where(x => x.IsActive))
             {
                 var inputItem = input.IncomeItems.FirstOrDefault(x => x.Id == item.Id);
                 if (inputItem == null)
@@ -289,15 +289,15 @@ namespace ECDLink.Core.Services
 
             #region Update Expense Items
             // Deletes
-            var removedExpensesIds = input.ExpenseItems.Where(x => !x.IsActive).Select(x => x.Id);
+            var removedExpensesIds = input.ExpenseItems.Where(x => !x.IsActive).Select(x => x.Id).ToList();
             var removedExpenses = exisitingStatement.ExpenseItems.Where(x => removedExpensesIds.Contains(x.Id)).ToList();
             foreach (var item in removedExpenses)
             {
-                _statementsExpensesRepo.Delete(item.Id);
+                item.IsActive = false;
             }
 
             // Updates
-            foreach (var item in exisitingStatement.ExpenseItems)
+            foreach (var item in exisitingStatement.ExpenseItems.Where(x => x.IsActive))
             {
                 var inputItem = input.ExpenseItems.FirstOrDefault(x => x.Id == item.Id);
                 if (inputItem == null)
