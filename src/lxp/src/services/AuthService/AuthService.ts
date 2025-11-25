@@ -13,6 +13,7 @@ import {
   AuthCodeModel,
   ResendAuthCodeModel,
   VerifyPrincipalInvitationModel,
+  VerifySignupCellPhoneNumberModel,
   VerifyPasswordTokenModel,
 } from '@ecdlink/core';
 import { NewPasswordRequest } from '@models/auth/login/NewPasswordRequest';
@@ -297,6 +298,19 @@ class AuthService {
 
     if (dataResponse.dataError) return false;
 
+    return dataResponse?.data;
+  }
+
+  async VerifySignupCellPhoneNumber(body: VerifySignupCellPhoneNumberModel) {
+    const response = await api(Config.authApi).post(
+      APIs.verifySignupCellPhoneNumber,
+      JSON.stringify(body),
+      {
+        headers: headers,
+      }
+    );
+    const dataResponse = getDataResponse<string>(response);
+    if (dataResponse.dataError) return undefined;
     return dataResponse?.data;
   }
 }

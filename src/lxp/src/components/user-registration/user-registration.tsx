@@ -21,18 +21,15 @@ import {
 } from '@/utils/user/user-registration.utils';
 import { NOTIFICATION, useNotifications } from '@ecdlink/core';
 import ROUTES from '@/routes/routes';
-interface UserRegistrationProps {
-  closeAction?: (item: boolean) => void;
-}
+interface UserRegistrationProps {}
 export interface UserRegistrationRouteState {
   userId?: string;
   token?: string;
   shareInfoPartners?: boolean;
+  phoneNumber?: string;
 }
 
-export const UserRegistration: React.FC<UserRegistrationProps> = ({
-  closeAction,
-}) => {
+export const UserRegistration: React.FC<UserRegistrationProps> = ({}) => {
   const { isOnline } = useOnlineStatus();
   const { setNotification } = useNotifications();
   const tenant = useTenant();
@@ -41,6 +38,7 @@ export const UserRegistration: React.FC<UserRegistrationProps> = ({
   const userId = state?.userId;
   const token = state?.token;
   const shareInfoPartners = state?.shareInfoPartners;
+  const phoneNumber = state?.phoneNumber;
   const [messageError, setMessageError] = useState('');
   const [openCreateUser, setOpenCreateUser] = useState(false);
   const [googleEmail, setGoogleEmail] = useState<string | undefined>(undefined);
@@ -54,46 +52,49 @@ export const UserRegistration: React.FC<UserRegistrationProps> = ({
     const email = decoded.email;
     setGoogleEmail(email);
     setGoogleCredential(credential);
-    // not working for open access yet - need to move the cell phone capture to the previous screen.
-    if (tenant?.isWhiteLabel) {
-      const createUserResult = await createUser({
-        userId: userId as any as string,
-        username: email,
-        password: '',
-        phoneNumber: '', // not needed
-        registerType: 'google',
-        shareInfoPartners,
-        token,
-        googleToken: credential,
-        tenant,
-      });
-      switch (createUserResult) {
-        case CreateUserResult.SuccessLogin:
-          history.push(ROUTES.LOGIN);
-          setMessageError('');
-          setNotification({
-            title: ` Successfully registered!`,
-            variant: NOTIFICATION.SUCCESS,
-          });
-          break;
-        case CreateUserResult.UsernameExists:
-          setMessageError(
-            `Username already exists! Try using your email address, phone number, or add a number/letter`
-          );
-          setNotification({
-            title: ` Failed to check the username!`,
-            variant: NOTIFICATION.ERROR,
-          });
-          break;
-        case CreateUserResult.RegistrationFailed:
-        default:
-          setMessageError('');
-          setNotification({
-            title: `Registration failed. Please try again.`,
-            variant: NOTIFICATION.ERROR,
-          });
-          break;
-      }
+
+    const createUserResult = await createUser({
+      userId: userId as any as string,
+      username: email,
+      password: '',
+      phoneNumber: phoneNumber ?? '',
+      registerType: 'google',
+      shareInfoPartners,
+      token,
+      googleToken: credential,
+      tenant,
+    });
+    switch (createUserResult) {
+      case CreateUserResult.SuccessLogin:
+        history.push(ROUTES.LOGIN, {
+          username: email,
+          password: '',
+          loginType: 'google',
+          googleToken: credential,
+        });
+        setMessageError('');
+        setNotification({
+          title: ` Successfully registered!`,
+          variant: NOTIFICATION.SUCCESS,
+        });
+        break;
+      case CreateUserResult.UsernameExists:
+        setMessageError(
+          `Username already exists! Try using your email address, phone number, or add a number/letter`
+        );
+        setNotification({
+          title: ` Failed to check the username!`,
+          variant: NOTIFICATION.ERROR,
+        });
+        break;
+      case CreateUserResult.RegistrationFailed:
+      default:
+        setMessageError('');
+        setNotification({
+          title: `Registration failed. Please try again.`,
+          variant: NOTIFICATION.ERROR,
+        });
+        break;
     }
   };
 
@@ -166,6 +167,7 @@ export const UserRegistration: React.FC<UserRegistrationProps> = ({
           shareInfoPartners={shareInfoPartners}
           googleEmail={googleEmail}
           googleCredential={googleCredential}
+          phoneNumber={phoneNumber}
         />
       </Dialog>
     </BannerWrapper>

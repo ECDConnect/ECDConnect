@@ -18,6 +18,12 @@ export interface VerifyCellphoneNumberModel {
   Token: string;
 }
 
+export interface VerifySignupCellPhoneNumberModel {
+  Cellphone: string;
+  Token?: string;
+  AuthCode?: string;
+}
+
 export interface VerifyPasswordTokenModel {
   Username: string;
   Token: string;

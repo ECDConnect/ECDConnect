@@ -1,4 +1,9 @@
-import { LoginRequestModel, LocalStorageKeys, useDialog } from '@ecdlink/core';
+import {
+  LoginRequestModel,
+  LocalStorageKeys,
+  useDialog,
+  LoginType,
+} from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
   Alert,
@@ -14,7 +19,7 @@ import {
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router';
 import * as styles from './oa-login.styles';
 import { useAppDispatch } from '@store';
 import { authActions, authThunkActions } from '@store/auth';
@@ -55,9 +60,17 @@ enum LoginErrorEnum {
   UserAlreadyLoggedIn,
 }
 
+interface LoginRouteState {
+  username?: string;
+  password?: string;
+  loginType?: LoginType;
+  googleToken?: string;
+}
+
 export const OaLogin: React.FC = () => {
   const appDispatch = useAppDispatch();
   const history = useHistory();
+  const { state } = useLocation<LoginRouteState>();
   const [displayError, setDisplayError] = useState('');
   const [loginAttempts, setLoginAttempts] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -67,20 +80,6 @@ export const OaLogin: React.FC = () => {
   const [openHelp, setOpenHelp] = useState(false);
   const tenant = useTenant();
   const { resetAppStore, resetAuth, resetUser } = useStoreSetup();
-
-  // const googleLogin = process.env.REACT_APP_GOOGLE_CLIENT_ID
-  //   ? useGoogleLogin({
-  //       onSuccess: (
-  //         tokenResponse: Omit<
-  //           CodeResponse,
-  //           'error' | 'error_description' | 'error_uri'
-  //         >
-  //       ) => onGoogleLoginSuccessAuthFlow(tokenResponse),
-  //       flow: 'auth-code',
-  //       scope:
-  //         'openid email profile https://www.googleapis.com/auth/user.phonenumbers.read',
-  //     })
-  //   : () => {};
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
@@ -128,7 +127,13 @@ export const OaLogin: React.FC = () => {
     getValues: loginFormGetValues,
   } = useForm({
     resolver: yupResolver(oaLoginSchema),
-    defaultValues: initialOaLoginValues,
+    defaultValues:
+      state?.loginType === 'username'
+        ? ({
+            username: state?.username || '',
+            password: state?.password || '',
+          } as OaLoginModel)
+        : initialOaLoginValues,
     mode: 'onChange',
   });
   const { isValid, errors } = loginFormState;
@@ -390,26 +395,21 @@ export const OaLogin: React.FC = () => {
     }
   }, [userAgent]);
 
+  useEffect(() => {
+    if (state?.loginType === 'username' && isValid) {
+      submitForm();
+    } else if (state?.loginType === 'google') {
+      preLogin({
+        username: state?.username,
+        password: '',
+        googleToken: state?.googleToken,
+      });
+    }
+  }, [state, isValid]);
+
   const backToPromptScreen = () => {
     history.push('/');
   };
-
-  // const onGoogleLoginCustom = async () => {
-  //   googleLogin();
-  // };
-
-  // const onGoogleLoginSuccessAuthFlow = (
-  //   tokenResponse: Omit<
-  //     CodeResponse,
-  //     'error' | 'error_description' | 'error_uri'
-  //   >
-  // ) => {
-  //   preLogin({
-  //     username: 'google',
-  //     password: '',
-  //     googleCode: tokenResponse.code,
-  //   });
-  // };
 
   const onGoogleLoginSuccess = (response: CredentialResponse) => {
     const credential = response.credential || '';
