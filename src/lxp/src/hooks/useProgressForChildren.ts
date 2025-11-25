@@ -82,9 +82,7 @@ export const useProgressForChildren = (useNextPeriod?: boolean) => {
 
   const children = useMemo(() => {
     return (baseChildren || [])
-      .filter(
-        (x) => x.workflowStatusId === childActiveWorkflow?.workflowStatusTypeId
-      )
+      .filter((x) => x.workflowStatusId === childActiveWorkflow?.id)
       .map((child) => ({
         childId: child.id || '',
         childUserId: child.userId || '',
