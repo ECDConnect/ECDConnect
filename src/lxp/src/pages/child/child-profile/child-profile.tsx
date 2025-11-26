@@ -637,7 +637,10 @@ export const ChildProfile: React.FC = () => {
       {
         key: 'fees',
         title: 'Preschool fees',
-        subTitle: `R ${preschoolFees} paid in ${new Date().getFullYear()}`,
+        subTitle:
+          preschoolFees > 0
+            ? `R ${preschoolFees} paid in ${new Date().getFullYear()}`
+            : 'No preschool fees paid',
         subTitleColor: preschoolFees > 0 ? 'successDark' : 'alertDark',
         subTitleShape: preschoolFees > 0 ? 'circle' : 'square',
         buttonType: 'filled',
