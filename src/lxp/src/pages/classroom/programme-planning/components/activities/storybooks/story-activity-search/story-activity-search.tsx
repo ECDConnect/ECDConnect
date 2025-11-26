@@ -468,11 +468,11 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
           // importantText={`${routineItem.timeSpan} minutes`}
           icon={'InformationCircleIcon'}
           iconColor={'infoDark'}
-          iconBorderColor={'infoBb'}
+          iconSize={24}
           actionButtons={[
             {
               text: 'Close',
-              colour: 'primary',
+              colour: 'quatenary',
               onClick: () => setDisplayHelp(false),
               type: 'filled',
               textColour: 'white',
