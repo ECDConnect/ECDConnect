@@ -28,10 +28,10 @@ const CURRENT_MONTH_INDEX = new Date().getMonth(); // 0 = Jan, 11 = Dec
 const getStyle = (amount: number) => {
   return amount > 0
     ? 'rounded-full px-2 py-0.5 bg-successMain mr-2'
-    : 'rounded-full px-2 py-0.5 bg-alertMain mr-2';
+    : 'rounded-full px-2 py-0.5 bg-errorDark mr-2';
 };
 const getColor = (amount: number): Colours => {
-  return amount > 0 ? 'successDark' : 'alertDark';
+  return amount > 0 ? 'successDark' : 'errorDark';
 };
 
 const getShape = (amount: number): SubTitleShape => {
@@ -39,7 +39,11 @@ const getShape = (amount: number): SubTitleShape => {
 };
 
 const formatValue = (value: number) => {
-  return `R ${value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')}`;
+  if (value > 0) {
+    return `R ${value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')}`;
+  } else {
+    return `R 0`;
+  }
 };
 
 export const PreschoolFees: React.FC<PreschoolFeesStep> = ({}) => {

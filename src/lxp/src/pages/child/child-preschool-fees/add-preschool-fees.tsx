@@ -118,6 +118,7 @@ export const AddPreschoolFees: React.FC<AddPreschoolFeesProps> = ({
       dateReceived: selectedDate.toISOString(),
       incomeTypeId: IncomeTypeIds.PRESCHOOL_FEE_ID,
       childUserId: updatedFee?.childUserId,
+      isActive: true,
     } as IncomeItemDto;
     const id = selectedStatement?.id || newGuid();
 
@@ -195,10 +196,10 @@ export const AddPreschoolFees: React.FC<AddPreschoolFeesProps> = ({
           visible={true}
           className="mt-2"
           type={'text'}
-          value={updatedFee?.amount}
+          value={moneyInputFormat(updatedFee?.amount.toString() ?? '0')}
           textInputType={'moneyInput'}
           prefixIcon={true}
-          disabled={false}
+          disabled={disabled}
           onChange={(event) => {
             // Updated existing
             setUpdatedFee({
