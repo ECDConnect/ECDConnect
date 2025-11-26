@@ -692,7 +692,7 @@ namespace ECDLink.Security.Api
             }
 
             // Get newly created user
-            var user = await _securityManager.GetUserByNameAsync(addOAPractitionerModel.Username);
+            var user = await _securityManager.GetUserByIdAsync(userId);
 
             // Step 2 - create password
             if (RegisterTypeConstants.USERNAME == addOAPractitionerModel.RegisterType)
