@@ -13,6 +13,7 @@ import {
   AuthCodeModel,
   ResendAuthCodeModel,
   VerifyPrincipalInvitationModel,
+  VerifySignupCellPhoneNumberModel,
   VerifyPasswordTokenModel,
 } from '@ecdlink/core';
 import { NewPasswordRequest } from '@models/auth/login/NewPasswordRequest';
@@ -192,11 +193,8 @@ class AuthService {
     );
   }
 
-  async RegisterOpenAccessUser(
-    baseEndPoint: string,
-    body: RegisterRequestModel
-  ) {
-    return await api(baseEndPoint).post(
+  async RegisterOpenAccessUser(body: RegisterRequestModel) {
+    return await api(Config.authApi).post(
       APIs.addOAPractitioner,
       JSON.stringify(body),
       {
@@ -205,11 +203,8 @@ class AuthService {
     );
   }
 
-  async CheckUsernamePhoneNumber(
-    baseEndPoint: string,
-    body: CheckUsernamePhoneNumberModel
-  ) {
-    return await api(baseEndPoint).post(
+  async CheckUsernamePhoneNumber(body: CheckUsernamePhoneNumberModel) {
+    return await api(Config.authApi).post(
       APIs.checkUsernamePhoneNumber,
       JSON.stringify(body),
       {
@@ -218,8 +213,8 @@ class AuthService {
     );
   }
 
-  async UpdateUsername(baseEndPoint: string, body: UpdateUsernameModel) {
-    return await api(baseEndPoint).post(
+  async UpdateUsername(body: UpdateUsernameModel) {
+    return await api(Config.authApi).post(
       APIs.updateUsernamePassword,
       JSON.stringify(body),
       {
@@ -290,8 +285,8 @@ class AuthService {
     return dataResponse?.data;
   }
 
-  async UpdateOaPractitioner(baseEndPoint: string, body: RegisterRequestModel) {
-    const response = await api(baseEndPoint).post(
+  async UpdateOaPractitioner(body: RegisterRequestModel) {
+    const response = await api(Config.authApi).post(
       APIs.updateOAPractitioner,
       JSON.stringify(body),
       {
@@ -303,6 +298,19 @@ class AuthService {
 
     if (dataResponse.dataError) return false;
 
+    return dataResponse?.data;
+  }
+
+  async VerifySignupCellPhoneNumber(body: VerifySignupCellPhoneNumberModel) {
+    const response = await api(Config.authApi).post(
+      APIs.verifySignupCellPhoneNumber,
+      JSON.stringify(body),
+      {
+        headers: headers,
+      }
+    );
+    const dataResponse = getDataResponse<string>(response);
+    if (dataResponse.dataError) return undefined;
     return dataResponse?.data;
   }
 }

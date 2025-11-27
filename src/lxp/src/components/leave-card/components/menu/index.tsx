@@ -6,7 +6,6 @@ import { ClassroomGroupService } from '@/services/ClassroomGroupService';
 import { useAppDispatch } from '@/store';
 import { authSelectors } from '@/store/auth';
 import { practitionerThunkActions } from '@/store/practitioner';
-import { userSelectors } from '@/store/user';
 import { PractitionerDto } from '@ecdlink/core';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 import { ActionModal, Dialog, DialogPosition } from '@ecdlink/ui';
@@ -29,7 +28,6 @@ export const LeaveCardMenu = ({
 }: LeaveCardMenuProps) => {
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const user = useSelector(userSelectors.getUser);
   const userAuth = useSelector(authSelectors.getAuthUser);
 
   const history = useHistory();
