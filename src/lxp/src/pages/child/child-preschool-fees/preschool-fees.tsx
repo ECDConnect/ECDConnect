@@ -55,14 +55,6 @@ const formatValue = (amount: number) => {
   return new Intl.NumberFormat('en-ZA', options).format(amount);
 };
 
-const formatValue2 = (value: number) => {
-  if (value > 0) {
-    return `R ${value.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')}`;
-  } else {
-    return `R 0`;
-  }
-};
-
 export const PreschoolFees: React.FC<PreschoolFeesStep> = ({}) => {
   const history = useHistory();
   const location = useLocation<PreschoolFeesStep>();
