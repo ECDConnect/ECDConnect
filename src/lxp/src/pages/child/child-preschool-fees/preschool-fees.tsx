@@ -38,9 +38,26 @@ const getShape = (amount: number): SubTitleShape => {
   return amount > 0 ? 'circle' : 'square';
 };
 
-const formatValue = (value: number) => {
+const formatValue = (amount: number) => {
+  if (typeof amount !== 'number') return '';
+
+  // Options for conditional decimal display:
+  // maximumFractionDigits limits to 2 (standard for ZAR).
+  // minimumFractionDigits 0 ensures no trailing zeros if integer.
+  const options = {
+    style: 'currency',
+    currency: 'ZAR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  };
+
+  // South African locale is typically 'en-ZA' or just 'default' for browser locale
+  return new Intl.NumberFormat('en-ZA', options).format(amount);
+};
+
+const formatValue2 = (value: number) => {
   if (value > 0) {
-    return `R ${value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')}`;
+    return `R ${value.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')}`;
   } else {
     return `R 0`;
   }
