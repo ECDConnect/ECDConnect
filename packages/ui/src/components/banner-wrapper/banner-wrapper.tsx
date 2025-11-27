@@ -7,7 +7,7 @@ import {
 } from '@heroicons/react/solid';
 import { Colours, ComponentBaseProps } from '../../models';
 import Typography from '../typography/typography';
-import { classNames } from '../../utils/style-class.utils';
+import { classNames, ellipsisDescription } from '../../utils/style-class.utils';
 import { BannerHeaderSizes } from './models';
 import { StatusChip } from '../../components/status-chip/status-chip';
 import SideMenu from '../side-menu/side-menu';
@@ -147,8 +147,9 @@ export const BannerWrapper = React.forwardRef<
                   />
                   <Typography
                     type="help"
-                    text={subTitle}
+                    text={ellipsisDescription(subTitle, 32)}
                     color={'primaryAccent2'}
+                    className="overflow-ellipsis"
                   />
                 </div>
               </div>
