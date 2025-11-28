@@ -870,8 +870,6 @@ export const Dashboard: React.FC = () => {
     }
   };
 
-  console.log('shouldUserSyncOnline', shouldUserSyncOnline);
-
   useEffect(() => {
     if (isOnline && shouldUserSyncOnline) {
       dialog({
@@ -894,7 +892,7 @@ export const Dashboard: React.FC = () => {
                 await resetAppStore();
                 await resetAuth();
 
-                history.push(ROUTES.LOGIN);
+                return history.push(ROUTES.LOGIN);
               }}
             />
           );
