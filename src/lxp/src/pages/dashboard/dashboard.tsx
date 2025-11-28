@@ -15,7 +15,7 @@ import {
   ScoreCard,
   NoPointsScoreCard,
 } from '@ecdlink/ui';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useDocuments } from '@hooks/useDocuments';
@@ -867,33 +867,37 @@ export const Dashboard: React.FC = () => {
     }
   };
 
+  const hasShownModal = useRef(false);
+
   useEffect(() => {
-    if (isOnline && shouldUserSyncOnline) {
+    if (
+      !hasShownModal.current && // ← only once per mount (or reset when needed)
+      isOnline &&
+      shouldUserSyncOnline
+    ) {
+      hasShownModal.current = true; // mark as shown
+
       dialog({
         position: DialogPosition.Middle,
         blocking: true,
-        render: (closeDialog) => {
-          return (
-            <SyncTimeExceeded
-              onSubmit={async () => {
-                closeDialog();
+        render: (closeDialog) => (
+          <SyncTimeExceeded
+            onSubmit={async () => {
+              if (practitioner?.isPrincipal === true) {
+                await appDispatch(syncThunkActions.syncOfflineData({}));
+              } else {
+                await appDispatch(
+                  syncThunkActions.syncOfflineDataForPractitioner({})
+                );
+              }
 
-                if (practitioner?.isPrincipal === true) {
-                  await appDispatch(syncThunkActions.syncOfflineData({}));
-                } else {
-                  await appDispatch(
-                    syncThunkActions.syncOfflineDataForPractitioner({})
-                  );
-                }
-
-                await resetAppStore();
-                await resetAuth();
-
-                return history.push(ROUTES.LOGIN);
-              }}
-            />
-          );
-        },
+              await resetAppStore();
+              await resetAuth();
+              history.push(ROUTES.LOGIN);
+              closeDialog();
+            }}
+          />
+        ),
       });
     }
   }, [isOnline, shouldUserSyncOnline]);
