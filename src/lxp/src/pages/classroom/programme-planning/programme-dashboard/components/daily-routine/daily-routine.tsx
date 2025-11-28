@@ -126,10 +126,6 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     selectedDate
   );
 
-  // const { getAdditionalRecommendedSubCategories } =
-  //   useProgrammePlanningRecommendations();
-  // const additionalRecommendedActivities =
-  //   getAdditionalRecommendedSubCategories(programme);
   const isCurrentDayEmpty =
     !currentDailyProgramme?.largeGroupActivityId &&
     !currentDailyProgramme?.smallGroupActivityId &&
