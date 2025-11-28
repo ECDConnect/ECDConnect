@@ -867,15 +867,19 @@ export const Dashboard: React.FC = () => {
     }
   };
 
+  console.log('shouldUserSyncOnline', shouldUserSyncOnline);
+
   useEffect(() => {
     if (isOnline && shouldUserSyncOnline) {
       dialog({
         position: DialogPosition.Middle,
         blocking: true,
-        render: (onSubmit) => {
+        render: (closeDialog) => {
           return (
             <SyncTimeExceeded
               onSubmit={async () => {
+                closeDialog();
+
                 if (practitioner?.isPrincipal === true) {
                   await appDispatch(syncThunkActions.syncOfflineData({}));
                 } else {
@@ -883,11 +887,13 @@ export const Dashboard: React.FC = () => {
                     syncThunkActions.syncOfflineDataForPractitioner({})
                   );
                 }
+
                 await resetAppStore();
                 await resetAuth();
-                return history.push(ROUTES.LOGIN);
+
+                history.push(ROUTES.LOGIN);
               }}
-            ></SyncTimeExceeded>
+            />
           );
         },
       });
