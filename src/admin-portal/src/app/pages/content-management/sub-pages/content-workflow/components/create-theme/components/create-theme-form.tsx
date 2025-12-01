@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import DynamicSelector from '../../../../../../../components/dynamic-selector/dynamic-selector';
 import DynamicStaticSelector from '../../../../../../../components/dynamic-static-selector/dynamic-static-selector';
 import FormColorField from '../../../../../../../components/form-color-field/form-color-field';
@@ -24,6 +24,7 @@ import { useDialog } from '@ecdlink/core';
 import { InformationCircleIcon } from '@heroicons/react/solid';
 import { useWatch } from 'react-hook-form';
 import * as styles from '../../../../../../pages.styles';
+import ContentLoader from '../../../../../../../components/content-loader/content-loader';
 
 const acceptedFormats = ['svg', 'png', 'PNG', 'jpg', 'JPG', 'jpeg'];
 
@@ -57,6 +58,24 @@ const CreateThemeForm: React.FC<CreateThemeFormProps> = ({
   getValues,
 }) => {
   const { register, control, errors } = handleform;
+  const [isLoading, setIsLoading] = useState(true);
+
+  const isEdit = useMemo(
+    () => template?.fields?.some((f) => !!f.contentValue),
+    [template?.fields]
+  );
+
+  useEffect(() => {
+    if (isEdit) {
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 2500);
+      // Cleanup function to clear the timeout if the component unmounts
+      return () => clearTimeout(timer);
+    } else {
+      setIsLoading(false);
+    }
+  }, [isEdit]);
 
   const onStateChange = (name: string, state: any) => {
     setValue(name, state);
@@ -381,7 +400,15 @@ const CreateThemeForm: React.FC<CreateThemeFormProps> = ({
 
   return (
     <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-1">
-      {fields}
+      {isLoading ? (
+        <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-white">
+          <div className="flex flex-col items-center">
+            <ContentLoader />
+          </div>
+        </div>
+      ) : (
+        fields
+      )}
     </div>
   );
 };
