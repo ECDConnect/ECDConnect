@@ -65,12 +65,18 @@ export function ContentManagement() {
     fetchPolicy: 'cache-first',
   });
 
-  const { data: dataDefinitions, refetch: refrechDefinitions } = useQuery(
-    contentDefinitions,
-    {
-      fetchPolicy: 'cache-first',
+  const [
+    getContentDefinitions,
+    { data: dataDefinitions, refetch: refrechDefinitions },
+  ] = useLazyQuery(contentDefinitions, {
+    fetchPolicy: 'cache-first',
+  });
+
+  useEffect(() => {
+    if (!dataDefinitions) {
+      getContentDefinitions();
     }
-  );
+  }, []);
 
   useEffect(() => {
     if (dataTypes && dataTypes.contentTypes) {
