@@ -11,12 +11,10 @@ import {
 import { EditPlaygroupsRouteState } from '@/pages/practitioner/save-practitioner-playgroups/save-practitioner-playgroups.types';
 import ROUTES from '@/routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
-import { useSnackbar } from '@ecdlink/core';
 import { ActionModal } from '@ecdlink/ui';
 import { ActionModalButton } from '@ecdlink/ui/lib/components/action-modal/models/ActionModalButton';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router';
 
 interface ClassMenuProps {
   isPrincipal: boolean;
@@ -24,6 +22,7 @@ interface ClassMenuProps {
   className: string;
   onClose: () => void;
   setSelectedTabIndex: React.Dispatch<React.SetStateAction<number>>;
+  history: any;
 }
 
 export const ClassMenu = ({
@@ -32,14 +31,12 @@ export const ClassMenu = ({
   className,
   onClose,
   setSelectedTabIndex,
+  history,
 }: ClassMenuProps) => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
-  const history = useHistory();
-
-  const { showMessage } = useSnackbar();
   const tenant = useTenant();
   const isWhiteLabel = tenant?.isWhiteLabel;
   const isOpenAccess = tenant?.isOpenAccess;
@@ -69,11 +66,11 @@ export const ClassMenu = ({
           colour: 'quatenary',
           text: 'See children',
           type: 'filled',
-          onClick: () => {
-            history.push(ROUTES.CLASSROOM.CHILDREN, {
+          onClick: async () => {
+            onClose();
+            return history.push(ROUTES.CLASSROOM.CHILDREN, {
               classroomGroupId,
             } as ChildListRouteState);
-            onClose();
           },
           textColour: 'white',
         },
@@ -105,12 +102,12 @@ export const ClassMenu = ({
                 colour: 'quatenary',
                 text: 'Track child progress',
                 type: 'outlined',
-                onClick: () => {
+                onClick: async () => {
+                  onClose();
                   setSelectedTabIndex(TabsItems.PROGRESS);
-                  history.push(ROUTES.CLASSROOM.ROOT, {
+                  return history.push(ROUTES.CLASSROOM.ROOT, {
                     activeTabIndex: TabsItems.PROGRESS,
                   });
-                  onClose();
                 },
                 textColour: 'quatenary',
               },
