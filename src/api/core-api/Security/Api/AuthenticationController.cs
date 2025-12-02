@@ -650,7 +650,7 @@ namespace ECDLink.Security.Api
                 {
                     Id = userId,
                     UserName = addOAPractitionerModel.Username,
-                    PhoneNumber = addOAPractitionerModel.PhoneNumber,
+                    PhoneNumber = UserHelper.NormalizePhoneNumber(addOAPractitionerModel.PhoneNumber),
                     //PendingPhoneNumber = UserHelper.NormalizePhoneNumber(addOAPractitionerModel.PhoneNumber),
                     PhoneNumberConfirmed = true,
                     ContactPreference = MessageTypeConstants.SMS,
@@ -668,7 +668,7 @@ namespace ECDLink.Security.Api
                 {
                     Id = userId,
                     UserName = addOAPractitionerModel.Username,
-                    PhoneNumber = addOAPractitionerModel.PhoneNumber,
+                    PhoneNumber = UserHelper.NormalizePhoneNumber(addOAPractitionerModel.PhoneNumber),
                     PhoneNumberConfirmed = true,
                     ContactPreference = MessageTypeConstants.SMS,
                     TenantId = tenantId,
