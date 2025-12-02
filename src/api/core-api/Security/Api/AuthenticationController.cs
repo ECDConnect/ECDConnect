@@ -735,6 +735,14 @@ namespace ECDLink.Security.Api
             //await _notificationManager.SendOAWLAuthenticationCodeAsync(user, token);
             //return new OkObjectResult(token);
 
+            await _dbContext.MessageLogs
+                    .Where(m => m.TenantId == tenantId
+                            && (m.To == user.PendingPhoneNumber || m.To == user.PhoneNumber)
+                            && m.MessageTemplateType == TemplateTypeConstants.OAWLAuthCode
+                            && m.IsActive)
+                    .ExecuteUpdateAsync(setters => setters
+                        .SetProperty(m => m.IsActive, false));
+
             return Ok();
         }
 

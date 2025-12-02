@@ -128,16 +128,19 @@ export const OAAgreements: React.FC<OAAgreementsProps> = ({ closeAction }) => {
     []
   );
 
-  const onCellphoneVerified = useCallback((verified: boolean) => {
-    setOpenVerifyPhoneNumber(false);
+  const onCellphoneVerified = useCallback(
+    (verified: boolean) => {
+      setOpenVerifyPhoneNumber(false);
 
-    if (verified) {
-      history.push(ROUTES.CREATE_USERNAME, {
-        shareInfoPartners: shareConsent,
-        phoneNumber: phoneNumber,
-      });
-    }
-  }, []);
+      if (verified) {
+        history.push(ROUTES.CREATE_USERNAME, {
+          shareInfoPartners: shareConsent,
+          phoneNumber: phoneNumber,
+        });
+      }
+    },
+    [shareConsent, phoneNumber]
+  );
 
   return (
     <BannerWrapper
