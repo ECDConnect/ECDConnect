@@ -150,6 +150,9 @@ const ROUTES = {
     PROFILE: addPrefix('/profile', {
       EDIT: '/edit',
     }),
+    COACH_PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP:
+      '/coach-progress-view-reports-summary-select',
+    COACH_PROGRESS_VIEW_REPORTS_SUMMARY: '/coach-progress-view-reports-summary',
   }),
 };
 

@@ -1,5 +1,4 @@
 import { childrenSelectors } from '@/store/children';
-import { classroomsSelectors } from '@/store/classroom';
 import { progressTrackingSelectors } from '@/store/progress-tracking';
 import { staticDataSelectors } from '@/store/static-data';
 import {
@@ -7,13 +6,56 @@ import {
   mapProgressReportDetails,
 } from '@/utils/child/child-progress-report.utils';
 import { WorkflowStatusEnum } from '@ecdlink/graphql';
-import { differenceInMonths, format, isBefore } from 'date-fns';
-import { isAfter } from 'date-fns/esm';
+import { differenceInMonths, format, isBefore, isAfter } from 'date-fns';
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
+import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
+import { practitionerSelectors } from '@/store/practitioner';
 
-export const useProgressForChildren = (useNextPeriod?: boolean) => {
+export const useProgressForChildrenCoach = (
+  practitionerId?: string,
+  useSummaryPeriod?: boolean
+) => {
+  const coachClassrooms = useSelector(
+    classroomsForCoachSelectors.getClassroomForCoach
+  );
+  const practitionerClassroomGroups = useSelector(
+    classroomsForCoachSelectors.getClassroomGroupsForPractitioner(
+      practitionerId || ''
+    )
+  );
+
+  const practitioner = useSelector(
+    practitionerSelectors.getPractitionerByUserId(practitionerId || '')
+  );
+
+  const practitionerClassroom = practitioner?.isPrincipal
+    ? coachClassrooms?.find((item) => item?.userId === practitionerId)
+    : coachClassrooms?.find(
+        (item) => item?.id === practitionerClassroomGroups?.[0]?.classroomId
+      );
+
+  const classroomGroups = useSelector(
+    classroomsForCoachSelectors.getClassroomGroupsForClassroom(
+      practitionerClassroom?.id || ''
+    )
+  );
+
+  const learnersForPractitioner = practitioner?.isPrincipal
+    ? classroomGroups.flatMap((x) => x.learners)
+    : practitionerClassroomGroups.flatMap((x) => x.learners);
+
   const baseChildren = useSelector(childrenSelectors.getChildren);
+
+  const childrenForPractitionerList = useMemo(() => {
+    return (
+      baseChildren?.filter((child) =>
+        learnersForPractitioner?.some(
+          (learner) => learner.childUserId === child.userId
+        )
+      ) ?? []
+    );
+  }, [baseChildren, learnersForPractitioner]);
 
   const workflowStatus = useSelector(staticDataSelectors.getWorkflowStatuses);
 
@@ -30,23 +72,33 @@ export const useProgressForChildren = (useNextPeriod?: boolean) => {
   );
 
   const currentReportingPeriodForSummary = useSelector(
-    classroomsSelectors.getExpiredProgressReportPeriod()
+    classroomsForCoachSelectors.getExpiredProgressReportPeriod(
+      practitionerClassroom?.id
+    )
   );
 
   const nextReportingPeriod = useSelector(
-    classroomsSelectors.getNextProgressReportPeriod()
+    classroomsForCoachSelectors.getNextProgressReportPeriod(
+      practitionerClassroom?.id
+    )
   );
 
   const currentReportingPeriod = useSelector(
-    classroomsSelectors.getCurrentProgressReportPeriod()
+    classroomsForCoachSelectors.getCurrentProgressReportPeriod(
+      practitionerClassroom?.id
+    )
   );
 
   const isReportWindowSet = useSelector(
-    classroomsSelectors.getIsReportingPeriodsSet()
+    classroomsForCoachSelectors.getIsReportingPeriodsSet(
+      practitionerClassroom?.id
+    )
   );
 
   const allReportingPeriods = useSelector(
-    classroomsSelectors.getAllProgressReportPeriods()
+    classroomsForCoachSelectors.getAllProgressReportPeriods(
+      practitionerClassroom?.id
+    )
   );
 
   const isWithinReportPeriod = useMemo(() => {
@@ -61,17 +113,17 @@ export const useProgressForChildren = (useNextPeriod?: boolean) => {
   }, [currentReportingPeriod]);
 
   const reportingPeriod = useMemo(() => {
-    return isWithinReportPeriod
+    return useSummaryPeriod
+      ? currentReportingPeriodForSummary
+      : isWithinReportPeriod
       ? currentReportingPeriod
-      : useNextPeriod
-      ? nextReportingPeriod
-      : currentReportingPeriodForSummary;
+      : nextReportingPeriod;
   }, [
     currentReportingPeriod,
     currentReportingPeriodForSummary,
     isWithinReportPeriod,
     nextReportingPeriod,
-    useNextPeriod,
+    useSummaryPeriod,
   ]);
 
   const baseReports = useSelector(
@@ -81,7 +133,7 @@ export const useProgressForChildren = (useNextPeriod?: boolean) => {
   );
 
   const children = useMemo(() => {
-    return (baseChildren || [])
+    return (childrenForPractitionerList || [])
       .filter((x) => x.workflowStatusId === childActiveWorkflow?.id)
       .map((child) => ({
         childId: child.id || '',
@@ -94,7 +146,7 @@ export const useProgressForChildren = (useNextPeriod?: boolean) => {
           format(new Date(child?.user?.dateOfBirth), 'yyyy') != '0001'
             ? differenceInMonths(new Date(), new Date(child?.user?.dateOfBirth))
             : undefined,
-        ageGroup: !!reportingPeriod
+        ageGroup: reportingPeriod
           ? getProgressAgeGroupForChild(
               reportingPeriod.endDate,
               child!,
@@ -102,7 +154,7 @@ export const useProgressForChildren = (useNextPeriod?: boolean) => {
             )
           : undefined,
       }));
-  }, [baseChildren, reportingPeriod]);
+  }, [childrenForPractitionerList, reportingPeriod]);
 
   const childReports = useMemo(() => {
     return (children || [])
@@ -124,7 +176,7 @@ export const useProgressForChildren = (useNextPeriod?: boolean) => {
           ),
         };
       });
-  }, [baseChildren, baseReports, reportingPeriod]);
+  }, [childrenForPractitionerList, baseReports, reportingPeriod]);
 
   const ageGroupsAvailableForTracking = useMemo(() => {
     return allAgeGroups.filter((x) =>
@@ -153,14 +205,14 @@ export const useProgressForChildren = (useNextPeriod?: boolean) => {
   const isAllReportsComplete = useMemo(() => {
     // Report complete, or no age group (so no report can be created)
     return childReports.every((x) => !!x.report?.dateCompleted || !x.ageGroup);
-  }, [baseChildren, reportingPeriod, childReports]);
+  }, [childrenForPractitionerList, reportingPeriod, childReports]);
 
   const isAllObservationsComplete = useMemo(() => {
     // Report complete, or no age group (so no report can be created)
     return childReports.every(
       (x) => !!x.report?.observationsCompleteDate || !x.ageGroup
     );
-  }, [baseChildren, reportingPeriod, childReports]);
+  }, [childrenForPractitionerList, reportingPeriod, childReports]);
 
   const lastReport = useMemo(() => {
     if (!allReportingPeriods || allReportingPeriods.length === 0) return null;
