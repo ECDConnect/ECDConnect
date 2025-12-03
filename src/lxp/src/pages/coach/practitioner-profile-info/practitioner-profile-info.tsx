@@ -132,7 +132,9 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   });
 
   useEffect(() => {
-    appDispatch(getPractitionerTimeline({ userId: practitionerId }));
+    if (practitionerId) {
+      appDispatch(getPractitionerTimeline({ userId: practitionerId }));
+    }
   }, [appDispatch, practitionerId]);
 
   const validAbsenteesDates = practitionerAbsentees?.filter(

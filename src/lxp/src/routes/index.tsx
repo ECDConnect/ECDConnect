@@ -111,6 +111,8 @@ import { ObservationsForChild } from '@/pages/classroom/progress/observations-fo
 import { ObservationsForChildNotes } from '@/pages/classroom/progress/observations-for-child-landing/observations-for-child-landing-notes';
 import { ObservationsForChildLanding } from '@/pages/classroom/progress/observations-for-child-landing/observations-for-child-landing';
 import { HelpForm } from '@/components/help-form/help-form';
+import { CoachProgressViewReportsSummarySelectClassroomGroupAndAgeGroup } from '@pages/coach/coach-practitioner-classroom/components/view-reports-summary/view-reports-summary-select-class-and-age-group';
+import { CoachProgressViewReportsSummary } from '@pages/coach/coach-practitioner-classroom/components/view-reports-summary/view-reports-summary';
 
 const PublicRoutes: React.FC = () => {
   const tenant = useTenant();
@@ -589,6 +591,20 @@ const AuthRoutes: React.FC = () => {
         path={ROUTES.COACH.PRACTITIONER_BUSINESS.STATEMENT_DETAILS}
         component={PractitionerMonthStatements}
       />
+      <Route
+        path={
+          ROUTES.COACH
+            .COACH_PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP
+        }
+        component={
+          CoachProgressViewReportsSummarySelectClassroomGroupAndAgeGroup
+        }
+      />
+      <Route
+        path={ROUTES.COACH.COACH_PROGRESS_VIEW_REPORTS_SUMMARY}
+        component={CoachProgressViewReportsSummary}
+      />
+
       <Route render={() => <Redirect to={ROUTES.DASHBOARD} />} />
     </Switch>
   );
