@@ -230,6 +230,7 @@ export const PasswordInput = <T extends FieldValues>({
         {label}
       </label>
       {strengthMeterVisible &&
+        value?.length > 0 &&
         Object.values(passwordConstraintMessage).some((a) => !a) && (
           <ul className="mb-4 list-disc pl-5 text-black">
             {!passwordConstraintMessage.characterCount && (
