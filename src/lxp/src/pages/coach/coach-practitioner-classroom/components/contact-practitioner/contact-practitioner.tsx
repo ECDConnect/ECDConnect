@@ -196,7 +196,7 @@ export const ContactPractitioner: React.FC<ContactPractitionerProps> = ({
             )}
           </div>
 
-          <div className="mt-8">
+          <div className="flex-column mx-auto mt-8 w-11/12 items-center">
             <Typography type="h2" text={`Contact ${name}`} className="mb-2" />
             <Typography
               type="h5"
@@ -208,7 +208,7 @@ export const ContactPractitioner: React.FC<ContactPractitionerProps> = ({
               }
             />
 
-            <div className="mt-4 flex flex-col gap-3">
+            <div className="mt-4 flex justify-start gap-3">
               <Button
                 type="outlined"
                 color="secondary"
