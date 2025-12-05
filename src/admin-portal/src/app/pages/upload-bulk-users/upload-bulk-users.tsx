@@ -34,6 +34,7 @@ export default function UploadBulkUser(props: any) {
   const [templateDownloaded, setTemplateDownloaded] = useState<boolean>(false);
   const [docErrors, setDocErrors] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [userCount, setUserCount] = useState<number>(0);
   const [isLoadingCheckFile, setisLoadingCheckFile] = useState(false);
 
   const [getCoachesExcelTemplateGenerator, { data: coachesTemplateData }] =
@@ -223,6 +224,9 @@ export default function UploadBulkUser(props: any) {
       } else {
         setDisableAddButton(false);
         setUsersReadyToBeUpload(true);
+        setUserCount(
+          res.data?.validatePractitionerImportSheet?.createdUsers.length
+        );
         setNotification({
           title: `Check file passed!`,
           variant: NOTIFICATION.SUCCESS,
@@ -361,7 +365,7 @@ export default function UploadBulkUser(props: any) {
                   <div className="flex flex-col gap-4">
                     <Alert
                       className="mt-2 rounded-md"
-                      title={`Users ready for upload`}
+                      title={`${userCount || 0} users ready for upload`}
                       type="success"
                     />
                     <Alert
