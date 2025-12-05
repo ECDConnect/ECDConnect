@@ -281,7 +281,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     {
                         foreach (Learner learner in learners)
                         {
-                            if (learner.StartedAttendance >= fromDate)
+                            if (learner.StartedAttendance <= toDate)
                             {
                                 childCount++;
                                 var attendanceData = attendanceRepo.GetAllByDateRangeByClassroom(fromDate, toDate, group.Id, learner.UserId.ToString());
