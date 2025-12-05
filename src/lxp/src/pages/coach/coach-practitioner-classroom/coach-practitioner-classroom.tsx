@@ -206,7 +206,7 @@ export const CoachPractitionerClassroom: React.FC = () => {
         size="small"
         onBack={handleBack}
         displayOffline={!isOnline}
-        renderOverflow={false}
+        renderOverflow={true}
       >
         <div className="flex w-full flex-col items-center px-4 pb-6">
           {actionItems.length > 0 && (
