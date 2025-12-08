@@ -35,10 +35,12 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
   variation,
 }) => {
   const daysInMonth = getArrayRange(1, 31);
-  const years = getArrayRange(
-    subYears(new Date(), 10).getFullYear(),
-    new Date().getFullYear()
-  );
+  const currentYear = new Date().getFullYear();
+  const years: number[] = [];
+  for (let year = currentYear - 10; year <= currentYear; year++) {
+    years.push(year);
+  }
+
   const [dayDropDownList, setDayDropDownList] = useState<
     DropDownOption<number>[]
   >([]);
@@ -108,7 +110,7 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
   const validateDateOfBirth = () => {
     const alertsArray: AlertProps[] = [];
 
-    if (!dobDay || !dobMonth || !dobYear) {
+    if (!dobDay || !dobMonth || !dobYear || dobYear === 1) {
       setChildInformationFormValue('dobValid', false);
       return;
     }
@@ -240,9 +242,12 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
           placeholder={'Year'}
           textColor="textMid"
           list={yearDropDownList}
-          selectedValue={getChildInformationFormValues().dobYear}
+          selectedValue={getChildInformationFormValues().dobYear || undefined}
           onChange={(item) => {
-            setChildInformationFormValue('dobYear', item as number);
+            setChildInformationFormValue(
+              'dobYear',
+              (item as number) || undefined
+            );
           }}
         />
       </div>

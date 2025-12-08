@@ -30,6 +30,7 @@ import Editor from '../../../../components/form-markdown-editor/form-markdown-ed
 import { InformationCircleIcon } from '@heroicons/react/solid';
 import { ContentTypeDto, useDialog } from '@ecdlink/core';
 import * as styles from '../../../pages.styles';
+import ContentLoader from '../../../../components/content-loader/content-loader';
 
 const acceptedFormats = ['svg', 'png', 'jpg', 'jpeg'];
 const acceptedVideoFormats = ['mp4'];
@@ -75,6 +76,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   contentType,
 }) => {
   const { register, control, errors } = handleform;
+  const [isLoading, setIsLoading] = useState(true);
 
   const dialog = useDialog();
   const isEdit = template && template.fields.some((f) => !!f.contentValue);
@@ -224,6 +226,18 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
     setDisableActivitiesInputs(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contentView?.content]);
+
+  useEffect(() => {
+    if (isEdit) {
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 2500);
+      // Cleanup function to clear the timeout if the component unmounts
+      return () => clearTimeout(timer);
+    } else {
+      setIsLoading(false);
+    }
+  }, [isEdit]);
 
   useEffect(() => {
     if (contentType.name === ContentTypes.ACTIVITY && contentView?.content) {
@@ -905,7 +919,15 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
 
   return (
     <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-1">
-      {fields}
+      {isLoading ? (
+        <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-white">
+          <div className="flex flex-col items-center">
+            <ContentLoader />
+          </div>
+        </div>
+      ) : (
+        fields
+      )}
     </div>
   );
 };

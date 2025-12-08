@@ -46,16 +46,20 @@ export const formatCurrentValue = (value: number) => {
 export const getStatementIncomeTotal = (
   statement: IncomeStatementDto | undefined
 ) =>
-  statement?.incomeItems.reduce((total, item) => {
-    return total + item.amount;
-  }, 0) ?? 0;
+  statement?.incomeItems
+    .filter((x) => x.isActive)
+    .reduce((total, item) => {
+      return total + item.amount;
+    }, 0) ?? 0;
 
 export const getStatementExpenseTotal = (
   statement: IncomeStatementDto | undefined
 ) =>
-  statement?.expenseItems.reduce((total, item) => {
-    return total + item.amount;
-  }, 0) ?? 0;
+  statement?.expenseItems
+    .filter((x) => x.isActive)
+    .reduce((total, item) => {
+      return total + item.amount;
+    }, 0) ?? 0;
 
 export const getStatementBalance = (
   statement: IncomeStatementDto | undefined

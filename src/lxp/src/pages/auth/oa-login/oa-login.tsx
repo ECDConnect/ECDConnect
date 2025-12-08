@@ -1,8 +1,8 @@
 import {
   LoginRequestModel,
-  Config,
   LocalStorageKeys,
   useDialog,
+  LoginType,
 } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
@@ -17,9 +17,9 @@ import {
   DialogPosition,
   ActionModal,
 } from '@ecdlink/ui';
-import { useEffect, useMemo, useState } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
-import { useHistory } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { useHistory, useLocation } from 'react-router';
 import * as styles from './oa-login.styles';
 import { useAppDispatch } from '@store';
 import { authActions, authThunkActions } from '@store/auth';
@@ -38,18 +38,39 @@ import {
   initialOaLoginValues,
   oaLoginSchema,
 } from '@/schemas/auth/login/oa-login';
-import { AuthService } from '@/services/AuthService';
 import { VerifyPhoneNumberAuthCode } from '@/components/user-registration/components/verify-phone-number';
 import { useTenant } from '@/hooks/useTenant';
 import { getLogo, LogoSvgs } from '@/utils/common/svg.utils';
 import { HelpForm } from '@/components/help-form/help-form';
+import {
+  /*CodeResponse,*/
+  CredentialResponse,
+  GoogleLogin /*,
+  useGoogleLogin,*/,
+} from '@react-oauth/google';
+import jwtDecode from 'jwt-decode';
 
 const CryptoJS = require('crypto-js');
 const { version } = require('../../../../package.json');
 
+enum LoginErrorEnum {
+  None,
+  DetailsIncorrect,
+  StrugglingLogin,
+  UserAlreadyLoggedIn,
+}
+
+interface LoginRouteState {
+  username?: string;
+  password?: string;
+  loginType?: LoginType;
+  googleToken?: string;
+}
+
 export const OaLogin: React.FC = () => {
   const appDispatch = useAppDispatch();
   const history = useHistory();
+  const { state } = useLocation<LoginRouteState>();
   const [displayError, setDisplayError] = useState('');
   const [loginAttempts, setLoginAttempts] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -62,15 +83,28 @@ export const OaLogin: React.FC = () => {
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
-  const ERROR_NONE = '';
-  const ERROR_DETAILS_INCORRECT =
-    'Password or username incorrect. Please try again.';
-  const ERROR_STRUGGLING_LOGIN = tenant.isOpenAccess
-    ? 'Struggling to log in? Send a message to our help line!'
-    : 'Struggling to log in? Please fill in the help form.';
-  const ERROR_USER_ALREADY_LOGGED_IN = `Another user is already logged in on this device. Please try again ${
-    isOnline ? '' : 'when you are online'
-  }`;
+  const getDisplayErrorMessage = (
+    loginError: LoginErrorEnum,
+    isGoogle?: boolean
+  ): string => {
+    switch (loginError) {
+      case LoginErrorEnum.None:
+        return '';
+      case LoginErrorEnum.DetailsIncorrect:
+        return isGoogle
+          ? 'No user account associated with this Google account. Please try again.'
+          : 'Password or username incorrect. Please try again.';
+      case LoginErrorEnum.StrugglingLogin:
+        return tenant.isOpenAccess
+          ? 'Struggling to log in? Send a message to our help line!'
+          : 'Struggling to log in? Please fill in the help form.';
+      case LoginErrorEnum.UserAlreadyLoggedIn:
+        return `Another user is already logged in on this device. Please try again ${
+          isOnline ? '' : 'when you are online'
+        }`;
+    }
+  };
+
   const STRUGGLING_LOGIN_ATTEMPTS = 5;
 
   navigator?.storage?.estimate().then((estimate) => {
@@ -91,33 +125,38 @@ export const OaLogin: React.FC = () => {
     register: loginRegister,
     formState: loginFormState,
     getValues: loginFormGetValues,
-    control,
   } = useForm({
     resolver: yupResolver(oaLoginSchema),
-    defaultValues: initialOaLoginValues,
+    defaultValues:
+      state?.loginType === 'username'
+        ? ({
+            username: state?.username || '',
+            password: state?.password || '',
+          } as OaLoginModel)
+        : initialOaLoginValues,
     mode: 'onChange',
   });
   const { isValid, errors } = loginFormState;
-  const { username, password } = useWatch({ control });
   const dialog = useDialog();
 
-  const userHash = CryptoJS.AES.encrypt(password, 'user pass').toString();
-  const userIdHash = CryptoJS.AES.encrypt(username, 'user id').toString();
   const userLocalxpiration = Date.now() + 3600000000;
-  const currentUserId = JSON.parse(localStorage?.getItem('userIdHash')!);
   const [openVerifyPhoneNumber, setOpenVerifyPhoneNumber] = useState(false);
 
-  const userIdHashDecrypted = useMemo(
-    () => (currentUserId ? CryptoJS.AES.decrypt(currentUserId, 'user id') : ''),
-    [currentUserId]
-  );
-  const userIdHashDecryptedToString = useMemo(
-    () =>
-      userIdHashDecrypted
-        ? userIdHashDecrypted.toString(CryptoJS.enc.Utf8)
-        : '',
-    [userIdHashDecrypted]
-  );
+  const getCurrentUserId = (): string => {
+    const userIdHash = localStorage.getItem('userIdHash') || '';
+    if (!userIdHash) return '';
+    const currentUserId = JSON.parse(userIdHash);
+    return currentUserId;
+  };
+
+  const decryptCurrentUserId = (): string => {
+    const currentUserId = getCurrentUserId();
+    const d = currentUserId
+      ? CryptoJS.AES.decrypt(currentUserId, 'user id')
+      : '';
+    const s = d ? d.toString(CryptoJS.enc.Utf8) : '';
+    return s;
+  };
 
   const login = async () => {
     appDispatch(settingActions.setApplicationVersion(version));
@@ -135,9 +174,9 @@ export const OaLogin: React.FC = () => {
     history.push(ROUTES.DASHBOARD, { isFromLogin: true });
   };
 
-  const checkSyncData = async () => {
+  const checkSyncData = async (username: string) => {
     if (
-      username !== userIdHashDecryptedToString &&
+      username !== decryptCurrentUserId() &&
       !!practitioner /* &&
       isOnline*/
     ) {
@@ -153,97 +192,111 @@ export const OaLogin: React.FC = () => {
     }
   };
 
-  const checkUserAuthCode = async () => {
-    setIsLoading(true);
-    const result = await new AuthService()
-      .VerifyOaAuthCodeStatus(Config.authApi, {
-        username: loginFormGetValues().username,
-      })
-      .catch((error) => {
-        setIsLoading(false);
-      });
-    setIsLoading(false);
-    return result;
+  const loginOffline = async (loginRequest: LoginRequestModel) => {
+    const decryptedCurrentUserId = decryptCurrentUserId();
+    if (loginRequest.username === decryptedCurrentUserId) {
+      setDisplayError(getDisplayErrorMessage(LoginErrorEnum.None));
+      login();
+    } else {
+      setLoginAttempts(loginAttempts + 1);
+      setDisplayError(
+        loginAttempts + 1 >= STRUGGLING_LOGIN_ATTEMPTS
+          ? getDisplayErrorMessage(LoginErrorEnum.StrugglingLogin)
+          : getDisplayErrorMessage(LoginErrorEnum.UserAlreadyLoggedIn)
+      );
+      setIsLoading(false);
+    }
   };
 
   const submitForm = async () => {
-    setDisplayError(ERROR_NONE);
+    setDisplayError(getDisplayErrorMessage(LoginErrorEnum.None));
 
-    const userAuthCode = await checkUserAuthCode();
-
-    if (isValid) {
-      if (freeMemory > 200 || freeMemory === 0) {
-        setIsLoading(true);
-        const body: LoginRequestModel = {
-          username: loginFormGetValues().username,
-          password: loginFormGetValues().password,
-        };
-
-        if (currentUserId && !isOnline) {
-          if (username === userIdHashDecryptedToString) {
-            setDisplayError(ERROR_NONE);
-            login();
-          } else {
-            setLoginAttempts(loginAttempts + 1);
-            setDisplayError(
-              loginAttempts + 1 >= STRUGGLING_LOGIN_ATTEMPTS
-                ? ERROR_STRUGGLING_LOGIN
-                : ERROR_USER_ALREADY_LOGGED_IN
-            );
-            setIsLoading(false);
-          }
-
-          return;
-        }
-
-        await checkSyncData();
-
-        localStorage.setItem('userHash', JSON.stringify(userHash));
-        localStorage.setItem('userIdHash', JSON.stringify(userIdHash));
-        localStorage.setItem(
-          'userLocalxpiration',
-          JSON.stringify(userLocalxpiration)
-        );
-
-        setDisplayError(ERROR_NONE);
-        appDispatch(authThunkActions.login(body))
-          .then((isAuthenticated: any) => {
-            if (
-              isAuthenticated &&
-              isAuthenticated?.error === undefined &&
-              isAuthenticated?.payload?.response?.status !== 401
-            ) {
-              if (userAuthCode === true) {
-                setOpenVerifyPhoneNumber(true);
-                return;
-              }
-              login();
-            } else {
-              setLoginAttempts(loginAttempts + 1);
-              setDisplayError(
-                loginAttempts + 1 >= STRUGGLING_LOGIN_ATTEMPTS
-                  ? ERROR_STRUGGLING_LOGIN
-                  : ERROR_DETAILS_INCORRECT
-              );
-              setIsLoading(false);
-              if (isAuthenticated?.payload?.lockedOut === true) {
-                handleUserLockedOut();
-              }
-            }
-          })
-          .catch((err) => {
-            setLoginAttempts(loginAttempts + 1);
-            setDisplayError(
-              loginAttempts + 1 >= STRUGGLING_LOGIN_ATTEMPTS
-                ? ERROR_STRUGGLING_LOGIN
-                : ERROR_DETAILS_INCORRECT
-            );
-            setIsLoading(false);
-          });
-      } else {
-        setErrorMessage(true);
-      }
+    if (!(freeMemory > 200 || freeMemory === 0)) {
+      setErrorMessage(true);
+      return;
     }
+
+    if (!isValid) return;
+
+    const loginRequest: LoginRequestModel = {
+      username: loginFormGetValues().username,
+      password: loginFormGetValues().password,
+    };
+
+    const currentUserId = getCurrentUserId();
+    if (currentUserId && !isOnline) {
+      await loginOffline(loginRequest);
+      return;
+    }
+
+    await preLogin(loginRequest);
+  };
+
+  const preLogin = async (loginRequest: LoginRequestModel) => {
+    setIsLoading(true);
+
+    await checkSyncData(loginRequest.username || '');
+
+    localStorage.setItem('userHash', '');
+    localStorage.setItem('userIdHash', '');
+
+    setDisplayError(getDisplayErrorMessage(LoginErrorEnum.None));
+    appDispatch(authThunkActions.login(loginRequest))
+      .then((isAuthenticated: any) => {
+        if (
+          isAuthenticated &&
+          isAuthenticated?.error === undefined &&
+          isAuthenticated?.payload?.response?.status !== 401
+        ) {
+          const userHash = CryptoJS.AES.encrypt(
+            loginRequest.password,
+            'user pass'
+          ).toString();
+          const userIdHash = CryptoJS.AES.encrypt(
+            loginRequest.username,
+            'user id'
+          ).toString();
+
+          localStorage.setItem('userHash', JSON.stringify(userHash));
+          localStorage.setItem('userIdHash', JSON.stringify(userIdHash));
+          localStorage.setItem(
+            'userLocalxpiration',
+            JSON.stringify(userLocalxpiration)
+          );
+
+          if (isAuthenticated.payload.userMustConfirmAuthCode === true) {
+            setOpenVerifyPhoneNumber(true);
+            return;
+          }
+          login();
+        } else {
+          setLoginAttempts(loginAttempts + 1);
+          setDisplayError(
+            loginAttempts + 1 >= STRUGGLING_LOGIN_ATTEMPTS
+              ? getDisplayErrorMessage(LoginErrorEnum.StrugglingLogin)
+              : getDisplayErrorMessage(
+                  LoginErrorEnum.DetailsIncorrect,
+                  !!loginRequest.googleToken
+                )
+          );
+          setIsLoading(false);
+          if (isAuthenticated?.payload?.lockedOut === true) {
+            handleUserLockedOut();
+          }
+        }
+      })
+      .catch((err) => {
+        setLoginAttempts(loginAttempts + 1);
+        setDisplayError(
+          loginAttempts + 1 >= STRUGGLING_LOGIN_ATTEMPTS
+            ? getDisplayErrorMessage(LoginErrorEnum.StrugglingLogin)
+            : getDisplayErrorMessage(
+                LoginErrorEnum.DetailsIncorrect,
+                !!loginRequest.googleToken
+              )
+        );
+        setIsLoading(false);
+      });
   };
 
   const forgotPasswordClicked = () => {
@@ -342,10 +395,38 @@ export const OaLogin: React.FC = () => {
     }
   }, [userAgent]);
 
+  useEffect(() => {
+    if (state?.loginType === 'username' && isValid) {
+      submitForm();
+    } else if (state?.loginType === 'google') {
+      preLogin({
+        username: state?.username,
+        password: '',
+        googleToken: state?.googleToken,
+      });
+    }
+  }, [state, isValid]);
+
   const backToPromptScreen = () => {
     history.push('/');
   };
 
+  const onGoogleLoginSuccess = (response: CredentialResponse) => {
+    const credential = response.credential || '';
+    const decoded = jwtDecode<any>(credential);
+    const email = decoded.email;
+    preLogin({
+      username: email,
+      password: '',
+      googleToken: credential,
+    });
+  };
+  const onGoogleLoginError = () => {
+    console.log('Google Login failed.');
+  };
+
+  const username = loginFormGetValues().username || '';
+  const password = loginFormGetValues().password || '';
   return (
     <BannerWrapper
       showBackground={false}
@@ -360,6 +441,37 @@ export const OaLogin: React.FC = () => {
         <Dialog fullScreen visible={errorMessage} position={DialogPosition.Top}>
           <StorageFull />
         </Dialog>
+        {isOnline && !!process.env.REACT_APP_GOOGLE_CLIENT_ID && (
+          <div className="mb-6">
+            <div className="mb-6 flex justify-center">
+              <GoogleLogin
+                onSuccess={(credentialResponse) =>
+                  onGoogleLoginSuccess(credentialResponse)
+                }
+                onError={() => onGoogleLoginError()}
+                type="standard"
+                text="signin_with"
+                logo_alignment="center"
+                size="medium"
+                width={300}
+              />
+            </div>
+            {/* <div>
+              <Button
+                id="gtm-login"
+                className={'mt-3 mb-8 w-full'}
+                type="outlined"
+                isLoading={isLoading}
+                color="textLight"
+                disabled={false}
+                onClick={onGoogleLoginCustom}
+              >
+                <Typography type="button" color="textDark" text={'Sign in with Google (custom button)'}></Typography>
+              </Button>
+            </div>*/}
+            <Divider title="OR" />
+          </div>
+        )}
         <form>
           <div>
             <FormInput<OaLoginModel>
@@ -403,7 +515,8 @@ export const OaLogin: React.FC = () => {
                 title={displayError}
                 type={'error'}
                 button={
-                  displayError === ERROR_STRUGGLING_LOGIN ? (
+                  displayError ===
+                  getDisplayErrorMessage(LoginErrorEnum.StrugglingLogin) ? (
                     <Button
                       text="Get help"
                       icon={

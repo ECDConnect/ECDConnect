@@ -12,6 +12,7 @@ import { ContactCaregivers } from '@child-p/contact-caregivers/contact-caregiver
 import { ContactChildCaregiver } from '@child-p/contact-child-caregiver/contact-child-caregiver';
 import { EditChildInformation } from '@child-p/edit-child-information/edit-child-information';
 import RemoveChild from '@child-p/remove-child/remove-child';
+import PreschoolFees from '@/pages/child/child-preschool-fees/preschool-fees';
 import { ClassDashboard } from '@classroom-p/class-dashboard/class-dashboard';
 import ProgrammeTutorial from '@programme-planning-p/programme-planning-information/programme-tutorial/programme-tutorial';
 import ProgrammePlanningDailyRoutine from '@programme-planning-p/programme-planning-information/sub-pages/programme-planning-daily-routine/programme-planning-daily-routine';
@@ -110,6 +111,8 @@ import { ObservationsForChild } from '@/pages/classroom/progress/observations-fo
 import { ObservationsForChildNotes } from '@/pages/classroom/progress/observations-for-child-landing/observations-for-child-landing-notes';
 import { ObservationsForChildLanding } from '@/pages/classroom/progress/observations-for-child-landing/observations-for-child-landing';
 import { HelpForm } from '@/components/help-form/help-form';
+import { CoachProgressViewReportsSummarySelectClassroomGroupAndAgeGroup } from '@pages/coach/coach-practitioner-classroom/components/view-reports-summary/view-reports-summary-select-class-and-age-group';
+import { CoachProgressViewReportsSummary } from '@pages/coach/coach-practitioner-classroom/components/view-reports-summary/view-reports-summary';
 
 const PublicRoutes: React.FC = () => {
   const tenant = useTenant();
@@ -417,6 +420,7 @@ const AuthRoutes: React.FC = () => {
         component={ChildAttendanceReportPage}
       />
       <Route path={ROUTES.REMOVE_CHILD} component={RemoveChild} />
+      <Route path={ROUTES.CHILD_PRESCHOOL_FEES} component={PreschoolFees} />
 
       <Route
         path={ROUTES.PROGRESS_SETUP_REPORTING_PERIODS}
@@ -587,6 +591,20 @@ const AuthRoutes: React.FC = () => {
         path={ROUTES.COACH.PRACTITIONER_BUSINESS.STATEMENT_DETAILS}
         component={PractitionerMonthStatements}
       />
+      <Route
+        path={
+          ROUTES.COACH
+            .COACH_PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP
+        }
+        component={
+          CoachProgressViewReportsSummarySelectClassroomGroupAndAgeGroup
+        }
+      />
+      <Route
+        path={ROUTES.COACH.COACH_PROGRESS_VIEW_REPORTS_SUMMARY}
+        component={CoachProgressViewReportsSummary}
+      />
+
       <Route render={() => <Redirect to={ROUTES.DASHBOARD} />} />
     </Switch>
   );

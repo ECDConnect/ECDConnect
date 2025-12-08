@@ -6,7 +6,13 @@ import './styles.css';
 import { TenantContextProvider } from './app/hooks/useTenant';
 
 ReactDOM.render(
-  <ConfigProvider>
+  <ConfigProvider
+    config={{
+      authApi: process.env.REACT_APP_API || '',
+      graphQlApi: process.env.REACT_APP_GRAPHQLAPI || '',
+      themeUrl: process.env.REACT_APP_THEME || '',
+    }}
+  >
     <SnackbarProvider>
       <TenantContextProvider>
         <ConfigWrapper />

@@ -149,6 +149,11 @@ class ClassroomService {
           classroomImageUrl
           numberPractitioners
           isPrinciple
+          childProgressReportPeriods {
+            id
+            startDate
+            endDate
+          }
           siteAddress {
             id
             name

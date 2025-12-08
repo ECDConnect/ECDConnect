@@ -1,7 +1,7 @@
 import * as Yup from 'yup';
 
 export interface OaLoginModel {
-  username: '';
+  username: string;
   password: string;
 }
 

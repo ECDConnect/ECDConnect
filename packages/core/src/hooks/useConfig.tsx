@@ -6,7 +6,7 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { Config } from '../config';
+import { Config, ConfigType } from '../config';
 
 export interface ConfigContextType {
   children: React.ReactNode | React.ReactNode[] | null;
@@ -15,7 +15,13 @@ export interface ConfigContextType {
 
 const configContext = createContext<ConfigContextType>({} as ConfigContextType);
 
-function ConfigProvider({ children }: { children: ReactNode }): JSX.Element {
+function ConfigProvider({
+  config,
+  children,
+}: {
+  config: ConfigType;
+  children: ReactNode;
+}): JSX.Element {
   const [loading, setLoading] = useState<boolean>(true);
 
   const getData = () => {
@@ -40,7 +46,14 @@ function ConfigProvider({ children }: { children: ReactNode }): JSX.Element {
   };
 
   useEffect(() => {
-    getData();
+    if (config.authApi) {
+      setLoading(false);
+      Config.authApi = config.authApi;
+      Config.graphQlApi = config.graphQlApi;
+      Config.themeUrl = config.themeUrl;
+    } else {
+      getData();
+    }
   }, []);
 
   const memoedValue = useMemo(

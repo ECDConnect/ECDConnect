@@ -203,6 +203,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     JoinReferencePanel = caregiver.JoinReferencePanel,
                     PhoneNumber = caregiver.PhoneNumber,
                     RelationId = caregiver.RelationId,
+                    TenantId = tenantId,
                     SiteAddress = new SiteAddress
                     {
                         AddressLine1 = siteAddress.AddressLine1,

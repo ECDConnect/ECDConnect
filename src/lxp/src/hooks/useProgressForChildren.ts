@@ -7,7 +7,7 @@ import {
   mapProgressReportDetails,
 } from '@/utils/child/child-progress-report.utils';
 import { WorkflowStatusEnum } from '@ecdlink/graphql';
-import { differenceInMonths, format, isBefore, parseISO } from 'date-fns';
+import { differenceInMonths, format, isBefore } from 'date-fns';
 import { isAfter } from 'date-fns/esm';
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';

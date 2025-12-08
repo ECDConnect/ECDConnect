@@ -104,7 +104,7 @@ export default function StoryBookList({
   `;
 
   const { data: themeData } = useQuery(query, {
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: 'cache-first',
     variables: {
       localeId: LanguageId.enZa,
     },

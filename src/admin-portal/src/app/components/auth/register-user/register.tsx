@@ -1,23 +1,36 @@
+import * as Yup from 'yup';
 import {
   Config,
   initialRegisterValues,
   RegisterRequestModel,
-  registerSchema,
   useTheme,
 } from '@ecdlink/core';
 import { Alert, Button, Divider, Typography } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { RouteComponentProps, useHistory, useParams } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
 import FormField from '../../form-field/form-field';
 import logo from '../../../../assets/Logo-ECDConnect.svg';
 import { PasswordInput } from '../../password-input/password-input';
+import { useTenant } from '../../../hooks/useTenant';
 
 interface RouteParams {
   resetToken: string;
 }
+
+export const registerSchema = Yup.object().shape({
+  username: Yup.string()
+    .required('Email address is required')
+    .email('Please enter a valid email address')
+    .trim(),
+  password: Yup.string().required('Password is required'),
+  acceptedTerms: Yup.boolean().oneOf(
+    [true],
+    'You must accept the terms and conditions'
+  ),
+});
 
 export default function Register(props: RouteComponentProps<RouteParams>) {
   const { registerUser, logout } = useAuth();
@@ -26,21 +39,26 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
   const [displayError, setDisplayError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { resetToken } = useParams<RouteParams>();
+  const tenant = useTenant();
 
-  const { register, getValues, formState, watch } = useForm({
+  const { register, getValues, formState, control, setValue } = useForm<{
+    username: string;
+    password: string;
+    acceptedTerms: boolean;
+  }>({
     resolver: yupResolver(registerSchema),
-    defaultValues: initialRegisterValues,
+    defaultValues: {
+      username: '',
+      password: '',
+      acceptedTerms: false,
+    },
     mode: 'onChange',
   });
-
-  //check password strength
-  const username = watch('username');
+  const { password, username, acceptedTerms } = useWatch({ control });
 
   const { errors, isValid } = formState;
   const formValues = getValues();
-
-  const termsState = watch('acceptedTerms');
-  const acceptedTerms = termsState && isValid;
+  const canSubmit = acceptedTerms && isValid;
 
   const registerNewUser = async () => {
     if (isValid) {
@@ -77,7 +95,9 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
 
   const getLogoUrl = () => {
     if (theme && theme.images) {
-      return <img className="h-100 w-150" src={logo} alt="Login Logo" />;
+      return (
+        <img className="h-100 w-150 justify-left" src={logo} alt="Login Logo" />
+      );
     } else {
       return <div className="h-32 w-32">&nbsp;</div>;
     }
@@ -86,11 +106,15 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
   return (
     <div className="darkBackground flex min-h-screen items-center justify-center">
       <div className="m-8 rounded-xl bg-white p-8 shadow lg:w-1/3">
-        <div className="flex flex-shrink-0 items-center justify-center">
+        <div className="justify-left flex flex-shrink-0 items-center">
           {getLogoUrl()}
         </div>
         <div className="flex flex-shrink-0 items-center justify-center">
-          <h2 className="font-h1 textLight mt-6 text-2xl">Register</h2>
+          <Typography
+            className="font-h1 textLight mt-6 text-2xl"
+            type="h2"
+            text={`Register for ${tenant?.tenant?.applicationName}`}
+          ></Typography>
         </div>
         <div className="mt-8">
           <div className="mt-6">
@@ -106,6 +130,13 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
                     'Make sure to use the same address where you received the invitation email.',
                   ]}
                   placeholder="e.g. work@email.com"
+                  onChange={async (event) => {
+                    console.log('On change');
+                    const newEmail = event.target.value;
+                    setValue('username', newEmail, {
+                      shouldValidate: true,
+                    });
+                  }}
                 />
               </div>
 
@@ -114,10 +145,10 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
                   label={'Password'}
                   nameProp={'password'}
                   sufficIconColor="black"
-                  value={formValues.password}
                   register={register}
                   strengthMeterVisible={true}
-                  className="mb-9 "
+                  className="mb-9"
+                  value={password}
                 />
               </div>
               <Divider></Divider>
@@ -149,7 +180,7 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
                   type="filled"
                   isLoading={isLoading}
                   color="secondary"
-                  disabled={!acceptedTerms}
+                  disabled={!canSubmit}
                   onClick={registerNewUser}
                 >
                   <Typography

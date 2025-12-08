@@ -1079,7 +1079,7 @@ export const Dashboard: React.FC = () => {
         }}
         onAvatarSelect={goToProfile}
         showBackground
-        size="large"
+        size={dashboardNotification ? 'large' : 'medium'}
         renderBorder={true}
         backgroundUrl={TransparentLayer}
         className={styles.bannerContent}
@@ -1092,7 +1092,7 @@ export const Dashboard: React.FC = () => {
           text={name}
           className={styles.welcomeText}
         />
-        <div className={`${styles.wrapper} pb-4`}>
+        <div className={`${styles.wrapper} mt-4 pb-4`}>
           <DashboardItems
             listItems={dashboardItems}
             notification={dashboardNotification}

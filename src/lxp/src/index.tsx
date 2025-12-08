@@ -33,7 +33,13 @@ pwa.addInstallEventListeners();
 
 console.log('[REACT] render app');
 ReactDOM.render(
-  <ConfigProvider>
+  <ConfigProvider
+    config={{
+      authApi: process.env.REACT_APP_API || '',
+      graphQlApi: process.env.REACT_APP_GRAPHQLAPI || '',
+      themeUrl: process.env.REACT_APP_THEME || '',
+    }}
+  >
     <ConfigWrapper />
   </ConfigProvider>,
   document.getElementById('root')
