@@ -82,6 +82,7 @@ import { ChildListRouteState } from '@/pages/classroom/child-list/child-list.typ
 import { useTenantModules } from '@/hooks/useTenantModules';
 import { ProgressWalkthroughStart } from '@/pages/classroom/progress/walkthrough/progress-walkthrough-start';
 import TransparentLayer from '../../../assets/TransparentLayer.png';
+import { statementsSelectors } from '@/store/statements';
 
 const baseNotificationListItem: ListItemProps = {
   key: 'message-caregiver',
@@ -200,6 +201,10 @@ export const ChildProfile: React.FC = () => {
   const { isLoading } = useThunkFetchCall(
     'children',
     ChildrenActions.UPDATE_CHILD
+  );
+
+  const preschoolFees = useSelector(
+    statementsSelectors.getTotalPreschoolFeesForChild(child?.userId || '')
   );
 
   const childBirthDate = useMemo(
@@ -627,6 +632,30 @@ export const ChildProfile: React.FC = () => {
             isFromEditClass: true,
             playgroupEdit: true,
           });
+        },
+      },
+      {
+        key: 'fees',
+        title: 'Preschool fees',
+        subTitle:
+          preschoolFees > 0
+            ? `R ${preschoolFees} paid in ${new Date().getFullYear()}`
+            : 'No preschool fees paid',
+        subTitleColor: preschoolFees > 0 ? 'successDark' : 'alertDark',
+        subTitleShape: preschoolFees > 0 ? 'circle' : 'square',
+        buttonType: 'filled',
+        buttonIcon: 'EyeIcon',
+        buttonText: 'View',
+        buttonTextColor: 'secondary',
+        buttonColor: 'secondaryAccent2',
+        showButton: true,
+        showSubTitleShape: true,
+        withPaddingY: true,
+        showDivider: true,
+        withBorderRadius: false,
+        dividerType: 'dashed',
+        onButtonClick: () => {
+          history.push(ROUTES.CHILD_PRESCHOOL_FEES, { childId: child?.id });
         },
       },
       getNoteProfileOption(),

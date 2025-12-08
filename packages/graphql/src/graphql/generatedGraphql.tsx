@@ -303,10 +303,12 @@ export type ApplicationUser = {
   emergencyContactFullName?: Maybe<Scalars['String']>;
   emergencyContactPhoneNumber?: Maybe<Scalars['String']>;
   emergencyContactSurname?: Maybe<Scalars['String']>;
+  facebookAccount: Scalars['Boolean'];
   firstName?: Maybe<Scalars['String']>;
   fullName?: Maybe<Scalars['String']>;
   gender?: Maybe<Gender>;
   genderId?: Maybe<Scalars['UUID']>;
+  googleAccount: Scalars['Boolean'];
   id: Scalars['UUID'];
   idNumber?: Maybe<Scalars['String']>;
   insertedDate?: Maybe<Scalars['DateTime']>;
@@ -367,10 +369,12 @@ export type ApplicationUserFilterInput = {
   emergencyContactFullName?: InputMaybe<StringOperationFilterInput>;
   emergencyContactPhoneNumber?: InputMaybe<StringOperationFilterInput>;
   emergencyContactSurname?: InputMaybe<StringOperationFilterInput>;
+  facebookAccount?: InputMaybe<BooleanOperationFilterInput>;
   firstName?: InputMaybe<StringOperationFilterInput>;
   fullName?: InputMaybe<StringOperationFilterInput>;
   gender?: InputMaybe<GenderFilterInput>;
   genderId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  googleAccount?: InputMaybe<BooleanOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   idNumber?: InputMaybe<StringOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
@@ -430,10 +434,12 @@ export type ApplicationUserInput = {
   emergencyContactFullName?: InputMaybe<Scalars['String']>;
   emergencyContactPhoneNumber?: InputMaybe<Scalars['String']>;
   emergencyContactSurname?: InputMaybe<Scalars['String']>;
+  facebookAccount: Scalars['Boolean'];
   firstName?: InputMaybe<Scalars['String']>;
   fullName?: InputMaybe<Scalars['String']>;
   gender?: InputMaybe<GenderInput>;
   genderId?: InputMaybe<Scalars['UUID']>;
+  googleAccount: Scalars['Boolean'];
   id: Scalars['UUID'];
   idNumber?: InputMaybe<Scalars['String']>;
   insertedDate?: InputMaybe<Scalars['DateTime']>;
@@ -491,10 +497,12 @@ export type ApplicationUserSortInput = {
   emergencyContactFullName?: InputMaybe<SortEnumType>;
   emergencyContactPhoneNumber?: InputMaybe<SortEnumType>;
   emergencyContactSurname?: InputMaybe<SortEnumType>;
+  facebookAccount?: InputMaybe<SortEnumType>;
   firstName?: InputMaybe<SortEnumType>;
   fullName?: InputMaybe<SortEnumType>;
   gender?: InputMaybe<GenderSortInput>;
   genderId?: InputMaybe<SortEnumType>;
+  googleAccount?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
   idNumber?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
@@ -3150,6 +3158,7 @@ export type ExpenseItemModel = {
   datePaid: Scalars['DateTime'];
   expenseTypeId?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
+  isActive: Scalars['Boolean'];
   notes?: Maybe<Scalars['String']>;
   photoProof?: Maybe<Scalars['String']>;
 };
@@ -3159,6 +3168,7 @@ export type ExpenseItemModelInput = {
   datePaid: Scalars['DateTime'];
   expenseTypeId?: InputMaybe<Scalars['String']>;
   id: Scalars['UUID'];
+  isActive: Scalars['Boolean'];
   notes?: InputMaybe<Scalars['String']>;
   photoProof?: InputMaybe<Scalars['String']>;
 };
@@ -3592,6 +3602,7 @@ export type IncomeItemModel = {
   description?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
   incomeTypeId?: Maybe<Scalars['String']>;
+  isActive: Scalars['Boolean'];
   notes?: Maybe<Scalars['String']>;
   numberOfChildrenCovered?: Maybe<Scalars['Int']>;
   payTypeId?: Maybe<Scalars['String']>;
@@ -3605,6 +3616,7 @@ export type IncomeItemModelInput = {
   description?: InputMaybe<Scalars['String']>;
   id: Scalars['UUID'];
   incomeTypeId?: InputMaybe<Scalars['String']>;
+  isActive: Scalars['Boolean'];
   notes?: InputMaybe<Scalars['String']>;
   numberOfChildrenCovered?: InputMaybe<Scalars['Int']>;
   payTypeId?: InputMaybe<Scalars['String']>;

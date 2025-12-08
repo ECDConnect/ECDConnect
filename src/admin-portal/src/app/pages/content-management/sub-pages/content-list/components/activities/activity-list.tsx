@@ -110,7 +110,7 @@ export default function ActivityList({
   `;
 
   const { data: themeData } = useQuery(query, {
-    fetchPolicy: 'network-only',
+    fetchPolicy: 'cache-first',
     variables: {
       localeId: LanguageId.enZa,
     },

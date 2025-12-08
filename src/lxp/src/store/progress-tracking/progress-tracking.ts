@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
   getChildProgressReports,
+  getChildProgressReportsForPractitioner,
   getPractitionerProgressReportSummary,
   getProgressTrackingAgeGroups,
   getProgressTrackingContent,
@@ -459,6 +460,26 @@ const progressTrackingSlice = createSlice({
         ];
       }
     });
+    builder.addCase(
+      getChildProgressReportsForPractitioner.fulfilled,
+      (state, action) => {
+        if (action.payload && action.payload.length) {
+          const unsyncedReports = state.childProgressReports.filter(
+            (x) => !x.synced
+          );
+
+          state.childProgressReports = [
+            ...unsyncedReports,
+            ...action.payload
+              .filter((x) => unsyncedReports.every((y) => y.id !== x.id))
+              .map((item) => ({
+                ...item,
+                synced: true,
+              })),
+          ];
+        }
+      }
+    );
     builder.addCase(getProgressTrackingAgeGroups.fulfilled, (state, action) => {
       state.progressTrackingAgeGroups = {
         data: [

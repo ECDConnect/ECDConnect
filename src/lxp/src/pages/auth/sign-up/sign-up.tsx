@@ -6,7 +6,6 @@ import {
   useDialog,
   useNotifications,
   useQueryParams,
-  useTheme,
 } from '@ecdlink/core';
 import {
   ActionModal,
@@ -37,7 +36,6 @@ import AuthService from '@services/AuthService/AuthService';
 import { useAppDispatch } from '@store';
 import { staticDataThunkActions } from '@store/static-data';
 import * as styles from './sign-up.styles';
-import { UserService } from '@/services/UserService';
 import { HelpForm } from '@/components/help-form/help-form';
 import ROUTES from '@/routes/routes';
 import { useTenant } from '@/hooks/useTenant';
@@ -77,11 +75,9 @@ export const SignUp: React.FC = () => {
   const [articleTitle, setArticleTitle] = useState<string>();
   const history = useHistory();
   const location = useLocation();
-  const { theme } = useTheme();
   const queryParams = useQueryParams(location.search);
   const authToken = queryParams.getValue('token');
   const { isOnline } = useOnlineStatus();
-  const [userDetails, setUserDetails] = useState<any>();
   const [openHelp, setOpenHelp] = useState(false);
   const appName = tenant?.tenant?.applicationName;
   const isWhitelabel = tenant?.isWhiteLabel;
@@ -99,23 +95,6 @@ export const SignUp: React.FC = () => {
     }
     init().catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const getUserDetailsByToken = async () => {
-    let user_details_from_request;
-    if (token) {
-      user_details_from_request = await new UserService('').getUserByToken(
-        token
-      );
-      setUserDetails(user_details_from_request);
-    } else {
-      console.log('user not found');
-    }
-  };
-  useEffect(() => {
-    if (token) {
-      getUserDetailsByToken();
-    }
   }, []);
 
   watch();
@@ -266,7 +245,6 @@ export const SignUp: React.FC = () => {
 
   // Function for cellphone number preventing characters
   const handleKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
-    const inputEvent = event as React.KeyboardEvent<HTMLInputElement>;
     const allowedKeys = [
       'Backspace',
       'Delete',
@@ -291,7 +269,7 @@ export const SignUp: React.FC = () => {
     <div className={styles.wrapper}>
       <BannerWrapper
         color={'primary'}
-        showBackground={isWhitelabel ? false : true}
+        showBackground={!isWhitelabel}
         backgroundUrl={TransparentLayer}
         backgroundImageColour={'primary'}
         className={styles.contentWrapper}
@@ -471,14 +449,6 @@ export const SignUp: React.FC = () => {
               type={'error'}
             />
           )}
-          {/* {errorStrings.length > 0 && (
-            <Alert
-              title={`There were ${errorStrings.length} errors with your submission`}
-              type={'error'}
-              list={errorStrings}
-              className={styles.marginTop}
-            />
-          )} */}
           {(requestError?.length ?? 0) > 0 && (
             <Alert
               title={`Please check your ID and cellphone number.`}

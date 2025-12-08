@@ -87,7 +87,7 @@ export const Rent: React.FC<AddExpenseState> = ({
     ? lastDayOfMonth(new Date(expenseItem.datePaid))
     : lastDayOfMonth(new Date());
 
-  const sendExpenseUpdate = async () => {
+  const sendExpenseUpdate = async (activeStatus: boolean) => {
     const expensesInput = {
       id: !!expenseItem ? expenseItem.id : newGuid(),
       datePaid: datePaid!,
@@ -95,6 +95,7 @@ export const Rent: React.FC<AddExpenseState> = ({
       amount: amount ? Number(moneyInputFormat(amount)) : 0,
       expenseTypeId: ExpenseTypeIds.RENT_EXPENSE_ID,
       photoProof: photoProof,
+      isActive: activeStatus,
     };
 
     onSubmit(expensesInput);
@@ -235,21 +236,38 @@ export const Rent: React.FC<AddExpenseState> = ({
           />
         </Dialog>
         {!disabled && (
-          <Button
-            type="filled"
-            color="quatenary"
-            className={'mx-auto mt-8 w-full rounded-2xl'}
-            onClick={sendExpenseUpdate}
-            disabled={!isValid}
-          >
-            {renderIcon('SaveIcon', styles.buttonIcon)}
-            <Typography
-              type="help"
-              className="mr-2"
-              color="white"
-              text={'Save'}
-            ></Typography>
-          </Button>
+          <>
+            <Button
+              type="filled"
+              color="quatenary"
+              className={'mx-auto mt-8 w-full rounded-2xl'}
+              onClick={() => {
+                sendExpenseUpdate(true);
+              }}
+              disabled={!isValid}
+            >
+              {renderIcon('SaveIcon', styles.buttonIcon)}
+              <Typography
+                type="help"
+                className="mr-2"
+                color="white"
+                text={'Save'}
+              ></Typography>
+            </Button>
+            {!!expenseItem?.id && (
+              <Button
+                icon="TrashIcon"
+                type={'outlined'}
+                color={'quatenary'}
+                textColor="quatenary"
+                text="Delete"
+                className="mt-4 w-full"
+                onClick={() => {
+                  sendExpenseUpdate(false);
+                }}
+              />
+            )}
+          </>
         )}
         {disabled && (
           <Button

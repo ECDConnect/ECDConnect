@@ -1,3 +1,5 @@
+import { LoginType } from './login';
+
 export interface AcceptInvitationModel {
   username: string;
   token: string;
@@ -14,6 +16,12 @@ export interface VerifyInvitationModel {
 export interface VerifyCellphoneNumberModel {
   Username: string;
   Token: string;
+}
+
+export interface VerifySignupCellPhoneNumberModel {
+  Cellphone: string;
+  Token?: string;
+  AuthCode?: string;
 }
 
 export interface VerifyPasswordTokenModel {
@@ -38,6 +46,7 @@ export interface CheckUsernamePhoneNumberModel {
   username: string;
   phoneNumber?: string;
   userId?: string;
+  googleToken?: string;
 }
 
 export interface UpdateUsernameModel {
@@ -46,6 +55,7 @@ export interface UpdateUsernameModel {
   password?: string;
   token?: string;
   shareInfo?: boolean;
+  registerType?: LoginType;
 }
 
 export interface PortalConsentModel {
