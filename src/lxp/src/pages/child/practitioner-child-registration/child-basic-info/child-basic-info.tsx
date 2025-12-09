@@ -318,7 +318,7 @@ export const ChildBasicInfo: React.FC<
     if (isOnline) {
       setLoadingLink(true);
       let childDetails: ChildRegistrationDto;
-      if (registeredChild?.childId) {
+      if (newChild?.childId) {
         childDetails = await dispatch(
           childrenThunkActions.refreshCaregiverChildToken({
             childId: newChild?.childId,
