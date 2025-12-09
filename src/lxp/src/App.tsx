@@ -36,48 +36,6 @@ if (process.env.NODE_ENV === 'development') {
   stopReportingRuntimeErrors();
 }
 
-const AppRoutes = ({ isTempUser }: { isTempUser: boolean | undefined }) => {
-  if (isTempUser) {
-    return (
-      <InitialStoreSetup>
-        <SnackbarProvider>
-          <DialogServiceProvider>
-            <InitialNotificationSetup>
-              <AuthRoutes />
-              {/* <BackgroundSync /> */}
-            </InitialNotificationSetup>
-          </DialogServiceProvider>
-        </SnackbarProvider>
-      </InitialStoreSetup>
-    );
-  } else {
-    return <PublicRoutes />;
-  }
-};
-
-const AppContent = ({
-  title,
-  isTempUser,
-}: {
-  title: string;
-  isTempUser: boolean | undefined;
-}) => {
-  return (
-    <IonApp className="m-auto max-w-4xl bg-white">
-      <Helmet>
-        <title>{title}</title>
-      </Helmet>
-      <IonReactRouter>
-        <AppErrorHandler>
-          <IonRouterOutlet>
-            <AppRoutes isTempUser={isTempUser} />
-          </IonRouterOutlet>
-        </AppErrorHandler>
-      </IonReactRouter>
-    </IonApp>
-  );
-};
-
 const App: React.FC = () => {
   const tenant = useTenant();
   const { theme } = useTheme();
@@ -264,9 +222,13 @@ const App: React.FC = () => {
         <IonRouterOutlet>
           {user && user.isTempUser !== true ? (
             <InitialStoreSetup>
-              <InitialNotificationSetup>
-                <AuthRoutes />
-              </InitialNotificationSetup>
+              <SnackbarProvider>
+                <DialogServiceProvider>
+                  <InitialNotificationSetup>
+                    <AuthRoutes />
+                  </InitialNotificationSetup>
+                </DialogServiceProvider>
+              </SnackbarProvider>
             </InitialStoreSetup>
           ) : (
             <PublicRoutes />
@@ -281,9 +243,7 @@ const App: React.FC = () => {
       <Helmet>
         <title>{getTitle()}</title>
       </Helmet>
-      <SnackbarProvider>
-        <DialogServiceProvider>{routerContent}</DialogServiceProvider>
-      </SnackbarProvider>
+      {routerContent}
     </IonApp>
   );
 
