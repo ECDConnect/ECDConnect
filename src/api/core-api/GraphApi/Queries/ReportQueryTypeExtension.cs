@@ -382,7 +382,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var user = contextAccessor.HttpContext.GetUser();
             var uId = user?.Id ?? throw new ArgumentNullException("User.Id");
 
-            var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
+            var childRepo = repoFactory.CreateGenericRepository<Child>(userContext: uId);
             var practRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
             var classroomGroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
             var classReassignmentHistoryRepo = repoFactory.CreateGenericRepository<ClassReassignmentHistory>();
