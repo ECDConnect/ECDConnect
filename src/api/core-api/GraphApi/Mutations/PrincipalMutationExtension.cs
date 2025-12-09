@@ -326,7 +326,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
             if (practitioner == null && accepted == false)
             {
-                inviteManager.RejectUserInvitation(Guid.Parse(practitionerId), Guid.Parse(principalId));
+                inviteManager.RejectUserInvitation(Guid.Parse(practitionerId), principal.Id);
                 status.LeavingDate = DateTime.Now;
                 status.Leaving = true;
                 return status;
@@ -418,7 +418,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 status.AcceptedDate = DateTime.Now;
                 status.Leaving = false;
 
-                inviteManager.AcceptPractitionerInvitation(Guid.Parse(practitionerId), practitioner.Id, Guid.Parse(principalId));
+                inviteManager.AcceptPractitionerInvitation(Guid.Parse(practitionerId), practitioner.Id, principal.Id);
 
                 //notificationService.ExpireNotificationsTypesForUser(practitioner.UserId.ToString(), TemplateTypeConstants.PrincipalFAAChanged, null, null, practitioner.UserId);
             }
