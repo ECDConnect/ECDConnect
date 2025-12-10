@@ -55,7 +55,9 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   const classroom = useSelector(classroomsSelectors.getClassroom);
-  const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
+  const classroomGroups = useSelector(
+    classroomsSelectors.getClassroomGroupsWithLinkedLearnersOnly
+  );
 
   const children = useSelector(childrenSelectors.getChildren);
 

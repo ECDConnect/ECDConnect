@@ -216,7 +216,8 @@ export const ProgressReportingPeriods: React.FC = () => {
     <BannerWrapper
       title={'Child progress reporting periods'}
       color={'primary'}
-      size="small"
+      size="medium"
+      renderBorder={true}
       onBack={() => (currentStep === 1 ? handleGoBack() : setCurrentStep(1))}
       displayOffline={!isOnline}
     >
