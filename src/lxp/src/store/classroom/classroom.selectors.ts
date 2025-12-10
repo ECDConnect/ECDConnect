@@ -397,3 +397,27 @@ export const getSetupClassroomPractitioners = (
   state: RootState
 ): UpdateUserPermissionInputModelInput[] =>
   state.classroomData.classroomPractitioners;
+
+/**
+ * Returns all classroom groups from the current classroom,
+ * but with learners filtered to ONLY those whose child has a caregiverId.
+ */
+export const getClassroomGroupsWithLinkedLearnersOnly = createSelector(
+  (state: RootState) => state.classroomData.classroomGroupData.classroomGroups,
+  (state: RootState) => state.children.childData.children,
+  (classroomGroups: ClassroomGroupDto[], children: ChildDto[]) => {
+    const childHasCaregiver = new Set<string>();
+    for (const child of children) {
+      if (child.caregiverId != null) {
+        childHasCaregiver.add(child.userId || child.user?.id || '');
+      }
+    }
+
+    return classroomGroups.map((group) => ({
+      ...group,
+      learners: group.learners.filter((learner) =>
+        childHasCaregiver.has(learner.childUserId)
+      ),
+    }));
+  }
+);
