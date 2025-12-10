@@ -110,7 +110,8 @@ export const ProgressCreateReport: React.FC = () => {
 
   return (
     <BannerWrapper
-      size={'small'}
+      size="medium"
+      renderBorder={true}
       title={`${child?.user?.firstName}'s report ${currentObservationPeriod?.reportNumber}`}
       subTitle={`Step ${currentStep} of 3`}
       onBack={() => {
@@ -120,6 +121,7 @@ export const ProgressCreateReport: React.FC = () => {
           history.goBack();
         }
       }}
+      displayOffline={!isOnline}
       onClose={() => saveAndExit()}
     >
       <div className={'flex h-full flex-col px-4 pb-4 pt-4'}>

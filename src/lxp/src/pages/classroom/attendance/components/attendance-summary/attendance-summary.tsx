@@ -85,7 +85,9 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
     useState<string>();
   const [todayDate] = useState(new Date());
 
-  const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
+  const classroomGroups = useSelector(
+    classroomsSelectors.getClassroomGroupsWithLinkedLearnersOnly
+  );
   const [isLoading, setIsLoading] = useState(true);
 
   const classroomGroupLearners = useSelector(

@@ -125,13 +125,15 @@ export const ObservationsForChild: React.FC = () => {
   return (
     <BannerWrapper
       contentRef={wrapperRef}
-      size={'small'}
+      size="medium"
+      renderBorder={true}
       onBack={() =>
         currentStep === 1 ? history.goBack() : setCurrentStep(currentStep - 1)
       }
       title={`Report ${currentObservationPeriod?.reportNumber}`}
       subTitle={`Step ${currentStep} of ${totalSteps}`}
       renderOverflow
+      displayOffline={!isOnline}
       onClose={() => {
         if (isOnline) {
           syncChildProgressReports();
