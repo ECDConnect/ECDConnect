@@ -40,8 +40,7 @@ import { HelpForm } from '@/components/help-form/help-form';
 import ROUTES from '@/routes/routes';
 import { useTenant } from '@/hooks/useTenant';
 import TransparentLayer from '../../../assets/TransparentLayer.png';
-
-const token = new URLSearchParams(window.location.search).get('token');
+import { InvalidToken } from '../invalid-token/invalid-token';
 
 export const SignUp: React.FC = () => {
   const tenant = useTenant();
@@ -71,6 +70,8 @@ export const SignUp: React.FC = () => {
   const [requestError, setRequestError] = useState<string>();
   const [isLoading, setIsLoading] = useState(false);
   const [presentCellNumberMismatch, setPresentCellNumberMismatch] =
+    useState<boolean>(false);
+  const [presentInvalidToken, setPresentInvalidToken] =
     useState<boolean>(false);
   const [articleTitle, setArticleTitle] = useState<string>();
   const history = useHistory();
@@ -132,6 +133,11 @@ export const SignUp: React.FC = () => {
 
     if (informationVerified.errorCode) {
       if (informationVerified.verified === false) {
+        if (informationVerified.errorCode === 3) {
+          setPresentInvalidToken(true);
+          setIsLoading(false);
+          return;
+        }
         if (informationVerified.errorCode === 1) {
           setRequestError(`If you are having trouble, tap "Get help"`);
           setIsLoading(false);
@@ -556,6 +562,17 @@ export const SignUp: React.FC = () => {
         stretch
       >
         <HelpForm closeAction={setOpenHelp} />
+      </Dialog>
+      <Dialog
+        visible={presentInvalidToken}
+        position={DialogPosition.Full}
+        className="w-full"
+        stretch
+      >
+        <InvalidToken
+          closeAction={setPresentInvalidToken}
+          username={signUpFormGetValues().username}
+        />
       </Dialog>
       {!isOnline && (
         <Alert
