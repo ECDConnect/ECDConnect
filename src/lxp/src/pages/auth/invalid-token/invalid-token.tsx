@@ -1,14 +1,31 @@
 import { BannerWrapper, Button, Typography, renderIcon } from '@ecdlink/ui';
-import { useHistory } from 'react-router';
+import { useHistory, useLocation } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { ExclamationCircleIcon } from '@heroicons/react/solid';
+import { useQueryParams } from '@ecdlink/core';
+import { AuthService } from '@/services/AuthService';
 
-export const StorageFull: React.FC = () => {
+interface InvalidTokenProps {
+  closeAction: (item: boolean) => void;
+  username: string;
+}
+
+export const InvalidToken: React.FC<InvalidTokenProps> = ({
+  closeAction,
+  username,
+}) => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
+  const location = useLocation();
+  const queryParams = useQueryParams(location.search);
+  const authToken = queryParams.getValue('token');
 
-  const reloadView = () => {
-    window.location.reload();
+  const reloadView = async () => {
+    if (authToken) {
+      await new AuthService().SendNewInvitation(username, authToken);
+    }
+    closeAction(false);
+    history.push('/');
   };
 
   return (
@@ -33,8 +50,7 @@ export const StorageFull: React.FC = () => {
                 className={'mt-8'}
                 type="h1"
                 color={'textMid'}
-                text={`Eish! Your phone storage 
-              is full.`}
+                text={`Eish! This invitation link has expired.`}
               />
             </div>
           </div>
@@ -51,7 +67,7 @@ export const StorageFull: React.FC = () => {
                 className={'mt-8'}
                 type="h3"
                 color={'textMid'}
-                text={`Please clear some items and tap refresh to try again.`}
+                text={`Tap below to get a new invitation.`}
               />
             </div>
           </div>
@@ -62,8 +78,12 @@ export const StorageFull: React.FC = () => {
               className={'w-full'}
               onClick={reloadView}
             >
-              {renderIcon('RefreshIcon', 'w-5 h-5 text-white mr-1')}
-              <Typography type="help" color={'white'} text={`Refresh`} />
+              {renderIcon('PaperAirplaneIcon', 'w-5 h-5 text-white mr-1')}
+              <Typography
+                type="help"
+                color={'white'}
+                text={`Get new invitation`}
+              />
             </Button>
           </div>
         </div>

@@ -157,6 +157,10 @@ const App: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const reloadView = () => {
+    window.location.reload();
+  };
+
   useEffect(() => {
     if (userUnstableConnection) {
       dialog({
@@ -192,6 +196,66 @@ const App: React.FC = () => {
       });
     }
   }, [dialog, dispatch, userUnstableConnection]);
+
+  useEffect(() => {
+    let hasShownModal = false;
+
+    const handleOutdatedBrowser = (e: CustomEvent) => {
+      if (hasShownModal) return;
+      hasShownModal = true;
+
+      dialog({
+        position: DialogPosition.Middle,
+        blocking: true,
+        color: 'bg-white',
+        fullOverlay: true,
+        render: (onClose) => (
+          <ActionModal
+            customIcon={renderIcon(
+              'ExclamationIcon',
+              `z-20 w-28 h-28 text-alertMain`
+            )}
+            title={`Your internet browser is out of date!`}
+            detailText={`Please go to your app store and update your browser before continuing. Tap refresh to try again.`}
+            actionButtons={[
+              {
+                text: 'Refresh',
+                colour: 'quatenary',
+                type: 'filled',
+                onClick: reloadView,
+                textColour: 'white',
+                leadingIcon: 'RefreshIcon',
+              },
+            ]}
+          />
+        ),
+      });
+    };
+
+    window.addEventListener(
+      'browser-outdated',
+      handleOutdatedBrowser as EventListener
+    );
+
+    // Fallback: re-trigger detection if the script loaded late
+    const timeout = setTimeout(() => {
+      if (
+        !hasShownModal &&
+        (window as any).$buo &&
+        typeof (window as any).$buo.show === 'function'
+      ) {
+        (window as any).$buo.show();
+      }
+    }, 4000); // 4 seconds is safe
+
+    return () => {
+      window.removeEventListener(
+        'browser-outdated',
+        handleOutdatedBrowser as EventListener
+      );
+      clearTimeout(timeout);
+    };
+  }, [dialog]);
 
   const handleSync = async () => {
     if (practitioner?.isPrincipal === true) {
