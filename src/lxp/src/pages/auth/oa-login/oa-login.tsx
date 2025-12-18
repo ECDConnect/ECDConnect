@@ -107,13 +107,23 @@ export const OaLogin: React.FC = () => {
 
   const STRUGGLING_LOGIN_ATTEMPTS = 5;
 
-  navigator?.storage?.estimate().then((estimate) => {
-    if (estimate?.quota) {
-      const freMemoryResult = estimate?.quota / 1024 / 1024;
-      setFreeMemory(Number(freMemoryResult.toFixed(0)));
-      return estimate;
+  useEffect(() => {
+    if (navigator?.storage?.estimate) {
+      navigator.storage
+        .estimate()
+        .then((estimate) => {
+          if (estimate?.quota) {
+            const freeMemoryMB = estimate.quota;
+            setFreeMemory(Math.round(freeMemoryMB));
+          }
+        })
+        .catch(() => {
+          setFreeMemory(0);
+        });
+    } else {
+      setFreeMemory(0);
     }
-  });
+  }, []);
 
   const whatsapp = () => {
     window.open(
