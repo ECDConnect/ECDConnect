@@ -28,4 +28,5 @@ export const APIs = {
   validateNewTenant: 'api/setup/validate-new-tenant',
   fetchAllLanguages: 'api/setup/fetch-available-languages',
   getConsentForPortal: 'api/setup/get-consent-for-portal',
+  sendNewInvitation: 'api/invitation/send-new-invitation',
 };

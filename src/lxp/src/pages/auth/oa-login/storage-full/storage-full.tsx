@@ -58,7 +58,7 @@ export const StorageFull: React.FC = () => {
           <div className={'w-full p-4'}>
             <Button
               type={'filled'}
-              color={'primary'}
+              color={'quatenary'}
               className={'w-full'}
               onClick={reloadView}
             >

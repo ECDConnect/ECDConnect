@@ -1,5 +1,5 @@
 import { ActionModal, DialogPosition } from '@ecdlink/ui';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useHistory } from 'react-router';
 import { useDialog } from '../dialog/DialogService';
 

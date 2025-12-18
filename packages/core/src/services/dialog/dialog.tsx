@@ -21,6 +21,7 @@ export const DialogModal: React.FC<DialogModalProps> = ({
   position = DialogPosition.Full,
   transitionClassName,
   color = 'bg-uiBg ',
+  fullOverlay,
 }) => {
   return (
     <Transition.Root show={open} as={Fragment}>
@@ -41,7 +42,9 @@ export const DialogModal: React.FC<DialogModalProps> = ({
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <Dialog.Overlay className={styles.overlay} />
+            <Dialog.Overlay
+              className={fullOverlay ? styles.fullOverlay : styles.overlay}
+            />
           </Transition.Child>
 
           {/* This element is to trick the browser into centering the modal contents.
