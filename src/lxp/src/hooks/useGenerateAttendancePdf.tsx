@@ -79,14 +79,16 @@ export const useGenerateAttendancePdf = () => {
       });
 
       // Step 3: Calculate totals per day
+      // Step 3: Calculate totals per day
       const totals = dayKeys.map((dayKey) =>
-        pageData
-          .reduce((sum: number, row: PageRow) => {
-            const value = row[dayKey as keyof PageRow];
-            return sum + (typeof value === 'number' ? value : 0);
-          }, 0)
-          .toString()
-          .replace('0', '*')
+        pageData.reduce((sum: number, row: PageRow) => {
+          const value = row[dayKey as keyof PageRow];
+          return sum + (typeof value === 'number' ? value : 0);
+        }, 0)
+      );
+
+      const formattedTotals = totals.map((total) =>
+        total === 0 ? '*' : total.toString()
       );
 
       const sumAttendance = dayKeys.reduce((total, dayKey) => {
@@ -100,7 +102,7 @@ export const useGenerateAttendancePdf = () => {
       }, 0) as number;
 
       // Step 4: Build footer row
-      const footerRow = ['Child Attendance per Day', '', ...totals];
+      const footerRow = ['Child Attendance per Day', '', ...formattedTotals];
 
       // Step 5: Build final PDF table object
       const pdfTable: AttendanceReportTableDataDto = {
