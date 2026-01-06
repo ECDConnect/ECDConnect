@@ -239,6 +239,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       ...location,
       state: {
         ...location.state,
+        activeTabIndex: 1,
         fromChildAttendanceReport: false,
       },
     });
@@ -253,6 +254,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
             classroom={classroom}
             currentClassroomGroup={userCurrentClassroomGroup}
             classroomGroups={classroomGroups}
+            onTakeAttendance={onCloseCompletedRegisters}
           />
         );
       case 'summary':
