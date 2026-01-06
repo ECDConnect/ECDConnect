@@ -11,6 +11,7 @@ import { useAppDispatch } from '@store';
 import { userActions, userThunkActions } from '@store/user';
 import { cloneDeep } from 'lodash';
 import { UserDto } from '@/../../../packages/core/lib';
+import { useSnackbar } from '@ecdlink/core';
 
 export interface EditNameProps {
   setEditName?: any;
@@ -25,6 +26,7 @@ const editNameModelSchema = Yup.object().shape({
 export const EditName: React.FC<EditNameProps> = ({ setEditName, user }) => {
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
+  const { showMessage } = useSnackbar();
 
   const getDefaultFormvalues = () => {
     if (user) {
@@ -62,6 +64,7 @@ export const EditName: React.FC<EditNameProps> = ({ setEditName, user }) => {
       copy.surname = practitionerForm.surname;
       appDispatch(userActions.updateUser(copy));
       appDispatch(userThunkActions.updateUser(copy));
+      showMessage({ message: 'Name updated!' });
     }
   };
 
@@ -72,7 +75,7 @@ export const EditName: React.FC<EditNameProps> = ({ setEditName, user }) => {
         renderBorder={true}
         showBackground={false}
         color={'primary'}
-        title={'Edit Email Address'}
+        title={'Edit name'}
         backgroundColour={'uiBg'}
         displayOffline={!isOnline}
         onBack={() => setEditName(false)}
