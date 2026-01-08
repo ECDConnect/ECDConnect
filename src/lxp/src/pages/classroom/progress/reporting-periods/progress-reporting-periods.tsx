@@ -2,7 +2,9 @@ import {
   ActionModal,
   BannerWrapper,
   Button,
+  Dialog,
   DialogPosition,
+  ProfileAvatar,
   Typography,
 } from '@ecdlink/ui';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
@@ -27,6 +29,7 @@ import { TabsItems } from '../../class-dashboard/class-dashboard.types';
 import { getAllNotifications } from '@/store/notifications/notifications.selectors';
 import { notificationActions } from '@/store/notifications';
 import { disableBackendNotification } from '@/store/notifications/notifications.actions';
+import { EditLogo } from '@/pages/practitioner/practitioner-programme-information/edit-logo/edit-logo';
 
 export type ProgressReportingPeriodsRouteState = {
   messageReference: string;
@@ -41,6 +44,7 @@ export const ProgressReportingPeriods: React.FC = () => {
   const location = useLocation<ProgressReportingPeriodsRouteState>();
   const messageReference = location?.state?.messageReference;
   const notifications = useSelector(getAllNotifications);
+  const [showEditLogo, setShowEditLogo] = useState(false);
 
   const lastYearsReportingPeriods = useSelector(
     classroomsSelectors.getPreviousYearsReportingPeriods()
@@ -143,13 +147,17 @@ export const ProgressReportingPeriods: React.FC = () => {
     showMessage({
       message: 'Reporting dates added!',
     });
-    handleGoBack();
   };
 
   const handleGoBack = () => {
     history.push(ROUTES.CLASSROOM.ROOT, {
       activeTabIndex: TabsItems.PROGRESS,
     });
+  };
+
+  const handleLogoUpdate = () => {
+    setShowEditLogo(false);
+    handleGoBack();
   };
 
   const confirmDialog = useCallback(() => {
@@ -192,7 +200,9 @@ export const ProgressReportingPeriods: React.FC = () => {
               type: 'filled',
               onClick: () => {
                 onSubmit();
-                submit();
+                !!classroom?.classroomImageUrl
+                  ? confirmLogoDialog()
+                  : confirmNewLogoDialog();
               },
               leadingIcon: 'CheckCircleIcon',
             },
@@ -205,6 +215,93 @@ export const ProgressReportingPeriods: React.FC = () => {
                 cancel();
               },
               leadingIcon: 'PencilIcon',
+            },
+          ]}
+        />
+      ),
+    });
+  }, [dialog, reportingPeriods]);
+
+  const confirmLogoDialog = useCallback(() => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (submit, cancel) => (
+        <ActionModal
+          className="bg-white"
+          customIcon={
+            <div className={'inline-flex w-full justify-center pt-8'}>
+              <ProfileAvatar
+                dataUrl={classroom?.classroomImageUrl || ''}
+                size={'header'}
+                onPressed={() => {}}
+                hasConsent={true}
+                isPreschoolImage={true}
+                canChangeImage={false}
+              />
+            </div>
+          }
+          importantText={'Your preschool logo will appear on child reports'}
+          detailText={`This logo will be shown on all reports for this reporting period. Make sure it’s correct.`}
+          actionButtons={[
+            {
+              text: 'Yes, this logo is correct!',
+              textColour: 'white',
+              colour: 'quatenary',
+              type: 'filled',
+              onClick: () => {
+                handleGoBack();
+                submit();
+              },
+              leadingIcon: 'CheckCircleIcon',
+            },
+            {
+              text: 'Change logo',
+              textColour: 'quatenary',
+              colour: 'quatenary',
+              type: 'outlined',
+              onClick: () => {
+                setShowEditLogo(true);
+                cancel();
+              },
+              leadingIcon: 'RefreshIcon',
+            },
+          ]}
+        />
+      ),
+    });
+  }, [dialog, reportingPeriods]);
+
+  const confirmNewLogoDialog = useCallback(() => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (submit, cancel) => (
+        <ActionModal
+          className="bg-white"
+          customIcon={<RobotIcon />}
+          importantText={'Would you like to add a preschool logo?'}
+          detailText={`The logo you upload will be shown on all reports for this reporting period.`}
+          actionButtons={[
+            {
+              text: 'Yes, I want to add a logo',
+              textColour: 'white',
+              colour: 'quatenary',
+              type: 'filled',
+              onClick: () => {
+                setShowEditLogo(true);
+                submit();
+              },
+              leadingIcon: 'CheckCircleIcon',
+            },
+            {
+              text: 'No, I don’t want to add a logo',
+              textColour: 'quatenary',
+              colour: 'quatenary',
+              type: 'outlined',
+              onClick: () => {
+                handleGoBack();
+                cancel();
+              },
+              leadingIcon: 'XIcon',
             },
           ]}
         />
@@ -236,9 +333,11 @@ export const ProgressReportingPeriods: React.FC = () => {
         )}
         <Button
           onClick={() => {
-            currentStep === 2
-              ? confirmDialog()
-              : setCurrentStep(currentStep + 1);
+            if (currentStep === 2) {
+              confirmDialog();
+            } else {
+              setCurrentStep(currentStep + 1);
+            }
           }}
           disabled={
             currentStep === 2
@@ -254,6 +353,9 @@ export const ProgressReportingPeriods: React.FC = () => {
           text={currentStep === 2 ? 'Save' : 'Next'}
         />
       </div>
+      <Dialog fullScreen visible={showEditLogo} position={DialogPosition.Full}>
+        <EditLogo setShowEditLogo={handleLogoUpdate} />
+      </Dialog>
     </BannerWrapper>
   );
 };
