@@ -479,8 +479,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 .OrderByDescending(x => x.InsertedDate)
                 .GroupBy(x => x.UserId);
 
-            var invitationDates = invitations.ToDictionary(x => x.Key, x => x.Last().InsertedDate);
-            var invitationNotifications = invitations.ToDictionary(x => x.Key, x => x.Last().NotificationResult);
+            var invitationDates = invitations.ToDictionary(x => x.Key, x => x.First().InsertedDate);
+            var invitationNotifications = invitations.ToDictionary(x => x.Key, x => x.First().NotificationResult);
 
             var practitionerModels = practitionerQuery
                .Select(item => new PortalPractitionerModel
