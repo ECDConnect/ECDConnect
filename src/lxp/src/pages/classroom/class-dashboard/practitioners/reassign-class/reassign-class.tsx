@@ -334,8 +334,16 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   }, [practitioner2, practitioners]);
 
   useEffect(() => {
+    const practitionersNotOnLeave = practitioners?.filter((x) =>
+      x.absentees?.some(
+        (y) =>
+          new Date(y.absentDateEnd || new Date()).getTime() <
+          new Date().getTime()
+      )
+    );
+
     const _list =
-      [...(practitioners ?? []), practitionerUser]
+      [...(practitionersNotOnLeave ?? []), practitionerUser]
         ?.filter((p) => !!p?.user?.firstName)
         ?.map(
           (p): DropDownOption<string> =>
@@ -407,7 +415,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
         const absenteeDate = absentee.absentDateEnd
           ? new Date(absentee.absentDateEnd)
           : new Date();
-        return absenteeDate.toDateString() === currentDate.toDateString();
+        return absenteeDate.getTime() > currentDate.getTime();
       });
     })
     .map((practitioner) => ({

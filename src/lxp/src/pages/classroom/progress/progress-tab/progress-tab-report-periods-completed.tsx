@@ -25,7 +25,7 @@ export const ProgressTabReportPeriodsCompleted: React.FC = () => {
   );
 
   const { asyncGenerateReport } = usePdfFromHtml();
-
+  const [isReportReady, setIsReportReady] = useState(false);
   const [reportPeriodId, setReportPeriodId] = useState<string>('');
   const [reportPeriodDate, setReportPeriodDate] = useState<string>('');
   const [generatedReports, setGeneratedReports] = useState<
@@ -126,6 +126,7 @@ export const ProgressTabReportPeriodsCompleted: React.FC = () => {
           <ProgressCaregiverReportPdf
             childId={report.childId}
             reportId={report.id as string}
+            onRendered={() => setIsReportReady(true)}
           />
         </div>
       ));
