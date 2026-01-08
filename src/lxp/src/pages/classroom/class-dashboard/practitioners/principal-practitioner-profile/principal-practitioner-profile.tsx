@@ -318,17 +318,17 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const [editPermissionsVisible, setEditPermissionsVisible] =
     useState<boolean>(false);
 
+  // If not accepted yet
+  if (!!practitioner?.dateLinked && !practitioner.dateAccepted) {
+    return <PractitionerNotAccepted practitioner={practitioner} />;
+  }
+
   // Not registered yet
   if (
     practitioner?.isRegistered === null ||
     practitioner?.isRegistered === false
   ) {
     return <PractitionerNotRegistered practitioner={practitioner} />;
-  }
-
-  // If not accepted yet
-  if (!!practitioner?.dateLinked && !practitioner.dateAccepted) {
-    return <PractitionerNotAccepted practitioner={practitioner} />;
   }
 
   return (

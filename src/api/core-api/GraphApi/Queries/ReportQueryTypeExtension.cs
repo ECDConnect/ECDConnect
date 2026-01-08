@@ -1453,7 +1453,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 #region NOT REGISTERED ON APP
                 if (!practitioner.IsRegistered.HasValue || !practitioner.IsRegistered.Value)
                 {
-                    notification.Subject = $"Not registered on {applicationName}";
+                    notification.Subject = "Has not joined preschool";
                     notification.Icon = MetricsIconEnum.Error.ToString();
                     notification.Color = MetricsColorEnum.Error.ToString();
                     notification.Message = "";
