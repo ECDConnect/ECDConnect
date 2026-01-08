@@ -47,6 +47,7 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
   const history = useHistory();
   const dialog = useDialog();
   const { isOnline } = useOnlineStatus();
+  const [isReportReady, setIsReportReady] = useState(false);
 
   const {
     hasPermissionToManageChildren,
@@ -434,6 +435,7 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
                   <ProgressCaregiverReportPdf
                     childId={report.childId}
                     reportId={report.report.id as string}
+                    onRendered={() => setIsReportReady(true)}
                   />
                 </div>
               ) : null
