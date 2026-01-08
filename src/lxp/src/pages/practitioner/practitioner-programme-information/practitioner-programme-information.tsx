@@ -144,7 +144,6 @@ export const PractitionerProgrammeInformation: React.FC = () => {
   }, [classroom, classroomGroups, otherColleaguesFiltered]);
 
   const displayProfilePicturePrompt = () => {
-    console.log('Show edit logo : ' + showEditLogo);
     setShowEditLogo(!showEditLogo);
   };
 

@@ -41,6 +41,7 @@ export const ProgressShareReport: React.FC = () => {
   const dialog = useDialog();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [pdfBlob, setPdfBlob] = useState<Blob>();
+  const [isReportReady, setIsReportReady] = useState(false);
 
   const { isOnline } = useOnlineStatus();
 
@@ -124,29 +125,30 @@ export const ProgressShareReport: React.FC = () => {
   );
 
   const shareReport = async () => {
-    if (pdfBlob) {
-      await sharePdfReport(
-        pdfBlob,
-        ` - ${child?.user?.fullName || child?.user?.firstName}`
-      );
-    } else {
-      if (routeState.reportId) {
-        generatePdfReport();
-        if (shareRef.current) {
-          const newPdfBlob = await generateReportAndReturnBlob(
-            shareRef.current,
-            shareRef.current?.offsetWidth || 750
-          );
-          if (newPdfBlob) {
-            await sharePdfReport(
-              newPdfBlob,
-              ` - ${child?.user?.fullName || child?.user?.firstName}`
-            );
-          }
-        }
-      }
+    if (!isOnline) {
+      showOnlineOnly();
+      return;
     }
-    setIsLoading(false);
+
+    if (!shareRef.current) return;
+
+    setIsLoading(true);
+
+    try {
+      const pdfBlob = await generateReportAndReturnBlob(
+        shareRef.current,
+        shareRef.current.offsetWidth || 750
+      );
+
+      if (pdfBlob) {
+        await sharePdfReport(
+          pdfBlob,
+          ` - ${child?.user?.fullName || child?.user?.firstName}`
+        );
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const generatePdfReport = async () => {
@@ -254,12 +256,17 @@ export const ProgressShareReport: React.FC = () => {
         </div>
         <Button
           onClick={async () => {
-            if (isOnline) {
-              setIsLoading(true);
-              await shareReport();
-            } else {
+            if (!isOnline) {
               showOnlineOnly();
+              return;
             }
+            setIsLoading(true);
+
+            if (!isReportReady || !pdfBlob) {
+              await generatePdfReport();
+            }
+
+            await shareReport();
           }}
           className="mt-4 w-full"
           size="small"
@@ -268,7 +275,7 @@ export const ProgressShareReport: React.FC = () => {
           type="filled"
           icon={'ShareIcon'}
           text={isLoading ? 'Loading report...' : 'Share report'}
-          disabled={!selectedReport}
+          disabled={!selectedReport || !isReportReady}
           isLoading={isLoading}
         />
       </div>
@@ -278,6 +285,7 @@ export const ProgressShareReport: React.FC = () => {
             <ProgressCaregiverReportPdf
               childId={routeState.childId}
               reportId={selectedReport}
+              onRendered={() => setIsReportReady(true)}
             />
           </div>
         </div>
