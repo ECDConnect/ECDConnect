@@ -144,14 +144,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             AuthenticationDbContext dbContext,
             string userId)
         {
-
-          List<Child> children = [.. dbContext.Children.FromSql($@"
+            var uid = contextAccessor.HttpContext.GetUser().Id;
+            List<Child> children = [.. dbContext.Children.FromSql($@"
                                         SELECT c.* 
                                         FROM ""Child"" c 
                                         JOIN ""Practitioner"" p ON c.""Hierarchy"" LIKE p.""Hierarchy"" || '%'
-                                        WHERE p.""CoachHierarchy"" = {userId}::uuid AND c.""IsActive"" is true
+                                        WHERE p.""CoachHierarchy"" = {uid}::uuid AND c.""IsActive"" is true
                                         ")];
-          return children;
+            return children;
         }
 
        public List<Classroom> GetAllClassroomsForCoach(
@@ -159,11 +159,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             AuthenticationDbContext dbContext,
             string userId)
         {
+            var uid = contextAccessor.HttpContext.GetUser().Id;
             List<Classroom> classrooms = [.. dbContext.Classrooms.FromSql($@"
                                         SELECT c.* 
                                         FROM ""Classroom"" c 
                                         JOIN ""Practitioner"" p ON c.""UserId"" = p.""UserId""
-                                        WHERE p.""CoachHierarchy"" = {userId}::uuid AND c.""IsActive"" is true
+                                        WHERE p.""CoachHierarchy"" = {uid}::uuid AND c.""IsActive"" is true
                                         ")];
 
             return classrooms;
