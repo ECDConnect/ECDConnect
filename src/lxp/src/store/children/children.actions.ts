@@ -103,7 +103,7 @@ export const getChildrenForCoach = createAsyncThunk<
         if (userAuth?.auth_token) {
           children = await new ChildService(
             userAuth?.auth_token
-          ).getChildrenForCoach(userAuth?.id);
+          ).getChildrenForCoach();
         } else {
           return rejectWithValue('no access token, profile check required');
         }

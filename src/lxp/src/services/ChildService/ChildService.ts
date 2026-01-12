@@ -289,21 +289,18 @@ class ChildService {
   }
 
   // Will this still be needed?
-  async getChildrenForCoach(userId: string): Promise<ChildDto[]> {
+  async getChildrenForCoach(): Promise<ChildDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
 
     const response = await apiInstance.post<any>(``, {
       query: `
-        query allChildrenForCoach($userId: String) {
-          allChildrenForCoach(userId: $userId) {
+        query allChildrenForCoach {
+          allChildrenForCoach {
             id
             userId
           }
         }    
       `,
-      variables: {
-        userId,
-      },
     });
 
     if (response.status !== 200) {
