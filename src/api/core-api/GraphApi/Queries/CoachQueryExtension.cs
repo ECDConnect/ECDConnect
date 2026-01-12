@@ -141,8 +141,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
         public List<Child> GetAllChildrenForCoach(
             [Service] IHttpContextAccessor contextAccessor,
-            AuthenticationDbContext dbContext,
-            string userId)
+            AuthenticationDbContext dbContext)
         {
             var uid = contextAccessor.HttpContext.GetUser().Id;
             List<Child> children = [.. dbContext.Children.FromSql($@"
@@ -156,8 +155,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
        public List<Classroom> GetAllClassroomsForCoach(
             [Service] IHttpContextAccessor contextAccessor,
-            AuthenticationDbContext dbContext,
-            string userId)
+            AuthenticationDbContext dbContext)
         {
             var uid = contextAccessor.HttpContext.GetUser().Id;
             List<Classroom> classrooms = [.. dbContext.Classrooms.FromSql($@"
@@ -169,6 +167,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
             return classrooms;
         }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<ClassroomGroupModel> GetAllClassroomGroupsForCoach(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] IClassroomService classroomService,
