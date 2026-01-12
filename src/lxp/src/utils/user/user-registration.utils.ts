@@ -14,6 +14,7 @@ export enum CreateUserResult {
   SuccessRegisteredVerifyPhoneNumber = 'SUCCESS_REGISTERED_VERIFY_PHONENUMBER',
   SuccessLogin = 'SUCCESS_REDIRECT_LOGIN',
   UsernameExists = 'USERNAME_EXISTS',
+  UsernameExistsLogin = 'USERNAME_EXISTS_LOGIN',
   UsernameInvalid = 'USERNAME_INVALID',
   FailedCreateUsername = 'FAILED_CREATE_USERNAME',
   RegistrationFailed = 'REGISTRATION_FAILED',
@@ -26,19 +27,28 @@ export const validateUsername = (name: string): boolean =>
 export const checkUsernamePhoneNumber = async (
   username: string,
   userId: string | undefined,
-  googleToken: string | undefined
-): Promise<boolean> => {
+  googleToken: string | undefined,
+  facebookToken: string | undefined
+): Promise<CreateUserResult> => {
   const body: CheckUsernamePhoneNumberModel = {
     username: username,
     userId: userId,
     googleToken: googleToken,
+    facebookToken: facebookToken,
   };
   const checkUsername = await new AuthService()
     .CheckUsernamePhoneNumber(body)
     .catch((error) => {
       return false;
     });
-  return !!checkUsername;
+  if (checkUsername === false) return CreateUserResult.UsernameInvalid;
+  if ((checkUsername as any)?.data?.statusCode === 4)
+    return CreateUserResult.UsernameExists;
+  if ((checkUsername as any)?.data?.statusCode === 3)
+    return CreateUserResult.UsernameExistsLogin;
+  if ((checkUsername as any)?.data?.statusCode === 1)
+    return CreateUserResult.Success;
+  return CreateUserResult.UsernameInvalid;
 };
 
 export const updateUsername = async (
@@ -74,6 +84,7 @@ export type UpdateOpenAccessPractitionerInfo = {
   registerType: LoginType;
   shareInfoPartners: boolean | undefined;
   googleToken: string | undefined;
+  facebookToken: string | undefined;
 };
 
 export const updateOpenAccessPractitioner = async (
@@ -86,6 +97,7 @@ export const updateOpenAccessPractitioner = async (
     registerType,
     shareInfoPartners,
     googleToken,
+    facebookToken,
   } = data;
 
   const registerOpenAccessUserInput: RegisterRequestModel = {
@@ -95,6 +107,7 @@ export const updateOpenAccessPractitioner = async (
     registerType,
     shareInfoPartners,
     googleToken,
+    facebookToken,
   };
 
   const userUpdated = await new AuthService()
@@ -117,7 +130,8 @@ export const registerOpenAccessUser = async (
   phoneNumber: string,
   registerType: LoginType,
   shareInfoPartners: boolean | undefined,
-  googleToken: string | undefined
+  googleToken: string | undefined,
+  facebookToken: string | undefined
 ): Promise<CreateUserResult> => {
   const registerOpenAccessUserInput: RegisterRequestModel = {
     username,
@@ -126,6 +140,7 @@ export const registerOpenAccessUser = async (
     registerType,
     shareInfoPartners,
     googleToken,
+    facebookToken,
   };
 
   const userCreated = await new AuthService()
@@ -155,6 +170,7 @@ export type CreateUserInfo = {
   shareInfoPartners: boolean | undefined;
   token: string | undefined;
   googleToken: string | undefined;
+  facebookToken: string | undefined;
   tenant: TenantContextType;
 };
 
@@ -170,6 +186,7 @@ export const createUser = async (
     shareInfoPartners,
     token,
     googleToken,
+    facebookToken,
     tenant,
   } = data;
 
@@ -177,9 +194,13 @@ export const createUser = async (
     if (!validateUsername(username)) return CreateUserResult.UsernameInvalid;
   }
 
-  if (!(await checkUsernamePhoneNumber(username, userId, googleToken))) {
-    return CreateUserResult.UsernameExists;
-  }
+  const checkResult = await checkUsernamePhoneNumber(
+    username,
+    userId,
+    googleToken,
+    facebookToken
+  );
+  if (checkResult !== CreateUserResult.Success) return checkResult;
 
   if (tenant.isOpenAccess) {
     return await registerOpenAccessUser(
@@ -188,7 +209,8 @@ export const createUser = async (
       phoneNumber,
       registerType,
       shareInfoPartners,
-      googleToken
+      googleToken,
+      facebookToken
     );
   }
 
