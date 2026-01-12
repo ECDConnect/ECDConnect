@@ -400,9 +400,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     if (isCoach) {
       appDispatch(classroomsForCoachActions.resetClassroomState());
       await appDispatch(
-        classroomsForCoachThunkActions.getClassroomForCoach({
-          id: userData?.id!,
-        })
+        classroomsForCoachThunkActions.getClassroomForCoach({})
       ).unwrap();
       await appDispatch(
         classroomsForCoachThunkActions.getClassroomGroupsForCoach({})
@@ -529,9 +527,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
           ).unwrap())();
         (async (id) =>
           await appDispatch(
-            classroomsForCoachThunkActions.getClassroomForCoach({
-              id: userData?.id!,
-            })
+            classroomsForCoachThunkActions.getClassroomForCoach({})
           ).unwrap())();
         (async () =>
           await appDispatch(
