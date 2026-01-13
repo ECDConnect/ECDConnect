@@ -84,7 +84,7 @@ export const ProgressCaregiverReportSummaryPage: React.FC<
                 <img
                   src={logo}
                   alt="Preschool logo"
-                  className="h-20 w-20 rounded-full object-cover shadow-md"
+                  className="h-36 w-36 rounded-full object-cover shadow-md"
                 />
               )}
             </div>
