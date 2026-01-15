@@ -141,33 +141,34 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
         public List<Child> GetAllChildrenForCoach(
             [Service] IHttpContextAccessor contextAccessor,
-            AuthenticationDbContext dbContext,
-            string userId)
+            AuthenticationDbContext dbContext)
         {
-
-          List<Child> children = [.. dbContext.Children.FromSql($@"
+            var uid = contextAccessor.HttpContext.GetUser().Id;
+            List<Child> children = [.. dbContext.Children.FromSql($@"
                                         SELECT c.* 
                                         FROM ""Child"" c 
                                         JOIN ""Practitioner"" p ON c.""Hierarchy"" LIKE p.""Hierarchy"" || '%'
-                                        WHERE p.""CoachHierarchy"" = {userId}::uuid AND c.""IsActive"" is true
+                                        WHERE p.""CoachHierarchy"" = {uid}::uuid AND c.""IsActive"" is true
                                         ")];
-          return children;
+            return children;
         }
 
        public List<Classroom> GetAllClassroomsForCoach(
             [Service] IHttpContextAccessor contextAccessor,
-            AuthenticationDbContext dbContext,
-            string userId)
+            AuthenticationDbContext dbContext)
         {
+            var uid = contextAccessor.HttpContext.GetUser().Id;
             List<Classroom> classrooms = [.. dbContext.Classrooms.FromSql($@"
                                         SELECT c.* 
                                         FROM ""Classroom"" c 
                                         JOIN ""Practitioner"" p ON c.""UserId"" = p.""UserId""
-                                        WHERE p.""CoachHierarchy"" = {userId}::uuid AND c.""IsActive"" is true
+                                        WHERE p.""CoachHierarchy"" = {uid}::uuid AND c.""IsActive"" is true
                                         ")];
 
             return classrooms;
         }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<ClassroomGroupModel> GetAllClassroomGroupsForCoach(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] IClassroomService classroomService,
