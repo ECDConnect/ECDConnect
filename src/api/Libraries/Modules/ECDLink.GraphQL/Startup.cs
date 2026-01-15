@@ -33,6 +33,10 @@ namespace ECDLink.EGraphQL
 
             var builder = services
               .AddGraphQLServer(maxAllowedRequestSize: maxRequestSize)
+              //.AddErrorFilter<Diagnostic.ErrorFilter>(services => new Diagnostic.ErrorFilter(services))
+              .AddDiagnosticEventListener<Diagnostic.AppServerDiagnosticEventListener>(services => new Diagnostic.AppServerDiagnosticEventListener(services))
+              .AddDiagnosticEventListener<Diagnostic.AppExecutionDiagnosticEventListener>(services => new Diagnostic.AppExecutionDiagnosticEventListener(services))
+              //.AddDiagnosticEventListener<Diagnostic.AppDataLoaderDiagnosticEventListener>(services => new Diagnostic.AppDataLoaderDiagnosticEventListener(services))
               .ModifyOptions(o => o.DefaultResolverStrategy = HotChocolate.Execution.ExecutionStrategy.Serial)
               .ModifyRequestOptions(opt => opt.IncludeExceptionDetails = isDevelopment)
               .AddQueryType<Query>()
