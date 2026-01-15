@@ -111,6 +111,7 @@
     "react-device-detect": "^2.2.2",
     "react-dom": "^17.0.2",
     "react-error-overlay": "^6.0.9",
+    "react-facebook": "^10.0.1",
     "react-ga4": "^2.1.0",
     "react-gtm-module": "^2.0.11",
     "react-helmet": "^6.1.0",
