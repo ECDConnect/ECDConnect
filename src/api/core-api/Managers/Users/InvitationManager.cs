@@ -1,14 +1,11 @@
 ﻿using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using System;
 using System.Linq;
 using static EcdLink.Api.CoreApi.Constants;
-using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace EcdLink.Api.CoreApi.Managers.Users
 {
