@@ -10,6 +10,5 @@ namespace EcdLink.Api.CoreApi.Security.Models.Requests
         public string RegisterType { get; set; } // username, google, facebook
         public bool ShareInfoPartners { get; set; }
         public string GoogleToken { get; set; }
-        public string FacebookToken { get; set; }
     }
 }

@@ -15,7 +15,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useStoreSetup } from '@hooks/useStoreSetup';
 import { useAppDispatch } from '@store';
@@ -31,22 +31,16 @@ import ROUTES from '@/routes/routes';
 
 const token = new URLSearchParams(window.location.search).get('token');
 
-interface OASignUpOrLoginRouteState {
-  signup?: boolean;
-}
-
 export const OASignUpOrLogin: React.FC = () => {
   const tenant = useTenant();
   const appDispatch = useAppDispatch();
+  const [openOaAgreements, setOpenOaAgreements] = useState(false);
+
   const { resetAppStore, resetAuth, resetUser } = useStoreSetup();
   const history = useHistory();
-  const { state } = useLocation<OASignUpOrLoginRouteState>();
   const { isOnline } = useOnlineStatus();
   const isWhitelabel = tenant?.isWhiteLabel;
   const applicationName = tenant?.tenant?.applicationName;
-  const [openOaAgreements, setOpenOaAgreements] = useState(
-    state?.signup === true
-  );
 
   const headerSlide: HeaderSlide[] = [
     {

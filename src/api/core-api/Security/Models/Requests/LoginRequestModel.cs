@@ -7,6 +7,5 @@ namespace EcdLink.Api.CoreApi.Security.Models.Requests
         public string Password { get; set; }
         public string GoogleToken { get; set; }
         public string GoogleCode { get; set; }
-        public string FacebookToken { get; set; }
     }
 }
