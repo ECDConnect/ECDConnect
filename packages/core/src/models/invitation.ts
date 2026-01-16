@@ -47,7 +47,6 @@ export interface CheckUsernamePhoneNumberModel {
   phoneNumber?: string;
   userId?: string;
   googleToken?: string;
-  facebookToken?: string;
 }
 
 export interface UpdateUsernameModel {

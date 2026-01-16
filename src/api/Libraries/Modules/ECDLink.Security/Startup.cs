@@ -117,7 +117,6 @@ namespace ECDLink.Security
             });
 
             services.Configure<AuthenticationGoogleConfig>(configuration.GetSection("Authentication:Google"));
-            services.Configure<AuthenticationFacebookConfig>(configuration.GetSection("Authentication:Facebook"));
         }
     }
 }

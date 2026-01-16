@@ -22,6 +22,7 @@ using ECDLink.Security.Managers;
 using ECDLink.Security.SSO.Google.Configuration;
 using ECDLink.Tenancy.Context;
 using Google.Apis.Auth;
+using Google.Apis.Auth.OAuth2;
 using Google.Apis.Auth.OAuth2.Flows;
 using HotChocolate;
 using Microsoft.AspNetCore.Authorization;
@@ -32,7 +33,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Abstractions;
 using Newtonsoft.Json;
+using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -42,6 +45,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using static EcdLink.Api.CoreApi.Constants;
+using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace ECDLink.Security.Api
 {
@@ -63,8 +67,6 @@ namespace ECDLink.Security.Api
         private readonly IGenericRepository<Invite, Guid> _inviteRepo;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly AuthenticationGoogleConfig _googleConfig;
-        private readonly AuthenticationFacebookConfig _facebookConfig;
-        private readonly ILogger<AuthenticationController> _logger;
 
         public AuthenticationController(
             SignInManager<ApplicationUser> signInManager,
@@ -79,9 +81,7 @@ namespace ECDLink.Security.Api
             HierarchyEngine hierarchyEngine,
             AuthenticationDbContext dbContext,
             IServiceScopeFactory serviceScopeFactory,
-            IOptions<AuthenticationGoogleConfig> googleConfig,
-            IOptions<AuthenticationFacebookConfig> facebookConfig,
-            ILogger<AuthenticationController> logger)
+            IOptions<AuthenticationGoogleConfig> googleConfig)
         {
             _applicationUserId = contextAccessor.HttpContext != null && contextAccessor.HttpContext.GetUser() != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();
 
@@ -97,8 +97,6 @@ namespace ECDLink.Security.Api
             _dbContext = dbContext;
             _serviceScopeFactory = serviceScopeFactory;
             _googleConfig = googleConfig.Value;
-            _facebookConfig = facebookConfig.Value;
-            _logger = logger;
         }
 
         // POST api/auth/login
@@ -127,15 +125,6 @@ namespace ECDLink.Security.Api
                 || (login?.Username?.StartsWith('<') ?? true))
             {
                 return LoginUnauthorizedResult();
-            }
-
-            bool isFacebookAccount = !string.IsNullOrEmpty(login.FacebookToken);
-
-            if (isFacebookAccount)
-            {
-                var result = await ValidateFacebookLogin(login.Username, login.FacebookToken);
-                if (result.Unauthorized != null) return result.Unauthorized;
-                login.Username = result.UserId;
             }
 
             bool isGoogleAccount = !string.IsNullOrEmpty(login.GoogleToken) || !string.IsNullOrEmpty(login.GoogleCode);
@@ -173,7 +162,7 @@ namespace ECDLink.Security.Api
                 return LoginUnauthorizedResult(lockedOut: true);
             }
 
-            if (!isFacebookAccount && !isGoogleAccount && !await _securityManager.IsPasswordValidAsync(user, login.Password))
+            if (!isGoogleAccount && !await _securityManager.IsPasswordValidAsync(user, login.Password))
             {
                 return LoginUnauthorizedResult(lockedOut: await _userManager.IsLockedOutAsync(user));
             }
@@ -227,7 +216,7 @@ namespace ECDLink.Security.Api
             {
                 jwtObj.userMustConfirmAuthCode = latestMessage.IsActive;
             }
-            jwtObj.loginType = isGoogleAccount ? "google" : isFacebookAccount ? "facebook" : "";
+            jwtObj.loginType = isGoogleAccount ? "google" : "";
             jwtObj.userName = user.UserName;
 
             var package = new OkObjectResult(jwtObj);
@@ -475,7 +464,6 @@ namespace ECDLink.Security.Api
         public async Task<IActionResult> CheckUsernamePhoneNumber([FromBody] OAVerifyUsernamePhoneNumberModel verifyModel)
         {
             bool isGoogleAccount = !string.IsNullOrEmpty(verifyModel.GoogleToken);
-            bool isFacebookAccount = !string.IsNullOrEmpty(verifyModel.FacebookToken);
 
             // if both are empty, return error
             if (!string.IsNullOrEmpty(verifyModel.Username) && !string.IsNullOrEmpty(verifyModel.PhoneNumber))
@@ -499,18 +487,6 @@ namespace ECDLink.Security.Api
                     });
                 }
             }
-            if (isFacebookAccount)
-            {
-                var result = await ValidateFacebookLogin(verifyModel.Username, verifyModel.FacebookToken);
-                if (result.Unauthorized != null)
-                {
-                    return BadRequest(new FailedVerificationModel
-                    {
-                        ErrorCode = 1,
-                        Error = "Invalid Facebook token."
-                    });
-                }
-            }
 
             if (!string.IsNullOrEmpty(verifyModel.Username))
             {
@@ -519,8 +495,7 @@ namespace ECDLink.Security.Api
                     .Where(user => user.UserName == verifyModel.Username)
                     .Select(x => new
                     {
-                        x.Id,
-                        x.RegisterType
+                        x.Id
                     })
                     .FirstOrDefaultAsync();
 
@@ -540,35 +515,30 @@ namespace ECDLink.Security.Api
                                 .FirstOrDefaultAsync();
                             if (user.IdNumber != verifyModel.Username)
                             {
-                                return Ok(new FailedVerificationModel
+                                return BadRequest(new FailedVerificationModel
                                 {
                                     ErrorCode = 2,
                                     Error = "Invalid Username"
                                 });
                             }
                         }
-                    }
-                    if (isGoogleAccount && userByUsername.RegisterType == RegisterTypeConstants.GOOGLE)
-                    {
-                        return Ok(new
+                        else
                         {
-                            StatusCode = 3,
-                            Message = "Username exists already, login"
+                            return BadRequest(new FailedVerificationModel
+                            {
+                                ErrorCode = 2,
+                                Error = "Invalid Username"
+                            });
+                        }
+                    }
+                    else
+                    {
+                        return BadRequest(new FailedVerificationModel
+                        {
+                            ErrorCode = 2,
+                            Error = "Invalid Username"
                         });
                     }
-                    if (isFacebookAccount && userByUsername.RegisterType == RegisterTypeConstants.FACEBOOK)
-                    {
-                        return Ok(new
-                        {
-                            StatusCode = 3,
-                            Message = "Username exists already, login"
-                        });
-                    }
-                    return Ok(new 
-                    {
-                        StatusCode = 4,
-                        Error = "Username exists already."
-                    });
                 }
             }
 
@@ -593,11 +563,7 @@ namespace ECDLink.Security.Api
                 }
             }
 
-            return Ok(new
-            {
-                StatusCode = 1,
-                Message = "Ok"
-            });
+            return Ok();
         }
 
         [Route("add-oa-practitioner")]
@@ -1059,36 +1025,6 @@ namespace ECDLink.Security.Api
             return new ValidateGoogleLoginResult { Unauthorized = LoginUnauthorizedResult(message: "Invalid Google token or code.") };
         }
 
-        private sealed class ValidateFacebookLoginResult
-        {
-            public UnauthorizedObjectResult Unauthorized { get; set; }
-            public string UserId { get; set; }
-        }
 
-        private async Task<ValidateFacebookLoginResult> ValidateFacebookLogin(string username, string token)
-        {
-            try
-            {
-                using var client = new HttpClient();
-                var debugTokenUrl = $"https://graph.facebook.com/debug_token?input_token={token}&access_token={_facebookConfig.AppId}|{_facebookConfig.AppSecret}"; // Use app secret
-                var debugResponse = await client.GetAsync(debugTokenUrl);
-                if (!debugResponse.IsSuccessStatusCode)
-                {
-                    return new ValidateFacebookLoginResult() { Unauthorized = LoginUnauthorizedResult(message: "Facebook token validation failed.") };
-                }
-                var responseData = await debugResponse.Content.ReadAsStringAsync();
-                var result = JsonConvert.DeserializeObject<SSO.Facebook.FacebookTokenDebugResponse>(responseData);
-                if (result?.Data?.UserId != username)
-                {
-                    return new ValidateFacebookLoginResult() { Unauthorized = LoginUnauthorizedResult(message: "Facebook token validation failed.") };
-                }
-                return new ValidateFacebookLoginResult() { UserId = result.Data.UserId };
-                }
-            catch (Exception ex)
-            {
-                _logger.LogError("ValidateFacebookLogin failed", ex);
-                return new ValidateFacebookLoginResult() { Unauthorized = LoginUnauthorizedResult(message: "Exception occurred." ) }; 
-            }
-        }
     }
 }

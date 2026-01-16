@@ -1,3 +1,7 @@
+using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Threading.Tasks;
+
 namespace ECDLink.Security.SSO.Google.Configuration
 {
     public class AuthenticationGoogleConfig

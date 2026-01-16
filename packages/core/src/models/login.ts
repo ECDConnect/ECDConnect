@@ -1,5 +1,3 @@
-export type LoginType = 'google' | 'facebook' | 'username';
-
 export interface LoginRequestModel {
   username?: string;
   email?: string;
@@ -10,9 +8,9 @@ export interface LoginRequestModel {
   idField?: string;
   googleToken?: string;
   googleCode?: string;
-  facebookToken?: string;
-  loginType?: LoginType;
 }
+
+export type LoginType = 'google' | 'facebook' | 'username';
 
 export interface AuthUser {
   auth_token: string;
@@ -36,5 +34,4 @@ export interface RegisterRequestModel {
   registerType?: LoginType;
   shareInfoPartners?: boolean;
   googleToken?: string;
-  facebookToken?: string;
 }
