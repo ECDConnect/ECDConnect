@@ -546,6 +546,11 @@ namespace ECDLink.Security.Api
                                     Error = "Invalid Username"
                                 });
                             }
+                            return Ok(new
+                            {
+                                StatusCode = 1,
+                                Message = "Ok"
+                            });
                         }
                     }
                     if (isGoogleAccount && userByUsername.RegisterType == RegisterTypeConstants.GOOGLE)

@@ -27,6 +27,7 @@ import {
   CreateUserResult,
   validateUsername,
 } from '@/utils/user/user-registration.utils';
+import { isEmail } from '@/utils/common/string.utils';
 
 const specialCharactersMessageErrorText = `Usernames can only include letters, numbers, . , and @. Please remove any other special characters.`;
 interface CreateUserFormProps {
@@ -143,20 +144,17 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
         setMessageError(specialCharactersMessageErrorText);
         break;
       case CreateUserResult.UsernameExists:
-        if (registerType === 'username') {
-          // setMessageError(
-          //   `Username already exists! Try using your email address, phone number, or add a number/letter`
-          // );
+        if (registerType === 'username' && isEmail(username)) {
           await handleUsernameExists();
         } else {
           setMessageError(
-            `Username already exists! Try using a differrent Google account or signup with 'Create a username'`
+            `Username already exists! Try using your email address, phone number, or add a number/letter`
           );
+          setNotification({
+            title: ` Failed to check the username!`,
+            variant: NOTIFICATION.ERROR,
+          });
         }
-        setNotification({
-          title: ` Failed to check the username!`,
-          variant: NOTIFICATION.ERROR,
-        });
         break;
       case CreateUserResult.FailedCreateUsername:
         setNotification({
