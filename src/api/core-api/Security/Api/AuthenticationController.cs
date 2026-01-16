@@ -464,7 +464,7 @@ namespace ECDLink.Security.Api
             else
             {
                 var token = await _securityCodeManager.GenerateTokenAsync(user);
-                // await _notificationManager.SendOAWLAuthenticationCodeAsync(user, token);
+                await _notificationManager.SendOAWLAuthenticationCodeAsync(user, token);
                 return Ok(user.SecurityStamp);
             }
         }
