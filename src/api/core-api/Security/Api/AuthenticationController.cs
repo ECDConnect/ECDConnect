@@ -572,7 +572,7 @@ namespace ECDLink.Security.Api
         public async Task<IActionResult> AddOAPractitioner([FromBody] OAPractitionerModel addOAPractitionerModel)
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
-            var userId = Guid.NewGuid();
+            Guid userId = Guid.NewGuid();
             ApplicationUser newUser = null;
             var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(addOAPractitionerModel.PhoneNumber);
 
@@ -589,6 +589,7 @@ namespace ECDLink.Security.Api
                 _inviteRepo.Update(invite);
 
                 var existingUser = await _userManager.FindByIdAsync(invite.UserId);
+                userId = existingUser.Id;
                 existingUser.UserName = addOAPractitionerModel.Username;
                 existingUser.PendingPhoneNumber = normalizePhoneNumber;
                 existingUser.PhoneNumberConfirmed = false;
@@ -615,7 +616,6 @@ namespace ECDLink.Security.Api
                         Error = "Update user failure"
                     });
                 }
-
             }    
             else if (RegisterTypeConstants.USERNAME == addOAPractitionerModel.RegisterType)
             {

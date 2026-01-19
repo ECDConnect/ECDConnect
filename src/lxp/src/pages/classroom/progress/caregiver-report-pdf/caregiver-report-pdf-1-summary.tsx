@@ -1,4 +1,4 @@
-import { Card, Divider, Typography } from '@ecdlink/ui';
+import { Card, Divider, ProfileAvatar, Typography } from '@ecdlink/ui';
 import { format } from 'date-fns';
 import lightbulbEmoji from '@/assets/ECD_Connect_lightbulb.png';
 import childrePlayingImg from '@/assets/progress-reports/children-playing.png';
@@ -20,6 +20,7 @@ export type ProgressCaregiverReportPageProps = {
   goodProgressWith: string;
   howCanCaregiverSupport: string;
   totalPages: number;
+  logo?: string;
 };
 
 export const ProgressCaregiverReportSummaryPage: React.FC<
@@ -37,6 +38,7 @@ export const ProgressCaregiverReportSummaryPage: React.FC<
   goodProgressWith,
   howCanCaregiverSupport,
   totalPages,
+  logo,
 }) => {
   const years = Math.floor(ageInMonths / 12); // integer division for years
   const months = ageInMonths % 12; // remainder for months
@@ -51,14 +53,13 @@ export const ProgressCaregiverReportSummaryPage: React.FC<
       <div className="mb-4 flex flex-row">
         <div className="flex flex-col">
           <Typography
-            type="h1"
+            type="body"
             color="textDark"
-            text={'Progress report'}
-            className="mb-2"
+            text={`Progress report - ${childFullName}`}
+            className="mb-2 text-2xl font-bold"
           />
-          <Typography type="h1" color="textDark" text={childFullName} />
           <div
-            className={`bg-quatenary mt-3 ml-auto mt-6 flex flex-shrink-0 flex-row items-center justify-between rounded-full px-3 py-1`}
+            className={`bg-quatenary mt-3 mt-6 flex flex-shrink-0 flex-row justify-between rounded-full px-3 py-1`}
             style={{ height: 'fit-content', width: 'fit-content' }}
           >
             <Typography
@@ -74,28 +75,68 @@ export const ProgressCaregiverReportSummaryPage: React.FC<
             />
           </div>
         </div>
-        <Card className="bg-uiBg ml-auto rounded-2xl p-4">
-          <Typography
-            type="h3"
-            color="textDark"
-            text={classroomName}
-            className="mb-2"
-          />
-          <Typography
-            type="small"
-            color="textDark"
-            text={`${childFirstName}'s practitioner: ${practitionerName}`}
-          />
-          <Typography
-            type="small"
-            color="textDark"
-            text={`Principal: ${principalName}`}
-          />
-          <Typography
-            type="small"
-            color="textDark"
-            text={`Phone number: ${principalPhoneNumber}`}
-          />
+      </div>
+      <div className="flex flex-row">
+        <Card className="bg-uiBg w-full rounded-2xl p-6">
+          <div className="flex items-start gap-4">
+            <div className="flex-shrink-0">
+              {logo && (
+                <img
+                  src={logo}
+                  alt="Preschool logo"
+                  className="h-36 w-36 rounded-full object-cover shadow-md"
+                />
+              )}
+            </div>
+            <div className="flex flex-col">
+              <Typography
+                type="h3"
+                color="textDark"
+                weight="bold"
+                text={classroomName}
+                className="mb-2"
+              />
+              <div className="flex flex-wrap items-center gap-1">
+                <Typography
+                  type="small"
+                  color="textDark"
+                  weight="bold"
+                  text={`${childFirstName}'s practitioner:`}
+                />
+                <Typography
+                  type="small"
+                  color="textDark"
+                  text={practitionerName}
+                />
+              </div>
+              <div className="flex flex-wrap items-center gap-1">
+                <Typography
+                  type="small"
+                  color="textDark"
+                  weight="bold"
+                  text="Principal:"
+                />
+                <Typography
+                  type="small"
+                  color="textDark"
+                  text={principalName}
+                />
+              </div>
+              <div className="flex flex-wrap items-center gap-1">
+                <Typography
+                  type="small"
+                  color="textDark"
+                  weight="bold"
+                  text="Phone number:"
+                />
+                <Typography
+                  type="small"
+                  color="textDark"
+                  text={principalPhoneNumber}
+                />
+              </div>
+            </div>
+          </div>
         </Card>
       </div>
       <Divider dividerType="dashed" className="mb-4" />

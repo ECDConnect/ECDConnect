@@ -160,7 +160,7 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
         actionName: 'Edit',
         buttonColor: 'quatenary',
         textColor: 'white',
-        actionIcon: 'PencilIcon',
+        actionIcon: isPrincipal ? 'PencilIcon' : 'EyeIcon',
         buttonType:
           !!practitioners && practitioners.length ? 'filled' : 'ghost',
         onActionClick: () => {

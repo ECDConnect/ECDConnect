@@ -6,11 +6,12 @@ import { useSelector } from 'react-redux';
 import ROUTES from '@/routes/routes';
 import { useProgressForChildren } from '@/hooks/useProgressForChildren';
 import { classroomsSelectors } from '@/store/classroom';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export const ProgressViewReportsSummarySelectClassroomGroupAndAgeGroup: React.FC =
   () => {
     const history = useHistory();
-
+    const { isOnline } = useOnlineStatus();
     const { children, currentReportingPeriodForSummary } =
       useProgressForChildren();
     const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
@@ -48,11 +49,13 @@ export const ProgressViewReportsSummarySelectClassroomGroupAndAgeGroup: React.FC
 
     return (
       <BannerWrapper
-        size={'small'}
+        size="medium"
+        renderBorder={true}
         title={`Child progress summary`}
         onBack={() =>
           history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 2 })
         }
+        displayOffline={!isOnline}
       >
         <div className={'flex h-full flex-col px-4 pb-4 pt-4'}>
           {/* SELECT CLASSROOM GROUP */}

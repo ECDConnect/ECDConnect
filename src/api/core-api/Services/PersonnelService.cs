@@ -753,6 +753,7 @@ namespace ECDLink.Api.CoreApi.Services
                     UpdatedBy = _applicationUserId.ToString(),
                     PrincipalHierarchy = principalId,
                     StartDate = DateTime.Now,
+                    DateLinked = DateTime.Now
                 });
 
             if (principalId == Guid.Empty)

@@ -382,7 +382,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var user = contextAccessor.HttpContext.GetUser();
             var uId = user?.Id ?? throw new ArgumentNullException("User.Id");
 
-            var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
+            var childRepo = repoFactory.CreateGenericRepository<Child>(userContext: uId);
             var practRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
             var classroomGroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
             var classReassignmentHistoryRepo = repoFactory.CreateGenericRepository<ClassReassignmentHistory>();
@@ -1453,7 +1453,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 #region NOT REGISTERED ON APP
                 if (!practitioner.IsRegistered.HasValue || !practitioner.IsRegistered.Value)
                 {
-                    notification.Subject = $"Not registered on {applicationName}";
+                    notification.Subject = "Has not joined preschool";
                     notification.Icon = MetricsIconEnum.Error.ToString();
                     notification.Color = MetricsColorEnum.Error.ToString();
                     notification.Message = "";

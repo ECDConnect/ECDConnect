@@ -48,7 +48,6 @@ export const ProgressViewReportsSummary: React.FC = () => {
   );
 
   const { asyncGenerateReport } = useProgressGenerateSummaryPdfReport();
-
   const splitPdf = useMemo(() => {
     if (reportsSummary.length < 3) {
       return false;
@@ -108,9 +107,11 @@ export const ProgressViewReportsSummary: React.FC = () => {
 
   return (
     <BannerWrapper
-      size={'small'}
+      size="medium"
+      renderBorder={true}
       title={`${classroomGroup?.name} progress summary`}
       onBack={() => handleGoBack()}
+      displayOffline={!isOnline}
     >
       <div className={'flex h-full flex-col px-4 pb-4 pt-4'}>
         <Typography
