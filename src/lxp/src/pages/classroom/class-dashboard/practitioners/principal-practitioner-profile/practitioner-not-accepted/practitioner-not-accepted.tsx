@@ -27,6 +27,8 @@ export const PractitionerNotAccepted: React.FC<
   const userAuth = useSelector(authSelectors.getAuthUser);
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const appDispatch = useAppDispatch();
+  const userName =
+    practitioner?.user?.firstName || practitioner?.user?.userName;
 
   const removePractitioner = async () => {
     await new PractitionerService(
@@ -44,13 +46,13 @@ export const PractitionerNotAccepted: React.FC<
       activeTabIndex: BusinessTabItems.STAFF,
     });
     showMessage({
-      message: `${practitioner?.user?.firstName} removed`,
+      message: `${userName} removed`,
     });
   };
 
   return (
     <BannerWrapper
-      title={`${practitioner?.user?.firstName} ${
+      title={`${userName} ${
         !!practitioner.user?.surname ? practitioner.user?.surname : ''
       }`}
       color={'primary'}
@@ -65,16 +67,14 @@ export const PractitionerNotAccepted: React.FC<
         <Alert
           className="mt-10 w-11/12 rounded-xl"
           type={'error'}
-          title={`${practitioner?.user?.firstName} has not agreed to join ${
-            classroom?.name
-          } on ${tenant.tenant?.applicationName}. If ${
-            practitioner.user?.firstName
-          } does not register by ${format(
+          title={`${userName} has not agreed to join ${classroom?.name} on ${
+            tenant.tenant?.applicationName
+          }. If ${userName} does not register by ${format(
             addDays(new Date(practitioner.dateLinked!), 7),
             'LLL d'
           )}, this profile will be deleted.`}
           list={[
-            `If you added ${practitioner?.user?.firstName} by mistake, please remove them from you preschool.`,
+            `If you added ${userName} by mistake, please remove them from your preschool.`,
           ]}
         />
       </div>

@@ -169,6 +169,23 @@ class AuthService {
     return true;
   }
 
+  async SendNewInvitation(username: string, token: string): Promise<boolean> {
+    const BASE_URL = Config.authApi;
+    const response = await api(BASE_URL).post(
+      APIs.sendNewInvitation,
+      JSON.stringify({
+        token,
+        username,
+      })
+    );
+
+    const dataResponse = getDataResponse<boolean>(response);
+
+    if (dataResponse.dataError) return false;
+
+    return true;
+  }
+
   async RefreshToken(currentToken: string): Promise<AuthUser | undefined> {
     const BASE_URL = Config.authApi;
 

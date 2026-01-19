@@ -19,6 +19,7 @@ export const transitionChildWrapper = (position: DialogPosition) =>
     position !== DialogPosition.Full ? 'pt-4 px-4' : 'h-screen'
   } text-center`;
 export const overlay = 'fixed inset-0 opacity-50 bg-gray-500';
+export const fullOverlay = 'fixed inset-0 opacity-100 bg-gray-500';
 
 export const contentWrapper = (position: DialogPosition) =>
   `align-bottom max-h-screen overflow-y-auto ${

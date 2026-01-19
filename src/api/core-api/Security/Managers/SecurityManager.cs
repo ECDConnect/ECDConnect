@@ -143,9 +143,9 @@ namespace EcdLink.Api.CoreApi.Security.Managers
         public async Task<ApplicationUser> GetUserByIdAsync(Guid id)
         {
             return await (from u in _dbContext.Users
-                          where u.Id == id
-                              && u.TenantId == TenantExecutionContext.Tenant.Id
-                          select u).FirstOrDefaultAsync();
+                    where u.Id == id
+                        && u.TenantId == TenantExecutionContext.Tenant.Id
+                    select u).FirstOrDefaultAsync();
         }
 
         public async Task<ApplicationUser> GetUserByNameAsync(string username)
@@ -181,8 +181,8 @@ namespace EcdLink.Api.CoreApi.Security.Managers
             }
             var tenantId = TenantExecutionContext.Tenant.Id;
             var user = await _userManager.Users
-                        .Where(u => u.IsActive
-                            && u.PhoneNumber == phoneNumber
+                        .Where(u => u.IsActive 
+                            && u.PhoneNumber == phoneNumber 
                             && u.TenantId == tenantId)
                         .OrderByDescending(u => u.InsertedDate)
                         .FirstOrDefaultAsync();

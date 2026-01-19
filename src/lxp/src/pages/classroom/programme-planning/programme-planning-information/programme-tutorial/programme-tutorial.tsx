@@ -240,7 +240,11 @@ export const ProgrammeTutorial: React.FC<ProgrammeTutorialProps> = ({
         type="info"
         button={
           <Button
-            onClick={() => downloadPdf()}
+            onClick={() =>
+              history.replace(
+                ROUTES.PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP
+              )
+            }
             className="w-full"
             size="small"
             color="quatenary"

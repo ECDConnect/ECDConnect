@@ -18,6 +18,7 @@ import ROUTES from '@/routes/routes';
 import { TabsItems } from '../../class-dashboard/class-dashboard.types';
 import SearchHeader from '@/components/search-header/search-header';
 import { ChildData } from '../../child-list/child-list.types';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export const SelectChildToTrack: React.FC = () => {
   const [searchTextActive, setSearchTextActive] = useState(false);
@@ -26,7 +27,7 @@ export const SelectChildToTrack: React.FC = () => {
   >([]);
 
   const history = useHistory();
-
+  const { isOnline } = useOnlineStatus();
   const { currentReportingPeriod, childReports, children } =
     useProgressForChildren();
 
@@ -163,7 +164,8 @@ export const SelectChildToTrack: React.FC = () => {
 
   return (
     <BannerWrapper
-      size={'small'}
+      size="medium"
+      renderBorder={true}
       title={`Track progress - report ${currentReportingPeriod?.reportNumber}`}
       subTitle="Step 1 of 1"
       onBack={() =>
@@ -171,6 +173,7 @@ export const SelectChildToTrack: React.FC = () => {
           activeTabIndex: TabsItems.PROGRESS,
         })
       }
+      displayOffline={!isOnline}
     >
       <div className="mt-2 flex flex-col p-4">
         <Typography

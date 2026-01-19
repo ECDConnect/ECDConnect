@@ -3,22 +3,24 @@ import { ProgressCaregiverReportSkillsPage } from './caregiver-report-pdf-2-skil
 import { ProgressCaregiverReportWorkingOnPage } from './caregiver-report-pdf-3-working-on';
 import { ProgressCaregiverReportBuildingPage } from './caregiver-report-pdf-4-building';
 import { ProgressCaregiverResourcesPage } from './caregiver-report-pdf-5-resources';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { progressTrackingSelectors } from '@/store/progress-tracking';
 import { ProgressCaregiverReportWorkingOnNonePage } from './caregiver-report-pdf-3-working-on-none';
 import { ProgressCaregiverReportBuildingNonePage } from './caregiver-report-pdf-4-building-none';
 import { getProgressAgeGroupForChild } from '@/utils/child/child-progress-report.utils';
 import { useProgressForChild } from '@/hooks/useProgressForChild';
+import { classroomsSelectors } from '@/store/classroom';
 
 export type ProgressCaregiverReportPdfProps = {
   childId: string;
   reportId: string;
+  onRendered: any;
 };
 
 export const ProgressCaregiverReportPdf: React.FC<
   ProgressCaregiverReportPdfProps
-> = ({ childId, reportId }) => {
+> = ({ childId, reportId, onRendered }) => {
   const { child, detailedReports } = useProgressForChild(childId);
 
   const report = detailedReports.find((x) => x.id === reportId)!;
@@ -30,6 +32,8 @@ export const ProgressCaregiverReportPdf: React.FC<
   const categories = useSelector(
     progressTrackingSelectors.getProgressTrackingCategories()
   );
+
+  const classroom = useSelector(classroomsSelectors.getClassroom);
 
   const skillsByCategory = useMemo(() => {
     return categories
@@ -81,6 +85,15 @@ export const ProgressCaregiverReportPdf: React.FC<
     ageGroups
   );
 
+  useEffect(() => {
+    // Small delay to ensure images/fonts are loaded
+    const timer = setTimeout(() => {
+      if (onRendered) onRendered();
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [onRendered]);
+
   return (
     <>
       <ProgressCaregiverReportSummaryPage
@@ -98,6 +111,7 @@ export const ProgressCaregiverReportPdf: React.FC<
         principalPhoneNumber={report.principalPhoneNumber || ''}
         reportingPeriodEndDate={new Date(report.reportingPeriodEndDate)}
         totalPages={totalPages}
+        logo={classroom?.classroomImageUrl}
       />
 
       <div className="mt-12">

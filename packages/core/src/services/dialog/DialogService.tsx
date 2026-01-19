@@ -8,6 +8,7 @@ export interface DialogModalOptions {
   color?: string;
   transitionClassName?: string;
   blocking?: boolean;
+  fullOverlay?: boolean;
 }
 
 const DialogServiceContext = React.createContext<

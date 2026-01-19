@@ -16,11 +16,8 @@ export const useProgressForClassAndAgeGroupCoach = (
     progressTrackingSelectors.getProgressTrackingCategories()
   );
 
-  const {
-    childReports: allChildReports,
-    currentReportingPeriod,
-    currentReportingPeriodForSummary,
-  } = useProgressForChildrenCoach(practitionerId, true);
+  const { childReports: allChildReports, currentReportingPeriodForSummary } =
+    useProgressForChildrenCoach(practitionerId, true);
 
   const reportsSummary: ProgressReportsCategorySummary[] = useMemo(() => {
     const skillsToWorkOn = allChildReports
@@ -61,7 +58,6 @@ export const useProgressForClassAndAgeGroupCoach = (
   }, [allAgeGroups]);
 
   return {
-    currentReportingPeriod,
     allChildReports,
     reportsSummary,
     ageGroup,
