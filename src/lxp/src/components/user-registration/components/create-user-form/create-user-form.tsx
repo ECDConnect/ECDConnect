@@ -5,12 +5,15 @@ import {
   initialPasswordValue,
   NOTIFICATION,
   passwordSchema,
+  useDialog,
   useNotifications,
   useTheme,
 } from '@ecdlink/core';
 import {
+  ActionModal,
   BannerWrapper,
   Button,
+  DialogPosition,
   FormInput,
   PasswordInput,
   Typography,
@@ -24,6 +27,7 @@ import {
   CreateUserResult,
   validateUsername,
 } from '@/utils/user/user-registration.utils';
+import { isEmail } from '@/utils/common/string.utils';
 
 const specialCharactersMessageErrorText = `Usernames can only include letters, numbers, . , and @. Please remove any other special characters.`;
 interface CreateUserFormProps {
@@ -50,6 +54,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
   const { theme } = useTheme();
   const history = useHistory();
   const tenant = useTenant();
+  const dialog = useDialog();
   const [isLoading, setIsLoading] = useState(false);
   const [username, setUsername] = useState('');
   const [messageError, setMessageError] = useState('');
@@ -74,6 +79,43 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
     }
   }, [isGoogleAccount, googleEmail]);
 
+  const handleUsernameExists = async () => {
+    dialog({
+      position: DialogPosition.Middle,
+      blocking: true,
+      color: 'bg-white',
+      render: (onSubmit) => {
+        return (
+          <ActionModal
+            className={'mx-4'}
+            title={`This email is already linked to an account`}
+            detailText={`You already have an account using ${username}. On the login screen, enter this email as your username, then enter your password.`}
+            icon={'ExclamationCircleIcon'}
+            iconSize={48}
+            iconColor={'alertMain'}
+            // iconBorderColor={'white'}
+            actionButtons={[
+              {
+                text: 'Log in',
+                colour: 'quatenary',
+                type: 'filled',
+                onClick: () => {
+                  onSubmit();
+                  history.push(ROUTES.LOGIN, {
+                    username,
+                    loginType: registerType,
+                  });
+                },
+                textColour: 'white',
+                leadingIcon: 'ArrowCircleRightIcon',
+              },
+            ]}
+          />
+        );
+      },
+    });
+  };
+
   const handleCreateUser = async () => {
     setIsLoading?.(true);
     const result = await createUser({
@@ -84,7 +126,8 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
       registerType,
       shareInfoPartners,
       token,
-      googleToken: googleCredential,
+      googleToken: undefined,
+      facebookToken: undefined,
       tenant,
     });
     switch (result) {
@@ -101,19 +144,17 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
         setMessageError(specialCharactersMessageErrorText);
         break;
       case CreateUserResult.UsernameExists:
-        if (registerType === 'username') {
+        if (registerType === 'username' && isEmail(username)) {
+          await handleUsernameExists();
+        } else {
           setMessageError(
             `Username already exists! Try using your email address, phone number, or add a number/letter`
           );
-        } else {
-          setMessageError(
-            `Username already exists! Try using a differrent Google account or signup with 'Create a username'`
-          );
+          setNotification({
+            title: ` Failed to check the username!`,
+            variant: NOTIFICATION.ERROR,
+          });
         }
-        setNotification({
-          title: ` Failed to check the username!`,
-          variant: NOTIFICATION.ERROR,
-        });
         break;
       case CreateUserResult.FailedCreateUsername:
         setNotification({
@@ -125,6 +166,13 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
         setNotification({
           title: `Registration failed. Please try again.`,
           variant: NOTIFICATION.ERROR,
+        });
+        break;
+      case CreateUserResult.UsernameExistsLogin:
+        history.push(ROUTES.LOGIN, {
+          username,
+          password,
+          loginType: registerType,
         });
         break;
       case CreateUserResult.SuccessLogin:
