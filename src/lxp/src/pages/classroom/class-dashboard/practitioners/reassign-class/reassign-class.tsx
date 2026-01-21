@@ -142,7 +142,6 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
     resolver: yupResolver(reassignClassSchema),
     mode: 'onChange',
     defaultValues: {
-      date: new Date().toString(),
       practitioner: practitionerId ? practitionerId : '',
     },
   });
@@ -327,8 +326,6 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
     leaveEnd: Date
   ) => {
     if (!p.absentees?.length) return true;
-    leaveStart.setHours(0, 0, 0);
-    leaveEnd.setHours(23, 0, 0);
     return !p.absentees.some((abs) => {
       const absStart = abs.absentDate ? new Date(abs.absentDate) : new Date();
       const absEnd = abs.absentDateEnd ? new Date(abs.absentDateEnd) : absStart;
@@ -337,19 +334,18 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   };
 
   const availablePractitioners = useMemo(() => {
-    if (!selectedDate) return [];
-
-    const leaveStart = new Date(selectedDate);
-    const leaveEnd = endDate ?? leaveStart;
-
-    leaveStart.setHours(0, 0, 0, 0);
-    leaveEnd.setHours(23, 59, 59, 999);
+    let leaveStart = selectedDate ? new Date(selectedDate) : new Date();
+    let leaveEnd = endDate ?? leaveStart;
 
     return [...(practitioners ?? []), practitionerUser]
       .filter(
         (p) =>
           !!p?.user?.firstName &&
-          isPractitionerAvailableDuringPeriod(p, leaveStart, leaveEnd)
+          isPractitionerAvailableDuringPeriod(
+            p,
+            new Date(leaveStart.setHours(0, 0, 0, 0)),
+            new Date(leaveEnd.setHours(23, 59, 59, 999))
+          )
       )
       .map((p) => ({
         label: `${p?.user?.firstName ?? ''} ${p?.user?.surname ?? ''}`.trim(),
@@ -743,6 +739,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                           ) ?? []
                         }
                         fillType="clear"
+                        disabled={!selectedDate}
                         label={`Who will teach the ${item?.name} class instead?`}
                         fullWidth
                         className={'mt-3 w-full'}
