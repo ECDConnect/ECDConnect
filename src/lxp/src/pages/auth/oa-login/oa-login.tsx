@@ -482,7 +482,15 @@ export const OaLogin: React.FC = () => {
             <Divider title="OR" />
           </div>
         )}
-        <form>
+        <Alert
+          className={'mt-5 mb-3'}
+          message={`${
+            tenant?.tenant?.applicationName || 'ECD Connect'
+          } is currently not working because we are doing important maintenance on the app. <br/><br/> We are sorry for any inconvenience this causes. Thank you for your patience.
+                `}
+          type="info"
+        />
+        {/* <form>
           <div>
             <FormInput<OaLoginModel>
               label={'Username or email'}
@@ -563,7 +571,7 @@ export const OaLogin: React.FC = () => {
           >
             <Typography type="help" color="white" text={'Log in'}></Typography>
           </Button>
-        </form>
+        </form> */}
         {username && (
           <Dialog
             visible={openVerifyPhoneNumber}
