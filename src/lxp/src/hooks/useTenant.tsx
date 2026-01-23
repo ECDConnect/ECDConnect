@@ -50,6 +50,11 @@ const Tenants = {
     themePath: '',
     tenantType: TenantType.OpenAccess,
   },
+  'app.staging.ecdconnect.co.za': {
+    applicationName: 'ECD Connect',
+    themePath: '',
+    tenantType: TenantType.OpenAccess,
+  },
   'ntataise.ecdconnect.co.za': {
     applicationName: 'NtataiseConnect',
     themePath:
@@ -74,12 +79,23 @@ const Tenants = {
       'https://ecdconnectstoragesa.blob.core.windows.net/theme/dc6b770d-6898-4d8e-bbdf-f8ceeda69ece_theme.json',
     tenantType: TenantType.WhiteLabel,
   },
+  'tnconnect.staging.ecdconnect.co.za': {
+    applicationName: 'True North Connect',
+    themePath:
+      'https://ecdconnectstoragesa.blob.core.windows.net/theme/dc6b770d-6898-4d8e-bbdf-f8ceeda69ece_theme.json',
+    tenantType: TenantType.WhiteLabel,
+  },
   'localhost:3005': {
     applicationName: 'White Label Tenant',
     themePath: '',
     tenantType: TenantType.WhiteLabel,
   },
   'whitelabel.ecdconnect.co.za': {
+    applicationName: 'White Label Tenant',
+    themePath: '',
+    tenantType: TenantType.WhiteLabel,
+  },
+  'whitelabel.staging.ecdconnect.co.za': {
     applicationName: 'White Label Tenant',
     themePath: '',
     tenantType: TenantType.WhiteLabel,
