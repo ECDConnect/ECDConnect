@@ -25,6 +25,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return new TenantModel(TenantExecutionContext.Tenant);
         }
 
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.View)]
         public List<Language> GetAllContentLanguages(
             [Service] ContentManagementDbContext _context, 
             string contentType)
