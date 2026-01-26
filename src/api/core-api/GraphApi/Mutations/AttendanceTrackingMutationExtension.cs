@@ -20,6 +20,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class AttendanceTrackingMutationExtension
     {
+        
         [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Create)]
         public async Task<bool> TrackAttendance(
           [Service] AttendanceTrackingRepository trackingRepository,

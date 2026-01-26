@@ -193,7 +193,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return metrics;
         }
 
-
+        [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public List<ClassroomMetricReport> GetClassAttendanceByUser(
                     [Service] AttendanceTrackingRepository attendanceRepo,
                     [Service] AttendanceService attendanceService,
@@ -949,6 +949,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return missingRegisterDayCount;
         }
 
+        [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public IEnumerable<DateTime> RemoveHolidays(IEnumerable<DateTime> days, List<Holiday> holidays)
         {
             var holidayDates = holidays.Select(x => x.Day);
@@ -956,6 +957,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return days.Except(holidayDates);
         }
 
+        [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public IEnumerable<DateTime> RemoveWeekendDays(IEnumerable<DateTime> days)
         {
             var weekendDays = new List<DayOfWeek>() { DayOfWeek.Saturday, DayOfWeek.Sunday };
@@ -964,6 +966,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         // TODO: Move to ChildProgressReportQuery
+        [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public ChildProgressReportsStatus GetChildProgressReportsStatus(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,

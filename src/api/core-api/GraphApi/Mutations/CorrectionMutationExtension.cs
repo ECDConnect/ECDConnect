@@ -1,7 +1,10 @@
+using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Hierarchy.Entities;
 using ECDLink.DataAccessLayer.Repositories.Factories;
+using ECDLink.EGraphQL.Authorization;
+using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
@@ -19,6 +22,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
         #region Service Calls       
 
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public async Task<bool> CorrectDuplicateHierarchies([Service] IHttpContextAccessor contextAccessor, HierarchyEngine hierarchyEngine, IGenericRepositoryFactory repositoryFactory)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;

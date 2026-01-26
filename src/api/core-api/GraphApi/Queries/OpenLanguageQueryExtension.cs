@@ -1,4 +1,5 @@
-﻿using ECDLink.Core.Services.Interfaces;
+﻿
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using HotChocolate;
 using HotChocolate.Types;
@@ -10,6 +11,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     public class OpenLanguageQueryExtension
     {
         [GraphQLType("[Language]!")]
+        // Skip permission, because this is called before login
         public IEnumerable<Language> GetOpenLanguage(
             [Service] ILocaleService<Language> localeService)
         {

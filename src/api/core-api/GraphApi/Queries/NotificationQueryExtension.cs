@@ -31,7 +31,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [UseSorting]        
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.View)]
         public List<Notification> GetAllNotifications(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] ApplicationUserManager userManager,
@@ -136,9 +136,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return notifications;
         }
 
+        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.View)]
         public List<MessageTemplate> GetAllTemplates(
-[Service] IHttpContextAccessor contextAccessor,
-IGenericRepositoryFactory repoFactory, string templateId)
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory, string templateId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateGenericRepository<MessageTemplate>(userContext: uId);
@@ -148,7 +149,7 @@ IGenericRepositoryFactory repoFactory, string templateId)
             return templates;
         }
 
-
+        [Permission(PermissionGroups.PORTAL, GraphActionEnum.View)]
         public List<WardModel> GetAllWards(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory)
@@ -159,6 +160,7 @@ IGenericRepositoryFactory repoFactory, string templateId)
         }
 
 
+        [Permission(PermissionGroups.PORTAL, GraphActionEnum.View)]
         public List<MessageLogModel> GetAllMessageLogsForAdmin(
             [Service] IDbContextFactory<AuthenticationDbContext> dbContextFactory,
             [Service] INotificationService notificationService,
@@ -259,7 +261,7 @@ IGenericRepositoryFactory repoFactory, string templateId)
             return messages;
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.View)]
         public async Task<int> GetUserCountForMessageCriteria([Service] IHttpContextAccessor contextAccessor,
                                                   IGenericRepositoryFactory repoFactory,
                                                   string provinceId,
