@@ -18,7 +18,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
     public class VisitVideosQueryExtension
     {
         [GraphQLType("[VisitVideos]!")]
-        [Permission(PermissionGroups.RESOURCES, GraphActionEnum.View)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.View)]
         public IEnumerable<object> GetVisitVideos(
            [Service] ContentManagementRepository contentRepo,
            [Service] ILocaleService<Language> localeService,
