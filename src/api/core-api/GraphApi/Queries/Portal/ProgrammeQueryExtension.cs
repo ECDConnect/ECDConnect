@@ -21,7 +21,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
     public class ProgrammeQueryExtension
     {
 
-        [Permission(PermissionGroups.CONTENTTYPES, GraphActionEnum.View)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.View)]
         public List<StoryBookViewModel> GetStoryBookRecords(
            [Service] ContentManagementRepository contentRepo,
            AuthenticationDbContext dbContext,
@@ -199,7 +199,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     .ToList();
         }
 
-        [Permission(PermissionGroups.CONTENTTYPES, GraphActionEnum.View)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.View)]
         public List<StoryBookPartModel> GetStoryBookPartQuestions(
             [Service] ContentManagementRepository contentRepo,
             Guid localeId)
@@ -208,7 +208,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
             return contentRepo.GetAll(ContentTypeConstants.StoryBookPartQuestionId, localeId).Select(x => new StoryBookPartModel(x)).ToList();
         }
 
-        [Permission(PermissionGroups.CONTENTTYPES, GraphActionEnum.View)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.View)]
         public List<ActivityViewModel> GetActivityRecords(
            [Service] ContentManagementRepository contentRepo,
            CancellationToken cancellationToken,
@@ -447,7 +447,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     .ToList();
         }
 
-        [Permission(PermissionGroups.CONTENTTYPES, GraphActionEnum.View)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.View)]
         public List<ThemeViewModel> GetThemeRecords(
             [Service] ContentManagementRepository contentRepo,
             [Service] ThemeRepository themeRepo,

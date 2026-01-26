@@ -18,7 +18,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
     public class HealthPromotionQueryExtension
     {
         [GraphQLType("[HealthPromotion]!")]
-        [Permission(PermissionGroups.CONTENTTYPES, GraphActionEnum.View)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.View)]
         public IEnumerable<object> GetHealthPromotion(
            [Service] ContentManagementRepository contentRepo,
            [Service] ILocaleService<Language> localeService,
