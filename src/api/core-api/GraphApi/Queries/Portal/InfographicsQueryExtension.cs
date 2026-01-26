@@ -1,6 +1,9 @@
+using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.ContentManagement.Repositories;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.EGraphQL.Authorization;
+using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
 using System;
@@ -10,9 +13,11 @@ using System.Linq;
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
 {
     [ExtendObjectType(OperationTypeNames.Query)]
+    
     public class InfographicsQueryExtension
     {
         [GraphQLType("[Infographics]!")]
+        [Permission(PermissionGroups.CONTENTTYPES, GraphActionEnum.View)]
         public IEnumerable<object> GetInfographics(
            [Service] ContentManagementRepository contentRepo,
            [Service] ILocaleService<Language> localeService,

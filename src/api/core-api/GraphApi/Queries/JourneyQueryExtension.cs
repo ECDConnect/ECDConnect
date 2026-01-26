@@ -22,7 +22,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     [ExtendObjectType(OperationTypeNames.Query)]
     public class JourneyQueryExtension
     {
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.JOURNEY, GraphActionEnum.View)]
         public async Task<List<JourneyTimeline>> GetJourneyTimelineAsync(
             [Service] IHttpContextAccessor contextAccessor,
             AuthenticationDbContext dbContext,
@@ -90,7 +90,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.JOURNEY, GraphActionEnum.View)]
         public async Task<List<AssessmentForm>> GetJourneyPublishedAssessmentFormsAsync(
             [Service] ContentManagementRepository contentRepo,
             [Service] IHttpContextAccessor contextAccessor,
@@ -109,7 +109,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.JOURNEY, GraphActionEnum.View)]
         public AssessmentForm GetJourneyAssessmentFormData(
             [Service] ContentManagementRepository contentRepo,
             AuthenticationDbContext dbContext,
@@ -166,7 +166,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             return assessmentForm;
         }
-
+        
+        [Permission(PermissionGroups.JOURNEY, GraphActionEnum.View)]
         public AssessmentReport GetJourneyAssessmentReport([Service] IJourneyService journeyService, Guid visitId)
         {
             return journeyService.GetJourneyAssessmentReport(visitId);

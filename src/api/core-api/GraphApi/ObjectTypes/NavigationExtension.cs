@@ -14,6 +14,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     public class NavigationExtension
     {
         [Permission(PermissionGroups.SYSTEM, GraphActionEnum.View)]
+
         public IEnumerable<Permission> Permissions(
           [Service] NavigationPermissionRepository permissionRepository,
           [Parent] Navigation parent)

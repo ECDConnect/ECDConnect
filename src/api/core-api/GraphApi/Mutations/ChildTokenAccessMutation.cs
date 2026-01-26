@@ -1,7 +1,6 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.AccessValidators;
 using EcdLink.Api.CoreApi.GraphApi.Models.Users;
 using EcdLink.Api.CoreApi.Security.Managers;
-using EcdLink.Api.CoreApi.Services;
 using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
@@ -139,6 +138,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         /// This is the endpoint used to complete registration as a caregiver
         /// </summary>s
         /// <returns></returns>
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Create)]
         [TokenAccess(typeof(ChildOpenAccessValidator))]
         public async Task<bool> OpenAccessAddChild(
             [Service] ITokenManager<ApplicationUser, OpenAccessTokenManager> tokenManager,
@@ -362,6 +362,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
         #endregion
 
+[Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Create)]
+
         public void CalculateChildrenRegistrationRemoval([Service] IPointsEngineService pointsEngineService, Guid userId)
         {
             pointsEngineService.CalculateChildRemovedFromPreschool(userId);
@@ -404,7 +406,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return true;
         }
 
-        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Create)]
+[Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Create)]
+
         public async Task<InitialChildRegistrationModel> RefreshCaregiverChildToken(
             [Service] ITokenManager<ApplicationUser, OpenAccessTokenManager> tokenManager,
             [Service] ApplicationUserManager userManager,

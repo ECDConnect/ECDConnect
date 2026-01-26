@@ -1,6 +1,9 @@
+using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.ContentManagement.Repositories;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.EGraphQL.Authorization;
+using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
 using System;
@@ -10,9 +13,12 @@ using System.Linq;
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
 {
     [ExtendObjectType(OperationTypeNames.Query)]
+
+    
     public class VisitVideosQueryExtension
     {
         [GraphQLType("[VisitVideos]!")]
+        [Permission(PermissionGroups.RESOURCES, GraphActionEnum.View)]
         public IEnumerable<object> GetVisitVideos(
            [Service] ContentManagementRepository contentRepo,
            [Service] ILocaleService<Language> localeService,

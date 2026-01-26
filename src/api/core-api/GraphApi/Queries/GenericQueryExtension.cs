@@ -24,7 +24,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     public class GenericQueryExtension
     {
         [UseSorting]
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.DOCUMENTS, GraphActionEnum.View)]
         public List<Document> GetAllClientRecords(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,

@@ -13,7 +13,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class RolePermissionMutationExtension
     {
-        [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
+[       Permission(PermissionGroups.ROLES, GraphActionEnum.Create)]
         public async Task<bool> AddPermissionsToRole(
           [Service] RolePermissionRepository permissionRepository,
           string roleId,
@@ -24,7 +24,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return true;
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Delete)]
+        [Permission(PermissionGroups.ROLES, GraphActionEnum.Delete)]
         public async Task<bool> RemovePermissionsFromRole(
             [Service] RolePermissionRepository permissionRepository,
             string roleId,

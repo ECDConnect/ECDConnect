@@ -35,10 +35,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+
+
         // TODO: Move paging code into a "Pagination" service
         // TODO: Builder pattern for query?
         [UseSorting]
+        [Permission(PermissionGroups.PORTAL, GraphActionEnum.View)]
         public async Task<IQueryable<ApplicationUser>> GetUsersAsync(
             [Service] ApplicationUserManager userManager,
             [Service] IGenericRepositoryFactory repoFactory,
@@ -107,7 +109,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return usersQuery;
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.PORTAL, GraphActionEnum.View)]
         // TODO: Move paging code into a "Pagination" service
         // TODO: Builder pattern for query?
         public async Task<int> GetCountUsersAsync(
@@ -270,6 +272,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return user;
         }
 
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public UserByToken GetUserByToken(
             [Service] ApplicationUserManager userManager,
             IGenericRepositoryFactory repoFactory,
@@ -323,7 +326,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return (await moodleService.CreateUserAsync(currentUser.Id)).ToString();
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+// [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+
         public async Task<string> GetLatestUrlInviteForUser(
             [Service] ShortUrlManager shortUrlManager,
             Guid userId)
@@ -331,6 +335,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return await shortUrlManager.GetLatestUrlInviteForUser(userId, TemplateTypeConstants.Invitation);
         }
 
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public async Task<UserSyncStatus> GetUserSyncStatus(
            AuthenticationDbContext dbContext,
            Guid userId, DateTime lastSync, Guid classroomId)

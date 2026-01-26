@@ -27,7 +27,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
         public async Task<IEnumerable<Programme>> GetUserProgrammes(
           IGenericRepositoryFactory repoFactory,
           HierarchyEngine hierarchyEngine,

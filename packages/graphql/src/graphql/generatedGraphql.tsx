@@ -303,12 +303,10 @@ export type ApplicationUser = {
   emergencyContactFullName?: Maybe<Scalars['String']>;
   emergencyContactPhoneNumber?: Maybe<Scalars['String']>;
   emergencyContactSurname?: Maybe<Scalars['String']>;
-  facebookAccount: Scalars['Boolean'];
   firstName?: Maybe<Scalars['String']>;
   fullName?: Maybe<Scalars['String']>;
   gender?: Maybe<Gender>;
   genderId?: Maybe<Scalars['UUID']>;
-  googleAccount: Scalars['Boolean'];
   id: Scalars['UUID'];
   idNumber?: Maybe<Scalars['String']>;
   insertedDate?: Maybe<Scalars['DateTime']>;
@@ -369,12 +367,10 @@ export type ApplicationUserFilterInput = {
   emergencyContactFullName?: InputMaybe<StringOperationFilterInput>;
   emergencyContactPhoneNumber?: InputMaybe<StringOperationFilterInput>;
   emergencyContactSurname?: InputMaybe<StringOperationFilterInput>;
-  facebookAccount?: InputMaybe<BooleanOperationFilterInput>;
   firstName?: InputMaybe<StringOperationFilterInput>;
   fullName?: InputMaybe<StringOperationFilterInput>;
   gender?: InputMaybe<GenderFilterInput>;
   genderId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
-  googleAccount?: InputMaybe<BooleanOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   idNumber?: InputMaybe<StringOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
@@ -434,12 +430,10 @@ export type ApplicationUserInput = {
   emergencyContactFullName?: InputMaybe<Scalars['String']>;
   emergencyContactPhoneNumber?: InputMaybe<Scalars['String']>;
   emergencyContactSurname?: InputMaybe<Scalars['String']>;
-  facebookAccount: Scalars['Boolean'];
   firstName?: InputMaybe<Scalars['String']>;
   fullName?: InputMaybe<Scalars['String']>;
   gender?: InputMaybe<GenderInput>;
   genderId?: InputMaybe<Scalars['UUID']>;
-  googleAccount: Scalars['Boolean'];
   id: Scalars['UUID'];
   idNumber?: InputMaybe<Scalars['String']>;
   insertedDate?: InputMaybe<Scalars['DateTime']>;
@@ -497,12 +491,10 @@ export type ApplicationUserSortInput = {
   emergencyContactFullName?: InputMaybe<SortEnumType>;
   emergencyContactPhoneNumber?: InputMaybe<SortEnumType>;
   emergencyContactSurname?: InputMaybe<SortEnumType>;
-  facebookAccount?: InputMaybe<SortEnumType>;
   firstName?: InputMaybe<SortEnumType>;
   fullName?: InputMaybe<SortEnumType>;
   gender?: InputMaybe<GenderSortInput>;
   genderId?: InputMaybe<SortEnumType>;
-  googleAccount?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
   idNumber?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
@@ -11041,10 +11033,6 @@ export type QueryAllCaregiverByPractitionerArgs = {
   practitionerId?: InputMaybe<Scalars['String']>;
 };
 
-export type QueryAllChildrenForCoachArgs = {
-  userId?: InputMaybe<Scalars['String']>;
-};
-
 export type QueryAllChildrenUnderPrincipalArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -11058,10 +11046,6 @@ export type QueryAllClassroomGroupsByPrincipalArgs = {
 };
 
 export type QueryAllClassroomGroupsForCoachArgs = {
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryAllClassroomsForCoachArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
