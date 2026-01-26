@@ -5,6 +5,7 @@ using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.Constants;
+using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Api.CoreApi.Services;
 using ECDLink.Core.Helpers;
 using ECDLink.Core.Services.Interfaces;
@@ -16,6 +17,8 @@ using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
+using ECDLink.EGraphQL.Authorization;
+using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
@@ -30,8 +33,10 @@ using System.Linq;
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
+    
     public class PrincipalMutationExtension
     {
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.Update)]
         public Practitioner AddPractitionerToPrincipal([Service] IHttpContextAccessor contextAccessor,
                                                         [Service] ApplicationUserManager userManager,
                                                         [Service] PersonnelService personnelManager,
@@ -181,6 +186,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return string.IsNullOrWhiteSpace(@new) ? original : @new;
         }
 
+        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.Update)]
         public ApplicationUser UpdatePractitionerContactInfo([Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] ApplicationUserManager userManager,
@@ -226,6 +232,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return user;
         }
 
+        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.Delete)]
         public Practitioner DeletePractitionerFromPrincipal([Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             IGenericRepositoryFactory repoFactory,
@@ -254,6 +261,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return practitioner;
         }
 
+        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.Update)]
         public Practitioner RemapPrincipalToPrincipal([Service] IHttpContextAccessor contextAccessor,
      IGenericRepositoryFactory repoFactory,
      string oldPrincipalId, string newPrincipalId)
@@ -282,6 +290,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return newPrincipal;
         }
 
+        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.Update)]
         public bool SwitchPrincipal([Service] PersonnelService personnelManager,
             [Service] ApplicationUserManager userManager,
             string oldPrincipalUserId,
@@ -291,6 +300,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return result != null;
         }
 
+        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.Update)]
         public Principal PromotePractitionerToPrincipal([Service] PersonnelService personnelManager,
              string userId, bool sendComm = false)
         {
@@ -298,6 +308,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return personnelManager.MapPractitionerToPrincipal(practitionerToPromote);
         }
 
+        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.Update)]
         public Practitioner DemotePractitionerAsPrincipal([Service] PersonnelService personnelManager,
              string userId)
         {
@@ -305,6 +316,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return practitionerToDemote;
         }
 
+        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Update)]
         public PrincipalInvitationStatus UpdatePrincipalInvitation([Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] ISystemSetting<InvitationCutoffDelayOptions> invitationDelay,

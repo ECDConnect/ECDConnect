@@ -28,7 +28,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class NotificationMutationExtension
     {
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Create)]
         public async Task<bool> SendNotificationToUser(
           [Service] ApplicationUserManager userManager,
           [Service] INotificationService notificationService,
@@ -48,26 +48,31 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
         }
 
+        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Update)]
         public async Task<bool> DisableNotification([Service] INotificationService notificationService, string notificationId)
         {
             return await notificationService.DisableNotification(notificationId);
         }
 
+        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Update)]
         public async Task<bool> MarkAsReadNotification([Service] INotificationService notificationService, string notificationId)
         {
             return await notificationService.MarkAsReadNotification(notificationId);
         }
+
+        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Update)]
         public async Task<bool> ExpireNotification([Service] INotificationService notificationService, string notificationId)
         {
             return await notificationService.ExpireNotification(notificationId);
         }
 
+        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Update)]
         public async Task<bool> ExpireNotificationsTypesForUser([Service] INotificationService notificationService, string userId, string templateType, string searchCriteria = null)
         {
             return await notificationService.ExpireNotificationsTypesForUser(userId, templateType, searchCriteria);
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Create)]
         public async Task<BulkInvitationResult> SendNotificationToUser(
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           [Service] InvitationNotificationManager notificationManager,
@@ -117,7 +122,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return result;
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Update)]
         public async Task<bool> SaveBulkMessagesForAdmin(
             [Service] AuthenticationDbContext dbContext,
             [Service] IHttpContextAccessor contextAccessor,

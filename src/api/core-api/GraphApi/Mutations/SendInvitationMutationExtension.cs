@@ -8,7 +8,6 @@ using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Helpers;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Managers;
-using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
@@ -19,12 +18,10 @@ using HotChocolate;
 using HotChocolate.Execution;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using static EcdLink.Api.CoreApi.Constants;
 
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
@@ -32,7 +29,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class SendInvitationMutationExtension
     {
-       [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Create)]
         public async Task<bool> SendInviteToApplication(
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           [Service] InvitationNotificationManager notificationManager,
@@ -70,7 +67,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return true;
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Create)]
         public async Task<BulkInvitationResult> SendBulkInviteToPortal(
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           [Service] InvitationNotificationManager notificationManager,
@@ -131,6 +128,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return result;
         }
 
+        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Create)]
         public async Task<string> SendPractitionerInviteToPreSchool(
                 [Service] ITokenManager<ApplicationUser, OpenAccessTokenManager> tokenManager,
                 [Service] InvitationNotificationManager notificationManager,
@@ -202,6 +200,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
         }
 
+        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Create)]
         public async Task<string> SendPrincipalInviteToApplication(
                 [Service] ITokenManager<ApplicationUser, OpenAccessTokenManager> tokenManager,
                 [Service] InvitationNotificationManager notificationManager,

@@ -6,7 +6,6 @@ using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Api.CoreApi.Services;
 using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Notifications;
@@ -31,7 +30,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class PractitionerMutationExtension
     {
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.Update)]
         public Practitioner UpdatePractitioner([Service] IHttpContextAccessor contextAccessor,
           IGenericRepositoryFactory repoFactory,
           Guid? id,
@@ -121,6 +120,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
         }
 
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.Update)]
         public bool UpdatePractitionerShareInfo([Service] IHttpContextAccessor contextAccessor, [Service] INotificationService notificationService,
             IGenericRepositoryFactory repoFactory,
             string practitionerId)
@@ -145,6 +145,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return bReturn;
         }
 
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.Update)]
         public bool UpdatePractitionerRegistered(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -171,6 +172,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return status;
         }
 
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.Update)]
         public decimal UpdatePractitionerProgress([Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             string practitionerId, decimal progress)
@@ -191,7 +193,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return 0;
         }
 
-
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.Update)]
         public string UpdatePractitionerUsePhotoInReport([Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             string practitionerId, string usePhotoInReport)
@@ -212,10 +214,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return null;
         }
 
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.Update)]
         public bool UpdatePractitionerEmergencyContact([Service] IHttpContextAccessor contextAccessor,
-    IGenericRepositoryFactory repoFactory,
-    [Service] ApplicationUserManager userManager,
-    string userId, string firstname, string surname, string contactno)
+            IGenericRepositoryFactory repoFactory,
+            [Service] ApplicationUserManager userManager,
+            string userId, string firstname, string surname, string contactno)
 
         {
             var user = userManager.FindByIdAsync(userId).Result;
@@ -227,6 +230,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return userUpdateResult.Succeeded;
         }
 
+        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.Update)]
         public async Task<bool> SendPractitionerInviteToApplication(
          [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
          [Service] InvitationNotificationManager notificationManager,
@@ -247,7 +251,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return false;
         }
 
-
+        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.Update)]
         public async Task<bool> RemovePractitioner(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -281,11 +285,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return await personnelService.DeActivatePractitionerAsync(practitionerUserId, "Practitioner removed by coach", reasonForPractitionerLeavingId, reasonDetails);
         }
 
+        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.Update)]
         public async Task<bool> DeActivatePractitioner([Service] PersonnelService personnelService,
             string userId, string leavingComment, string reasonForPractitionerLeavingId, string reasonDetails)
         {
             return await personnelService.DeActivatePractitionerAsync(userId, leavingComment, reasonForPractitionerLeavingId, reasonDetails);
         }
+
+        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.Update)]
         public bool RemoveFromProgramme(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -357,6 +364,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             return true;
         }
+
+        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.Update)]
         public bool UpdateRemovalFromProgramme(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -399,6 +408,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return true;
         }
 
+        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.Update)]
         public bool CancelRemovalFromProgramme(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -426,33 +436,26 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return true;
         }
 
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.Update)]
         public bool UpdatePractitionerBusinessWalkthrough([Service] PersonnelService personnelService, string userId)
         {
             return personnelService.UpdatePractitionerBusinessWalkthrough(userId);
         }
 
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.Update)]
         public bool UpdatePractitionerProgressWalkthrough([Service] PersonnelService personnelService, string userId)
         {
             personnelService.UpdatePractitioneProgressWalkthrough(userId);
             return true;
         }
 
+        // For some reason beyond my understanding, this permission does not work!!!???
+       //[Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.Update)]
         public Practitioner UpdatePractitionerCommunityTabStatus(
-            [Service] IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory,
+            [Service] PersonnelService personnelService,
             Guid practitionerUserId)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
-            var practitioner = practitionerRepo.GetByUserId(practitionerUserId);
-            if (practitioner != null)
-            {
-                practitioner.ClickedCommunityTab = true;
-                practitioner.UpdatedDate = DateTime.Now;
-                practitioner.UpdatedBy = uId.ToString();
-                return practitionerRepo.Update(practitioner);
-            }
-            return null;
+            return personnelService.UpdatePractitionerCommunityTabStatus(practitionerUserId.ToString());
         }
 
     }
