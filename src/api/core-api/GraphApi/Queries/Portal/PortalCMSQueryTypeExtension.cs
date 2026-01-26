@@ -53,7 +53,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
 
         // To be deleted after testing
-        [Permission(PermissionGroups.CONTENTTYPES, GraphActionEnum.View)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.View)]
         public async Task<FileModel> GetCMSCategoryData([Service] IFileGenerationService fileService, 
                                                         [Service] ContentManagementRepository _contentRepo,
                                                         IGenericRepositoryFactory repoFactory)

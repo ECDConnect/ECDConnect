@@ -21,7 +21,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
         {
         }
 
-        [Permission(PermissionGroups.CONTENTTYPES, GraphActionEnum.View)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.View)]
          public async Task<IEnumerable<DangerSignTranslation>> GetDangerSignTranslations(
             [Service] ContentManagementRepository contentRepo,
             [Service] ILocaleService<Language> localeService,

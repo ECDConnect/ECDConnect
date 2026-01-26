@@ -27,7 +27,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
 
 
         [GraphQLType("[ClassroomBusinessResource]!")]
-        [Permission(PermissionGroups.RESOURCES, GraphActionEnum.View)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.View)]
         public IEnumerable<object> GetResources(
            [Service] ContentManagementRepository contentRepo,
            [Service] ILocaleService<Language> localeService,
@@ -198,7 +198,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
         }
 
 
-        [Permission(PermissionGroups.RESOURCES, GraphActionEnum.View)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.View)]
         public UserResourceLikes GetResourceLikedStatusForUser(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -210,7 +210,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
         }
 
 
-        [Permission(PermissionGroups.RESOURCES, GraphActionEnum.View)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.View)]
         public List<UserResourcesModel> GetAllResourceLikesForUser(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -221,7 +221,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
             return userResourceLikesRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true).Select(x => new UserResourcesModel() { IsActive = x.IsActive, ContentId = x.ContentId}).ToList();
         }
 
-        [Permission(PermissionGroups.RESOURCES, GraphActionEnum.View)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.View)]
         public ResourceModel GetResourceByLanguage(
            [Service] ContentManagementRepository contentRepo,
            int contentId,
