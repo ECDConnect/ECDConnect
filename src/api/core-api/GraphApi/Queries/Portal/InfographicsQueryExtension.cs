@@ -17,7 +17,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
     public class InfographicsQueryExtension
     {
         [GraphQLType("[Infographics]!")]
-        [Permission(PermissionGroups.CONTENTTYPES, GraphActionEnum.View)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.View)]
         public IEnumerable<object> GetInfographics(
            [Service] ContentManagementRepository contentRepo,
            [Service] ILocaleService<Language> localeService,
