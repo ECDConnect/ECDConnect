@@ -46,7 +46,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return statements.Select(x => new IncomeStatementModel(x)).ToList();
         }
 
-        [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.View)]
+        [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
         public string GetIncomeStatementPdf(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] IIncomeExpenseService incomeExpenseService,
