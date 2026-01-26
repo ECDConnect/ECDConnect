@@ -43,10 +43,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         public List<PractitionerPermissionModel> GetPractitionerRolePermissions(IGenericRepositoryFactory repoFactory)
         {
             var permissionsRepository = repoFactory.CreateRepository<Permission>();
+            var names = new List<string>
+            {
+                "create_progress_reports",
+                "manage_children",
+                "plan_classroom_activities",
+                "take_attendance"
+            };
             return permissionsRepository
                 .GetAll()
-                .Where(x => x.IsActive && x.Grouping == UserPermissionGroups.PRACTITIONER)
-                .Select(item => new PractitionerPermissionModel(item)).ToList();
+                .Where(x => x.IsActive && x.Grouping == UserPermissionGroups.PRACTITIONER && names.Contains(x.Name))
+                .Select(item => new PractitionerPermissionModel(item)).Distinct().ToList();
         }
     }
 }
