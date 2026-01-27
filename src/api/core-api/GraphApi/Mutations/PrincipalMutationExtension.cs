@@ -300,7 +300,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return result != null;
         }
 
-        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.Update)]
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.Update)]
         public Principal PromotePractitionerToPrincipal([Service] PersonnelService personnelManager,
              string userId, bool sendComm = false)
         {
