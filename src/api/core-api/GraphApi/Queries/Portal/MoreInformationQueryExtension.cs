@@ -17,7 +17,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
     public class MoreInformationQueryExtension
     {
         [GraphQLType("[MoreInformation]!")]
-        [Permission(PermissionGroups.GENERAL, GraphActionEnum.View)]
+        // Permission not necessary for generic content view
         public IEnumerable<object> GetMoreInformation(
            [Service] ContentManagementRepository contentRepo,
            [Service] ILocaleService<Language> localeService,
