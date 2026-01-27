@@ -398,11 +398,11 @@ namespace ECDLink.Core.Services
             var pdfDocumentHeader = new PdfDocumentHeader();
             pdfDocumentHeader.UserId = userId;
 
-            var siteAddress = new StringBuilder(classroom.SiteAddress?.AddressLine1 ?? "");
-            if (!string.IsNullOrWhiteSpace(classroom.SiteAddress?.AddressLine2)) siteAddress.Append(", " + classroom.SiteAddress?.AddressLine2);
-            if (!string.IsNullOrWhiteSpace(classroom.SiteAddress?.AddressLine3)) siteAddress.Append(", " + classroom.SiteAddress?.AddressLine3 ?? "");
-            if (!string.IsNullOrWhiteSpace(classroom.SiteAddress?.PostalCode)) siteAddress.Append(", " + classroom.SiteAddress?.PostalCode ?? "");
-            if (classroom.SiteAddress?.Province != null) siteAddress.Append(", " + classroom.SiteAddress?.Province.Description ?? "");
+            var siteAddress = new StringBuilder(classroom?.SiteAddress?.AddressLine1 ?? "");
+            if (!string.IsNullOrWhiteSpace(classroom?.SiteAddress?.AddressLine2)) siteAddress.Append(", " + classroom?.SiteAddress?.AddressLine2);
+            if (!string.IsNullOrWhiteSpace(classroom?.SiteAddress?.AddressLine3)) siteAddress.Append(", " + classroom?.SiteAddress?.AddressLine3 ?? "");
+            if (!string.IsNullOrWhiteSpace(classroom?.SiteAddress?.PostalCode)) siteAddress.Append(", " + classroom?.SiteAddress?.PostalCode ?? "");
+            if (classroom?.SiteAddress?.Province != null) siteAddress.Append(", " + classroom?.SiteAddress?.Province.Description ?? "");
             pdfDocumentHeader.SiteAddress = siteAddress.ToString();
 
             pdfDocumentHeader.ReportType = "StatementsPDF";
