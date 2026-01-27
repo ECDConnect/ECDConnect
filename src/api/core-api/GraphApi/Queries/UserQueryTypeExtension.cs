@@ -326,8 +326,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return (await moodleService.CreateUserAsync(currentUser.Id)).ToString();
         }
 
-// [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public async Task<string> GetLatestUrlInviteForUser(
             [Service] ShortUrlManager shortUrlManager,
             Guid userId)
