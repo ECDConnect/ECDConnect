@@ -130,13 +130,7 @@ export const OASignUpOrLogin: React.FC = () => {
         </div>
 
         <div className={'mt-8 w-11/12 px-2 md:mt-48'}>
-          <Alert
-            className={'mt-5 mb-3'}
-            message={`${applicationName} is currently not working because we are doing important maintenance on the app. <br/><br/> We are sorry for any inconvenience this causes. Thank you for your patience.
-                  `}
-            type="info"
-          />
-          {/* <Button
+          <Button
             id="gtm-register"
             className={'mb-4 w-full'}
             type="filled"
@@ -165,7 +159,7 @@ export const OASignUpOrLogin: React.FC = () => {
               color="quatenary"
               text={'Log in'}
             ></Typography>
-          </Button> */}
+          </Button>
         </div>
       </BannerWrapper>
       <Dialog
