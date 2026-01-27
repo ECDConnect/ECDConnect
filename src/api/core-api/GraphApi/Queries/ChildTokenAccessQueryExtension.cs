@@ -1,11 +1,13 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.AccessValidators;
 using EcdLink.Api.CoreApi.GraphApi.Models.Users;
 using EcdLink.Api.CoreApi.Security.Managers;
+using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
+using ECDLink.Security;
 using ECDLink.Security.Helpers;
 using ECDLink.Security.JwtSecurity.Enums;
 using ECDLink.Security.Managers;
@@ -23,6 +25,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     {
         [TokenAccess(typeof(ChildOpenAccessValidator))]
 
+        //[Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
+        // Need to remove this permission because of no token sent through
         public async Task<ChildTokenAccessModel> OpenAccessAddChildDetail(
             [Service] SecurityManager securityManager,
             [Service] ApplicationUserManager userManager,

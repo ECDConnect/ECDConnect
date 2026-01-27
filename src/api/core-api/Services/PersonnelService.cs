@@ -688,6 +688,13 @@ namespace ECDLink.Api.CoreApi.Services
             _practiGenericRepo.Update(practitioner);
         }
 
+        public Practitioner UpdatePractitionerCommunityTabStatus(string userId)
+        {
+            var practitioner = _practiGenericRepo.GetByUserId(userId);
+            practitioner.ClickedCommunityTab = true;
+            return _practiGenericRepo.Update(practitioner);
+        }
+
         #endregion
 
       

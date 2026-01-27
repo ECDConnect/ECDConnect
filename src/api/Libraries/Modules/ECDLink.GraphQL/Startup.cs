@@ -49,6 +49,7 @@ namespace ECDLink.EGraphQL
               .AddDirectiveType<PermissionDirectiveType>()
               .AddFiltering()
               .AddSorting()
+              .AllowIntrospection(isDevelopment)
               .RegisterDbContext<AuthenticationDbContext>(HotChocolate.Data.DbContextKind.Synchronized)
               .RegisterService<HierarchyEngine>(ServiceKind.Synchronized)
               .RegisterService<IDbContextFactory<AuthenticationDbContext>>(ServiceKind.Synchronized)

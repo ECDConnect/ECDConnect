@@ -108,6 +108,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     if (userAuth?.loginType === 'google') {
       googleLogout();
     }
+    // not logout for Facebook it appears...
     appDispatch(authActions.resetAuthState());
   };
 

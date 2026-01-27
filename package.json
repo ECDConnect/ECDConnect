@@ -34,7 +34,9 @@
     "setnode": "nvm use 20.19.2",
     "fixmodules": "xcopy node_modules.fixup\\20.x node_modules /s/e/y",
     "serve:app": "serve -s -l 3000 src\\lxp\\build",
-    "serve:app-wl": "serve -s -l 3005 src\\lxp\\build"
+    "serve:app-wl": "serve -s -l 3005 src\\lxp\\build",
+    "serve:portal": "serve -s -l 3003 src\\admin-portal\\build",
+    "serve:portal-wl": "serve -s -l 3006 src\\admin-portal\\build"
   },
   "watch": {
     "build:ui": {
@@ -111,6 +113,7 @@
     "react-device-detect": "^2.2.2",
     "react-dom": "^17.0.2",
     "react-error-overlay": "^6.0.9",
+    "react-facebook": "^10.0.1",
     "react-ga4": "^2.1.0",
     "react-gtm-module": "^2.0.11",
     "react-helmet": "^6.1.0",

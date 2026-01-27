@@ -24,7 +24,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return true;
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Delete)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.Delete)]
         public async Task<bool> RemovePermissionsFromNavigation(
             [Service] NavigationPermissionRepository permissionRepository,
             Guid navigationId,

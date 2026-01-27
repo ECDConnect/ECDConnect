@@ -16,7 +16,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     public class VisitDataMutationExtension
     {
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.VISITS, GraphActionEnum.Create)]
         public bool AddVisitData([Service] VisitDataManager visitDataManager, [Service] VisitManager visitManager, HierarchyEngine hierarchyEngine, [Service] INotificationService notificationService, CMSVisitDataInputModel input)
         {
             if (input.PractitionerId != null)
@@ -38,19 +38,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return true;
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.VISITS, GraphActionEnum.Update)]
         public bool EditVisitData([Service] VisitDataManager visitDataManager, CMSVisitDataInputModel input)
         {
             return visitDataManager.EditVisitData(input);
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.VISITS, GraphActionEnum.Create)]
         public bool AddSupportVisitData([Service] VisitDataManager visitDataManager, CMSVisitDataInputModel input)
         {
             return visitDataManager.AddSupportVisitData(input);
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.VISITS, GraphActionEnum.Create)]
         public bool AddCoachVisitData([Service] VisitDataManager visitDataManager, CMSVisitDataInputModel input)
         {
             Visit visit = visitDataManager.AddCoachData(input);

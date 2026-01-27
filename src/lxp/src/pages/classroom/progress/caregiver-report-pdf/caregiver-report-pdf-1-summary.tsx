@@ -226,13 +226,20 @@ export const ProgressCaregiverReportSummaryPage: React.FC<
               }
             />
           )}
-          {ageInMonths > 35 && (
+          {ageInMonths > 35 && ageInMonths < 61 && (
             <Typography
               type="buttonSmall"
               color="textMid"
               text={
                 'Created on the ECD Connect app. This progress tracker is based on South Africa’s National Curriculum Framework for Children from Birth to Four (NCF) developed by the Department of Basic Education (DBE).'
               }
+            />
+          )}
+          {ageInMonths > 60 && (
+            <Typography
+              type="buttonSmall"
+              color="textMid"
+              text={`Created on the ECD Connect app. This progress tracker has been adapted from the ChildSteps tool which was created using South Africa's School Based Assessment for Grade R.`}
             />
           )}
           <p

@@ -157,9 +157,9 @@ export const SelectChildToTrack: React.FC = () => {
     setFilteredChildData(filteredChildren);
   };
 
-  // we need to find the children over 5 from the original list and not filtered
+  // we need to find the children over 6.5 from the original list and not filtered
   const anyChildrenOver5 = children.some(
-    (x) => x.ageInMonths && x.ageInMonths > 60
+    (x) => x.ageInMonths && x.ageInMonths > 78
   );
 
   return (
@@ -218,10 +218,9 @@ export const SelectChildToTrack: React.FC = () => {
             className="mt-4"
             type={'warning'}
             messageColor="textDark"
-            title={'Some children are older than 5 years old!'}
+            title={'Some children are older than 6.5 years old!'}
             list={[
-              'Our progress trackers are only for children 5 years old and younger',
-              "Stay tuned, tools for tracking older children's progress are coming soon!",
+              'Our progress trackers are only for children 6.5 years old and younger',
             ]}
           />
         )}

@@ -205,10 +205,18 @@ export const ObservationsForChildLandingIncomplete: React.FC<
               }
             />
           )}
-          {currentAgeGroup?.startAgeInMonths > 35 && (
+          {currentAgeGroup?.startAgeInMonths > 35 &&
+            currentAgeGroup?.startAgeInMonths < 61 && (
+              <Alert
+                type={'info'}
+                title="This progress tracker is based on South Africa's National Curriculum Framework for Children from Birth to Four (NCF) developed by the Department of Basic Education (DBE)."
+                messageColor="textDark"
+              />
+            )}
+          {currentAgeGroup?.startAgeInMonths > 60 && (
             <Alert
               type={'info'}
-              title="This progress tracker is based on South Africa's National Curriculum Framework for Children from Birth to Four (NCF) developed by the Department of Basic Education (DBE)."
+              title="This progress tracker has been adapted from the ChildSteps tool which was created using South Africa's School Based Assessment for Grade R."
               messageColor="textDark"
             />
           )}
