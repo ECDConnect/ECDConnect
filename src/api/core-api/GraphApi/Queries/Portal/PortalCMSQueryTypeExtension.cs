@@ -1,9 +1,12 @@
 using EcdLink.Api.CoreApi.Services;
 using ECDLink.Abstractrions.Files;
+using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
 using ECDLink.ContentManagement.Repositories;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Repositories.Factories;
+using ECDLink.EGraphQL.Authorization;
+using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
 using System;
@@ -14,6 +17,9 @@ using System.Threading.Tasks;
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
     [ExtendObjectType(OperationTypeNames.Query)]
+
+
+
     public class PortalCMSQueryTypeExtension
     {
         public PortalCMSQueryTypeExtension()
@@ -47,6 +53,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
 
         // To be deleted after testing
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.View)]
         public async Task<FileModel> GetCMSCategoryData([Service] IFileGenerationService fileService, 
                                                         [Service] ContentManagementRepository _contentRepo,
                                                         IGenericRepositoryFactory repoFactory)

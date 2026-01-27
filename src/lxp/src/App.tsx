@@ -31,6 +31,7 @@ import { useTenant } from './hooks/useTenant';
 import { Helmet } from 'react-helmet';
 import { userActions, userSelectors } from './store/user';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import { FacebookProvider } from 'react-facebook';
 
 if (process.env.NODE_ENV === 'development') {
   stopReportingRuntimeErrors();
@@ -48,6 +49,8 @@ const App: React.FC = () => {
   const userUnstableConnection = useSelector(
     userSelectors.getUserUnstableConnection
   );
+
+  const isSslEnabled = window.location.protocol === 'https:';
 
   const getTitle = () => {
     const env = process.env.REACT_APP_RUNENVIRONMENT || '';
@@ -311,17 +314,28 @@ const App: React.FC = () => {
     </IonApp>
   );
 
-  if (process.env.REACT_APP_GOOGLE_CLIENT_ID) {
-    return (
-      <GoogleOAuthProvider
-        clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID || ''}
-      >
-        {appShell}
-      </GoogleOAuthProvider>
+  const googleLogin = process.env.REACT_APP_GOOGLE_CLIENT_ID ? (
+    <GoogleOAuthProvider
+      clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID || ''}
+    >
+      {appShell}
+    </GoogleOAuthProvider>
+  ) : (
+    appShell
+  );
+
+  const facebookLogin =
+    process.env.REACT_APP_FACEBOOK_APP_ID && isSslEnabled ? (
+      <FacebookProvider appId={process.env.REACT_APP_FACEBOOK_APP_ID}>
+        {googleLogin}
+      </FacebookProvider>
+    ) : (
+      googleLogin
     );
-  } else {
-    return appShell;
-  }
+
+  const root = facebookLogin;
+
+  return root;
 };
 
 export default App;

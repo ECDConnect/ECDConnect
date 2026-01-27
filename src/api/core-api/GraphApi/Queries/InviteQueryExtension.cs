@@ -23,7 +23,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.View)]
         public List<Invite> GetInvitesByPrincipalId(
         [Service] IHttpContextAccessor contextAccessor,
         IGenericRepositoryFactory repoFactory,
@@ -71,7 +71,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return invites;
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.View)]
         public Invite GetInviteByPractitionerId(
         [Service] IHttpContextAccessor contextAccessor,
         IGenericRepositoryFactory repoFactory,
@@ -93,7 +93,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return invite;
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.View)]
         public Invite GetInviteByPhoneNumber(
         [Service] IHttpContextAccessor contextAccessor,
         IGenericRepositoryFactory repoFactory,

@@ -21,7 +21,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Portal
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class FormsMutationExtension
     {
-        [Permission(PermissionGroups.SYSTEM, GraphActionEnum.Update)]
+        [Permission(PermissionGroups.PORTAL, GraphActionEnum.Update)]
         public bool UpdatePublishStatus(
             [Service] ContentManagementRepository contentRepo,
             string contentId,
@@ -36,6 +36,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Portal
             contentRepo.Update(int.Parse(contentId), englishId, updateDict);
             return true;
         }
+
+[Permission(PermissionGroups.JOURNEY, GraphActionEnum.Create)]
 
         public async Task<AssessmentReport> SubmitJourneyAssessmentFormData(
             [Service] IJourneyService journeyService,

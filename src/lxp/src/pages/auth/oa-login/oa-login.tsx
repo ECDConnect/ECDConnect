@@ -49,6 +49,8 @@ import {
   useGoogleLogin,*/,
 } from '@react-oauth/google';
 import jwtDecode from 'jwt-decode';
+import { Login as FacebookLogin } from 'react-facebook';
+import { LoginResponse } from '@/types/facebook';
 
 const CryptoJS = require('crypto-js');
 const { version } = require('../../../../package.json');
@@ -65,6 +67,7 @@ interface LoginRouteState {
   password?: string;
   loginType?: LoginType;
   googleToken?: string;
+  facebookToken?: string;
 }
 
 export const OaLogin: React.FC = () => {
@@ -81,19 +84,25 @@ export const OaLogin: React.FC = () => {
   const tenant = useTenant();
   const { resetAppStore, resetAuth, resetUser } = useStoreSetup();
 
+  const [autoLogin, setAutoLogin] = useState(
+    !!state?.username && !!state?.loginType
+  );
+
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
+
+  const isSslEnabled = window.location.protocol === 'https:';
 
   const getDisplayErrorMessage = (
     loginError: LoginErrorEnum,
-    isGoogle?: boolean
+    loginType?: LoginType
   ): string => {
     switch (loginError) {
       case LoginErrorEnum.None:
         return '';
       case LoginErrorEnum.DetailsIncorrect:
-        return isGoogle
-          ? 'No user account associated with this Google account. Please try again.'
-          : 'Password or username incorrect. Please try again.';
+        return loginType === 'username'
+          ? 'Password or username incorrect. Please try again.'
+          : '';
       case LoginErrorEnum.StrugglingLogin:
         return tenant.isOpenAccess
           ? 'Struggling to log in? Send a message to our help line!'
@@ -168,19 +177,104 @@ export const OaLogin: React.FC = () => {
     return s;
   };
 
+  const displayNoAccountFoundPopup = (loginType: LoginType) => {
+    const name = loginType.charAt(0).toUpperCase() + loginType.slice(1);
+    const title = `No account for this ${name} login`;
+    const detailText = tenant.isOpenAccess
+      ? `This ${name} account isn't linked to ECD Connect.  
+        Already have an account? Log in with your email and password. New here? Sign up first.`
+      : `Please register for the app first.
+        Check your SMS for a registration link. If you didn't receive an SMS, tap Get help`;
+
+    dialog({
+      position: DialogPosition.Middle,
+      blocking: true,
+      color: 'bg-white',
+      render: (onSubmit, onCancel) => {
+        return (
+          <ActionModal
+            className={'mx-4'}
+            title={title}
+            detailText={detailText}
+            icon={'ExclamationCircleIcon'}
+            iconSize={48}
+            iconColor={'alertMain'}
+            // iconBorderColor={'white'}
+            actionButtons={
+              tenant.isOpenAccess
+                ? [
+                    {
+                      text: 'Sign up',
+                      colour: 'quatenary',
+                      type: 'filled',
+                      onClick: () => {
+                        onSubmit();
+                        history.push(ROUTES.OA_SIGN_UP_OR_LOGIN, {
+                          signup: true,
+                        });
+                      },
+                      textColour: 'white',
+                    },
+                    {
+                      text: 'Log in',
+                      colour: 'quatenary',
+                      type: 'outlined',
+                      onClick: () => {
+                        setAutoLogin(false);
+                        onSubmit();
+                      },
+                      textColour: 'quatenary',
+                    },
+                  ]
+                : [
+                    {
+                      text: 'Get help',
+                      colour: 'quatenary',
+                      type: 'filled',
+                      onClick: () => {
+                        setOpenHelp(true);
+                        onSubmit();
+                      },
+                      textColour: 'white',
+                      leadingIcon: 'QuestionMarkCircleIcon',
+                    },
+                    {
+                      text: 'Close',
+                      colour: 'quatenary',
+                      type: 'outlined',
+                      onClick: () => {
+                        setAutoLogin(false);
+                        onSubmit();
+                      },
+                      textColour: 'quatenary',
+                    },
+                  ]
+            }
+          />
+        );
+      },
+    });
+  };
+
   const login = async () => {
+    console.log('login - 1');
     appDispatch(settingActions.setApplicationVersion(version));
+    console.log('login - 2');
     appDispatch(authActions.setUserExpired());
+    console.log('login - 3');
     appDispatch(settingActions.setLoginDate());
+    console.log('login - 4');
     const user = await appDispatch(userThunkActions.getUser({})).unwrap();
+    console.log('login - 5');
     localStorage.setItem(
       LocalStorageKeys.firstTimeOnCommunityDashboard,
       'true'
     );
     setIsLoading(false);
-    // Set userId for google
     setLoginAttempts(0);
+    // Set userId for google
     ReactGA.set({ userId: user?.id });
+    console.log('login - 6');
     history.push(ROUTES.DASHBOARD, { isFromLogin: true });
   };
 
@@ -222,15 +316,20 @@ export const OaLogin: React.FC = () => {
     setDisplayError(getDisplayErrorMessage(LoginErrorEnum.None));
 
     if (!(freeMemory > 200 || freeMemory === 0)) {
+      setAutoLogin(false);
       setErrorMessage(true);
       return;
     }
 
-    if (!isValid) return;
+    if (!isValid) {
+      setAutoLogin(false);
+      return;
+    }
 
     const loginRequest: LoginRequestModel = {
       username: loginFormGetValues().username,
       password: loginFormGetValues().password,
+      loginType: 'username',
     };
 
     const currentUserId = getCurrentUserId();
@@ -258,6 +357,7 @@ export const OaLogin: React.FC = () => {
           isAuthenticated?.error === undefined &&
           isAuthenticated?.payload?.response?.status !== 401
         ) {
+          console.log('preLogin - authenticated');
           const userHash = CryptoJS.AES.encrypt(
             loginRequest.password,
             'user pass'
@@ -280,32 +380,46 @@ export const OaLogin: React.FC = () => {
           }
           login();
         } else {
+          console.log('preLogin - error1');
           setLoginAttempts(loginAttempts + 1);
           setDisplayError(
             loginAttempts + 1 >= STRUGGLING_LOGIN_ATTEMPTS
               ? getDisplayErrorMessage(LoginErrorEnum.StrugglingLogin)
               : getDisplayErrorMessage(
                   LoginErrorEnum.DetailsIncorrect,
-                  !!loginRequest.googleToken
+                  loginRequest?.loginType
                 )
           );
           setIsLoading(false);
           if (isAuthenticated?.payload?.lockedOut === true) {
-            handleUserLockedOut();
+            displayUserLockedOutPopup();
+          } else {
+            if (
+              !!loginRequest?.loginType &&
+              loginRequest?.loginType !== username
+            ) {
+              displayNoAccountFoundPopup(loginRequest?.loginType);
+            }
           }
         }
+        console.log('preLogin - end');
       })
       .catch((err) => {
+        console.log('preLogin - catch');
         setLoginAttempts(loginAttempts + 1);
         setDisplayError(
           loginAttempts + 1 >= STRUGGLING_LOGIN_ATTEMPTS
             ? getDisplayErrorMessage(LoginErrorEnum.StrugglingLogin)
             : getDisplayErrorMessage(
                 LoginErrorEnum.DetailsIncorrect,
-                !!loginRequest.googleToken
+                loginRequest?.loginType
               )
         );
+        if (!!loginRequest?.loginType && loginRequest?.loginType !== username) {
+          displayNoAccountFoundPopup(loginRequest?.loginType);
+        }
         setIsLoading(false);
+        setAutoLogin(false);
       });
   };
 
@@ -313,7 +427,7 @@ export const OaLogin: React.FC = () => {
     history.push(ROUTES.PASSWORD_RESET);
   };
 
-  const handleIncorrectBrowser = () => {
+  const displayIncorrectBrowserPopup = () => {
     dialog({
       position: DialogPosition.Middle,
       blocking: true,
@@ -345,7 +459,7 @@ export const OaLogin: React.FC = () => {
     });
   };
 
-  const handleUserLockedOut = () => {
+  const displayUserLockedOutPopup = () => {
     dialog({
       position: DialogPosition.Middle,
       blocking: true,
@@ -401,11 +515,16 @@ export const OaLogin: React.FC = () => {
     ) {
       return;
     } else {
-      handleIncorrectBrowser();
+      displayIncorrectBrowserPopup();
     }
   }, [userAgent]);
 
   useEffect(() => {
+    setAutoLogin(
+      (state?.loginType === 'username' && isValid) ||
+        state?.loginType === 'google' ||
+        state?.loginType === 'facebook'
+    );
     if (state?.loginType === 'username' && isValid) {
       submitForm();
     } else if (state?.loginType === 'google') {
@@ -413,6 +532,14 @@ export const OaLogin: React.FC = () => {
         username: state?.username,
         password: '',
         googleToken: state?.googleToken,
+        loginType: state?.loginType,
+      });
+    } else if (state?.loginType === 'facebook') {
+      preLogin({
+        username: state?.username,
+        password: '',
+        facebookToken: state?.facebookToken,
+        loginType: state?.loginType,
       });
     }
   }, [state, isValid]);
@@ -429,14 +556,31 @@ export const OaLogin: React.FC = () => {
       username: email,
       password: '',
       googleToken: credential,
+      loginType: 'google',
     });
   };
+
   const onGoogleLoginError = () => {
     console.log('Google Login failed.');
   };
 
+  const onFacebookLoginSuccess = (response: LoginResponse) => {
+    const { userID, accessToken } = response.authResponse;
+    preLogin({
+      username: userID,
+      password: '',
+      facebookToken: accessToken,
+      loginType: 'facebook',
+    });
+  };
+
+  const onFacebookLoginError = (error: Error) => {
+    console.log('Facebook login failed', error);
+  };
+
   const username = loginFormGetValues().username || '';
   const password = loginFormGetValues().password || '';
+
   return (
     <BannerWrapper
       showBackground={false}
@@ -451,34 +595,47 @@ export const OaLogin: React.FC = () => {
         <Dialog fullScreen visible={errorMessage} position={DialogPosition.Top}>
           <StorageFull />
         </Dialog>
-        {isOnline && !!process.env.REACT_APP_GOOGLE_CLIENT_ID && (
+        {!autoLogin && isOnline && (
           <div className="mb-6">
-            <div className="mb-6 flex justify-center">
-              <GoogleLogin
-                onSuccess={(credentialResponse) =>
-                  onGoogleLoginSuccess(credentialResponse)
-                }
-                onError={() => onGoogleLoginError()}
-                type="standard"
-                text="signin_with"
-                logo_alignment="center"
-                size="medium"
-                width={300}
-              />
-            </div>
-            {/* <div>
-              <Button
-                id="gtm-login"
-                className={'mt-3 mb-8 w-full'}
-                type="outlined"
-                isLoading={isLoading}
-                color="textLight"
-                disabled={false}
-                onClick={onGoogleLoginCustom}
-              >
-                <Typography type="button" color="textDark" text={'Sign in with Google (custom button)'}></Typography>
-              </Button>
-            </div>*/}
+            {!!process.env.REACT_APP_GOOGLE_CLIENT_ID && (
+              <div className="mb-6 flex justify-center">
+                <GoogleLogin
+                  onSuccess={(credentialResponse) =>
+                    onGoogleLoginSuccess(credentialResponse)
+                  }
+                  onError={() => onGoogleLoginError()}
+                  type="standard"
+                  text="signin_with"
+                  logo_alignment="center"
+                  size="large"
+                  width={250}
+                />
+              </div>
+            )}
+            {!!process.env.REACT_APP_FACEBOOK_APP_ID && isSslEnabled && (
+              <div className="mb-6 flex justify-center">
+                <FacebookLogin
+                  onSuccess={(response: any) =>
+                    onFacebookLoginSuccess(response)
+                  }
+                  onError={(error: Error) => onFacebookLoginError(error)}
+                  fields={['id', 'name', 'picture']}
+                  scope={['public_profile']}
+                  //className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                  className="flex h-10 items-center space-x-2 rounded-lg bg-blue-600 px-6 py-3 text-white transition-colors hover:bg-blue-700"
+                  disabled={isLoading}
+                >
+                  <svg
+                    className="h-5 w-5"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"></path>
+                  </svg>
+                  <span>Login with Facebook</span>
+                </FacebookLogin>
+              </div>
+            )}
             <Divider title="OR" />
           </div>
         )}
@@ -500,6 +657,7 @@ export const OaLogin: React.FC = () => {
               register={loginRegister}
               placeholder="e.g. Nothando_123@gmail.com"
               className="my-2"
+              disabled={autoLogin}
             />
             <PasswordInput<OaLoginModel>
               label={'Password'}
@@ -508,6 +666,7 @@ export const OaLogin: React.FC = () => {
               sufficIconColor={'uiMidDark'}
               value={loginFormGetValues().password}
               register={loginRegister}
+              disabled={autoLogin}
             />
             <div>
               <Button
@@ -516,7 +675,7 @@ export const OaLogin: React.FC = () => {
                 color="secondary"
                 background={'transparent'}
                 size="small"
-                disabled={!isOnline}
+                disabled={!isOnline || autoLogin}
                 onClick={forgotPasswordClicked}
               >
                 <Typography

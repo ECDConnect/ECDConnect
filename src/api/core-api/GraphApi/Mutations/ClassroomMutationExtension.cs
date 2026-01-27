@@ -30,7 +30,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class ClassroomMutationExtension
     {
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Update)]
         public ClassroomGroup UpdatePractitionerToTeachClassroom(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -51,6 +51,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             // TODO - Why is this returning blank??? It should probably error if it does not find the group to update
             return new ClassroomGroup();
         }
+
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Update)]
         public ClassroomGroup UpdateClassroomGroup(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -244,6 +246,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return new ClassroomGroup();
         }
 
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Update)]
         public Classroom updateClassroomSiteAddress(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,

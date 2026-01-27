@@ -65,6 +65,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return new IncomeStatementModel(newStatement);
         }
 
+        [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Update)]
         public StatementsIncomeStatement UpdateUserContactStatusForStatement(
             [Service] IIncomeExpenseService incomeExpenseService,
             Guid statementId)

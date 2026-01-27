@@ -5,7 +5,6 @@ using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Calendar;
 using ECDLink.DataAccessLayer.Entities.Notifications;
-using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -14,7 +13,6 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,7 +22,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class CalendarEventMutationExtension
     {
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+[Permission(PermissionGroups.CALENDAR, GraphActionEnum.Update)]
+
 
         public CalendarEvent UpdateCalendarEvent(
             [Service] IHttpContextAccessor contextAccessor,
@@ -122,7 +121,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             return calendarEvent;
         }
-
+        
+        [Permission(PermissionGroups.CALENDAR, GraphActionEnum.Delete)]
         public CalendarEvent CancelCalendarEvent(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,

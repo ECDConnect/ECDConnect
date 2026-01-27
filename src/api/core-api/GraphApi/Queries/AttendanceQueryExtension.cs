@@ -49,6 +49,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return attendance;
         }
 
+        [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
+
         /// <summary>
         /// This fetches stats around how the practitioner has taken attendance for their classroom groups
         /// </summary>
@@ -76,6 +78,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return data;
         }
 
+        [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public async Task<ChildAttendanceReportModel> ChildAttendanceReport(
           [Service] ChildAttendanceReport report,
           string userId,
@@ -109,6 +112,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         //    return report.GetClassroomAttendance(classgroupId, userId, startMonth.Date, endMonth.GetEndOfDay());
         //}
 
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
         public async Task<ClassroomGroupChildAttendanceReportOverviewModel> ClassroomAttendanceOverviewReport(
             [Service] ChildAttendanceReport report,
             string userId,

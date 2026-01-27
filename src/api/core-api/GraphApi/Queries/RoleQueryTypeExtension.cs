@@ -19,14 +19,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     [ExtendObjectType(OperationTypeNames.Query)]
     public class RoleQueryTypeExtension
     {
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.ROLES, GraphActionEnum.View)]
         public IEnumerable<ApplicationIdentityRole> GetRoles([Service] ApplicationRoleManager roleManager)
         {
-            //var tenantId = TenantExecutionContext.Tenant.Id;
             var roles = roleManager.Roles.ToList();
             return roles;
         }
 
+        [Permission(PermissionGroups.ROLES, GraphActionEnum.View)]
         public async Task<string> GetRoleForUser(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] ApplicationUserManager userManager,

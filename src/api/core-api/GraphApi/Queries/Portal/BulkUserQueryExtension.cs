@@ -29,7 +29,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
     public class BulkUserQueryExtension
     {
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.PORTAL, GraphActionEnum.Create)]
         public UserImportModel ValidatePractitionerImportSheet(
           [Service] IHttpContextAccessor httpContextAccessor,
           ApplicationUserManager userManager,
@@ -135,7 +135,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
             };
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.PORTAL, GraphActionEnum.View)]
         public UserImportModel ValidateCoachImportSheet(
           [Service] IHttpContextAccessor httpContextAccessor,
           AuthenticationDbContext dbContext,
