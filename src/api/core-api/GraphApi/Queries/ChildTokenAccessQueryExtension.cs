@@ -25,7 +25,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     {
         [TokenAccess(typeof(ChildOpenAccessValidator))]
 
-        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
+        //[Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
+        // Need to remove this permission because of no token sent through
         public async Task<ChildTokenAccessModel> OpenAccessAddChildDetail(
             [Service] SecurityManager securityManager,
             [Service] ApplicationUserManager userManager,
