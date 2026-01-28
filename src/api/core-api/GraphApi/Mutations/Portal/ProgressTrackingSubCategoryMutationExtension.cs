@@ -13,7 +13,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class ProgressTrackingSubCategoryMutationExtension
     {
-        [Permission(PermissionGroups.CONTENTTYPES, GraphActionEnum.Update)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.Update)]
         public bool BulkUpdateProgressTrackingSubCategoryImages(
             [Service] ContentManagementRepository contentRepo,
             int contentId,
@@ -44,7 +44,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return true;
         }
 
-        [Permission(PermissionGroups.CONTENTTYPES, GraphActionEnum.Update)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.Update)]
         public bool UpdateSubCategorySkills(
             [Service] ContentManagementRepository contentRepo,
             List<ProgressSubCategoryModel> subCategories,
