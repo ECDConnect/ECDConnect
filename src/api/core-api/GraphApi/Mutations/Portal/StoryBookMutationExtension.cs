@@ -13,7 +13,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Portal
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class StoryBookMutationExtension
     {
-        [Permission(PermissionGroups.CONTENTTYPES, GraphActionEnum.Update)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.Update)]
         public bool UpdateStoryBookAndParts(
             [Service] ContentManagementRepository contentRepo,
             List<StoryBookModel> storyBookParts,
