@@ -14,7 +14,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class PortalProgrammeMutationExtension
     {
-        [Permission(PermissionGroups.CONTENTTYPES, GraphActionEnum.Delete)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.Delete)]
         public BulkDeactivateResult BulkDeleteContentTypes(
             [Service] ContentManagementRepository contentRepo,
             List<int> contentIds)
@@ -43,7 +43,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return new BulkDeactivateResult() { Failed = failed, Success = success };
         }
 
-        [Permission(PermissionGroups.CONTENTTYPES, GraphActionEnum.Update)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.Update)]
         public bool BulkUpdateStoryBookThemes(
            [Service] ContentManagementRepository contentRepo,
            int contentId,
@@ -72,7 +72,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return true;
         }
 
-        [Permission(PermissionGroups.CONTENTTYPES, GraphActionEnum.Update)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.Update)]
         public bool BulkUpdateActivityThemes(
            [Service] ContentManagementRepository contentRepo,
            int contentId,
@@ -101,7 +101,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return true;
         }
 
-        [Permission(PermissionGroups.CONTENTTYPES, GraphActionEnum.Update)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.Update)]
         public bool BulkUpdateActivitySkills(
            [Service] ContentManagementRepository contentRepo,
            int contentId,
@@ -130,7 +130,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return true;
         }
 
-        [Permission(PermissionGroups.CONTENTTYPES, GraphActionEnum.Update)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.Update)]
         public bool BulkUpdateActivityShareContent(
            [Service] ContentManagementRepository contentRepo,
            int contentId,
@@ -218,7 +218,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return new BulkDeactivateResult() { Failed = failed, Success = success };
         }
 
-        [Permission(PermissionGroups.CONTENTTYPES, GraphActionEnum.Delete)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.Delete)]
         public BulkDeactivateResult DeleteMultipleStoryBooks(
             [Service] ContentManagementRepository contentRepo,
             List<string> contentIds)
@@ -248,7 +248,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return new BulkDeactivateResult() { Failed = failed, Success = success };
         }
 
-        [Permission(PermissionGroups.CONTENTTYPES, GraphActionEnum.Delete)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.Delete)]
         public BulkDeactivateResult DeleteMultipleThemes(
             [Service] ContentManagementRepository contentRepo,
             List<string> contentIds)
