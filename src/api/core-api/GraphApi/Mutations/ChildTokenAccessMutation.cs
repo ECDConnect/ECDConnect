@@ -138,8 +138,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         /// This is the endpoint used to complete registration as a caregiver
         /// </summary>s
         /// <returns></returns>
-        //[Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Create)]
-        // No token received for this end point
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Create)]
+        
         [TokenAccess(typeof(ChildOpenAccessValidator))]
         public async Task<bool> OpenAccessAddChild(
             [Service] ITokenManager<ApplicationUser, OpenAccessTokenManager> tokenManager,
