@@ -13,7 +13,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     public class ProgressTrackingCategoryMutationExtension
     {
 
-        [Permission(PermissionGroups.CONTENTTYPES, GraphActionEnum.Update)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.Update)]
         public bool BulkUpdateProgressTrackingCategoryImages(
             [Service] ContentManagementRepository contentRepo,
             int contentId,

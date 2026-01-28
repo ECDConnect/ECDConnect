@@ -37,8 +37,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Portal
             return true;
         }
 
-[Permission(PermissionGroups.JOURNEY, GraphActionEnum.Create)]
-
+        [Permission(PermissionGroups.JOURNEY, GraphActionEnum.Create)]
         public async Task<AssessmentReport> SubmitJourneyAssessmentFormData(
             [Service] IJourneyService journeyService,
             [Service] IHttpContextAccessor contextAccessor,
