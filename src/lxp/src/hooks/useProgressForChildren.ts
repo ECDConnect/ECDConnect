@@ -91,7 +91,7 @@ export const useProgressForChildren = (useNextPeriod?: boolean) => {
         childFullName: `${child.user?.firstName} ${child.user?.surname}`,
         ageInMonths:
           !!child.user?.dateOfBirth &&
-          format(new Date(child?.user?.dateOfBirth), 'yyyy') != '0001'
+          format(new Date(child?.user?.dateOfBirth), 'yyyy') !== '0001'
             ? differenceInMonths(new Date(), new Date(child?.user?.dateOfBirth))
             : undefined,
         ageGroup: !!reportingPeriod
