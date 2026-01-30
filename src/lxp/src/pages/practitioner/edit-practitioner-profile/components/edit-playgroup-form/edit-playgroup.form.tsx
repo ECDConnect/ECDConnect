@@ -194,37 +194,56 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
   };
 
   const saveClassData = async () => {
-    const data = getPlaygroupFormValues();
+    const playgroupData = getPlaygroupFormValues();
     const today = new Date().toISOString();
-    if (data) {
+
+    if (!classroom) {
+      return;
+    }
+
+    if (playgroupData) {
       const classroomGroupId = newGuid();
+
+      // 1. Ensure the Classroom exists or is updated first
+      // Assuming you have the classroom object available or are creating a new one
+      // This part is crucial: we await this specific call before moving on.
+      if (classroom) {
+        await appDispatch(classroomsThunkActions.upsertClassroom(classroom));
+      }
+
       const classroomGroupModel: ClassroomGroupDto = {
         id: classroomGroupId,
         classroomId: classroom?.id ?? '',
-        name: data?.name ?? 'Class 1',
-        userId: data?.userId!,
+        name: playgroupData?.name ?? 'Class 1',
+        userId: playgroupData?.userId!,
         learners: [],
-        classProgrammes: data.meetingDays.map((x) => {
+        classProgrammes: playgroupData.meetingDays.map((x) => {
           return {
             id: newGuid(),
             classroomGroupId: classroomGroupId,
             meetingDay: x,
             isActive: true,
             programmeStartDate: today,
-            isFullDay: data?.isFullDay || false,
+            isFullDay: playgroupData?.isFullDay || false,
             synced: false,
           };
         }),
       };
 
+      // 2. Create the Group in the state
       await appDispatch(
         classroomsActions.createClassroomGroup(classroomGroupModel)
       );
+
+      // 3. Upsert the Group to the backend
       await appDispatch(classroomsThunkActions.upsertClassroomGroups({}));
+
+      // 4. Finally, upsert the programmes only after the previous steps are done
       await appDispatch(
         classroomsThunkActions.upsertClassroomGroupProgrammes({})
       );
     }
+
     // redirect to add child
     history.push(ROUTES?.CHILD_REGISTRATION_LANDING);
   };
@@ -411,18 +430,18 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
           color="quatenary"
           className={'mt-10 w-full'}
           onClick={() => {
-            location?.state?.redirectFromBusinessToAddClass
-              ? saveClassData()
-              : onSubmit(
-                  // isPlaygroup
-                  //   ? getPlaygroupFormValues()
-                  //   :
-                  {
-                    ...getPlaygroupFormValues(),
-                    isFullDay: undefined,
-                    name: !name ? title : name,
-                  }
-                );
+            const isBusinessRedirect =
+              location?.state?.redirectFromBusinessToAddClass === true;
+
+            saveClassData();
+
+            if (!isBusinessRedirect) {
+              onSubmit({
+                ...getPlaygroupFormValues(),
+                isFullDay: undefined,
+                name: name || title,
+              });
+            }
           }}
           disabled={!isFormValid()}
           icon={isNew ? 'ArrowCircleRightIcon' : 'SaveIcon'}

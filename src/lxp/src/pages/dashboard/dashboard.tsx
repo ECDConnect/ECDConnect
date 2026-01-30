@@ -442,6 +442,13 @@ export const Dashboard: React.FC = () => {
       offlineCommunity();
       return;
     }
+    // Early exit for open-access incomplete profile case
+    if (isOpenAccess) {
+      const isBlocked = validateOACompleteProfile();
+      if (isBlocked) {
+        return; // ← prevent navigation
+      }
+    }
     if (
       ((classroom &&
         classroom.id &&
@@ -830,6 +837,12 @@ export const Dashboard: React.FC = () => {
 
   const goToCommunity = () => {
     if (isOpenAccess) {
+      // Early exit for open-access incomplete profile case
+      const isBlocked = validateOACompleteProfile();
+      if (isBlocked) {
+        return; // ← prevent navigation
+      }
+
       if (
         (classroom &&
           classroom.id &&
@@ -915,57 +928,83 @@ export const Dashboard: React.FC = () => {
     history.push(profileRoute, { tabIndex: 0, visitId: '' });
   };
 
+  const validateOACompleteProfile = () => {
+    if (isOpenAccess && isTrialPeriod && classroomGroups.length === 0) {
+      showCompleteProfileBlockingDialog();
+      return true; // ← means "blocked"
+    }
+    return false; // ← means "can proceed"
+  };
+
   const goToClassroom = () => {
-    if (
-      (classroom &&
-        !!classroom.id &&
-        classroomGroups &&
-        classroomGroups.length > 0) ||
-      (practitioner?.progress === 2 && classroom && classroom?.name) ||
-      (classroomGroups &&
-        classroomGroups.length > 0 &&
+    // Early exit for open-access incomplete profile case
+    if (isOpenAccess) {
+      const isBlocked = validateOACompleteProfile();
+      if (isBlocked) {
+        return; // ← prevent navigation
+      }
+    }
+
+    // All other navigation conditions
+    const canNavigate =
+      (classroom?.id && classroomGroups?.length > 0) ||
+      (practitioner?.progress === 2 && classroom?.name) ||
+      (classroomGroups?.length > 0 &&
         !!classroom?.id &&
         isRegistered &&
         isProgress &&
         isProgress > 0 &&
         hasConsent &&
         !missingProgramme) ||
-      isTrialPeriod
-    ) {
+      isTrialPeriod;
+
+    if (canNavigate) {
       history.push(ROUTES.CLASSROOM.ROOT, {
         activeTabIndex: TabsItems.CLASSES,
       });
-    } else if (
-      (missingProgramme && isWhiteLabel) ||
-      wlNotAcceptThePrincipalInvite
-    ) {
+      return;
+    }
+
+    // Fallback blocking cases
+    if ((missingProgramme && isWhiteLabel) || wlNotAcceptThePrincipalInvite) {
       showCompleteProfileBlockingDialog();
     }
+    // else → silently do nothing (or add logging/analytics if needed)
   };
 
   const goToCalendar = () => {
+    // Early exit for open-access incomplete profile case
+    if (isOpenAccess) {
+      const isBlocked = validateOACompleteProfile();
+      if (isBlocked) {
+        return; // ← prevent navigation
+      }
+    }
+
     if (isCoach) {
       history.push(ROUTES.CALENDAR);
-    } else if (
-      (((classroom &&
-        classroom.id &&
-        classroomGroups &&
-        classroomGroups?.length > 0) ||
-        (practitioner?.progress === 2 && classroom && classroom?.name) ||
-        (classroomGroups && classroomGroups.length > 0)) &&
-        isRegistered &&
-        isProgress &&
-        isProgress > 0 &&
-        hasConsent &&
-        !missingProgramme) ||
-      isTrialPeriod
-    ) {
-      history.push(ROUTES.CALENDAR);
-    } else if (
-      (missingProgramme && isWhiteLabel) ||
-      wlNotAcceptThePrincipalInvite
-    ) {
-      showCompleteProfileBlockingDialog();
+    } else {
+      if (
+        (((classroom &&
+          classroom.id &&
+          classroomGroups &&
+          classroomGroups?.length > 0) ||
+          (practitioner?.progress === 2 && classroom && classroom?.name) ||
+          (classroomGroups && classroomGroups.length > 0)) &&
+          isRegistered &&
+          isProgress &&
+          isProgress > 0 &&
+          hasConsent &&
+          !missingProgramme) ||
+        isTrialPeriod
+      ) {
+        history.push(ROUTES.CALENDAR);
+      } else if (
+        (missingProgramme && isWhiteLabel) ||
+        wlNotAcceptThePrincipalInvite
+      ) {
+        showCompleteProfileBlockingDialog();
+      }
     }
   };
 
@@ -977,6 +1016,13 @@ export const Dashboard: React.FC = () => {
   };
 
   const goToTraining = () => {
+    // Early exit for open-access incomplete profile case
+    if (isOpenAccess) {
+      const isBlocked = validateOACompleteProfile();
+      if (isBlocked) {
+        return; // ← prevent navigation
+      }
+    }
     if (
       (((classroom &&
         classroom.id &&
