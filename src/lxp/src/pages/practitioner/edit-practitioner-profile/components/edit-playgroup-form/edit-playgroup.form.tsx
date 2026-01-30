@@ -196,21 +196,8 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
   const saveClassData = async () => {
     const playgroupData = getPlaygroupFormValues();
     const today = new Date().toISOString();
-
-    if (!classroom) {
-      return;
-    }
-
     if (playgroupData) {
       const classroomGroupId = newGuid();
-
-      // 1. Ensure the Classroom exists or is updated first
-      // Assuming you have the classroom object available or are creating a new one
-      // This part is crucial: we await this specific call before moving on.
-      if (classroom) {
-        await appDispatch(classroomsThunkActions.upsertClassroom(classroom));
-      }
-
       const classroomGroupModel: ClassroomGroupDto = {
         id: classroomGroupId,
         classroomId: classroom?.id ?? '',
@@ -230,20 +217,14 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
         }),
       };
 
-      // 2. Create the Group in the state
       await appDispatch(
         classroomsActions.createClassroomGroup(classroomGroupModel)
       );
-
-      // 3. Upsert the Group to the backend
       await appDispatch(classroomsThunkActions.upsertClassroomGroups({}));
-
-      // 4. Finally, upsert the programmes only after the previous steps are done
       await appDispatch(
         classroomsThunkActions.upsertClassroomGroupProgrammes({})
       );
     }
-
     // redirect to add child
     history.push(ROUTES?.CHILD_REGISTRATION_LANDING);
   };
@@ -430,18 +411,18 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
           color="quatenary"
           className={'mt-10 w-full'}
           onClick={() => {
-            const isBusinessRedirect =
-              location?.state?.redirectFromBusinessToAddClass === true;
-
-            saveClassData();
-
-            if (!isBusinessRedirect) {
-              onSubmit({
-                ...getPlaygroupFormValues(),
-                isFullDay: undefined,
-                name: name || title,
-              });
-            }
+            location?.state?.redirectFromBusinessToAddClass
+              ? saveClassData()
+              : onSubmit(
+                  // isPlaygroup
+                  //   ? getPlaygroupFormValues()
+                  //   :
+                  {
+                    ...getPlaygroupFormValues(),
+                    isFullDay: undefined,
+                    name: !name ? title : name,
+                  }
+                );
           }}
           disabled={!isFormValid()}
           icon={isNew ? 'ArrowCircleRightIcon' : 'SaveIcon'}

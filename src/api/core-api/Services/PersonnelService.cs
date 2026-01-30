@@ -763,7 +763,7 @@ namespace ECDLink.Api.CoreApi.Services
                     DateLinked = DateTime.Now
                 });
 
-            if (principalId == Guid.Empty)
+            if (string.IsNullOrEmpty(principalId.ToString()))
             {
                 // also create a dummy pre-school (classroom) for practitioner to test with
                 _classRepo.Insert(new Classroom
