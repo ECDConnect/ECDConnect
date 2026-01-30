@@ -121,8 +121,6 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   const hasAbsenteeClasses =
     allAbsenteeClasses && allAbsenteeClasses?.length > 0;
 
-  // const isLoggedInUser = practitionerUser?.userId === practitionerId;
-
   const [selectedLeaveDate, setSelectedLeave] = useState<Date>();
   const currentDate = selectedLeaveDate ? selectedLeaveDate : new Date();
 
@@ -264,6 +262,17 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
       }
     }
   }, [routeState?.practitionerId]);
+
+  // make sure the list are populate when coming from profile
+  useEffect(() => {
+    if (routeState?.isFromPrincipalPractitionerProfile) {
+      setPractitionersTeachList(
+        availablePractitioners.filter(
+          (prac) => prac.value !== routeState?.practitionerId
+        )
+      );
+    }
+  }, []);
 
   useEffect(() => {
     if (hasAbsenteeClasses) {
