@@ -39,6 +39,7 @@ const createTenantContext = (
   return value;
 };
 
+/*
 const Tenants = {
   'localhost:3000': {
     applicationName: 'ECD Connect (Local)',
@@ -101,6 +102,7 @@ const Tenants = {
     tenantType: TenantType.WhiteLabel,
   },
 };
+*/
 
 export const TenantContextProvider: React.FC<{}> = ({ children }) => {
   const appDispatch = useAppDispatch();
@@ -111,6 +113,7 @@ export const TenantContextProvider: React.FC<{}> = ({ children }) => {
     isCHWConnect: false,
   });
   let tenantState = useSelector(tenantSelectors.getTenant);
+  /*
   tenantState.tenant = null;
   if (!tenantState || !tenantState.tenant) {
     const url = window.location.host;
@@ -136,7 +139,7 @@ export const TenantContextProvider: React.FC<{}> = ({ children }) => {
       url: url,
     };
     tenantState = tenant;
-  }
+  }*/
 
   useEffect(() => {
     if (tenantState.url !== window.location.host) {
