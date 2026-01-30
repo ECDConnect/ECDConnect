@@ -111,6 +111,12 @@ namespace EcdLink.Api.CoreApi.Services
             var monthEnd = DateTime.Now.GetEndOfMonth();
 
             var practitioner = _practitionerRepo.GetByUserId(userId);
+
+            if (practitioner == null)
+            {
+                return new PointsToDoItemModel();
+            }
+
             var isPrincipal = practitioner.IsPrincipalOrAdmin();
 
             // 1.Completing profile(ie they are not part of a preschool yet)(see W3)
