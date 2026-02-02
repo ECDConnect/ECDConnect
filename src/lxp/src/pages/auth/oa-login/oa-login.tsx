@@ -290,9 +290,9 @@ export const OaLogin: React.FC = () => {
         await appDispatch(syncThunkActions.syncOfflineDataForPractitioner({}));
       }
 
-      await resetAppStore();
-      await resetAuth();
-      await resetUser();
+      resetAppStore && (await resetAppStore());
+      resetAuth && (await resetAuth());
+      resetUser && (await resetUser());
     }
   };
 
