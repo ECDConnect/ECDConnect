@@ -186,6 +186,16 @@ export const Messages: React.FC = () => {
     paging.visibleItems?.splice(notificationIndex!!, 1);
   };
 
+  useEffect(() => {
+    if (
+      paging.visibleItems.length === 0 &&
+      !paging.isLastPage &&
+      notifications.length > 0
+    ) {
+      paging.getNextPage();
+    }
+  }, [paging.visibleItems.length, paging.isLastPage, notifications.length]);
+
   return (
     <BannerWrapper
       size="medium"
@@ -196,7 +206,7 @@ export const Messages: React.FC = () => {
       displayOffline={!isOnline}
     >
       <div className="divide-uiLight divide-y-2 divide-dashed">
-        {paging.visibleItems.length === 0 && (
+        {paging.visibleItems.length === 0 && notifications.length === 0 && (
           <IconInformationIndicator
             title="You don't have any messages"
             subTitle="Everything seems to be up to date."
