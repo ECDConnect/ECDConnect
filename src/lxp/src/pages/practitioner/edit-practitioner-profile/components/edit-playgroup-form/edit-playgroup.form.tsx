@@ -194,24 +194,24 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
   };
 
   const saveClassData = async () => {
-    const data = getPlaygroupFormValues();
+    const playgroupData = getPlaygroupFormValues();
     const today = new Date().toISOString();
-    if (data) {
+    if (playgroupData) {
       const classroomGroupId = newGuid();
       const classroomGroupModel: ClassroomGroupDto = {
         id: classroomGroupId,
         classroomId: classroom?.id ?? '',
-        name: data?.name ?? 'Class 1',
-        userId: data?.userId!,
+        name: playgroupData?.name ?? 'Class 1',
+        userId: playgroupData?.userId!,
         learners: [],
-        classProgrammes: data.meetingDays.map((x) => {
+        classProgrammes: playgroupData.meetingDays.map((x) => {
           return {
             id: newGuid(),
             classroomGroupId: classroomGroupId,
             meetingDay: x,
             isActive: true,
             programmeStartDate: today,
-            isFullDay: data?.isFullDay || false,
+            isFullDay: playgroupData?.isFullDay || false,
             synced: false,
           };
         }),
