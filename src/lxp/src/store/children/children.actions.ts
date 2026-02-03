@@ -479,10 +479,16 @@ export const openAccessAddChild = createAsyncThunk<
   ChildrenActions.OPEN_ACCESS_ADD_CHILD,
   async (
     { token, caregiver, siteAddress, child, registration, userConsent },
-    { rejectWithValue }
+    { getState, rejectWithValue }
   ) => {
     try {
-      const result = await new ChildService('').openAccessAddChild(
+      const {
+        auth: { userAuth },
+      } = getState();
+
+      const result = await new ChildService(
+        userAuth?.auth_token!
+      ).openAccessAddChild(
         token,
         caregiver,
         siteAddress,

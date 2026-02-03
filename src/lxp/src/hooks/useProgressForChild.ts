@@ -58,20 +58,16 @@ export const useProgressForChild = (childId: string) => {
         (x) => x.id === report.childProgressReportPeriodId
       );
 
-      const missedSkillCount =
-        skillsForAgeGroup.length - report.skillObservations.length;
       const doNotKnowSkillCount = report.skillObservations.filter(
         (x) => x.value === ProgressSkillValues.DoNotKnow
       ).length;
       const doNotKnowPercentage =
-        ((missedSkillCount + doNotKnowSkillCount) /
-          report.skillObservations.length) *
-        100;
+        (doNotKnowSkillCount / report.skillObservations.length) * 100;
 
       return {
         ...report,
         unknownPercentage: doNotKnowPercentage,
-        unknownCount: missedSkillCount + doNotKnowSkillCount,
+        unknownCount: doNotKnowSkillCount,
         skillsToWorkOn: report.skillsToWorkOn
           .map((skillToWorkOn) => {
             const skill = allSkills.find((x) => x.id === skillToWorkOn.skillId);
