@@ -65,8 +65,9 @@ namespace ECDLink.ContentManagement.Repositories
               .FirstOrDefault();
         }
 
-        public async Task<bool> HasTranslations(int id, Guid localId)
+        public async Task<bool> HasTranslations(int id, int ageGroup, Guid localId)
         {
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
             var contentType = await _context.ContentTypes
               .Include(x => x.Content)
                 .ThenInclude(x => x.ContentValues)
@@ -74,7 +75,10 @@ namespace ECDLink.ContentManagement.Repositories
               .OrderBy(x => x.Id)
               .FirstOrDefaultAsync();
 
-            var content = contentType.Content.Where(x => x.ContentValues.Any(z => z.LocaleId == localId)).OrderBy(x => x.Id).FirstOrDefault();
+            var content = contentType.Content.Where(x => x.ContentValues.Any(z => z.LocaleId == localId 
+            && z.TenantId == tenantId 
+            && !string.IsNullOrEmpty(z.Value)
+            && z.Value.Contains(ageGroup.ToString()))).OrderBy(x => x.Id).FirstOrDefault();
 
             return content != null ? true : false;
         }
