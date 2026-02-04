@@ -257,15 +257,10 @@ export const OaLogin: React.FC = () => {
   };
 
   const login = async () => {
-    console.log('login - 1');
     appDispatch(settingActions.setApplicationVersion(version));
-    console.log('login - 2');
     appDispatch(authActions.setUserExpired());
-    console.log('login - 3');
     appDispatch(settingActions.setLoginDate());
-    console.log('login - 4');
     const user = await appDispatch(userThunkActions.getUser({})).unwrap();
-    console.log('login - 5');
     localStorage.setItem(
       LocalStorageKeys.firstTimeOnCommunityDashboard,
       'true'
@@ -274,7 +269,6 @@ export const OaLogin: React.FC = () => {
     setLoginAttempts(0);
     // Set userId for google
     ReactGA.set({ userId: user?.id });
-    console.log('login - 6');
     history.push(ROUTES.DASHBOARD, { isFromLogin: true });
   };
 
@@ -357,7 +351,6 @@ export const OaLogin: React.FC = () => {
           isAuthenticated?.error === undefined &&
           isAuthenticated?.payload?.response?.status !== 401
         ) {
-          console.log('preLogin - authenticated');
           const userHash = CryptoJS.AES.encrypt(
             loginRequest.password,
             'user pass'
@@ -380,7 +373,6 @@ export const OaLogin: React.FC = () => {
           }
           login();
         } else {
-          console.log('preLogin - error1');
           setLoginAttempts(loginAttempts + 1);
           setDisplayError(
             loginAttempts + 1 >= STRUGGLING_LOGIN_ATTEMPTS
@@ -402,10 +394,8 @@ export const OaLogin: React.FC = () => {
             }
           }
         }
-        console.log('preLogin - end');
       })
       .catch((err) => {
-        console.log('preLogin - catch');
         setLoginAttempts(loginAttempts + 1);
         setDisplayError(
           loginAttempts + 1 >= STRUGGLING_LOGIN_ATTEMPTS

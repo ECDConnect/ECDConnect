@@ -588,10 +588,10 @@ class PQAService {
       );
     }
 
-    console.log(
-      'pqaservice.submitJourneyAssessmentFormData',
-      response.data.data
-    );
+    // console.log(
+    //   'pqaservice.submitJourneyAssessmentFormData',
+    //   response.data.data
+    // );
 
     return response.data.data.submitJourneyAssessmentFormData;
   }
