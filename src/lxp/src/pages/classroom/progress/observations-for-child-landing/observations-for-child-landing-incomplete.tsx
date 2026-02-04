@@ -64,10 +64,13 @@ export const ObservationsForChildLandingIncomplete: React.FC<
   const userAuth = useSelector(authSelectors.getAuthUser);
 
   const changeLanguage = async (language: LanguageDto) => {
+    if (!language?.locale) return;
+
     const hasTranslations = await new ContentService(
       userAuth?.auth_token ?? ''
     ).hasContentTypeBeenTranslated(
-      ContentTypeEnum.ProgressTrackingCategory,
+      ContentTypeEnum.ProgressTrackingSkill,
+      currentAgeGroup?.id ?? 0,
       language.id ?? ''
     );
 
@@ -107,7 +110,12 @@ export const ObservationsForChildLandingIncomplete: React.FC<
               {
                 text: 'Close',
                 colour: 'primary',
-                onClick: close,
+                onClick: () => {
+                  appDispatch(
+                    progressTrackingActions.setLocale({ localeId: 'en-za' })
+                  );
+                  close();
+                },
                 type: 'filled',
                 textColour: 'white',
                 leadingIcon: 'XIcon',

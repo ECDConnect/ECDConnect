@@ -32,6 +32,8 @@ import { useProgressForChildren } from '@/hooks/useProgressForChildren';
 import { ProgressCaregiverReportPdf } from '../caregiver-report-pdf/caregiver-report-pdf';
 import { ReactComponent as CompleteImage } from '@/assets/celebrateIcon.svg';
 import { ProgressTabReportPeriodsCompleted } from './progress-tab-report-periods-completed';
+import { progressTrackingActions } from '@/store/progress-tracking';
+import { useAppDispatch } from '@/store';
 
 export type ChildProgressLandingRouteState = {
   childId: string;
@@ -46,6 +48,7 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
 }) => {
   const history = useHistory();
   const dialog = useDialog();
+  const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
   const [isReportReady, setIsReportReady] = useState(false);
 
@@ -130,6 +133,9 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
                 colour: 'quatenary',
                 type: 'filled',
                 onClick: () => {
+                  appDispatch(
+                    progressTrackingActions.setLocale({ localeId: 'en-za' })
+                  );
                   history.push(ROUTES.PROGRESS_SELECT_CHILD_TO_TRACK);
                   submit();
                 },
@@ -141,6 +147,9 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
                 colour: 'quatenary',
                 type: 'outlined',
                 onClick: () => {
+                  appDispatch(
+                    progressTrackingActions.setLocale({ localeId: 'en-za' })
+                  );
                   submit();
                   history.push(ROUTES.PROGRESS_SELECT_CATEGORY_TO_TRACK);
                 },
