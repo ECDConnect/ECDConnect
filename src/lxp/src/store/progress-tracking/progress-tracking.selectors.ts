@@ -3,7 +3,6 @@ import {
   PractitionerProgressReportSummaryDto,
   ProgressTrackingAgeGroupDto,
   ProgressTrackingCategoryDto,
-  ProgressTrackingSkillDto,
   ProgressTrackingSubCategoryDto,
 } from '@ecdlink/core';
 import { createSelector } from '@reduxjs/toolkit';
@@ -23,7 +22,10 @@ export const getProgressTrackingCategories = () =>
       currentLocale: string,
       progressContent: ProgressTrackingCategoriesByLocale
     ) => {
-      if (!!progressContent[currentLocale]) {
+      if (
+        !!progressContent[currentLocale] &&
+        progressContent[currentLocale]?.data
+      ) {
         return progressContent[currentLocale]?.data;
       } else {
         return progressContent['en-za']?.data;
@@ -170,8 +172,8 @@ export const getSkillsForAgeGroup = (ageGroupId: number) =>
         return [];
       }
 
-      return ageGroup.skills.map((ageGroupSkill) => {
-        const skill = detailedSkills.find(
+      return ageGroup.skills?.map((ageGroupSkill) => {
+        const skill = detailedSkills?.find(
           (skill) => skill.id === ageGroupSkill
         );
         return skill!;

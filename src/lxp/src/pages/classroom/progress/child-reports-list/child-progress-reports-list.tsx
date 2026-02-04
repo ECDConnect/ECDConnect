@@ -11,6 +11,7 @@ import { useProgressForChild } from '@/hooks/useProgressForChild';
 import { ProgressReportsList } from './reports-list';
 import ProgressWalkthroughWrapper from '../walkthrough/progress-walkthrough-wrapper';
 import { useAppContext } from '@/walkthrougContext';
+import { progressTrackingActions } from '@/store/progress-tracking';
 
 export type ChildProgressReportsListRouteState = {
   childId: string;
@@ -48,6 +49,7 @@ export const ChildProgressReportsList: React.FC = () => {
   }, [isOnline]);
 
   const trackProgress = () => {
+    appDispatch(progressTrackingActions.setLocale({ localeId: 'en-za' }));
     history.push(ROUTES.PROGRESS_OBSERVATIONS_LANDING, {
       childId: routeState?.childId,
     });
