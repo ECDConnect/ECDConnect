@@ -95,9 +95,9 @@ export const useObserveProgressForChild = (childId: string) => {
   );
 
   const currentObservations = useMemo<ChildProgressSkill[]>(() => {
-    return skillsForAgeGroup.map((x) => ({
+    return skillsForAgeGroup?.map((x) => ({
       ...x,
-      value: report?.skillObservations.find((o) => o.skillId === x.id)?.value,
+      value: report?.skillObservations?.find((o) => o.skillId === x.id)?.value,
     }));
   }, [skillsForAgeGroup, report]);
 

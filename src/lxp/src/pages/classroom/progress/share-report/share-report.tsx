@@ -47,7 +47,9 @@ export const ProgressShareReport: React.FC = () => {
 
   const { state: routeState } = useLocation<ProgressShareReportState>();
 
-  const { child, detailedReports } = useProgressForChild(routeState.childId);
+  const { child, detailedReports, currentAgeGroup } = useProgressForChild(
+    routeState.childId
+  );
 
   const { generateReportAndReturnBlob, sharePdfReport } = usePdfFromHtml();
 
@@ -64,6 +66,7 @@ export const ProgressShareReport: React.FC = () => {
       userAuth?.auth_token ?? ''
     ).hasContentTypeBeenTranslated(
       ContentTypeEnum.ProgressTrackingCategory,
+      currentAgeGroup?.id ?? 0,
       language.id ?? ''
     );
 
