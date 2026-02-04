@@ -396,7 +396,7 @@ export const OaLogin: React.FC = () => {
           } else {
             if (
               !!loginRequest?.loginType &&
-              loginRequest?.loginType !== username
+              loginRequest?.loginType !== 'username'
             ) {
               displayNoAccountFoundPopup(loginRequest?.loginType);
             }
