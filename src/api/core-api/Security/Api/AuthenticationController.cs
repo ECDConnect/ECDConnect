@@ -5,6 +5,7 @@ using EcdLink.Api.CoreApi.Security.Models;
 using EcdLink.Api.CoreApi.Security.Models.Requests;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Api.CoreApi.Services;
+using ECDLink.Core.Extensions;
 using ECDLink.Core.Helpers;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
@@ -39,6 +40,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using static EcdLink.Api.CoreApi.Constants;
@@ -1091,8 +1094,92 @@ namespace ECDLink.Security.Api
                 }
             catch (Exception ex)
             {
-                _logger.LogError("ValidateFacebookLogin failed", ex);
+                _logger.LogError(ex, "ValidateFacebookLogin failed");
                 return new ValidateFacebookLoginResult() { Unauthorized = LoginUnauthorizedResult(message: "Exception occurred." ) }; 
+            }
+        }
+
+        [Route("facebook/deauthorize")]
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> DeauthorizeFacebook()
+        {
+            try
+            {
+                // Read the signed_request from form
+                string? signedRequest = Request.Form["signed_request"];
+
+                if (string.IsNullOrWhiteSpace(signedRequest))
+                {
+                    _logger.LogWarning("Deauthorize request missing signed_request");
+                    return Ok(); // Still return 200
+                }
+
+                var data = ParseAndValidateSignedRequest(signedRequest, _facebookConfig.AppSecret);
+
+                if (data == null || !data.TryGetValue("user_id", out var userIdObj) || userIdObj is not string userId)
+                {
+                    _logger.LogWarning("Invalid or missing user_id in deauthorize signed request");
+                    return Ok();
+                }
+
+                // Your cleanup logic here
+                _logger.LogInformation("User deauthorized app: {UserId}", userId);
+
+                var user = await _userManager.FindByNameAsync(userId);
+                if (user != null)
+                {
+                    user.IsActive = false;
+                    user.UserName = $"{user.UserName}-deactivated-{DateTime.Now.ToString("yyyyMMddHHmmss")}";
+                    user.NormalizedUserName = user.UserName.ToUpper();
+                    await _userManager.UpdateAsync(user);
+                }
+
+                // Example:
+                // await _userService.DeleteUserDataAsync(userId);
+                // await _dbContext.FacebookTokens.Where(t => t.FbUserId == userId).ExecuteDeleteAsync();
+
+                return Ok(); // or return Ok("{\"status\":\"ok\"}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing Facebook deauthorize callback");
+                return Ok(); // MUST return 200 anyway
+            }
+        }
+
+        private static Dictionary<string, object>? ParseAndValidateSignedRequest(string signedRequest, string appSecret)
+        {
+            try
+            {
+                var parts = signedRequest.Split('.');
+                if (parts.Length != 2)
+                    return null;
+
+                string encodedSig = parts[0];
+                string encodedPayload = parts[1];
+
+                // Facebook uses base64url (replace -_ ? +/, pad with =)
+                string base64Sig = encodedSig.Replace('-', '+').Replace('_', '/').PadRight(encodedSig.Length + (4 - encodedSig.Length % 4) % 4, '=');
+                string base64Payload = encodedPayload.Replace('-', '+').Replace('_', '/').PadRight(encodedPayload.Length + (4 - encodedPayload.Length % 4) % 4, '=');
+
+                byte[] sigBytes = Convert.FromBase64String(base64Sig);
+                string payloadJson = Encoding.UTF8.GetString(Convert.FromBase64String(base64Payload));
+
+                // Validate signature: HMAC-SHA256 of payload using app secret
+                using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(appSecret));
+                byte[] expectedSig = hmac.ComputeHash(Encoding.UTF8.GetBytes(encodedPayload)); // Note: use original encodedPayload (before decoding)
+
+                if (!sigBytes.ConstantTimeEquals(expectedSig)) // Timing-safe comparison
+                    return null;
+
+                // Parse JSON payload
+                var data = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(payloadJson);
+                return data;
+            }
+            catch
+            {
+                return null;
             }
         }
     }
