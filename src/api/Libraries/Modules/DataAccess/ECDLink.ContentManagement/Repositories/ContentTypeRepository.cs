@@ -68,19 +68,25 @@ namespace ECDLink.ContentManagement.Repositories
         public async Task<bool> HasTranslations(int id, int ageGroup, Guid localId)
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
-            var contentType = await _context.ContentTypes
+
+            var content_type_field_ageGroups_id = _context.ContentTypeFields
+                .Where(x => x.ContentTypeId == id && x.FieldName == "ageGroups")
+                .Select(x => x.Id)
+                .FirstOrDefault();
+
+            var languages = await _context.ContentValues
               .Include(x => x.Content)
-                .ThenInclude(x => x.ContentValues)
-                .Where(x => x.Id == id)
-              .OrderBy(x => x.Id)
+                .Where(x => x.Content.ContentTypeId == id 
+                && x.TenantId == tenantId 
+                && x.LocaleId == localId
+                && x.ContentTypeFieldId == content_type_field_ageGroups_id
+                && !string.IsNullOrEmpty(x.Value) 
+                && x.Value.Contains(ageGroup.ToString()))
+              .OrderBy(x => x.LocaleId)
+              .Select(x => x.LocaleId)
               .FirstOrDefaultAsync();
 
-            var content = contentType.Content.Where(x => x.ContentValues.Any(z => z.LocaleId == localId 
-            && z.TenantId == tenantId 
-            && !string.IsNullOrEmpty(z.Value)
-            && z.Value.Contains(ageGroup.ToString()))).OrderBy(x => x.Id).FirstOrDefault();
-
-            return content != null ? true : false;
+            return languages == localId ? true : false;
         }
 
         public IQueryable<ContentType> GetAll(string search, bool searchInContent)
