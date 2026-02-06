@@ -15,7 +15,10 @@ declare
     content_age_group_61to65_id integer;
 	content_skills_ids text = '';
 
-	--tenant_id public."Tenant"."Id"%TYPE = '85f426d0-d489-4454-840d-779af39fcac5';
+	--tenant_id public."Tenant"."Id"%TYPE = 'f5e41fb7-e586-4ed4-8ed7-2bdc72cd0207';
+	--tenant_id public."Tenant"."Id"%TYPE = '3d50402b-95de-43da-b719-ce50d9d1bcdb';
+	--tenant_id public."Tenant"."Id"%TYPE = '1c50abab-aeb6-4de4-8db9-fc41e4745232';
+	--tenant_id public."Tenant"."Id"%TYPE = 'dc6b770d-6898-4d8e-bbdf-f8ceeda69ece';
 	--tenant_id public."Tenant"."Id"%TYPE = '258a15e6-3736-45ea-875c-48d9377de4c8';
 	tenant_id public."Tenant"."Id"%TYPE = 'e8f571eb-1972-4e71-a20f-347c65d059bb';
 begin
@@ -618,44 +621,6 @@ and cvs."LocaleId" = '9688cd08-adef-408c-9d34-5d75ae5c44df'
 and cvn."LocaleId" = '9688cd08-adef-408c-9d34-5d75ae5c44df' 
 and c."IsActive" 
 	and cvn."Value" = 'Fine motor';
-
-update "ContentValue" set "Value" = content_type_subcategory_new_skills_ids where "Id" = content_type_subcategory_skills_id;
-
--- ########################################################################
--- Able to use a range of writing tools during  creative art (e.g. paint brushes and crayons)
--- ########################################################################
-
--- Insert content for question
-INSERT INTO public."Content" ("ContentTypeId", "IsActive", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "IsReadOnly")
-VALUES(7, true, CURRENT_DATE, CURRENT_DATE, '', null, false) returning "Id" into content_id;
-
--- append skill to current order
-select content_skills_ids || ',' || content_id into content_skills_ids;
-
-
--- Insert content values for skill
-INSERT INTO public."ContentValue" ("ContentId", "LocaleId", "ContentTypeFieldId", "Value", "StatusId", "TenantId", "InsertedDate", "UpdatedDate")
-VALUES(content_id, '9688cd08-adef-408c-9d34-5d75ae5c44df', content_type_field_name_id, 'Able to use a range of writing tools during  creative art (e.g. paint brushes and crayons)', null, tenant_id, CURRENT_DATE, CURRENT_DATE);  
-
-INSERT INTO public."ContentValue" ("ContentId", "LocaleId", "ContentTypeFieldId", "Value", "StatusId", "TenantId", "InsertedDate", "UpdatedDate")
-VALUES(content_id, '9688cd08-adef-408c-9d34-5d75ae5c44df', content_type_field_value_id, 'Able to use a range of writing tools during  creative art (e.g. paint brushes and crayons)', null, tenant_id, CURRENT_DATE, CURRENT_DATE);
-
-INSERT INTO public."ContentValue" ("ContentId", "LocaleId", "ContentTypeFieldId", "Value", "StatusId", "TenantId", "InsertedDate", "UpdatedDate")
-VALUES(content_id, '9688cd08-adef-408c-9d34-5d75ae5c44df', content_type_field_ageGroups_id, content_age_group_61to65_id, null, tenant_id, CURRENT_DATE, CURRENT_DATE);
-
--- update subcategory skills
-select cvs."Id", cvs."Value" || ',' || content_id into content_type_subcategory_skills_id, content_type_subcategory_new_skills_ids
-from "ContentValue" cvn
-inner join "ContentValue" cvs on cvn."ContentId" = cvs."ContentId" 
-inner join "Content" c on cvn."ContentId" = c."Id" 
-where cvn."ContentTypeFieldId" = 29 
-and cvs."ContentTypeFieldId" = 26 
-and cvn."TenantId" = tenant_id
-and cvs."TenantId" = tenant_id
-and cvs."LocaleId" = '9688cd08-adef-408c-9d34-5d75ae5c44df' 
-and cvn."LocaleId" = '9688cd08-adef-408c-9d34-5d75ae5c44df' 
-and c."IsActive" 
-	and cvn."Value" = 'Emergent reading & writing';
 
 update "ContentValue" set "Value" = content_type_subcategory_new_skills_ids where "Id" = content_type_subcategory_skills_id;
 
@@ -1849,34 +1814,3 @@ update "ContentValue" set "Value" = content_type_subcategory_new_skills_ids wher
 	VALUES(content_age_group_61to65_id, '9688cd08-adef-408c-9d34-5d75ae5c44df', content_type_field_skills, content_skills_ids, null, tenant_id, CURRENT_DATE, CURRENT_DATE);  	
 
 end $$;
-
-select * from public."ContentValue" cv 
-where cv."ContentId" in (select "ContentId" 
-from "ContentValue" cv 
-inner join "ContentTypeField" ctf on cv."ContentTypeFieldId" = ctf."Id" 
-where ctf."ContentTypeId" = 37 and ctf."FieldName" = 'name' and cv."Value" = '61-65 months (5 years)');
-
-select cvs."Id", cvs."Value" , cvn."Value" 
-from "ContentValue" cvn
-inner join "ContentValue" cvs on cvn."ContentId" = cvs."ContentId" 
-inner join "Content" c on cvn."ContentId" = c."Id" 
-where cvn."ContentTypeFieldId" = 29 
-and cvs."ContentTypeFieldId" = 26 
-and cvs."LocaleId" = '9688cd08-adef-408c-9d34-5d75ae5c44df'
-and cvn."LocaleId" = '9688cd08-adef-408c-9d34-5d75ae5c44df' 
-and cvn."TenantId" = '258a15e6-3736-45ea-875c-48d9377de4c8'
-and cvs."TenantId" = '258a15e6-3736-45ea-875c-48d9377de4c8'
-and c."IsActive" ;
---	and cvn."Value" = 'Number, shape, size, pattern' ;
-
--- Look at ContentValue too
-SELECT cv.*, ctf."FieldName", c."ContentTypeId"
-FROM "ContentValue" cv
-JOIN "ContentTypeField" ctf ON cv."ContentTypeFieldId" = ctf."Id"
-JOIN "Content" c ON cv."ContentId" = c."Id"
-where cv."TenantId" = '258a15e6-3736-45ea-875c-48d9377de4c8'
-ORDER BY cv."InsertedDate" DESC
-LIMIT 100;
-
--- When you're done checking → throw everything away
---ROLLBACK;
