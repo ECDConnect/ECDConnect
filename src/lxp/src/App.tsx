@@ -176,6 +176,7 @@ const App: React.FC = () => {
                 'ExclamationIcon',
                 `z-20 w-28 h-28 text-alertMain`
               )}
+              className={'bg-white'}
               title={'Weak connection'}
               detailText={
                 'Your internet connection is unstable. Turn off mobile data and Wi-Fi to keep using the app, or connect to a stronger network.'
@@ -184,7 +185,7 @@ const App: React.FC = () => {
                 {
                   text: 'Okay',
                   textColour: 'white',
-                  colour: 'primary',
+                  colour: 'quatenary',
                   type: 'filled',
                   leadingIcon: 'CheckCircleIcon',
                   onClick: () => {
