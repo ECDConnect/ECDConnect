@@ -21,6 +21,6 @@ export const contactButtons = 'flex justify-center mt-4';
 export const stackedList = 'w-full';
 export const wrapper = 'flex flex-row justify-start items-center p-4';
 export const registeredChildrenCard =
-  'mt-2 w-11/12 mx-auto flex justify-between items-center bg-quatenaryBg';
+  'mt-3 w-11/12 mx-auto flex justify-between items-center bg-quatenaryBg';
 export const attendanceCard = 'mt-4 w-11/12 mx-auto bg-uiBg';
 export const perAgeCard = 'mt-4 mb-4 w-11/12 mx-auto bg-uiBg';
