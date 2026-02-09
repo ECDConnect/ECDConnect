@@ -73,6 +73,7 @@ import { PermissionsNames } from '../principal/components/add-practitioner/add-p
 import { usePoints } from '@/hooks/usePoints';
 import { usePointsToDoEmoji } from '@/hooks/usePointsToDoEmoji';
 import { useStoreSetup } from '@hooks/useStoreSetup';
+import { Logout } from '../auth/logout/logout';
 
 const { version } = require('../../../package.json');
 
@@ -128,6 +129,7 @@ export const Dashboard: React.FC = () => {
   const [installPromptEvent, setInstallPromptEvent] = useState<Event | null>(
     null
   ); // State to store the install prompt event
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const missingProgramme =
     (practitioner?.isRegistered === null || practitioner?.isRegistered) &&
@@ -501,6 +503,24 @@ export const Dashboard: React.FC = () => {
     });
   };
 
+  const showLogoutDialog = () => {
+    dialog({
+      color: 'bg-white',
+      position: DialogPosition.Middle,
+      blocking: true,
+      render: (onClose) => (
+        <Logout
+          onSubmit={() => {
+            onClose();
+          }}
+          onCancel={() => {
+            onClose();
+          }}
+        />
+      ),
+    });
+  };
+
   const onNavigation = (navItem: any) => {
     if (navItem.href.includes('community') && !isOnline) {
       history.push(ROUTES.DASHBOARD);
@@ -538,6 +558,10 @@ export const Dashboard: React.FC = () => {
         ((isWhiteLabel && missingProgramme) || wlNotAcceptThePrincipalInvite))
     ) {
       showCompleteProfileBlockingDialog();
+    } else if (navItem.href.includes('logout')) {
+      setTimeout(() => {
+        showLogoutDialog();
+      }, 180); // small delay to let menu close animation finish
     } else {
       history.push(navItem.href, navItem.params);
     }
@@ -740,6 +764,7 @@ export const Dashboard: React.FC = () => {
       icon: styles.logoutIconName,
       current: false,
       showDivider: true,
+      onNavigation: onNavigation,
     },
   ];
 
@@ -798,6 +823,7 @@ export const Dashboard: React.FC = () => {
       icon: styles.logoutIconName,
       current: false,
       showDivider: true,
+      onNavigation: onNavigation,
     },
   ];
 
@@ -1092,6 +1118,18 @@ export const Dashboard: React.FC = () => {
     <>
       <DashboardWrapper />
       <BannerWrapper
+        onNavigation={(navItem) => {
+          // Always close menu on any navigation click
+          setSidebarOpen(false);
+
+          if (navItem.href?.includes('logout')) {
+            showLogoutDialog();
+          } else {
+            onNavigation(navItem);
+          }
+        }}
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
         backgroundColour={'white'}
         backgroundImageColour={'primary'}
         avatar={
@@ -1115,7 +1153,6 @@ export const Dashboard: React.FC = () => {
           )
         }
         menuItems={isCoach ? navigationForCoach : navigation}
-        onNavigation={onNavigation}
         menuLogoUrl={theme?.images?.logoUrl || hamburgerLogo}
         calendarRender={
           (calendarEnabled && isWhiteLabel) || isOpenAccess
