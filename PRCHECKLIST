@@ -1,1 +1,5 @@
-+task+ Hug your Checklist Buddy once a day.
+# PRCHECKLIST generated online at https://mibexsoftware.bitbucket.io/checklist-buddy-editor/
+
+--files src/api/**/*Query*.cs,src/api/**/*Mutation*.cs --target master,develop,QA +title+ GraphQL queries and/or mutations
+  --files src/api/**/*Query*.cs,src/api/**/*Mutation*.cs --target master,develop,QA +task+ Have you added/updated Permission attribute
+  --files src/api/**/*Query*.cs,src/api/**/*Mutation*.cs --target master,develop,QA +task+ Confirm current user Id is not passed as a parameter
