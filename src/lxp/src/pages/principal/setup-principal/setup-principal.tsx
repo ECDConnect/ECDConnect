@@ -256,7 +256,11 @@ export const SetupPrincipal: React.FC = () => {
           })
         );
 
-        if (!practitioner?.isPrincipal && !practitioner?.principalHierarchy) {
+        if (
+          !practitioner?.isPrincipal &&
+          !practitioner?.principalHierarchy &&
+          !practitionerPreschoolData?.userId
+        ) {
           await appDispatch(
             notificationActions.addNotifications(practitionerNotification)
           );
