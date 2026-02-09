@@ -14,6 +14,7 @@ import {
   UserAvatar,
   ScoreCard,
   NoPointsScoreCard,
+  renderIcon,
 } from '@ecdlink/ui';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -144,6 +145,9 @@ export const Dashboard: React.FC = () => {
   const [pointsScoreProps, setPointsScoreProps] = useState<ScoreCardProps>();
   const totalYearPoints = useSelector(pointsSelectors.getTotalYearPoints);
 
+  const [freeMemory, setFreeMemory] = useState(0);
+  const [errorMessage, setErrorMessage] = useState(false);
+
   const planActivitiesPermission = practitioner?.permissions?.find(
     (item) =>
       item?.permissionName === PermissionsNames.plan_classroom_actitivies
@@ -240,6 +244,24 @@ export const Dashboard: React.FC = () => {
       practitioner?.principalHierarchy
     ) {
       history.push(ROUTES.PRACTITIONER.PROFILE.EDIT);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (navigator?.storage?.estimate) {
+      navigator.storage
+        .estimate()
+        .then((estimate) => {
+          if (estimate?.quota) {
+            const freeMemoryMB = estimate.quota / (1024 * 1024);
+            setFreeMemory(Math.round(freeMemoryMB));
+          }
+        })
+        .catch(() => {
+          setFreeMemory(0);
+        });
+    } else {
+      setFreeMemory(0);
     }
   }, []);
 
@@ -375,6 +397,49 @@ export const Dashboard: React.FC = () => {
       setState({ run: true, tourActive: true, stepIndex: 0 });
     }
   }, []);
+
+  useEffect(() => {
+    if (freeMemory !== 0 && freeMemory <= 200) {
+      setErrorMessage(true);
+      // Optionally block form or show message immediately
+    }
+  }, [freeMemory]);
+
+  useEffect(() => {
+    if (errorMessage) {
+      dialog({
+        position: DialogPosition.Middle,
+        blocking: false,
+        render: (onSubmit, onClose) => {
+          return (
+            <ActionModal
+              customIcon={renderIcon(
+                'ExclamationIcon',
+                `z-20 w-28 h-28 text-alertMain`
+              )}
+              className={'bg-white'}
+              title={'Your phone storage is almost full!'}
+              detailText={
+                'You have less than 10MB available. Please clear some items to keep using ECD Connect'
+              }
+              actionButtons={[
+                {
+                  text: 'Close',
+                  textColour: 'white',
+                  colour: 'quatenary',
+                  type: 'filled',
+                  leadingIcon: 'CheckCircleIcon',
+                  onClick: () => {
+                    onSubmit();
+                  },
+                },
+              ]}
+            />
+          );
+        },
+      });
+    }
+  }, [dialog, errorMessage]);
 
   const { userProfilePicture } = useDocuments();
 
