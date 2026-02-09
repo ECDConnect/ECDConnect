@@ -486,7 +486,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
             )}
           {!existingRemoval && (
             <AbsenceCard
-              className="mx-4 mt-6 w-full"
+              className={styles.absentCard}
               practitioner={practitioner!}
               handleReassignClass={handleReassignClass}
               practitionerUserId={practitionerUserId}
