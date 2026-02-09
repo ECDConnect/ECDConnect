@@ -12,7 +12,7 @@ import '@ionic/react/css/core.css';
 import '@ionic/react/css/display.css';
 import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/float-elements.css';
-import { default as React, useEffect } from 'react';
+import { default as React, useEffect, useState } from 'react';
 import ReactGA from 'react-ga4';
 import TagManager from 'react-gtm-module';
 import { useSelector } from 'react-redux';
@@ -45,6 +45,8 @@ const App: React.FC = () => {
   const user = useSelector(authSelectors.getAuthUser);
   const userExpired = useSelector(authSelectors.getUserExpired);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const [freeMemory, setFreeMemory] = useState(0);
+  const [errorMessage, setErrorMessage] = useState(false);
 
   const userUnstableConnection = useSelector(
     userSelectors.getUserUnstableConnection
@@ -62,6 +64,24 @@ const App: React.FC = () => {
         : tenant.tenant?.applicationName) || 'ECD Connect';
     return title;
   };
+
+  useEffect(() => {
+    if (navigator?.storage?.estimate) {
+      navigator.storage
+        .estimate()
+        .then((estimate) => {
+          if (estimate?.quota) {
+            const freeMemoryMB = estimate.quota / (1024 * 1024);
+            setFreeMemory(Math.round(freeMemoryMB));
+          }
+        })
+        .catch(() => {
+          setFreeMemory(0);
+        });
+    } else {
+      setFreeMemory(0);
+    }
+  }, []);
 
   useEffect(() => {
     if (tenant?.tenant) {
@@ -137,6 +157,13 @@ const App: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userExpired]);
 
+  useEffect(() => {
+    if (freeMemory !== 0 && freeMemory <= 200) {
+      setErrorMessage(true);
+      // Optionally block form or show message immediately
+    }
+  }, [freeMemory]);
+
   const onFocus = () => {
     const focusItem = JSON.parse(localStorage?.getItem('appFocus')!);
     const isSameDayItem = isSameDay(new Date(), new Date(focusItem));
@@ -200,6 +227,42 @@ const App: React.FC = () => {
       });
     }
   }, [dialog, dispatch, userUnstableConnection]);
+
+  useEffect(() => {
+    if (errorMessage) {
+      dialog({
+        position: DialogPosition.Middle,
+        blocking: false,
+        render: (onSubmit, onClose) => {
+          return (
+            <ActionModal
+              customIcon={renderIcon(
+                'ExclamationIcon',
+                `z-20 w-28 h-28 text-alertMain`
+              )}
+              className={'bg-white'}
+              title={'Your phone storage is almost full!'}
+              detailText={
+                'You have less than 10MB available. Please clear some items to keep using ECD Connect'
+              }
+              actionButtons={[
+                {
+                  text: 'Close',
+                  textColour: 'white',
+                  colour: 'quatenary',
+                  type: 'filled',
+                  leadingIcon: 'CheckCircleIcon',
+                  onClick: () => {
+                    onSubmit();
+                  },
+                },
+              ]}
+            />
+          );
+        },
+      });
+    }
+  }, [dialog, errorMessage]);
 
   useEffect(() => {
     let hasShownModal = false;
