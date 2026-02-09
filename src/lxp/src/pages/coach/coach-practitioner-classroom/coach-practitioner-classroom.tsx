@@ -211,7 +211,7 @@ export const CoachPractitionerClassroom: React.FC = () => {
         <div className="flex w-full flex-col items-center px-4 pb-6">
           {actionItems.length > 0 && (
             <StackedList
-              className="mt-4 w-full"
+              className="mt-4 w-11/12 space-y-1"
               type="MenuList"
               listItems={listItems}
             />
@@ -222,7 +222,7 @@ export const CoachPractitionerClassroom: React.FC = () => {
             borderRaduis="xl"
             shadowSize="md"
           >
-            <div className="ml-4">
+            <div className="ml-4 mb-2 mt-1">
               <Typography
                 type="h1"
                 text={childrenForPractitionerList.length.toString()}
@@ -248,7 +248,7 @@ export const CoachPractitionerClassroom: React.FC = () => {
             />
           )}
 
-          <div className="mt-4 w-full">
+          <div className="w-full">
             <ChildrenPerAgeGroup
               childrenForPractitionerList={childrenForPractitionerList}
               practitionerId={practitionerUserId}
