@@ -122,7 +122,7 @@ export const OaLogin: React.FC = () => {
         .estimate()
         .then((estimate) => {
           if (estimate?.quota) {
-            const freeMemoryMB = estimate.quota;
+            const freeMemoryMB = estimate.quota / (1024 * 1024);
             setFreeMemory(Math.round(freeMemoryMB));
           }
         })
@@ -533,6 +533,14 @@ export const OaLogin: React.FC = () => {
       });
     }
   }, [state, isValid]);
+
+  useEffect(() => {
+    if (freeMemory !== 0 && freeMemory <= 200) {
+      setAutoLogin(false);
+      setErrorMessage(true);
+      // Optionally block form or show message immediately
+    }
+  }, [freeMemory]);
 
   const backToPromptScreen = () => {
     history.push('/');
