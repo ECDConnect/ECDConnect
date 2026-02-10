@@ -74,6 +74,7 @@ import { usePoints } from '@/hooks/usePoints';
 import { usePointsToDoEmoji } from '@/hooks/usePointsToDoEmoji';
 import { useStoreSetup } from '@hooks/useStoreSetup';
 import { Logout } from '../auth/logout/logout';
+import { useBrowserVersionCheck } from '@/hooks/useBrowserVersionCheck';
 
 const { version } = require('../../../package.json');
 
@@ -126,10 +127,9 @@ export const Dashboard: React.FC = () => {
   const isRegistered = practitioner?.isRegistered;
   const isProgress = practitioner?.progress;
   const hasConsent = practitioner?.shareInfo;
-  const [installPromptEvent, setInstallPromptEvent] = useState<Event | null>(
-    null
-  ); // State to store the install prompt event
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const isBrowserOutOfDate = useBrowserVersionCheck();
 
   const missingProgramme =
     (practitioner?.isRegistered === null || practitioner?.isRegistered) &&
@@ -215,6 +215,12 @@ export const Dashboard: React.FC = () => {
       getUserSyncStatus();
     }
   }, [practitioner?.userId]);
+
+  useEffect(() => {
+    if (isBrowserOutOfDate) {
+      handleOutdatedBrowser();
+    }
+  }, [isBrowserOutOfDate]);
 
   const offlineCommunity = () => {
     if (!isOnline) {
@@ -442,6 +448,41 @@ export const Dashboard: React.FC = () => {
       });
     }
   }, [dialog, errorMessage]);
+
+  const handleOutdatedBrowser = () => {
+    return dialog({
+      position: DialogPosition.Middle,
+      blocking: true,
+      fullOverlay: true,
+      render: (onSubmit, onClose) => {
+        return (
+          <ActionModal
+            customIcon={renderIcon(
+              'ExclamationIcon',
+              `z-20 w-28 h-28 text-alertMain`
+            )}
+            className={'bg-white'}
+            title={'Your internet browser is out of date!'}
+            detailText={
+              'Please go to your app store and update your browser before continuing. Tap refresh to try again.'
+            }
+            actionButtons={[
+              {
+                text: 'Refresh',
+                textColour: 'white',
+                colour: 'quatenary',
+                type: 'filled',
+                leadingIcon: 'CheckCircleIcon',
+                onClick: () => {
+                  onSubmit();
+                },
+              },
+            ]}
+          />
+        );
+      },
+    });
+  };
 
   const { userProfilePicture } = useDocuments();
 

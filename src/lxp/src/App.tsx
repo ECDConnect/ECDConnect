@@ -233,6 +233,7 @@ const App: React.FC = () => {
       dialog({
         position: DialogPosition.Middle,
         blocking: false,
+        fullOverlay: true,
         render: (onSubmit, onClose) => {
           return (
             <ActionModal
@@ -332,20 +333,7 @@ const App: React.FC = () => {
       dispatch(syncThunkActions.syncOfflineDataForPractitioner({}));
     }
     dispatch(settingActions.setLastDataSync());
-    // asyncCheck();
   };
-
-  // const asyncCheck = async () => {
-  //   if (user?.auth_token) {
-  //     const asyncCheckresponse = await new SettingsService(
-  //       user?.auth_token!
-  //     ).queryChangesToSync(lastDataSyncDate);
-
-  //     if (asyncCheckresponse === false) {
-  //       window.location.reload();
-  //     }
-  //   }
-  // };
 
   const routerContent = (
     <IonReactRouter>
