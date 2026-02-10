@@ -1,4 +1,4 @@
-import { useTheme, LoginRequestModel, useDialog } from '@ecdlink/core';
+import { LoginRequestModel, useDialog } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
   Alert,
@@ -205,8 +205,6 @@ export const Login: React.FC = () => {
     loginSetValue('preferId', flag);
     setIdFieldVisible(flag);
   };
-
-  const { theme } = useTheme();
 
   const handleIncorrectBrowser = () => {
     dialog({

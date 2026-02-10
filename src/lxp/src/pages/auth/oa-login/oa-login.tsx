@@ -431,14 +431,13 @@ export const OaLogin: React.FC = () => {
     dialog({
       position: DialogPosition.Middle,
       blocking: true,
+      fullOverlay: true,
       render: (onSubmit) => {
         return (
           <ActionModal
             className={'mx-4'}
             title={`Oops! ${tenant?.tenant?.applicationName} works best on Chrome or Firefox`}
-            paragraphs={[
-              `To download Chrome or Firefox, go to your phone's app store.`,
-            ]}
+            detailText={`To download Chrome or Firefox, go to your phone's app store.`}
             icon={'ExclamationIcon'}
             iconSize={48}
             iconColor={'alertMain'}
@@ -447,9 +446,9 @@ export const OaLogin: React.FC = () => {
               {
                 text: 'Close',
                 colour: 'quatenary',
-                type: 'outlined',
+                type: 'filled',
                 onClick: () => onSubmit(),
-                textColour: 'quatenary',
+                textColour: 'white',
                 leadingIcon: 'XIcon',
               },
             ]}
@@ -506,18 +505,34 @@ export const OaLogin: React.FC = () => {
     if (onClose) onClose();
   };
 
-  const userAgent = navigator.userAgent;
-
   useEffect(() => {
-    if (
-      userAgent.includes('Firefox') ||
-      (userAgent.includes('Chrome') && !userAgent.includes('Edg'))
-    ) {
-      return;
-    } else {
+    const ua = navigator.userAgent.toLowerCase();
+
+    const isChromeLike = ua.includes('chrome/') || ua.includes('crios/');
+
+    const isIosSafari =
+      /iphone|ipad|ipod/.test(ua) &&
+      ua.includes('safari/') &&
+      !ua.includes('crios/') &&
+      !ua.includes('fxios/') &&
+      !ua.includes('opios/');
+
+    const isFirefox = ua.includes('firefox/') || ua.includes('fxios/');
+
+    const isAllowed = isChromeLike || isIosSafari || isFirefox;
+
+    if (!isAllowed) {
       displayIncorrectBrowserPopup();
     }
-  }, [userAgent]);
+
+    // Optional debug
+    console.log({
+      ua,
+      isChromeLike,
+      isIosSafari,
+      isAllowed,
+    });
+  }, []);
 
   useEffect(() => {
     setAutoLogin(
