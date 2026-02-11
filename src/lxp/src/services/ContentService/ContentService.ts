@@ -9,17 +9,19 @@ class ContentService {
 
   async hasContentTypeBeenTranslated(
     id: number,
+    ageGroup: number,
     localeId: string
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        query hasContentTypeBeenTranslated($id: Int!, $localeId: UUID!) {
-          hasContentTypeBeenTranslated(id: $id, localeId: $localeId) 
+        query hasContentTypeBeenTranslated($id: Int!, $ageGroup: Int!, $localeId: UUID!) {
+          hasContentTypeBeenTranslated(id: $id, ageGroup: $ageGroup,localeId: $localeId) 
         }
       `,
       variables: {
         id: id,
+        ageGroup: ageGroup,
         localeId: localeId,
       },
     });

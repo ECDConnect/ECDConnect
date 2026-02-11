@@ -70,7 +70,8 @@ export const ObservationsForChildLandingComplete: React.FC<
     const hasTranslations = await new ContentService(
       userAuth?.auth_token ?? ''
     ).hasContentTypeBeenTranslated(
-      ContentTypeEnum.ProgressTrackingCategory,
+      ContentTypeEnum.ProgressTrackingSkill,
+      currentAgeGroup?.id ?? 0,
       language.id ?? ''
     );
 
