@@ -58,7 +58,9 @@ namespace ECDLink.DataAccessLayer.Services
 
             var cache = _cacheService.GetCacheItem<IEnumerable<Language>>(CacheKeyConstants.LocaleCache);
 
-            return cache;
+            var languages = cache.Where(x => x.IsActive).ToList();
+
+            return languages;
         }
 
         private void CacheLanguages()

@@ -47,7 +47,9 @@ export const ProgressShareReport: React.FC = () => {
 
   const { state: routeState } = useLocation<ProgressShareReportState>();
 
-  const { child, detailedReports } = useProgressForChild(routeState.childId);
+  const { child, detailedReports, currentAgeGroup } = useProgressForChild(
+    routeState.childId
+  );
 
   const { generateReportAndReturnBlob, sharePdfReport } = usePdfFromHtml();
 
@@ -64,6 +66,7 @@ export const ProgressShareReport: React.FC = () => {
       userAuth?.auth_token ?? ''
     ).hasContentTypeBeenTranslated(
       ContentTypeEnum.ProgressTrackingCategory,
+      currentAgeGroup?.id ?? 0,
       language.id ?? ''
     );
 
@@ -96,7 +99,7 @@ export const ProgressShareReport: React.FC = () => {
       render: (submit, close) => {
         return (
           <ActionModal
-            className={'mx-4'}
+            className={'bg-white'}
             title="No content found"
             paragraphs={[
               'Could not find any content for the selected language, please select another.',
@@ -107,7 +110,7 @@ export const ProgressShareReport: React.FC = () => {
             actionButtons={[
               {
                 text: 'Close',
-                colour: 'primary',
+                colour: 'quatenary',
                 onClick: close,
                 type: 'filled',
                 textColour: 'white',

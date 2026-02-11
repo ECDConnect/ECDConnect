@@ -15,6 +15,10 @@ declare
     content_age_group_id integer;
 	content_skills_ids text = '';
 
+	--tenant_id public."Tenant"."Id"%TYPE = 'f5e41fb7-e586-4ed4-8ed7-2bdc72cd0207';
+	--tenant_id public."Tenant"."Id"%TYPE = '3d50402b-95de-43da-b719-ce50d9d1bcdb';
+	--tenant_id public."Tenant"."Id"%TYPE = '1c50abab-aeb6-4de4-8db9-fc41e4745232';
+	--tenant_id public."Tenant"."Id"%TYPE = 'dc6b770d-6898-4d8e-bbdf-f8ceeda69ece';
 	--tenant_id public."Tenant"."Id"%TYPE = '258a15e6-3736-45ea-875c-48d9377de4c8';
 	tenant_id public."Tenant"."Id"%TYPE = 'e8f571eb-1972-4e71-a20f-347c65d059bb';
 begin

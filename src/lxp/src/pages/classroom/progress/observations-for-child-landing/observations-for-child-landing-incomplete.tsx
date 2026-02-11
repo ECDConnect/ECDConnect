@@ -64,10 +64,13 @@ export const ObservationsForChildLandingIncomplete: React.FC<
   const userAuth = useSelector(authSelectors.getAuthUser);
 
   const changeLanguage = async (language: LanguageDto) => {
+    if (!language?.locale) return;
+
     const hasTranslations = await new ContentService(
       userAuth?.auth_token ?? ''
     ).hasContentTypeBeenTranslated(
-      ContentTypeEnum.ProgressTrackingCategory,
+      ContentTypeEnum.ProgressTrackingSkill,
+      currentAgeGroup?.id ?? 0,
       language.id ?? ''
     );
 
@@ -95,19 +98,24 @@ export const ObservationsForChildLandingIncomplete: React.FC<
       render: (submit, close) => {
         return (
           <ActionModal
-            className={'mx-4'}
+            className={'bg-white'}
             title="No content found"
-            paragraphs={[
-              'Could not find any content for the selected language, please select another.',
-            ]}
+            detailText={
+              'Could not find any content for the selected language, please select another.'
+            }
             icon={'InformationCircleIcon'}
             iconColor={'infoDark'}
             iconBorderColor={'infoBb'}
             actionButtons={[
               {
                 text: 'Close',
-                colour: 'primary',
-                onClick: close,
+                colour: 'quatenary',
+                onClick: () => {
+                  appDispatch(
+                    progressTrackingActions.setLocale({ localeId: 'en-za' })
+                  );
+                  close();
+                },
                 type: 'filled',
                 textColour: 'white',
                 leadingIcon: 'XIcon',

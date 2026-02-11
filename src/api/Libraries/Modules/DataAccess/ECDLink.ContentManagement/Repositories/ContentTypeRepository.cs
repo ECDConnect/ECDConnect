@@ -2,6 +2,7 @@ using ECDLink.ContentManagement.Entities;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Tenancy.Context;
+using HotChocolate.Data.Projections;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -65,18 +66,43 @@ namespace ECDLink.ContentManagement.Repositories
               .FirstOrDefault();
         }
 
-        public async Task<bool> HasTranslations(int id, Guid localId)
+        public async Task<bool> HasTranslations(int id, int ageGroup, Guid localId)
         {
-            var contentType = await _context.ContentTypes
-              .Include(x => x.Content)
-                .ThenInclude(x => x.ContentValues)
-                .Where(x => x.Id == id)
-              .OrderBy(x => x.Id)
-              .FirstOrDefaultAsync();
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
 
-            var content = contentType.Content.Where(x => x.ContentValues.Any(z => z.LocaleId == localId)).OrderBy(x => x.Id).FirstOrDefault();
+            var skillsFieldId = await _context.ContentTypeFields
+                .Where(x => x.ContentTypeId == 37 && x.FieldName == "skills")
+                .Select(x => x.Id)
+                .FirstOrDefaultAsync();
 
-            return content != null ? true : false;
+            if (skillsFieldId == 0) return false;
+
+            var skills = await _context.ContentValues
+        .Where(x => x.ContentId == ageGroup
+                 && x.ContentTypeFieldId == skillsFieldId
+                 && x.TenantId == tenantId)
+        .Select(x => x.Value)
+        .FirstOrDefaultAsync();
+
+            if (string.IsNullOrWhiteSpace(skills)) return false;
+
+            var skillIds = skills
+        .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        .Select(s => int.TryParse(s, out int val) ? val : (int?)null)
+        .Where(id => id.HasValue)
+        .Select(id => id.Value)
+        .Distinct()                    
+        .ToList();
+
+            if (!skillIds.Any()) return false;
+
+            bool hasAnyTranslation = await _context.ContentValues
+            .AnyAsync(x => x.TenantId == tenantId
+                        && x.LocaleId == localId
+                        && !string.IsNullOrEmpty(x.Value)
+                        && skillIds.Contains(x.ContentId));
+
+            return hasAnyTranslation;
         }
 
         public IQueryable<ContentType> GetAll(string search, bool searchInContent)
