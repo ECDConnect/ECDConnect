@@ -155,11 +155,11 @@ export const Article = ({
       render: (submit, close) => {
         return (
           <ActionModal
-            className={'mx-4'}
+            className={'bg-white'}
             title="No content found"
-            paragraphs={[
-              'Could not find any content for the selected language, please select another.',
-            ]}
+            detailText={
+              'Could not find any content for the selected language, please select another.'
+            }
             icon={'InformationCircleIcon'}
             iconColor={'infoDark'}
             iconBorderColor={'infoBb'}
