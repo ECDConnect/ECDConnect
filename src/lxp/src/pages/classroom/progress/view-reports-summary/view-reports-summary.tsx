@@ -24,6 +24,7 @@ import { TabsItems } from '../../class-dashboard/class-dashboard.types';
 export type ProgressViewReportsSummaryState = {
   ageGroupId: number;
   classroomGroupId: string;
+  reportPeriodId: string;
 };
 
 export const ProgressViewReportsSummary: React.FC = () => {
@@ -44,7 +45,8 @@ export const ProgressViewReportsSummary: React.FC = () => {
     currentReportingPeriod,
   } = useProgressForClassAndAgeGroup(
     routeState.classroomGroupId,
-    routeState.ageGroupId
+    routeState.ageGroupId,
+    routeState.reportPeriodId
   );
 
   const { asyncGenerateReport } = useProgressGenerateSummaryPdfReport();
@@ -104,6 +106,8 @@ export const ProgressViewReportsSummary: React.FC = () => {
       activeTabIndex: TabsItems.PROGRESS,
     });
   };
+
+  console.log('childReports', childReports);
 
   return (
     <BannerWrapper
