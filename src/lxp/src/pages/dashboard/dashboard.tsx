@@ -21,8 +21,7 @@ import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useDocuments } from '@hooks/useDocuments';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { OfflineSyncModal, SyncTimeExceeded } from '../../modals';
-import OfflineSyncTimeExceeded from '../../modals/offline-sync/offline-sync-time-exceeded';
+import { SyncTimeExceeded } from '../../modals';
 import { useAppDispatch } from '@store';
 import { classroomsSelectors, classroomsThunkActions } from '@store/classroom';
 import {

@@ -190,64 +190,67 @@ export const ProgressTabReportPeriodsCompleted: React.FC = () => {
             </Card>
 
             {report.percentage > 0 && (
-              <Button
-                onClick={() => {
-                  setReportPeriodId(report.id);
-                  setReportPeriodDate(
-                    `${format(
-                      new Date(report.startDate || ''),
-                      'd MMM'
-                    )} - ${format(
-                      new Date(report.endDate || ''),
-                      'd MMM yyyy'
-                    )}`
-                  );
-                }}
-                className="mt-auto w-full"
-                size="small"
-                color="quatenary"
-                textColor="white"
-                type="filled"
-                isLoading={
-                  reportPeriodId === report.id && generatingReports
-                    ? true
-                    : false
-                }
-                icon={
-                  reportPeriodId === report.id && generatingReports
-                    ? undefined
-                    : 'DownloadIcon'
-                }
-                text={
-                  reportPeriodId === report.id
-                    ? generateButtonLabel(report.id)
-                    : 'Download all progress reports'
-                }
-                disabled={
-                  reportPeriodId === report.id ? generatingReports : false
-                }
-              />
+              <>
+                <Button
+                  onClick={() => {
+                    setReportPeriodId(report.id);
+                    setReportPeriodDate(
+                      `${format(
+                        new Date(report.startDate || ''),
+                        'd MMM'
+                      )} - ${format(
+                        new Date(report.endDate || ''),
+                        'd MMM yyyy'
+                      )}`
+                    );
+                  }}
+                  className="mt-auto w-full"
+                  size="small"
+                  color="quatenary"
+                  textColor="white"
+                  type="filled"
+                  isLoading={
+                    reportPeriodId === report.id && generatingReports
+                      ? true
+                      : false
+                  }
+                  icon={
+                    reportPeriodId === report.id && generatingReports
+                      ? undefined
+                      : 'DownloadIcon'
+                  }
+                  text={
+                    reportPeriodId === report.id
+                      ? generateButtonLabel(report.id)
+                      : 'Download all progress reports'
+                  }
+                  disabled={
+                    reportPeriodId === report.id ? generatingReports : false
+                  }
+                />
+
+                <Button
+                  onClick={() =>
+                    history.replace(
+                      ROUTES.PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP,
+                      { reportPeriodId: report.id }
+                    )
+                  }
+                  className="mt-4 w-full"
+                  size="small"
+                  color="quatenary"
+                  textColor="quatenary"
+                  type="outlined"
+                  icon="EyeIcon"
+                  text="See Summary"
+                />
+              </>
             )}
 
             <Divider dividerType="dashed" className="my-2" />
           </div>
         ) : null
       )}
-
-      <Button
-        onClick={() =>
-          history.replace(
-            ROUTES.PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP
-          )
-        }
-        className="mt-4 w-full"
-        size="small"
-        color="quatenary"
-        textColor="quatenary"
-        type="outlined"
-        icon="EyeIcon"
-        text="See Summary"
-      />
 
       {/* Hidden section for PDF rendering */}
       <div hidden ref={shareRef}>

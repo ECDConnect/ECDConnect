@@ -161,7 +161,7 @@ const classroomsSlice = createSlice({
       action: PayloadAction<UpdateUserPermissionInputModelInput>
     ) => {
       const userExist = state.classroomPractitioners.find(
-        (x) => x.userId == action.payload.userId
+        (x) => x.userId === action.payload.userId
       );
       if (!userExist) state.classroomPractitioners.push(action.payload);
     },

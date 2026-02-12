@@ -161,7 +161,7 @@ export const EditAddress: React.FC<EditAdressProps> = ({
           componentHeight={62}
           onClose={handleCloseMap}
           onSubmit={(updatedAddress) => {
-            if (JSON.stringify(updatedAddress) != JSON.stringify(address)) {
+            if (JSON.stringify(updatedAddress) !== JSON.stringify(address)) {
               setAddress(updatedAddress);
               setAddressChanged(true);
             }
