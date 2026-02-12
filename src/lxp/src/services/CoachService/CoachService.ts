@@ -181,6 +181,32 @@ class CoachService {
     return true;
   }
 
+  async saveCoachContact(
+    practitionerId: string,
+    actionItemType: number,
+    period: Date
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation saveCoachContact($practitionerId: UUID!, $actionItemType: Int!, $period: DateTime!) {
+          saveCoachContact(practitionerId: $practitionerId, actionItemType: $actionItemType, period: $period)
+        }
+      `,
+      variables: {
+        practitionerId: practitionerId,
+        actionItemType: actionItemType,
+        period: period,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Saving Coach Contact failed - Server connection error');
+    }
+
+    return true;
+  }
+
   async getChildProgressReportsStatusForUser(
     userId: string
   ): Promise<ChildProgressReportsStatus> {

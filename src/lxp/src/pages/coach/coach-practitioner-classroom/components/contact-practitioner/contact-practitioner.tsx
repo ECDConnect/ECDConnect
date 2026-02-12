@@ -18,6 +18,8 @@ import { NotificationDisplay } from '@ecdlink/graphql';
 import ROUTES from '@/routes/routes';
 import { LogoSvgs, getLogo } from '@/utils/common/svg.utils';
 import { HighlightedCount } from '@/components/highlighted-count/highlighted-count';
+import { coachThunkActions } from '@store/coach';
+import { useAppDispatch } from '@store';
 
 interface ContactPractitionerProps {
   practitionerId: string;
@@ -33,6 +35,7 @@ export const ContactPractitioner: React.FC<ContactPractitionerProps> = ({
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const dialog = useDialog();
+  const appDispatch = useAppDispatch();
 
   const practitioner = useSelector(
     practitionerSelectors.getPractitionerByUserId(practitionerId)
@@ -67,8 +70,15 @@ export const ContactPractitioner: React.FC<ContactPractitionerProps> = ({
 
   const handleDone = () => {
     onClose();
+    appDispatch(
+      coachThunkActions.saveCoachContact({
+        practitionerId,
+        actionItemType: isRegisters ? 1 : isProgress ? 2 : 0,
+        period: new Date(),
+      })
+    );
     history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
-      state: { practitionerId },
+      practitionerId: practitionerId,
     });
   };
 
