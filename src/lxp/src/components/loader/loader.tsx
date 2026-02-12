@@ -29,7 +29,7 @@ const Loader = ({ loadingMessage = 'Waking up the robots' }) => {
     }, issueTimeout);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [isOnline]);
 
   return (
     <div

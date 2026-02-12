@@ -12,9 +12,11 @@ import { isAfter } from 'date-fns/esm';
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
-export const useProgressForChildren = (useNextPeriod?: boolean) => {
+export const useProgressForChildren = (
+  useNextPeriod?: boolean,
+  selectedPeriodId?: string
+) => {
   const baseChildren = useSelector(childrenSelectors.getChildren);
-
   const workflowStatus = useSelector(staticDataSelectors.getWorkflowStatuses);
 
   const childActiveWorkflow = workflowStatus?.find(
@@ -24,31 +26,25 @@ export const useProgressForChildren = (useNextPeriod?: boolean) => {
   const allAgeGroups = useSelector(
     progressTrackingSelectors.getProgressAgeGroups()
   );
-
   const allSkills = useSelector(
     progressTrackingSelectors.getProgressTrackingSkillsWithCategoryInfo()
-  );
-
-  const currentReportingPeriodForSummary = useSelector(
-    classroomsSelectors.getExpiredProgressReportPeriod()
-  );
-
-  const nextReportingPeriod = useSelector(
-    classroomsSelectors.getNextProgressReportPeriod()
   );
 
   const currentReportingPeriod = useSelector(
     classroomsSelectors.getCurrentProgressReportPeriod()
   );
-
-  const isReportWindowSet = useSelector(
-    classroomsSelectors.getIsReportingPeriodsSet()
+  const nextReportingPeriod = useSelector(
+    classroomsSelectors.getNextProgressReportPeriod()
   );
-
+  const currentReportingPeriodForSummary = useSelector(
+    classroomsSelectors.getExpiredProgressReportPeriod()
+  );
   const allReportingPeriods = useSelector(
     classroomsSelectors.getAllProgressReportPeriods()
   );
-
+  const isReportWindowSet = useSelector(
+    classroomsSelectors.getIsReportingPeriodsSet()
+  );
   const isWithinReportPeriod = useMemo(() => {
     if (!currentReportingPeriod) {
       return false;
@@ -60,23 +56,44 @@ export const useProgressForChildren = (useNextPeriod?: boolean) => {
     );
   }, [currentReportingPeriod]);
 
+  // ────────────────────────────────────────────────
+  // Determine which reporting period to use (priority order)
+  // 1. selectedPeriodId (explicit override – highest priority)
+  // 2. next period (if useNextPeriod = true)
+  // 3. current period if we're inside the reporting window
+  // 4. fallback to summary/expired period
+  // ────────────────────────────────────────────────
   const reportingPeriod = useMemo(() => {
-    return isWithinReportPeriod
+    // Highest priority: explicit period selection
+    if (selectedPeriodId) {
+      return allReportingPeriods.find((p) => p.id === selectedPeriodId) || null;
+    }
+
+    // Then: logic based on useNextPeriod flag
+    if (useNextPeriod) {
+      return nextReportingPeriod;
+    }
+
+    const isWithinCurrentWindow =
+      currentReportingPeriod &&
+      isBefore(new Date(currentReportingPeriod.startDate), new Date()) &&
+      isBefore(new Date(), new Date(currentReportingPeriod.endDate));
+
+    return isWithinCurrentWindow
       ? currentReportingPeriod
-      : useNextPeriod
-      ? nextReportingPeriod
       : currentReportingPeriodForSummary;
   }, [
+    selectedPeriodId,
+    allReportingPeriods,
+    useNextPeriod,
+    nextReportingPeriod,
     currentReportingPeriod,
     currentReportingPeriodForSummary,
-    isWithinReportPeriod,
-    nextReportingPeriod,
-    useNextPeriod,
   ]);
 
   const baseReports = useSelector(
     progressTrackingSelectors.getProgressReportsForReportingPeriod(
-      reportingPeriod?.id || ''
+      reportingPeriod?.id ?? ''
     )
   );
 
@@ -125,6 +142,10 @@ export const useProgressForChildren = (useNextPeriod?: boolean) => {
         };
       });
   }, [baseChildren, baseReports, reportingPeriod]);
+
+  const allReportsForYear = useSelector(
+    progressTrackingSelectors.getProgressReports()
+  );
 
   const ageGroupsAvailableForTracking = useMemo(() => {
     return allAgeGroups.filter((x) =>
@@ -188,5 +209,7 @@ export const useProgressForChildren = (useNextPeriod?: boolean) => {
     ageGroupsAvailableForTracking,
     currentReportingPeriodForSummary,
     isAfterLastReport,
+    allReportingPeriods,
+    allReportsForYear,
   };
 };
