@@ -388,6 +388,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var classReassignmentHistoryRepo = repoFactory.CreateGenericRepository<ClassReassignmentHistory>();
             var childProgressReportPeriodRepo = repoFactory.CreateRepository<ChildProgressReportPeriod>(userContext: uId);
             var childProgressReportRepo = repoFactory.CreateRepository<ChildProgressReport>(userContext: uId);
+            var coachContactRepo = repoFactory.CreateRepository<CoachContact>(userContext: uId); 
 
             var notifications = new List<NotificationDisplay>();
 
@@ -404,11 +405,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             DateTime previousMonthStart = currentDate.GetStartOfPreviousMonth();
             DateTime previousMonthEnd = currentDate.GetEndOfPreviousMonth();
 
+            var coachContacts = coachContactRepo.GetAll().Where(c => c.PractitionerId == practitioner.Id 
+            && c.Period >= currentMonthStart 
+            && c.Period <= currentMonthEnd 
+            && c.UserId == uId).ToList(); 
 
-            // Get Missing Attendance
-            // Todo: move to service
-            var classProgrammeRepo = repoFactory.CreateGenericRepository<ClassProgramme>();
-            var programmeRepo = repoFactory.CreateGenericRepository<Programme>();
             var dailyProgrammeRepo = repoFactory.CreateGenericRepository<DailyProgramme>();
             var missingRegisterDayCount = await GetMissingAttendanceReportsAsync(
                 holidayService,
@@ -417,7 +418,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 previousMonthEnd,
                 practitioner);
 
-            if (missingRegisterDayCount > 0)
+            if (missingRegisterDayCount > 0 && coachContacts.Count(c => c.ActionItemType == ActionItemType.AttendanceRegistersNotSaved) == 0)
             {
                 notifications.Add(new NotificationDisplay()
                 {
@@ -438,7 +439,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
                 if (monthlyReport != null)
                 {
-                    if (monthlyReport.TotalScheduledSessions > 0)
+                    if (monthlyReport.TotalScheduledSessions > 0  && coachContacts.Count(c => c.ActionItemType == ActionItemType.AttendanceRate) == 0)
                     {
                         var attendancePercentage = monthlyReport.PercentageAttendance;
                         if (attendancePercentage < 50)
@@ -475,7 +476,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 {
                     var reports = childProgressReportRepo.GetAll().Where(x => x.ChildProgressReportPeriodId == mostRecentCompletedPeriod.Id && x.DateCompleted.HasValue).AsNoTracking().ToList();
                     var missedReports = childCount - reports.Count;
-                    if (missedReports > 0)
+                    if (missedReports > 0 && coachContacts.Count(c => c.ActionItemType == ActionItemType.MissedProgressReports) == 0)
                     {
                         notifications.Add(new NotificationDisplay()
                         {
@@ -488,7 +489,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                             UserType = "practitioner"
                         });
                     }
-                    if (DateTime.Today > mostRecentCompletedPeriod.EndDate)
+                    if (DateTime.Today > mostRecentCompletedPeriod.EndDate && coachContacts.Count(c => c.ActionItemType == ActionItemType.ProgressSummary) == 0)
                     {
                         notifications.Add(new NotificationDisplay()
                         {
