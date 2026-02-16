@@ -42,7 +42,7 @@ export const StatementsWalkthroughStart = ({
             <div className="flex">
               <img src={robot} alt="robot" className="mb-2 mr-6 h-24 w-24" />
               <Typography
-                text="Ok, you can always get  help by tapping the question mark at the top of the screen!"
+                text="Ok, you can always get help by tapping the question mark at the top of the screen!"
                 type="body"
                 color="textDark"
               />
