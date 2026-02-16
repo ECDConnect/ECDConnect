@@ -1,4 +1,4 @@
-import { useDialog } from '@ecdlink/core';
+import { useDialog, useSnackbar } from '@ecdlink/core';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
@@ -47,6 +47,7 @@ export const EditPlaygroups: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
   const dialog = useDialog();
+  const { showMessage } = useSnackbar();
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
@@ -188,7 +189,13 @@ export const EditPlaygroups: React.FC = () => {
             userId: playG?.userId,
           },
         })
-      );
+      ).then(() => {
+        showMessage({
+          message: 'Class deleted',
+          type: 'success',
+          duration: 3000,
+        });
+      });
     }
 
     await saveEditedPlayGroups(playgroups);
