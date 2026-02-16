@@ -52,6 +52,7 @@ class ContentConsentService {
             name
             type
             description
+            image
             availableLanguages {
               id
               description
