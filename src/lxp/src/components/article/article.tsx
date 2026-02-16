@@ -69,7 +69,6 @@ export const Article = ({
     ).unwrap();
 
     if (content && content.length > 0) {
-      console.log('content', content);
       const consentFilter = content?.[0];
       var description = consentFilter?.description ?? '';
       setArticleImage(consentFilter?.image ?? '');
