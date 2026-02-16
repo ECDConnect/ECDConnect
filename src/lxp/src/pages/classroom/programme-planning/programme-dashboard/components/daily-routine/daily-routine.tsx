@@ -511,12 +511,12 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
           `Wow, great job ${userData?.firstName}! You have planned for ${plannedWeeksCount} weeks in a row. Keep it up!`
         );
       }
-    } else if (selectedDate && isWholeWeekPlanned) {
+    }
+
+    if (selectedDate && isWholeWeekPlanned) {
       setCelebrateMessage(
         `Great job ${userData?.firstName}! Your whole week is planned.`
       );
-    } else {
-      setCelebrateMessage('');
     }
 
     if (plannedActivities) {
