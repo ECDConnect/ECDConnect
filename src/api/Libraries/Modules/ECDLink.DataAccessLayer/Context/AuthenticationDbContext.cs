@@ -146,6 +146,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<FeedbackType> FeedbackTypes { get; set; }
         public DbSet<CoachFeedback> CoachFeedback { get; set; }
         public DbSet<CoachFeedbackType> CoachFeedbackTypes { get; set; }
+        public DbSet<CoachContact> CoachContacts { get; set; }
         public DbSet<CommunitySkill> CommunitySkills { get; set; }
         public DbSet<CommunityProfile> CommunityProfile { get; set; }
         public DbSet<CommunityProfileSkill> CommunityProfileSkill { get; set; }

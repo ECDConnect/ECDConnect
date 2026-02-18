@@ -12,6 +12,7 @@ import { RootState, ThunkApiType } from '../types';
 
 export const CoachActions = {
   GET_COACH_BY_COACH_ID: 'getCoachByCoachId',
+  SAVE_COACH_CONTACT: 'saveCoachContact',
 };
 
 export const getCoachByUserId = createAsyncThunk<
@@ -181,6 +182,48 @@ export const updateCoach = createAsyncThunk<
 
       if (!update) {
         return rejectWithValue('Error updating user');
+      }
+
+      return [update];
+    } catch (err) {
+      if (err instanceof Error) {
+        return rejectWithValue(err.message);
+      }
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const saveCoachContact = createAsyncThunk<
+  boolean[],
+  { practitionerId: string; actionItemType: number; period: Date },
+  ThunkApiType<RootState>
+>(
+  CoachActions.SAVE_COACH_CONTACT,
+  // eslint-disable-next-line no-empty-pattern
+  async (
+    { practitionerId, actionItemType, period },
+    { getState, rejectWithValue }
+  ) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let update: boolean | undefined;
+
+      if (userAuth?.auth_token) {
+        update = await new CoachService(userAuth?.auth_token).saveCoachContact(
+          practitionerId,
+          actionItemType,
+          period
+        );
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!update) {
+        return rejectWithValue('Error saving coach contact');
       }
 
       return [update];
