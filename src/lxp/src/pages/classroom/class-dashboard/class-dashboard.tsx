@@ -30,7 +30,7 @@ import * as styles from './class-dashboard.styles';
 import { ClassDashboardRouteState, TabsItems } from './class-dashboard.types';
 import ROUTES from '@routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
-import walkthroughImage from '../../../assets/walktroughImage.png';
+import robot from '@/assets/iconRobot.svg';
 import { childrenSelectors } from '@/store/children';
 import { userSelectors } from '@/store/user';
 import {
@@ -225,9 +225,9 @@ export const ClassDashboard: React.FC = () => {
         <ActionModal
           customIcon={
             <div className="flex">
-              <img src={walkthroughImage} alt="profile" className="mb-2" />
+              <img src={robot} alt="profile" className="mb-2" />
               <Typography
-                text="Ok, you can always get  help by tapping the question mark at the top of the screen!"
+                text="Ok, you can always get help by tapping the question mark at the top of the screen!"
                 type={'body'}
                 color={'textDark'}
                 align="center"
@@ -237,6 +237,7 @@ export const ClassDashboard: React.FC = () => {
           }
           iconColor="alertMain"
           iconBorderColor="alertBg"
+          className=" bg-white"
           actionButtons={[
             {
               text: 'Close',

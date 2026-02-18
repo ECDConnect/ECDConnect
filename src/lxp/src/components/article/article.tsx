@@ -35,6 +35,7 @@ export const Article = ({
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
   const [articleText, setArticleText] = useState<string>('');
+  const [articleImage, setArticleImage] = useState<string>('');
   const [language] = useState({ locale: 'en-za' });
   const [availableLanguages, setAvailableLanguages] = useState([
     language.locale as LanguageCode,
@@ -70,6 +71,7 @@ export const Article = ({
     if (content && content.length > 0) {
       const consentFilter = content?.[0];
       var description = consentFilter?.description ?? '';
+      setArticleImage(consentFilter?.image ?? '');
 
       if (!consentFilter || description.length === 0) {
         presentUnavailableAlert();
@@ -113,6 +115,7 @@ export const Article = ({
   const getContent = async (consentList: ConsentDto[] | undefined) => {
     const consentFilter = consentList?.find((x) => x.name === consentEnumType);
     var description = consentFilter?.description ?? '';
+    setArticleImage(consentFilter?.image ?? '');
 
     if (!consentFilter || description.length === 0) {
       presentUnavailableAlert();
@@ -207,7 +210,20 @@ export const Article = ({
                 />
               </div>
               <div className={styles.articleTextWrapper}>
-                <Typography type={'markdown'} text={articleText} />
+                <div className="flex items-start">
+                  {articleImage && (
+                    <div
+                      className="mr-3 flex-shrink-0"
+                      style={{ width: '48px', height: '48px' }}
+                    >
+                      <img
+                        src={articleImage}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <Typography type={'markdown'} text={articleText} />
+                </div>
               </div>
 
               {showClose && (

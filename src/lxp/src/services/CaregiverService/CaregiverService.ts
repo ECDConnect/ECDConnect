@@ -203,7 +203,7 @@ class CaregiverService {
 
     if (
       response.status !== 200 ||
-      response.data.data.updateCaregiverGrants == false ||
+      response.data.data.updateCaregiverGrants === false ||
       !!response.data.errors
     ) {
       throw new Error('Updating caregiver failed - Server connection error');

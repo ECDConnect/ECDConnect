@@ -1,4 +1,3 @@
-import { useAppDispatch } from '@/store';
 import { classroomsSelectors } from '@/store/classroom';
 import { progressTrackingSelectors } from '@/store/progress-tracking';
 import { useMemo } from 'react';
@@ -8,7 +7,8 @@ import { ProgressReportsCategorySummary } from '@/models/progress/child-progress
 
 export const useProgressForClassAndAgeGroup = (
   classroomGroupId: string,
-  ageGroupId: number
+  ageGroupId: number,
+  reportPeriodId: string
 ) => {
   const allAgeGroups = useSelector(
     progressTrackingSelectors.getProgressAgeGroups()
@@ -26,17 +26,18 @@ export const useProgressForClassAndAgeGroup = (
     childReports: allChildReports,
     currentReportingPeriod,
     currentReportingPeriodForSummary,
-  } = useProgressForChildren();
+  } = useProgressForChildren(false, reportPeriodId);
 
   const childReports = useMemo(() => {
     return allChildReports.filter((report) =>
       classroomGroup?.learners.some(
         (learner) =>
           learner.childUserId === report.childUserId &&
-          report.ageGroup?.id === ageGroupId
+          report.ageGroup?.id === ageGroupId &&
+          report.report?.childProgressReportPeriodId === reportPeriodId
       )
     );
-  }, [allChildReports, classroomGroup, ageGroupId]);
+  }, [allChildReports, classroomGroup, ageGroupId, reportPeriodId]);
 
   const reportsSummary: ProgressReportsCategorySummary[] = useMemo(() => {
     const skillsToWorkOn = childReports

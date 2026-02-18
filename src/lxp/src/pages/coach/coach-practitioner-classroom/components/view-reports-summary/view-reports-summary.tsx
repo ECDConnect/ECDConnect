@@ -19,6 +19,8 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { formatPhonenumberInternational } from '@/utils/common/contact-details.utils';
 import { getLogo, LogoSvgs } from '@/utils/common/svg.utils';
 import { useDialog } from '@ecdlink/core';
+import { coachThunkActions } from '@store/coach';
+import { useAppDispatch } from '@store';
 
 export type ProgressViewReportsSummaryState = {
   ageGroupId: number;
@@ -29,6 +31,7 @@ export const CoachProgressViewReportsSummary: React.FC = () => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const dialog = useDialog();
+  const appDispatch = useAppDispatch();
   const { state: routeState } = useLocation<ProgressViewReportsSummaryState>();
 
   const { reportsSummary, ageGroup, allChildReports } =
@@ -64,6 +67,13 @@ export const CoachProgressViewReportsSummary: React.FC = () => {
     window.open(`https://wa.me/${formatPhonenumberInternational(phone)}`);
 
   const handleDone = () => {
+    appDispatch(
+      coachThunkActions.saveCoachContact({
+        practitionerId: routeState.practitionerId,
+        actionItemType: 3,
+        period: new Date(),
+      })
+    );
     history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
       practitionerId: routeState.practitionerId,
     });

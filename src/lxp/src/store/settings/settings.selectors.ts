@@ -1,6 +1,6 @@
 import { SettingTypeDto } from '@ecdlink/core';
 import { RootState } from '../types';
-import { addHours, addMinutes } from 'date-fns';
+import { addHours } from 'date-fns';
 
 export const getChildExpiryTime = (state: RootState): number =>
   state.settings.childExpiryTime;

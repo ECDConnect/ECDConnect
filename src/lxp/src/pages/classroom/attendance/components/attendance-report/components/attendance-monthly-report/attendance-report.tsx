@@ -154,13 +154,12 @@ export const MonthlyAttendanceReport = () => {
     );
 
   const tableData =
-    Number(selectedMonth.monthOfYear) == today.getUTCMonth() + 1
+    Number(selectedMonth.monthOfYear) === today.getUTCMonth() + 1
       ? currentMonthAttendanceReport
       : reportDataWithClassroomGroup;
 
   const {
     attendanceSum,
-    finalTableData,
     tableBottomContent,
     tableFootStyles,
     tableHeadStyles,

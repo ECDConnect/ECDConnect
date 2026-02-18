@@ -14,14 +14,14 @@ import {
   UserAvatar,
   ScoreCard,
   NoPointsScoreCard,
+  renderIcon,
 } from '@ecdlink/ui';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useDocuments } from '@hooks/useDocuments';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { OfflineSyncModal, SyncTimeExceeded } from '../../modals';
-import OfflineSyncTimeExceeded from '../../modals/offline-sync/offline-sync-time-exceeded';
+import { SyncTimeExceeded } from '../../modals';
 import { useAppDispatch } from '@store';
 import { classroomsSelectors, classroomsThunkActions } from '@store/classroom';
 import {
@@ -72,6 +72,8 @@ import { PermissionsNames } from '../principal/components/add-practitioner/add-p
 import { usePoints } from '@/hooks/usePoints';
 import { usePointsToDoEmoji } from '@/hooks/usePointsToDoEmoji';
 import { useStoreSetup } from '@hooks/useStoreSetup';
+import { Logout } from '../auth/logout/logout';
+import { useBrowserVersionCheck } from '@/hooks/useBrowserVersionCheck';
 
 const { version } = require('../../../package.json');
 
@@ -124,6 +126,9 @@ export const Dashboard: React.FC = () => {
   const isRegistered = practitioner?.isRegistered;
   const isProgress = practitioner?.progress;
   const hasConsent = practitioner?.shareInfo;
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const isBrowserOutOfDate = useBrowserVersionCheck();
 
   const missingProgramme =
     (practitioner?.isRegistered === null || practitioner?.isRegistered) &&
@@ -140,6 +145,9 @@ export const Dashboard: React.FC = () => {
   const pointsSummaryData = useSelector(pointsSelectors.getPointsSummary);
   const [pointsScoreProps, setPointsScoreProps] = useState<ScoreCardProps>();
   const totalYearPoints = useSelector(pointsSelectors.getTotalYearPoints);
+
+  const [freeMemory, setFreeMemory] = useState(0);
+  const [errorMessage, setErrorMessage] = useState(false);
 
   const planActivitiesPermission = practitioner?.permissions?.find(
     (item) =>
@@ -207,6 +215,12 @@ export const Dashboard: React.FC = () => {
     }
   }, [practitioner?.userId]);
 
+  useEffect(() => {
+    if (isBrowserOutOfDate) {
+      handleOutdatedBrowser();
+    }
+  }, [isBrowserOutOfDate]);
+
   const offlineCommunity = () => {
     if (!isOnline) {
       return dialog({
@@ -237,6 +251,24 @@ export const Dashboard: React.FC = () => {
       practitioner?.principalHierarchy
     ) {
       history.push(ROUTES.PRACTITIONER.PROFILE.EDIT);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (navigator?.storage?.estimate) {
+      navigator.storage
+        .estimate()
+        .then((estimate) => {
+          if (estimate?.quota) {
+            const freeMemoryMB = estimate.quota / (1024 * 1024);
+            setFreeMemory(Math.round(freeMemoryMB));
+          }
+        })
+        .catch(() => {
+          setFreeMemory(0);
+        });
+    } else {
+      setFreeMemory(0);
     }
   }, []);
 
@@ -373,6 +405,84 @@ export const Dashboard: React.FC = () => {
     }
   }, []);
 
+  useEffect(() => {
+    if (freeMemory !== 0 && freeMemory <= 200) {
+      setErrorMessage(true);
+      // Optionally block form or show message immediately
+    }
+  }, [freeMemory]);
+
+  useEffect(() => {
+    if (errorMessage) {
+      dialog({
+        position: DialogPosition.Middle,
+        blocking: false,
+        render: (onSubmit, onClose) => {
+          return (
+            <ActionModal
+              customIcon={renderIcon(
+                'ExclamationIcon',
+                `z-20 w-28 h-28 text-alertMain`
+              )}
+              className={'bg-white'}
+              title={'Your phone storage is almost full!'}
+              detailText={
+                'You have less than 10MB available. Please clear some items to keep using ECD Connect'
+              }
+              actionButtons={[
+                {
+                  text: 'Close',
+                  textColour: 'white',
+                  colour: 'quatenary',
+                  type: 'filled',
+                  leadingIcon: 'CheckCircleIcon',
+                  onClick: () => {
+                    onSubmit();
+                  },
+                },
+              ]}
+            />
+          );
+        },
+      });
+    }
+  }, [dialog, errorMessage]);
+
+  const handleOutdatedBrowser = () => {
+    return dialog({
+      position: DialogPosition.Middle,
+      blocking: true,
+      fullOverlay: true,
+      render: (onSubmit, onClose) => {
+        return (
+          <ActionModal
+            customIcon={renderIcon(
+              'ExclamationIcon',
+              `z-20 w-28 h-28 text-alertMain`
+            )}
+            className={'bg-white'}
+            title={'Your internet browser is out of date!'}
+            detailText={
+              'Please go to your app store and update your browser before continuing. Tap refresh to try again.'
+            }
+            actionButtons={[
+              {
+                text: 'Refresh',
+                textColour: 'white',
+                colour: 'quatenary',
+                type: 'filled',
+                leadingIcon: 'CheckCircleIcon',
+                onClick: () => {
+                  onSubmit();
+                },
+              },
+            ]}
+          />
+        );
+      },
+    });
+  };
+
   const { userProfilePicture } = useDocuments();
 
   const initStaticStoreSetup = async () => {
@@ -433,6 +543,24 @@ export const Dashboard: React.FC = () => {
     });
   };
 
+  const showLogoutDialog = () => {
+    dialog({
+      color: 'bg-white',
+      position: DialogPosition.Middle,
+      blocking: true,
+      render: (onClose) => (
+        <Logout
+          onSubmit={() => {
+            onClose();
+          }}
+          onCancel={() => {
+            onClose();
+          }}
+        />
+      ),
+    });
+  };
+
   const onNavigation = (navItem: any) => {
     if (navItem.href.includes('community') && !isOnline) {
       history.push(ROUTES.DASHBOARD);
@@ -470,6 +598,10 @@ export const Dashboard: React.FC = () => {
         ((isWhiteLabel && missingProgramme) || wlNotAcceptThePrincipalInvite))
     ) {
       showCompleteProfileBlockingDialog();
+    } else if (navItem.href.includes('logout')) {
+      setTimeout(() => {
+        showLogoutDialog();
+      }, 180); // small delay to let menu close animation finish
     } else {
       history.push(navItem.href, navItem.params);
     }
@@ -672,6 +804,7 @@ export const Dashboard: React.FC = () => {
       icon: styles.logoutIconName,
       current: false,
       showDivider: true,
+      onNavigation: onNavigation,
     },
   ];
 
@@ -730,6 +863,7 @@ export const Dashboard: React.FC = () => {
       icon: styles.logoutIconName,
       current: false,
       showDivider: true,
+      onNavigation: onNavigation,
     },
   ];
 
@@ -1024,6 +1158,18 @@ export const Dashboard: React.FC = () => {
     <>
       <DashboardWrapper />
       <BannerWrapper
+        onNavigation={(navItem) => {
+          // Always close menu on any navigation click
+          setSidebarOpen(false);
+
+          if (navItem.href?.includes('logout')) {
+            showLogoutDialog();
+          } else {
+            onNavigation(navItem);
+          }
+        }}
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
         backgroundColour={'white'}
         backgroundImageColour={'primary'}
         avatar={
@@ -1047,7 +1193,6 @@ export const Dashboard: React.FC = () => {
           )
         }
         menuItems={isCoach ? navigationForCoach : navigation}
-        onNavigation={onNavigation}
         menuLogoUrl={theme?.images?.logoUrl || hamburgerLogo}
         calendarRender={
           (calendarEnabled && isWhiteLabel) || isOpenAccess

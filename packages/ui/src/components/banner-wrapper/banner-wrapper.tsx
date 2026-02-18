@@ -44,6 +44,8 @@ export interface BannerWrapperProps extends ComponentBaseProps {
   helpId?: string;
   hasDecoratedBackButton?: boolean;
   children?: any;
+  sidebarOpen?: boolean;
+  setSidebarOpen?: (open: boolean) => void;
 }
 
 export const BannerWrapper = React.forwardRef<
@@ -82,10 +84,23 @@ export const BannerWrapper = React.forwardRef<
     helpId,
     style,
     hasDecoratedBackButton,
+    sidebarOpen: controlledSidebarOpen,
+    setSidebarOpen: controlledSetSidebarOpen,
   } = props;
 
   const showMenu = (menuItems?.length || 0) > 0;
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const [internalSidebarOpen, setInternalSidebarOpen] = useState(false);
+  const isControlled =
+    controlledSidebarOpen !== undefined &&
+    controlledSetSidebarOpen !== undefined;
+
+  const sidebarOpen = isControlled
+    ? controlledSidebarOpen
+    : internalSidebarOpen;
+  const setSidebarOpen = isControlled
+    ? controlledSetSidebarOpen
+    : setInternalSidebarOpen;
 
   return (
     <div

@@ -1,9 +1,4 @@
-import {
-  useTheme,
-  useDialog,
-  usePrevious,
-  LocalStorageKeys,
-} from '@ecdlink/core';
+import { useDialog, usePrevious, LocalStorageKeys } from '@ecdlink/core';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { MutationAddPractitionerToPrincipalArgs } from '@ecdlink/graphql';
 import { IonContent } from '@ionic/react';
@@ -59,12 +54,9 @@ export const SetupPrincipal: React.FC = () => {
   const { syncClassroom } = useStoreSetup();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const tenant = useTenant();
-  const programmeTypes = useSelector(staticDataSelectors.getProgrammeTypes);
   const user = useSelector(userSelectors.getUser);
   const classroom = useSelector(classroomsSelectors?.getClassroom);
-  const classroomSetupPractitioners = useSelector(
-    classroomsSelectors.getSetupClassroomPractitioners
-  );
+
   const [principalClassroom, setPrincipalClassroom] = useState<ClassroomDto>();
   const principalPractitioners = useSelector(
     practitionerSelectors.getPrincipalPractitioners
@@ -256,7 +248,11 @@ export const SetupPrincipal: React.FC = () => {
           })
         );
 
-        if (!practitioner?.isPrincipal && !practitioner?.principalHierarchy) {
+        if (
+          !practitioner?.isPrincipal &&
+          !practitioner?.principalHierarchy &&
+          !practitionerPreschoolData?.userId
+        ) {
           await appDispatch(
             notificationActions.addNotifications(practitionerNotification)
           );

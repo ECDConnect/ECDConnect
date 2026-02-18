@@ -230,9 +230,10 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
     !selectedDate ||
     !reason ||
     (practitionerClassroomGroups?.length > 0 &&
+      practitionersUsers &&
+      practitionersUsers?.length > 0 &&
       reassignedClassroomGroups?.length !==
         practitionerClassroomGroups?.length);
-
   const reasonPayload = reason === 'Other' ? otherReason : reason;
 
   const onBack = () => {
