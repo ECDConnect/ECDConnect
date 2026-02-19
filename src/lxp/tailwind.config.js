@@ -5,6 +5,10 @@ module.exports = {
   //   enabled: process.env.NODE_ENV === 'production',
   //   content: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html']
   // },
+  purge: {
+  enabled: true, // force it even if you want to test
+  content: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
+},
   important: true,
   mode: 'aot',
   darkMode: false, // or 'media' or 'class'
