@@ -188,7 +188,7 @@ export const getLearnersForClassroomGroups = (
               children.find(
                 (child) =>
                   child.userId === learner.childUserId &&
-                  child.caregiverId != null
+                  (child.caregiverId != null || child.caregiver != null)
               )
             )
             .map((learner) => ({
