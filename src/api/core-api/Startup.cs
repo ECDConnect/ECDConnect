@@ -45,13 +45,16 @@ using System.Reflection;
 
 namespace EcdLink.Api.CoreApi
 {
-    using EcdLink.Api.CoreApi.GraphApi.Models;
+  using EcdLink.Api.CoreApi.Configuration;
+  using EcdLink.Api.CoreApi.GraphApi.Models;
     using EcdLink.Api.CoreApi.Middleware;
     using Microsoft.ApplicationInsights;
     using Microsoft.ApplicationInsights.Extensibility;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Http;
-    using System;
+    using Microsoft.AspNetCore.ResponseCompression;
+  using Microsoft.Extensions.Options;
+  using System;
     using System.Threading.Tasks;
 
     public static class MaintainCorsExtension
@@ -263,6 +266,32 @@ namespace EcdLink.Api.CoreApi
             }
 
             ECDLink.AutomatedJobs.AutomatedJobsStartup.ConfigureServices(services, Configuration);
+
+            // Bind custom compression settings
+            services.Configure<ResponseCompressionSettings>(Configuration.GetSection("ResponseCompression"));
+
+            var compressionSettings = services.BuildServiceProvider().GetRequiredService<IOptions<ResponseCompressionSettings>>().Value; // Temp resolve for config
+            if (compressionSettings.Enabled)
+            {
+                services.AddResponseCompression(options =>
+                {
+                    options.EnableForHttps = true;
+                    options.ExcludedMimeTypes = compressionSettings.ExcludeMimeTypes;
+                    options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(compressionSettings.MimeTypes);
+                    options.Providers.Add<BrotliCompressionProvider>();
+                    options.Providers.Add<GzipCompressionProvider>();
+                });
+                // Configure compression levels
+                services.Configure<GzipCompressionProviderOptions>(options =>
+                {
+                    options.Level = System.IO.Compression.CompressionLevel.Optimal;
+                });
+
+                services.Configure<BrotliCompressionProviderOptions>(options =>
+                {
+                    options.Level = System.IO.Compression.CompressionLevel.Optimal;
+                });
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -273,6 +302,12 @@ namespace EcdLink.Api.CoreApi
                 DiagnosticListener.AllListeners.Subscribe(new DiagnosticObserver());
 
                 app.UseDeveloperExceptionPage();
+            }
+
+            var compressionSettings = app.ApplicationServices.GetRequiredService<IOptions<ResponseCompressionSettings>>().Value;
+            if (compressionSettings.Enabled)
+            {
+                app.UseResponseCompression();
             }
 
             app.UseCors("CorsPolicy");
