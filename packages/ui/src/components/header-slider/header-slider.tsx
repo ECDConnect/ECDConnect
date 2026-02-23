@@ -21,7 +21,7 @@ export interface HeaderSliderProps extends ComponentBaseProps {
   isSetupComponent?: boolean;
 }
 
-const MARGIN = 0;
+const MARGIN = 32;
 
 export const HeaderSlider: React.FC<HeaderSliderProps> = ({
   slides,
