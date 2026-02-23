@@ -23,7 +23,7 @@ import { staticDataThunkActions } from '@store/static-data';
 import * as styles from './oa-sign-up-or-login.types';
 import { useTenant } from '@/hooks/useTenant';
 import { OAAgreements } from './components/oa-agreements/oa-agreements';
-import Banner1 from '../../../assets/banner-ss.jpg';
+import Banner1 from '../../../assets/banner1-ss.jpg';
 import Banner3 from '../../../assets/banner3-ss.jpg';
 import { AuthService } from '@/services/AuthService';
 import TransparentLayer from '../../../assets/TransparentLayer.png';
@@ -125,7 +125,8 @@ export const OASignUpOrLogin: React.FC = () => {
       >
         <div>
           <HeaderSlider
-            className="h-360px w-full overflow-hidden"
+            className="w-full overflow-hidden"
+            style={{ height: '360px' }}
             slides={headerSlide}
             autoPlay
             infiniteLoop
