@@ -112,68 +112,75 @@ export const OASignUpOrLogin: React.FC = () => {
 
   return (
     <div className={styles.wrapper}>
-      <BannerWrapper
-        color={'primary'}
-        showBackground={!isWhitelabel}
-        backgroundUrl={TransparentLayer}
-        backgroundImageColour={'primary'}
-        className={styles.contentWrapper}
-        size={'signup'}
-        renderBorder={false}
-        renderOverflow={false}
-        // onBack={() => history?.push(ROUTES.ROOT)}
-      >
-        <div>
-          <HeaderSlider
-            className="h-360px w-full overflow-hidden"
-            slides={headerSlide}
-            autoPlay
-            infiniteLoop
-            transitionTime={500}
-          />
-        </div>
+      {!openOaAgreements ? (
+        <BannerWrapper
+          color={'primary'}
+          showBackground={!isWhitelabel}
+          backgroundUrl={TransparentLayer}
+          backgroundImageColour={'primary'}
+          className={styles.contentWrapper}
+          size={'signup'}
+          renderBorder={false}
+          renderOverflow={false}
+        >
+          <div>
+            <HeaderSlider
+              className="h-360px w-full overflow-hidden"
+              slides={headerSlide}
+              autoPlay
+              infiniteLoop
+              transitionTime={500}
+            />
+          </div>
 
-        <div className={'mt-2 w-11/12 px-2'}>
-          <Button
-            id="gtm-register"
-            className={'mb-4 w-full'}
-            type="filled"
-            color="quatenary"
-            disabled={!isOnline}
-            onClick={() => setOpenOaAgreements(true)}
-          >
-            <Typography type="help" color="white" text={'Sign up'}></Typography>
-          </Button>
-
-          <Divider
-            title={`Already have a ${applicationName} account?`}
-            dividerType={'solid'}
-            className="my-2"
-          />
-
-          <Button
-            className={'mt-6 mb-12 w-full'}
-            type="outlined"
-            color="quatenary"
-            disabled={!isOnline}
-            onClick={() => history.push(ROUTES.LOGIN)}
-          >
-            <Typography
-              type="help"
+          <div className={'mt-8 w-11/12 px-2'}>
+            <Button
+              id="gtm-register"
+              className={'mb-4 w-full'}
+              type="filled"
               color="quatenary"
-              text={'Log in'}
-            ></Typography>
-          </Button>
-        </div>
-      </BannerWrapper>
-      <Dialog
-        visible={openOaAgreements}
-        position={DialogPosition.Full}
-        className="w-full"
-        stretch
-      >
-        <OAAgreements closeAction={setOpenOaAgreements} />
-      </Dialog>
+              disabled={!isOnline}
+              onClick={() => setOpenOaAgreements(true)}
+            >
+              <Typography
+                type="help"
+                color="white"
+                text={'Sign up'}
+              ></Typography>
+            </Button>
+
+            <Divider
+              title={`Already have a ${applicationName} account?`}
+              dividerType={'solid'}
+              className="my-2"
+            />
+
+            <Button
+              className={'mt-6 mb-12 w-full'}
+              type="outlined"
+              color="quatenary"
+              disabled={!isOnline}
+              onClick={() => history.push(ROUTES.LOGIN)}
+            >
+              <Typography
+                type="help"
+                color="quatenary"
+                text={'Log in'}
+              ></Typography>
+            </Button>
+          </div>
+        </BannerWrapper>
+      ) : (
+        <Dialog
+          visible={openOaAgreements}
+          position={DialogPosition.Full}
+          className="w-full"
+          stretch
+        >
+          <OAAgreements closeAction={setOpenOaAgreements} />
+        </Dialog>
+      )}
+
       {!isOnline && (
         <Alert
           className={'mt-5 mb-3'}
