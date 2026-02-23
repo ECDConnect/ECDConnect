@@ -3,4 +3,5 @@ export interface HeaderSlide {
   title: string;
   text: string;
   status?: number;
+  overlayText?: string;
 }
