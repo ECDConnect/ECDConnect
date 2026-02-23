@@ -41,11 +41,6 @@ export interface PhotoPromptProps extends ComponentBaseProps {
   resolutionLimit?: number;
 }
 
-/**
- * Refactor proposal: Pass action list as subcomponent instead. This will remove the need to call the get actions method in the useEffect. HG
- *
- */
-
 export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
   title,
   onClose,

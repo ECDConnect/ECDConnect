@@ -23,8 +23,8 @@ import { staticDataThunkActions } from '@store/static-data';
 import * as styles from './oa-sign-up-or-login.types';
 import { useTenant } from '@/hooks/useTenant';
 import { OAAgreements } from './components/oa-agreements/oa-agreements';
-import Banner1 from '../../../assets/banner-ss2.svg';
-import Banner3 from '../../../assets/banner2-ss-svg.svg';
+import Banner1 from '../../../assets/banner-ss.jpg';
+import Banner3 from '../../../assets/banner3-ss.jpg';
 import { AuthService } from '@/services/AuthService';
 import TransparentLayer from '../../../assets/TransparentLayer.png';
 import ROUTES from '@/routes/routes';
@@ -53,11 +53,15 @@ export const OASignUpOrLogin: React.FC = () => {
       title: 'Manage your classroom',
       text: 'Take attendance, track progress, and plan your activities',
       image: Banner1,
+      overlayText:
+        "Children at Nquba Preschool take part in an activity at a Nali'ibali Story Sparker reading club in Amajingqi, Eastern Cape.  Photo take by Bart Love on 20 May 2018.",
     },
     {
       title: 'Grow your community',
       text: 'Meet other practitioners in your area',
       image: Banner3,
+      overlayText:
+        'Nthabi Mofokeng leads a SmartStart training session in Duncan village, Eastern Cape. Photography taken by Bart Love on 15 May 2018.',
     },
   ];
 
@@ -121,7 +125,8 @@ export const OASignUpOrLogin: React.FC = () => {
       >
         <div>
           <HeaderSlider
-            className="h-360 mx-4"
+            //className="h-360 mx-4"
+            // className="h-360px mx-4 w-full overflow-hidden"
             slides={headerSlide}
             autoPlay
             infiniteLoop
@@ -129,7 +134,7 @@ export const OASignUpOrLogin: React.FC = () => {
           />
         </div>
 
-        <div className={'mt-8 w-11/12 px-2 md:mt-48'}>
+        <div className={'mt-2 w-11/12 px-2'}>
           <Button
             id="gtm-register"
             className={'mb-4 w-full'}
