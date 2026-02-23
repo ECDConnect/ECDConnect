@@ -10,7 +10,7 @@ export const cardTitle = 'mt-4 text-textDark text-left text-2xl font-bold';
 export const cardText = 'text-textMid text-left text-base';
 export const statusChip = 'mt-4 mb-1.5';
 export const cardInformation =
-  'bg-uiBg px-4 pb-5 flex flex-col justify-start items-start overflow-visible';
+  'bg-uiBg px-4 pb-5 flex flex-col justify-start items-start overflow-visible mb-5';
 
 const dot = 'h-2.5 inline-block rounded-full m-2';
 export const paginationItem = `${dot} w-2.5 bg-secondaryAccent2`;

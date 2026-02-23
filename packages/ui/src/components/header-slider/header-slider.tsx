@@ -117,7 +117,6 @@ export const HeaderSlider: React.FC<HeaderSliderProps> = ({
             <div
               data-testid={`header-slide-${idx}`}
               className={styles.card}
-              //style={{ width: width - MARGIN }}
               style={{ width: width < 768 ? width - MARGIN : '100%' }}
             >
               <div

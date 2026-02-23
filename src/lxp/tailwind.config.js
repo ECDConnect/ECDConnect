@@ -3,14 +3,10 @@ const plugin = require('tailwindcss/plugin');
 module.exports = {
   purge: {
     enabled: true, // force it even if you want to test
-    // content: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
-    content: ['./**/*.{js,ts,jsx,tsx}',],
+    content: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
+    //content: ['./**/*.{js,ts,jsx,tsx}',],
     safelist: [
-      'h-360px',
       'h-360',
-      'bg-logo',
-      'logo',
-      'bg-bannerx2',
       'fixed',
       'inset-0',
       'flex',
@@ -22,6 +18,13 @@ module.exports = {
       'mx-auto',
       'my-auto',
       'min-h-screen',
+      // logo styles
+      'inline-block', 'text-left', 'z-0', 'w-10/12', 'justify-start', 'bg-bannerx2', 'h-10', 'w-10',
+      // carousel
+      'h-bannerimage', 
+
+
+
     ]
   },
   important: true,
@@ -33,7 +36,7 @@ module.exports = {
         headercard: '328px',
       },
       height: {
-        bannerimage: '220px',
+        bannerimage: '360px',
       },
       borderRadius: {
         10: '0.625rem',
