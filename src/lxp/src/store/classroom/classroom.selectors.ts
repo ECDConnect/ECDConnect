@@ -188,7 +188,7 @@ export const getLearnersForClassroomGroups = (
               children.find(
                 (child) =>
                   child.userId === learner.childUserId &&
-                  child.caregiverId != null
+                  (child.caregiverId != null || child.caregiver != null)
               )
             )
             .map((learner) => ({
@@ -408,7 +408,7 @@ export const getClassroomGroupsWithLinkedLearnersOnly = createSelector(
   (classroomGroups: ClassroomGroupDto[], children: ChildDto[]) => {
     const childHasCaregiver = new Set<string>();
     for (const child of children) {
-      if (child.caregiverId != null) {
+      if (child.caregiverId != null || child.caregiver != null) {
         childHasCaregiver.add(child.userId || child.user?.id || '');
       }
     }
