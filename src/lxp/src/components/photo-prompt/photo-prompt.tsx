@@ -83,7 +83,7 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
       const loaded = await Promise.all(
         indices.map((n) => {
           const fileName = n ? `animoji-${n}` : 'animoji';
-          return import(`@/assets/profile-emojis/${fileName}.svg`).then(
+          return import(`@/assets/profile-emojis/${fileName}.png`).then(
             (mod) => mod.default as string
           );
         })
@@ -244,11 +244,12 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
               activeEmojis.map((item, index) => (
                 <div
                   key={`${item}-${index}`}
-                  className="flex items-center justify-center"
+                  className="flex h-28 w-28 items-center justify-center"
                 >
                   <img
                     src={item}
                     alt="emoji"
+                    className="h-full w-full object-contain"
                     onClick={() => onAction && onAction(item)}
                   />
                 </div>
