@@ -125,8 +125,7 @@ export const OASignUpOrLogin: React.FC = () => {
       >
         <div>
           <HeaderSlider
-            //className="h-360 mx-4"
-            // className="h-360px mx-4 w-full overflow-hidden"
+            className="h-360px w-full overflow-hidden"
             slides={headerSlide}
             autoPlay
             infiniteLoop
