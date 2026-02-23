@@ -1,5 +1,5 @@
 export const contentWrapper =
-  'flex h-full z-20 flex-col justify-start items-center px-2';
+  'flex h-full z-20 flex-col justify-start items-center';
 export const checkboxWrapper =
   'flex w-full flex-row gap-2 justify-between items-center bg-uiBg p-4 rounded-xl';
 export const formStyle = 'py-4 px-2 w-full ';
