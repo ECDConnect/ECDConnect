@@ -3,15 +3,26 @@ const plugin = require('tailwindcss/plugin');
 module.exports = {
   purge: {
     enabled: true, // force it even if you want to test
-    //content: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
-     content: ['./**/*.{js,ts,jsx,tsx}',],
-    // safelist: [
-    //   'h-360px',
-    //   'h-360',
-    //   'bg-logo',
-    //   'logo',
-    //   'bg-bannerx2',
-    // ]
+    // content: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
+    content: ['./**/*.{js,ts,jsx,tsx}',],
+    safelist: [
+      'h-360px',
+      'h-360',
+      'bg-logo',
+      'logo',
+      'bg-bannerx2',
+      'fixed',
+      'inset-0',
+      'flex',
+      'items-center',
+      'justify-center',
+      'grid',
+      'place-items-center',
+      // add others you suspect are used, e.g.:
+      'mx-auto',
+      'my-auto',
+      'min-h-screen',
+    ]
   },
   important: true,
   mode: 'aot',
