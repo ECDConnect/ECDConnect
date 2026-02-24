@@ -1,10 +1,59 @@
 const plugin = require('tailwindcss/plugin');
 
 module.exports = {
-  // purge: {
-  //   enabled: process.env.NODE_ENV === 'production',
-  //   content: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html']
-  // },
+  purge: {
+    enabled: true, // force it even if you want to test
+    content: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
+    //content: ['./**/*.{js,ts,jsx,tsx}',],
+    safelist: [
+      'h-360',
+      'h-244',
+      'h-116',
+      'w-96',
+      'fixed',
+      'inset-0',
+      'flex',
+      'items-center',
+      'justify-center',
+      'grid',
+      'place-items-center',
+      // add others you suspect are used, e.g.:
+      'mx-auto',
+      'my-auto',
+      'min-h-screen',
+      // logo styles
+      'inline-block', 'text-left', 'z-0', 'w-10/12', 'justify-start', 'bg-bannerx2', 'h-10', 'w-10',
+      'w-3/12', 'flex', 'justify-start',
+      // carousel
+      'relative', 'h-360px', 'md:h-96', 'w-full',
+      // dialog
+      'align-bottom', 'max-h-screen', 'overflow-y-auto', 'rounded-2xl', 'max-w-sm', 'text-left', 'shadow-xl', 'transform', 'transition-all', 'align-middle', 'w-full', 'bg-uiBg',
+      'rounded-lg bg-white', 'relative', 'w-96', 'sm:w-full',
+      'py-6', 'px-4', 'flex', 'flex-col', 'justify-evenly', 'items-center',
+      'justify-center', 'flex', 'overflow-hidden', 'fixed', 'inset-0', 'z-50', 'outline-none', 'focus:outline-none',
+      'justify-center', 'flex', 'overflow-hidden', 'fixed', 'inset-0', 'outline-none', 'focus:outline-none',
+      // walkthrough
+      'rounded-lg', 'bg-white', 'relative', 'w-96', 'sm:w-full',
+      'opacity-50', 'fixed', 'inset-0', 'z-40', 'bg-black', 'bg-modalBg',
+      //offline
+      'font-body','font-bold ','text-center','text-alertMain', 'leading-4',
+      'flex', 'flex-shrink-0', 'flex-row', 'items-center', 'justify-between', 'px-1', 'py-0', 'rounded-full', 'border', 'border-uiMidDark', 'bg-uiMidDark', 'absolute', 'z-50', 'top-54', 'left-1/2', 'transform -translate-x-1/2',
+      // side menu & button
+     'fixed', 'inset-0', 'z-40', 'flex',
+     'fixed', 'inset-0', 'bg-gray-600', 'bg-opacity-75',
+      'relative', 'flex', 'w-full', 'max-w-xs', 'flex-1', 'flex-col' ,'bg-white', 'pt-5', 'pb-4',
+      'absolute', 'top-0', 'right-0', '-mr-12' ,'pt-2',
+      // robot
+      'relative', 'rounded-full', 'cursor-pointer' ,
+      // forms
+      'relative', 'flex', 'gap-5', 'pb-6',
+      // button
+      'cursor-pointer', 'inline-flex', 'items-center', 'border-2', 'border-transparent', 'text-sm', 'font-normal', 'shadow-sm', 'justify-center', 'outline-none', 'bg-secondaryAccent2' ,'text-white', 'py-2.5', 'px-17', 'rounded-15', 'h-9', 'w-auto',
+      // borders
+      'border', 'border-t-0', 'border-r-0', 'border-l-0', 'border-dashed', 'border-color-uiLight', 'block',
+
+    ]
+  },
   important: true,
   mode: 'aot',
   darkMode: false, // or 'media' or 'class'

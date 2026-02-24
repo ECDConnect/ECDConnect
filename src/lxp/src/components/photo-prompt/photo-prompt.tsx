@@ -25,45 +25,10 @@ import dogEmoji from '@/assets/emojis/avatar_dog.png';
 import penguinEmoji from '@/assets/emojis/penguinEmoji.png';
 import monkeyEmoji from '@/assets/emojis/avatar_monkey.png';
 
-import profile1 from '@/assets/profile-emojis/animoji-1.svg';
-import profile2 from '@/assets/profile-emojis/animoji-2.svg';
-import profile3 from '@/assets/profile-emojis/animoji-3.svg';
-import profile4 from '@/assets/profile-emojis/animoji-4.svg';
-import profile5 from '@/assets/profile-emojis/animoji-5.svg';
-import profile6 from '@/assets/profile-emojis/animoji-6.svg';
-import profile7 from '@/assets/profile-emojis/animoji-7.svg';
-import profile8 from '@/assets/profile-emojis/animoji-8.svg';
-import profile9 from '@/assets/profile-emojis/animoji-9.svg';
-import profile10 from '@/assets/profile-emojis/animoji-10.svg';
-import profile11 from '@/assets/profile-emojis/animoji-11.svg';
-import profile12 from '@/assets/profile-emojis/animoji-12.svg';
-import profile13 from '@/assets/profile-emojis/animoji-13.svg';
-import profile14 from '@/assets/profile-emojis/animoji-14.svg';
-import profile15 from '@/assets/profile-emojis/animoji-15.svg';
-import profile16 from '@/assets/profile-emojis/animoji-16.svg';
-import profile17 from '@/assets/profile-emojis/animoji-17.svg';
-import profile18 from '@/assets/profile-emojis/animoji-18.svg';
-import profile19 from '@/assets/profile-emojis/animoji-19.svg';
-import profile20 from '@/assets/profile-emojis/animoji-20.svg';
-import profile21 from '@/assets/profile-emojis/animoji-21.svg';
-import profile22 from '@/assets/profile-emojis/animoji-22.svg';
-import profile23 from '@/assets/profile-emojis/animoji-23.svg';
-import profile24 from '@/assets/profile-emojis/animoji-24.svg';
-import profile25 from '@/assets/profile-emojis/animoji-25.svg';
-import profile26 from '@/assets/profile-emojis/animoji-26.svg';
-import profile27 from '@/assets/profile-emojis/animoji-27.svg';
-import profile28 from '@/assets/profile-emojis/animoji-28.svg';
-import profile29 from '@/assets/profile-emojis/animoji-29.svg';
-import profile30 from '@/assets/profile-emojis/animoji-30.svg';
-import profile31 from '@/assets/profile-emojis/animoji-31.svg';
-import profile32 from '@/assets/profile-emojis/animoji-32.svg';
-import profile33 from '@/assets/profile-emojis/animoji-33.svg';
-import profile34 from '@/assets/profile-emojis/animoji-34.svg';
-import profile35 from '@/assets/profile-emojis/animoji-35.svg';
-import profile36 from '@/assets/profile-emojis/animoji-36.svg';
-import profile37 from '@/assets/profile-emojis/animoji-37.svg';
-import profile38 from '@/assets/profile-emojis/animoji.svg';
 import { XIcon } from '@heroicons/react/solid';
+
+// Total number of profile emojis available
+const PROFILE_EMOJI_COUNT = 38;
 
 export interface PhotoPromptProps extends ComponentBaseProps {
   title: string;
@@ -75,11 +40,6 @@ export interface PhotoPromptProps extends ComponentBaseProps {
   showEmojiOption?: boolean;
   resolutionLimit?: number;
 }
-
-/**
- * Refactor proposal: Pass action list as subcomponent instead. This will remove the need to call the get actions method in the useEffect. HG
- *
- */
 
 export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
   title,
@@ -96,6 +56,9 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
   >([]);
   const [isOpenCamera, setIsOpenCamera] = useState(false);
   const [emojisSection, setEmojisSection] = useState(false);
+  const [profileEmojis, setProfileEmojis] = useState<string[]>([]);
+  const [profileEmojisLoading, setProfileEmojisLoading] = useState(false);
+
   const emojis = [
     womanEmoji,
     manEmoji,
@@ -107,46 +70,37 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
     monkeyEmoji,
   ];
 
-  const profileEmojis = [
-    profile1,
-    profile2,
-    profile3,
-    profile4,
-    profile5,
-    profile6,
-    profile7,
-    profile8,
-    profile9,
-    profile10,
-    profile11,
-    profile12,
-    profile13,
-    profile14,
-    profile15,
-    profile16,
-    profile17,
-    profile18,
-    profile19,
-    profile20,
-    profile21,
-    profile22,
-    profile23,
-    profile24,
-    profile25,
-    profile26,
-    profile27,
-    profile28,
-    profile29,
-    profile30,
-    profile31,
-    profile32,
-    profile33,
-    profile34,
-    profile35,
-    profile36,
-    profile37,
-    profile38,
-  ];
+  const loadProfileEmojis = useCallback(async () => {
+    if (profileEmojis.length > 0) return; // already loaded
+
+    setProfileEmojisLoading(true);
+    try {
+      const indices = Array.from(
+        { length: PROFILE_EMOJI_COUNT },
+        (_, i) => (i < PROFILE_EMOJI_COUNT - 1 ? `${i + 1}` : '') // last file is animoji.svg (no number)
+      );
+
+      const loaded = await Promise.all(
+        indices.map((n) => {
+          const fileName = n ? `animoji-${n}` : 'animoji';
+          return import(`@/assets/profile-emojis/${fileName}.png`).then(
+            (mod) => mod.default as string
+          );
+        })
+      );
+
+      setProfileEmojis(loaded);
+    } finally {
+      setProfileEmojisLoading(false);
+    }
+  }, [profileEmojis.length]);
+
+  const openEmojis = useCallback(async () => {
+    setEmojisSection(true);
+    if (isProfileEmojis) {
+      await loadProfileEmojis();
+    }
+  }, [isProfileEmojis, loadProfileEmojis]);
 
   const getActions = useCallback(() => {
     const actionsList: ActionSelectItem<PhotoPromptActionType>[] = [];
@@ -228,7 +182,7 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
         openGallery();
         break;
       case 'emojis':
-        setEmojisSection(true);
+        openEmojis();
         break;
       default:
         close();
@@ -239,6 +193,8 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
   useEffect(() => {
     getActions();
   }, [getActions]);
+
+  const activeEmojis = isProfileEmojis ? profileEmojis : emojis;
 
   return (
     <>
@@ -280,35 +236,25 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
 
         <div className="flex h-full flex-wrap justify-center overflow-auto">
           <div className="mt-16 grid h-screen w-9/12 grid-cols-2 justify-center gap-x-8 gap-y-8 overflow-auto">
-            {isProfileEmojis
-              ? !!profileEmojis?.length &&
-                profileEmojis.map((item, index) => (
-                  <div
-                    key={`${item}-${index}`}
-                    className="flex items-center justify-center"
-                  >
-                    <img
-                      src={item}
-                      alt="emojis"
-                      onClick={async () => {
-                        onAction && onAction(item);
-                      }}
-                    />
-                  </div>
-                ))
-              : !!emojis?.length &&
-                emojis.map((item, index) => (
-                  <div
-                    key={`${item}-${index}`}
-                    className="flex items-center justify-center"
-                  >
-                    <img
-                      src={item}
-                      alt="emojis"
-                      onClick={() => onAction && onAction(item)}
-                    />
-                  </div>
-                ))}
+            {profileEmojisLoading ? (
+              <div className="col-span-2 flex items-center justify-center py-16">
+                <span className="text-textMid text-sm">Loading emojis…</span>
+              </div>
+            ) : (
+              activeEmojis.map((item, index) => (
+                <div
+                  key={`${item}-${index}`}
+                  className="flex h-28 w-28 items-center justify-center"
+                >
+                  <img
+                    src={item}
+                    alt="emoji"
+                    className="h-full w-full object-contain"
+                    onClick={() => onAction && onAction(item)}
+                  />
+                </div>
+              ))
+            )}
           </div>
           <div className="mt-14 mb-20 flex w-full justify-center">
             <div className="flex w-full justify-center ">
