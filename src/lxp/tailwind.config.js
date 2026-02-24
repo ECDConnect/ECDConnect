@@ -23,6 +23,7 @@ module.exports = {
       'min-h-screen',
       // logo styles
       'inline-block', 'text-left', 'z-0', 'w-10/12', 'justify-start', 'bg-bannerx2', 'h-10', 'w-10',
+      'w-3/12', 'flex', 'justify-start',
       // carousel
       'relative', 'h-360px', 'md:h-96', 'w-full',
       // dialog
@@ -35,8 +36,22 @@ module.exports = {
       'rounded-lg', 'bg-white', 'relative', 'w-96', 'sm:w-full',
       'opacity-50', 'fixed', 'inset-0', 'z-40', 'bg-black', 'bg-modalBg',
       //offline
-       'font-body','font-bold ','text-center','text-alertMain', 'leading-4',
-       'flex', 'flex-shrink-0', 'flex-row', 'items-center', 'justify-between', 'px-1', 'py-0', 'rounded-full', 'border', 'border-uiMidDark', 'bg-uiMidDark', 'absolute', 'z-50', 'top-54', 'left-1/2', 'transform -translate-x-1/2'
+      'font-body','font-bold ','text-center','text-alertMain', 'leading-4',
+      'flex', 'flex-shrink-0', 'flex-row', 'items-center', 'justify-between', 'px-1', 'py-0', 'rounded-full', 'border', 'border-uiMidDark', 'bg-uiMidDark', 'absolute', 'z-50', 'top-54', 'left-1/2', 'transform -translate-x-1/2',
+      // side menu & button
+     'fixed', 'inset-0', 'z-40', 'flex',
+     'fixed', 'inset-0', 'bg-gray-600', 'bg-opacity-75',
+      'relative', 'flex', 'w-full', 'max-w-xs', 'flex-1', 'flex-col' ,'bg-white', 'pt-5', 'pb-4',
+      'absolute', 'top-0', 'right-0', '-mr-12' ,'pt-2',
+      // robot
+      'relative', 'rounded-full', 'cursor-pointer' ,
+      // forms
+      'relative', 'flex', 'gap-5', 'pb-6',
+      // button
+      'cursor-pointer', 'inline-flex', 'items-center', 'border-2', 'border-transparent', 'text-sm', 'font-normal', 'shadow-sm', 'justify-center', 'outline-none', 'bg-secondaryAccent2' ,'text-white', 'py-2.5', 'px-17', 'rounded-15', 'h-9', 'w-auto',
+      // borders
+      'border', 'border-t-0', 'border-r-0', 'border-l-0', 'border-dashed', 'border-color-uiLight', 'block',
+
     ]
   },
   important: true,
