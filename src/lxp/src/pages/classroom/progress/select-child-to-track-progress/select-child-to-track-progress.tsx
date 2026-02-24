@@ -91,7 +91,11 @@ export const SelectChildToTrack: React.FC = () => {
 
   const childListWithoutReport = useMemo(() => {
     return children
-      .filter((child) => (child.ageInMonths ?? 0) < 61)
+      .filter((child) => (child.ageInMonths ?? 0) < 79)
+      .filter(
+        (child) =>
+          !filteredReports.some((r) => r.childUserId === child.childUserId)
+      )
       .map((child) => ({
         id: child.childId,
         profileDataUrl: child.childProfileImageUrl,
