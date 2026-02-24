@@ -7,6 +7,9 @@ module.exports = {
     //content: ['./**/*.{js,ts,jsx,tsx}',],
     safelist: [
       'h-360',
+      'h-244',
+      'h-116',
+      'w-96',
       'fixed',
       'inset-0',
       'flex',
@@ -21,10 +24,16 @@ module.exports = {
       // logo styles
       'inline-block', 'text-left', 'z-0', 'w-10/12', 'justify-start', 'bg-bannerx2', 'h-10', 'w-10',
       // carousel
-      'h-bannerimage', 
-
-
-
+      'relative', 'h-360px', 'md:h-96', 'w-full',
+      // dialog
+      'align-bottom', 'max-h-screen', 'overflow-y-auto', 'rounded-2xl', 'max-w-sm', 'text-left', 'shadow-xl', 'transform', 'transition-all', 'align-middle', 'w-full', 'bg-uiBg',
+      'rounded-lg bg-white', 'relative', 'w-96', 'sm:w-full',
+      'py-6', 'px-4', 'flex', 'flex-col', 'justify-evenly', 'items-center',
+      'justify-center', 'flex', 'overflow-hidden', 'fixed', 'inset-0', 'z-50', 'outline-none', 'focus:outline-none',
+      'justify-center', 'flex', 'overflow-hidden', 'fixed', 'inset-0', 'outline-none', 'focus:outline-none',
+      // walkthrough
+      'rounded-lg', 'bg-white', 'relative', 'w-96', 'sm:w-full',
+      'opacity-50', 'fixed', 'inset-0', 'z-40', 'bg-black', 'bg-modalBg',
     ]
   },
   important: true,
@@ -36,7 +45,7 @@ module.exports = {
         headercard: '328px',
       },
       height: {
-        bannerimage: '360px',
+        bannerimage: '220px',
       },
       borderRadius: {
         10: '0.625rem',
