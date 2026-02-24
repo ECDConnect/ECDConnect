@@ -34,6 +34,9 @@ module.exports = {
       // walkthrough
       'rounded-lg', 'bg-white', 'relative', 'w-96', 'sm:w-full',
       'opacity-50', 'fixed', 'inset-0', 'z-40', 'bg-black', 'bg-modalBg',
+      //offline
+       'font-body','font-bold ','text-center','text-alertMain', 'leading-4',
+       'flex', 'flex-shrink-0', 'flex-row', 'items-center', 'justify-between', 'px-1', 'py-0', 'rounded-full', 'border', 'border-uiMidDark', 'bg-uiMidDark', 'absolute', 'z-50', 'top-54', 'left-1/2', 'transform -translate-x-1/2'
     ]
   },
   important: true,
