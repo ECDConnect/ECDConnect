@@ -29,12 +29,12 @@ import ROUTES from '@routes/routes';
 import { StorageFull } from './storage-full/storage-full';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
-import { syncThunkActions } from '@/store/sync';
 import { userThunkActions } from '@/store/user';
 import { useStoreSetup } from '@/hooks/useStoreSetup';
 import { useTenant } from '@/hooks/useTenant';
 import TransparentLayer from '../../../assets/TransparentLayer.png';
 import ReactGA from 'react-ga4';
+import { triggerBackgroundSync } from '@/store/sync/sync.actions';
 
 var CryptoJS = require('crypto-js');
 const { version } = require('../../../../package.json');
@@ -51,7 +51,6 @@ export const Login: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const [freeMemory, setFreeMemory] = useState(0);
   const [errorMessage, setErrorMessage] = useState(false);
-  // const [incorrectBrowser, setIncorrectBrowser] = useState(false);
   const tenant = useTenant();
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
@@ -126,12 +125,9 @@ export const Login: React.FC = () => {
       !!practitioner &&
       isOnline
     ) {
-      if (practitioner?.isPrincipal === true) {
-        await appDispatch(syncThunkActions.syncOfflineData({}));
-      } else {
-        await appDispatch(syncThunkActions.syncOfflineDataForPractitioner({}));
-      }
-
+      await appDispatch(
+        triggerBackgroundSync({ includeOfflineSyncData: true })
+      );
       await resetAppStore();
       await resetAuth();
       await resetUser();
