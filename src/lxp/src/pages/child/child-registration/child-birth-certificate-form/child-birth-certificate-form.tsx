@@ -285,6 +285,7 @@ export const ChildBirthCertificateForm: React.FC<
       >
         <div className={'p-4'}>
           <PhotoPrompt
+            resolutionLimit={IMAGE_WIDTH}
             title={
               birthCertificateType === 'clinicCard'
                 ? 'Clinic card'

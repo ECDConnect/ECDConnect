@@ -14,6 +14,7 @@ import {
   Dialog,
   DialogPosition,
   FormInput,
+  IMAGE_WIDTH_PROFILE,
   ProfileAvatar,
   renderIcon,
   StackedList,
@@ -512,6 +513,7 @@ export const CoachAbout: React.FC = () => {
         position={DialogPosition.Bottom}
       >
         <PhotoPrompt
+          resolutionLimit={IMAGE_WIDTH_PROFILE}
           title="Profile Photo"
           onClose={handlePicturePromptOnClose}
           onAction={picturePromptOnAction}

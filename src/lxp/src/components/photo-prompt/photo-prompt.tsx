@@ -9,8 +9,6 @@ import {
   Dialog,
   DialogPosition,
   Typography,
-  imageResize,
-  IMAGE_WIDTH,
 } from '@ecdlink/ui';
 import { useCallback, useEffect, useState } from 'react';
 import * as styles from './photo-prompt.styles';
