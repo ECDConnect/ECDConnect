@@ -67,7 +67,7 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
     isAllObservationsComplete,
     isAllReportsComplete,
     isAfterLastReport,
-  } = useProgressForChildren(true);
+  } = useProgressForChildren();
 
   const [generatedReports, setGeneratedReports] = useState<{
     [reportId: string]: boolean;
@@ -237,7 +237,6 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
     ? (isWithinReportPeriod && percentageReportsCompleted === 100) ||
       (!isWithinReportPeriod && percentageObservationsCompleted === 100)
     : percentageObservationsCompleted === 100;
-
   return (
     <>
       {/* Report period set, all reports completed && current period undefined */}
