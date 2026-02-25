@@ -5,6 +5,7 @@ import {
   Button,
   Dialog,
   DialogPosition,
+  IMAGE_WIDTH_PROFILE,
   ProfileAvatar,
   Typography,
 } from '@ecdlink/ui';
@@ -142,6 +143,7 @@ export const EditLogo: React.FC<EditLogoProps> = ({ setShowEditLogo }) => {
             onClose={displayProfilePicturePrompt}
             onAction={saveClassroomPicture}
             onDelete={classroomImage ? deleteClassroomPicture : undefined}
+            resolutionLimit={IMAGE_WIDTH_PROFILE}
           />
         </div>
       </Dialog>

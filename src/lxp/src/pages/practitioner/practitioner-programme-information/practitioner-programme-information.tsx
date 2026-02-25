@@ -14,6 +14,7 @@ import {
   Alert,
   Card,
   ActionModal,
+  IMAGE_WIDTH_PROFILE,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useCallback, useEffect, useState } from 'react';
@@ -685,6 +686,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
             onClose={displayProfilePicturePrompt}
             onAction={saveClassroomPicture}
             onDelete={classroomImage ? deleteClassroomPicture : undefined}
+            resolutionLimit={IMAGE_WIDTH_PROFILE}
           />
         </div>
       </Dialog>

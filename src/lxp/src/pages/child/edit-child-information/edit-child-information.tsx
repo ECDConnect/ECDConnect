@@ -17,6 +17,7 @@ import {
   ActionListDataItem,
   DialogPosition,
   renderIcon,
+  IMAGE_WIDTH_PROFILE,
 } from '@ecdlink/ui';
 import format from 'date-fns/format';
 import { useEffect, useState } from 'react';
@@ -736,6 +737,7 @@ export const EditChildInformation: React.FC = () => {
       >
         <div className={'p-4'}>
           <PhotoPrompt
+            resolutionLimit={IMAGE_WIDTH_PROFILE}
             title="Profile Photo"
             onClose={displayProfilePicturePrompt}
             onAction={picturePromtOnAction}

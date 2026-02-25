@@ -1,4 +1,3 @@
-import { FileTypeEnum } from '@ecdlink/graphql';
 import {
   Button,
   Dialog,
@@ -8,8 +7,8 @@ import {
   DialogPosition,
   renderIcon,
   Card,
-  IMAGE_WIDTH,
   SliderPagination,
+  IMAGE_WIDTH_PROFILE,
 } from '@ecdlink/ui';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -143,7 +142,7 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({
         <div className={'p-4'}>
           <PhotoPrompt
             title="Profile Photo"
-            resolutionLimit={IMAGE_WIDTH}
+            resolutionLimit={IMAGE_WIDTH_PROFILE}
             onClose={() => displayProfilePicturePrompt}
             onAction={(imageUrl: string) => picturePromtOnAction(imageUrl)}
             onDelete={
