@@ -90,9 +90,9 @@ $@"
             using (MemoryStream inputStream = new MemoryStream(imageBytes))
             using (Image image = Image.Load(inputStream))
             {
-                if (image.Width < imageWidth)
+                if (image.Width <= imageWidth)
                 {
-                    _logger.LogInformation($"{id} image size: {imageBytes.Length} Width < 100 IGNORED");
+                    _logger.LogInformation($"{id} image size: {imageBytes.Length} Width <= 100 IGNORED");
                 }
                 else
                 {

@@ -8,6 +8,10 @@ export const imageResize = async (
     const img = new Image();
     img.src = image;
     img.onload = () => {
+      if ((width && img.width <= width) || (height && img.height <= height)) {
+        resolve(image);
+        return;
+      }
       var resizeWidth = width ? width : (img.width / img.height) * height!;
       var resizeHeight = height ? height : (img.height / img.width) * width!;
       const canvas = document.createElement('canvas');
