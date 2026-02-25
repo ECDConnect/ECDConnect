@@ -7,7 +7,3 @@ export type SyncStates = {
   currentStep: number;
   stepTotal: number;
 };
-
-export type SyncOfflineDataProps = {};
-
-export type SyncOfflineDataReturnType = {};

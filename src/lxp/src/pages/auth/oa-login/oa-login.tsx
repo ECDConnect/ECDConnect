@@ -51,6 +51,7 @@ import {
 import jwtDecode from 'jwt-decode';
 import { Login as FacebookLogin } from 'react-facebook';
 import { LoginResponse } from '@/types/facebook';
+import { triggerBackgroundSync } from '@/store/sync/sync.actions';
 
 const CryptoJS = require('crypto-js');
 const { version } = require('../../../../package.json');
@@ -284,11 +285,9 @@ export const OaLogin: React.FC = () => {
       !!practitioner /* &&
       isOnline*/
     ) {
-      if (practitioner?.isPrincipal === true) {
-        await appDispatch(syncThunkActions.syncOfflineData({}));
-      } else {
-        await appDispatch(syncThunkActions.syncOfflineDataForPractitioner({}));
-      }
+      await appDispatch(
+        triggerBackgroundSync({ includeOfflineSyncData: true })
+      );
 
       resetAppStore && (await resetAppStore());
       resetAuth && (await resetAuth());
