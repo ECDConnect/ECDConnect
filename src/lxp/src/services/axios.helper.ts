@@ -1,10 +1,5 @@
 import { APIs, Config } from '@ecdlink/core';
-import type {
-  AxiosInstance,
-  AxiosResponse,
-  AxiosError,
-  AxiosRequestConfig,
-} from 'axios';
+import type { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
 import axios from 'axios';
 import jwt_decode from 'jwt-decode';
 import { store } from '@store';
@@ -24,46 +19,34 @@ const logGraphQL = (
   result: any
 ) => {
   if (!!disableGraphqlLogging) return;
-  // logFunc(`GRAPHQL: ${statusText}[${status}] `, {
-  //   query: query,
-  //   result: result,
-  // });
+  // logFunc(`GRAPHQL: ${statusText}[${status}] `, { query, result });
 };
 
 const alertGraphQL = () => {
   if (!!disableGraphqlErrorAlert) return;
-  window.dispatchEvent(new CustomEvent('graphql-error', {})); // AppErrorHandler listens for the event.
+  window.dispatchEvent(new CustomEvent('graphql-error', {}));
 };
 
 const alertTimeout = () => {
   if (!!disableGraphqlErrorAlert) return;
-  window.dispatchEvent(new CustomEvent('timeout-error', {})); // AppErrorHandler listens for the event.
+  window.dispatchEvent(new CustomEvent('timeout-error', {}));
 };
 
-/**
- * Checks the response time duration and updates the store if the connection is considered to be unreliable.
- *
- * @param {*} response
- * @param {boolean} [ignoreTimeoutCheck=false]
- */
 const updateConfigEndTime = (
   response: any,
   ignoreTimeoutCheck: boolean = false
 ) => {
-  if (!response.config || !response.config.metadata) return; // might be undefined if offline
-
   response.config.metadata.endTime = new Date();
   response.duration =
     response.config.metadata.endTime - response.config.metadata.startTime;
 
-  // Ensure compatibility with all browsers
-  const connection = (window.navigator as any).connection;
-  const connectionType: string = connection?.effectiveType || '4g';
+  const connectionType: string = (window.navigator as any).connection
+    .effectiveType as string;
 
-  // Ensure timeout exists to avoid undefined errors
-  const issueTimeout = TIMEOUTS[connectionType]?.loadIssueTime || 5000; // Default 5s timeout if missing
+  const spottyConnectionTimeout =
+    TIMEOUTS[connectionType]?.slowRequestTime || TIMEOUTS['4g'].slowRequestTime;
 
-  if (response.duration >= issueTimeout && !ignoreTimeoutCheck) {
+  if (response.duration >= spottyConnectionTimeout && !ignoreTimeoutCheck) {
     if (store.getState().user.unstableConnection === false) {
       store.dispatch(userActions.updateConnectionStatus(true));
     }
@@ -79,81 +62,106 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
     APIs.forgotPassword,
     APIs.sendAuthCode,
     APIs.verifyInvitation,
-    APIs.tenantCurrent,
   ];
-  const headers: any = {
-    'Content-Type': 'application/json',
+
+  const headers: any = { 'Content-Type': 'application/json' };
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const axiosInstance = axios.create({ baseURL: baseUrl, headers });
+
+  const sanitizeValue = (value: any): any => {
+    if (value instanceof Date) {
+      return value.toISOString(); // Convert Date → string
+    }
+    if (Array.isArray(value)) {
+      return value.map(sanitizeValue); // Deep clean arrays
+    }
+    if (value && typeof value === 'object') {
+      const clean: any = {};
+      for (const key in value) {
+        clean[key] = sanitizeValue(value[key]);
+      }
+      return clean;
+    }
+    return value; // primitives are okay
   };
 
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-
-  const axiosInstance = axios.create({
-    baseURL: baseUrl,
-    headers,
+  const sanitizeConfig = (config: any) => ({
+    url: config.url,
+    method: config.method,
+    headers: sanitizeValue(config.headers),
+    params: sanitizeValue(config.params),
+    data: sanitizeValue(config.data),
   });
 
+  /**
+   * REQUEST INTERCEPTOR
+   */
   axiosInstance.interceptors.request.use(
-    async (config: AxiosRequestConfig) => {
+    async (config: any) => {
+      // ---- OFFLINE BLOCK ----
       if (!navigator.onLine) {
-        return Promise.resolve({
-          data: null,
-          status: 0,
-          statusText: 'Browser is offline',
-          headers: {},
-          config,
+        // Create an Axios-like error to avoid undefined errors later
+        return Promise.reject({
+          isOffline: true,
+          message: 'Browser is offline',
+          config: sanitizeConfig(config),
+          request: { status: 0, statusText: 'Offline' },
         });
       }
 
+      // ---- JWT EXPIRED → REFRESH ----
       if (store && !blacklistCheckup(config.url ?? '', blackList)) {
-        const user = store?.getState()?.auth?.userAuth;
+        const user = store.getState()?.auth?.userAuth;
 
-        let currentDate = new Date();
         if (user?.auth_token) {
-          const decodedToken: { exp: number } = jwt_decode(user?.auth_token);
-          if (decodedToken.exp * 1000 < currentDate.getTime()) {
+          const decodedToken: { exp: number } = jwt_decode(user.auth_token);
+
+          if (decodedToken.exp * 1000 < Date.now()) {
             await store.dispatch(refreshToken({}));
-            if (config?.headers) {
-              config.headers['Authorization'] = `Bearer ${
-                store?.getState()?.auth?.userAuth?.auth_token
+
+            if (config.headers) {
+              config.headers.Authorization = `Bearer ${
+                store.getState().auth.userAuth?.auth_token
               }`;
             }
           }
         }
       }
 
-      (config as any).metadata = { startTime: new Date() };
+      config.metadata = { startTime: new Date() };
       return config;
     },
-    (error) => {
-      return Promise.reject(error);
-    }
+    (error) => Promise.reject(error)
   );
 
+  /**
+   * RESPONSE INTERCEPTOR
+   */
   axiosInstance.interceptors.response.use(
-    (response: AxiosResponse<any, any> | any) => {
+    (response: AxiosResponse | any) => {
       if (response.config.baseURL === Config.graphQlApi) {
-        // checked for internal exception.
-        if (response.data.errors === undefined) {
+        const hasInternalErrors = response.data.errors !== undefined;
+
+        if (!hasInternalErrors) {
           logGraphQL(
             console.log,
-            response.request.statusText,
-            response.request.status,
+            response.request?.statusText,
+            response.request?.status,
             response.config.data,
             response.data
           );
         } else {
-          (response as any).original_status = response.status;
-          (response as any).original_statusText = response.statusText;
+          response.original_status = response.status;
+          response.original_statusText = response.statusText;
+
           response.status = 500;
           response.statusText =
             'Internal Server Error' +
-            (response.data.errors?.length > 0 &&
-            response.data.errors[0] &&
-            response.data.errors[0].message
-              ? ': ' + response.data.errors[0].message
+            (response.data.errors?.length && response.data.errors[0]?.message
+              ? `: ${response.data.errors[0].message}`
               : '');
+
           logGraphQL(
             console.error,
             response.statusText,
@@ -162,6 +170,7 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
             response.data
           );
         }
+
         if (response.status >= 400) {
           if (response.status === 408 || response.status === 504) {
             alertTimeout();
@@ -174,21 +183,37 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
       updateConfigEndTime(response, response.method === 'post');
       return response;
     },
+
+    /**
+     * ---- ERROR HANDLER ----
+     */
     (error: AxiosError | any) => {
-      if (!!error.config && error.config.baseURL === Config.graphQlApi) {
+      // ---- Handle Offline Errors ----
+      if (error.isOffline) {
+        console.warn('Request skipped: offline.');
+        return Promise.reject(error);
+      }
+
+      // ---- GraphQL Error Handling ----
+      if (error.config?.baseURL === Config.graphQlApi) {
+        const statusText = error.request?.statusText || 'Unknown Error';
+        const status = error.request?.status || 0;
+
         logGraphQL(
           console.error,
-          error.request.statusText,
-          error.request.status,
+          statusText,
+          status,
           error.config.data,
           error.response?.data
         );
+
         if (error.message === 'Network Error') {
           alertTimeout();
         } else {
           alertGraphQL();
         }
       }
+
       updateConfigEndTime(error, true);
       return Promise.reject(error);
     }
@@ -198,11 +223,5 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
 };
 
 const blacklistCheckup = ($url: string, blacklist: string[]): boolean => {
-  let returnValue = false;
-  blacklist.forEach((i) => {
-    if ($url.includes(i)) {
-      returnValue = true;
-    }
-  });
-  return returnValue;
+  return blacklist.some((i) => $url.includes(i));
 };

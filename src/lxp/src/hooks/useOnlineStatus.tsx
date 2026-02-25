@@ -14,6 +14,7 @@ interface OnlineStatusProviderProps {
   interval?: number;
   timeout?: number;
   enablePolling?: boolean;
+  onConnectionRestored?: () => void;
 }
 
 export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
@@ -22,8 +23,10 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
   interval = 5000,
   timeout = 15000,
   enablePolling = false,
+  onConnectionRestored,
 }) => {
   const [isOnline, setIsOnline] = useState<boolean>(() => navigator.onLine);
+  const wasOnlineRef = useRef<boolean>(navigator.onLine);
   const lastSuccessfulCheckRef = useRef<number>(Date.now());
   const isCheckingRef = useRef<boolean>(false);
   const intervalIdRef = useRef<number>();
@@ -41,6 +44,14 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
+
+  useEffect(() => {
+    if (isOnline && !wasOnlineRef.current) {
+      // We just came back online!
+      onConnectionRestored?.();
+    }
+    wasOnlineRef.current = isOnline;
+  }, [isOnline, onConnectionRestored]);
 
   const cleanup = () => {
     if (intervalIdRef.current) {

@@ -1,4 +1,3 @@
-import CompleteProfile from '../edit-coach-profile/components/complete-profile/complete-profile';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useStoreSetup } from '@hooks/useStoreSetup';
 import { analyticsActions } from '@store/analytics';
@@ -20,9 +19,8 @@ import {
   TabItem,
   TabList,
 } from '@ecdlink/ui';
-import { syncThunkActions } from '@/store/sync';
-import { settingActions } from '@/store/settings';
 import { NavigationNames } from '@/pages/navigation';
+import { triggerBackgroundSync } from '@/store/sync/sync.actions';
 
 export const CoachProfile: React.FC = () => {
   const { resetAuth, resetAppStore } = useStoreSetup();
@@ -35,14 +33,11 @@ export const CoachProfile: React.FC = () => {
 
   const coach = useSelector(coachSelectors.getCoach);
 
-  const sync = async () => {
-    await appDispatch(syncThunkActions.syncOfflineData({}));
-    appDispatch(settingActions.setLastDataSync());
-  };
-
   const handleSync = async () => {
     if (isOnline) {
-      await sync();
+      await appDispatch(
+        triggerBackgroundSync({ includeOfflineSyncData: true })
+      );
       await resetAppStore();
       await resetAuth();
       history.push('/');

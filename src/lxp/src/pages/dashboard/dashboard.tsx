@@ -1,6 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { RoleSystemNameEnum, useDialog, useTheme } from '@ecdlink/core';
-import { UserSyncStatus } from '@ecdlink/graphql';
 import {
   ActionModal,
   Avatar,
@@ -16,29 +15,24 @@ import {
   NoPointsScoreCard,
   renderIcon,
 } from '@ecdlink/ui';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useDocuments } from '@hooks/useDocuments';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { SyncTimeExceeded } from '../../modals';
 import { useAppDispatch } from '@store';
-import { classroomsSelectors, classroomsThunkActions } from '@store/classroom';
+import { classroomsSelectors } from '@store/classroom';
 import {
   notificationActions,
   notificationsSelectors,
 } from '@store/notifications';
-import { settingSelectors } from '@store/settings';
-import { userSelectors, userThunkActions } from '@store/user';
+import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
 import TransparentLayer from '../../assets/TransparentLayer.png';
 import BusinessIconTile from '../../assets/businessIconTile.png';
 import BusinessIconNavigation from '../../assets/BusinessIconNavigation.png';
-import {
-  practitionerSelectors,
-  practitionerThunkActions,
-} from '@/store/practitioner';
+import { practitionerSelectors } from '@/store/practitioner';
 import * as styles from './dashboard.styles';
 import ROUTES from '@routes/routes';
 import { statementsThunkActions } from '@/store/statements';
@@ -46,13 +40,12 @@ import { programmeThunkActions } from '@/store/programme';
 import offlineStatments from '../../assets/statements-offline.png';
 import { setStorageItem } from '@/utils/common/local-storage.utils';
 import { convertImageToBase64 } from '@/utils/common/convert-image-to-64.utils';
-import { pointsSelectors, pointsThunkActions } from '@/store/points';
+import { pointsSelectors } from '@/store/points';
 import { pointsConstants } from '@/constants/points';
 import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg';
 import { ReactComponent as EmojiBlueSmile } from '../../assets/neutral_blue_emoticon.svg';
 import { ReactComponent as EmojiOrangeSmile } from '../../assets/mehFace.svg';
 import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
-import { syncThunkActions } from '@store/sync';
 import {
   TabsItemForPrincipal,
   TabsItems,
@@ -71,12 +64,11 @@ import { useTenantModules } from '@/hooks/useTenantModules';
 import { PermissionsNames } from '../principal/components/add-practitioner/add-practitioner.types';
 import { usePoints } from '@/hooks/usePoints';
 import { usePointsToDoEmoji } from '@/hooks/usePointsToDoEmoji';
-import { useStoreSetup } from '@hooks/useStoreSetup';
 import { Logout } from '../auth/logout/logout';
 import { useBrowserVersionCheck } from '@/hooks/useBrowserVersionCheck';
+import { triggerBackgroundSync } from '@/store/sync/sync.actions';
 
 const { version } = require('../../../package.json');
-
 export interface DashboardRouteState {
   isFromLogin?: boolean;
   isFromCompleteProfile?: boolean;
@@ -99,10 +91,6 @@ export const Dashboard: React.FC = () => {
   const appName = tenant?.tenant?.applicationName;
   const isOpenAccess = tenant?.isOpenAccess;
   const isWhiteLabel = tenant?.isWhiteLabel;
-  const shouldUserSyncOffline = useSelector(settingSelectors.getShouldUserSync);
-  const shouldUserSyncOnline = useSelector(
-    settingSelectors.getShouldUserSyncOnline
-  );
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const userData = useSelector(userSelectors.getUser);
@@ -119,8 +107,6 @@ export const Dashboard: React.FC = () => {
     notificationsSelectors.getNewNotificationCount
   );
   const { setState } = useAppContext();
-  const { resetAppStore, resetAuth } = useStoreSetup();
-  const { refreshClassroom, refreshChildren } = useStoreSetup();
   const isPractitioner = !!practitioner;
   const isPrincipal = practitioner?.isPrincipal;
   const isRegistered = practitioner?.isRegistered;
@@ -154,64 +140,10 @@ export const Dashboard: React.FC = () => {
       item?.permissionName === PermissionsNames.plan_classroom_actitivies
   );
 
-  const getUserSyncStatus = useCallback(async () => {
-    const userSyncStatus: UserSyncStatus = await appDispatch(
-      userThunkActions.getUserSyncStatus({ userId: practitioner?.userId! })
-    ).unwrap();
-
-    if (userSyncStatus) {
-      if (userSyncStatus.syncChildren) {
-        await refreshChildren();
-      }
-      if (userSyncStatus.syncClassroom) {
-        await refreshClassroom();
-      }
-      if (userSyncStatus.syncReportingPeriods) {
-        appDispatch(
-          classroomsThunkActions.getClassroom({ overrideCache: true })
-        ).unwrap();
-      }
-      if (userSyncStatus.syncPermissions) {
-        appDispatch(
-          practitionerThunkActions.getPractitionerPermissions({
-            userId: practitioner?.userId!,
-          })
-        );
-      }
-      if (userSyncStatus.syncPoints) {
-        appDispatch(
-          pointsThunkActions.pointsTodoItems({ userId: practitioner?.userId! })
-        );
-
-        appDispatch(
-          pointsThunkActions.yearPointsView({ userId: practitioner?.userId! })
-        );
-
-        appDispatch(
-          pointsThunkActions.sharedData({
-            userId: practitioner?.userId!,
-            isMonthly: true,
-          })
-        );
-        const currentDate = new Date();
-        const oneYearAgo = new Date();
-
-        oneYearAgo.setMonth(currentDate.getMonth() - 12);
-        (async () =>
-          await appDispatch(
-            pointsThunkActions.getPointsSummaryForUser({
-              userId: practitioner?.userId!,
-              startDate: oneYearAgo,
-              endDate: currentDate,
-            })
-          ).unwrap())();
-      }
-    }
-  }, [appDispatch, practitioner?.userId]);
-
+  // calling centralized getUserSyncStatus without pushing offline data
   useEffect(() => {
     if (isOnline && !isCoach && practitioner) {
-      getUserSyncStatus();
+      appDispatch(triggerBackgroundSync({ includeOfflineSyncData: false }));
     }
   }, [practitioner?.userId]);
 
@@ -1000,41 +932,6 @@ export const Dashboard: React.FC = () => {
       }
     }
   };
-
-  const hasShownModal = useRef(false);
-
-  useEffect(() => {
-    if (
-      !hasShownModal.current && // ← only once per mount (or reset when needed)
-      isOnline &&
-      shouldUserSyncOnline
-    ) {
-      hasShownModal.current = true; // mark as shown
-
-      dialog({
-        position: DialogPosition.Middle,
-        blocking: true,
-        render: (closeDialog) => (
-          <SyncTimeExceeded
-            onSubmit={async () => {
-              if (practitioner?.isPrincipal === true) {
-                await appDispatch(syncThunkActions.syncOfflineData({}));
-              } else {
-                await appDispatch(
-                  syncThunkActions.syncOfflineDataForPractitioner({})
-                );
-              }
-
-              await resetAppStore();
-              await resetAuth();
-              history.push(ROUTES.LOGIN);
-              closeDialog();
-            }}
-          />
-        ),
-      });
-    }
-  }, [isOnline, shouldUserSyncOnline]);
 
   const goToProfile = () => {
     const profileRoute = userData?.roles?.some(
