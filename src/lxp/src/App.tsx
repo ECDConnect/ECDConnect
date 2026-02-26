@@ -23,7 +23,6 @@ import { LoginModal } from './pages/auth/login-modal/login-modal';
 import { authSelectors } from './store/auth';
 import { differenceInHours, isSameDay } from 'date-fns';
 import { useAppDispatch } from './store';
-import { practitionerSelectors } from './store/practitioner';
 import { stopReportingRuntimeErrors } from 'react-error-overlay';
 import { useTenant } from './hooks/useTenant';
 import { Helmet } from 'react-helmet';

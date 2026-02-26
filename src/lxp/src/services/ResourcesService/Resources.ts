@@ -1,6 +1,6 @@
 import { PagedQueryInput } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
-import { Config } from '@ecdlink/core';
+import { Config, ResourceDto } from '@ecdlink/core';
 class ResourcesService {
   _accessToken: string;
 
@@ -17,7 +17,7 @@ class ResourcesService {
     startDate?: string | null,
     endDate?: string | null,
     pagingInput?: PagedQueryInput
-  ): Promise<any[]> {
+  ): Promise<ResourceDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `

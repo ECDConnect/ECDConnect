@@ -11,12 +11,10 @@ import { CalendarState } from './calendar.types';
 import { calendarConvert } from './calendar.util';
 import { CalendarEventModelInputModel } from '@ecdlink/core';
 import {
-  getActionName,
   setFulfilledThunkActionStatus,
   setRejectedThunkActionStatus,
   setThunkActionStatus,
 } from '../utils';
-import { Status, ThunkActionStatuses } from '../types';
 
 const initialState: CalendarState = {
   events: [],
@@ -36,7 +34,6 @@ const calendarSlice = createSlice({
     },
     resetCalendarState: (state) => {
       state.events = initialState.events || [];
-      state.eventTypes = initialState.eventTypes;
     },
   },
   extraReducers: (builder) => {

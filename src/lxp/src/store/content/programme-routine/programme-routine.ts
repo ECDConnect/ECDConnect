@@ -11,9 +11,9 @@ const programmeRoutineSlice = createSlice({
   name: 'programmeRoutine',
   initialState,
   reducers: {
-    resetProgrammeRoutineState: (state) => {
-      state.programmeRoutines = initialState.programmeRoutines;
-    },
+    // resetProgrammeRoutineState: (state) => {
+    //   state.programmeRoutines = initialState.programmeRoutines;
+    // },
   },
   extraReducers: (builder) => {
     builder.addCase(getProgrammeRoutines.fulfilled, (state, action) => {

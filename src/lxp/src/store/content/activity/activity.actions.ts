@@ -9,17 +9,17 @@ export const ActivitiesActions = {
 
 export const getActivities = createAsyncThunk<
   ActivityDto[],
-  { locale: string },
+  { locale: string; overrideCache?: boolean },
   ThunkApiType<RootState>
 >(
   ActivitiesActions.GET_ACTIVITIES,
-  async ({ locale }, { getState, rejectWithValue }) => {
+  async ({ locale, overrideCache }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       activityData: { activities: activitiesCache },
     } = getState();
 
-    if (!activitiesCache) {
+    if (!activitiesCache || !!overrideCache) {
       try {
         let activities: ActivityDto[] | undefined;
 

@@ -22,19 +22,12 @@ import {
   classroomsForCoachActions,
   classroomsForCoachThunkActions,
 } from '../classroomForCoach';
+import { UserSyncStatus } from '@ecdlink/graphql';
 
 type SyncStep = {
   title: string;
   action: AsyncThunk<boolean[] | any, any, any>;
 };
-
-interface UserSyncStatus {
-  syncChildren: boolean;
-  syncClassroom: boolean;
-  syncReportingPeriods: boolean;
-  syncPermissions: boolean;
-  syncPoints: boolean;
-}
 
 const isNetworkError = (error: unknown): boolean => {
   if (!(error instanceof Error)) return false;

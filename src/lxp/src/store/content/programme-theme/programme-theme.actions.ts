@@ -9,17 +9,17 @@ export const ProgrammeThemeActions = {
 
 export const getProgrammeThemes = createAsyncThunk<
   ProgrammeThemeDto[],
-  { locale: string },
+  { locale: string; overrideCache?: boolean },
   ThunkApiType<RootState>
 >(
   ProgrammeThemeActions.GET_PROGRAMME_THEMES,
-  async ({ locale }, { getState, rejectWithValue }) => {
+  async ({ locale, overrideCache }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       programmeThemeData: { programmeThemes: programmeThemeCache },
     } = getState();
 
-    if (!programmeThemeCache) {
+    if (!programmeThemeCache || !!overrideCache) {
       try {
         let programmeThemes: ProgrammeThemeDto[] | undefined;
 
