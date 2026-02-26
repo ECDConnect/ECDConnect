@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   StackedList,
   UserAlertListDataItem,
@@ -10,6 +10,7 @@ import {
   RoundIcon,
   DialogPosition,
   Dialog,
+  Alert,
 } from '@ecdlink/ui';
 import { getAvatarColor, useDialog } from '@ecdlink/core';
 import { useHistory } from 'react-router-dom';
@@ -36,6 +37,7 @@ import { userSelectors } from '@/store/user';
 import { InvitedPractitioner } from '@/pages/practitioner/practitioner-programme-information/practitioner-list/invited-practitioner/invited-practitioner';
 import { formatPhonenumberLocal } from '@utils/common/contact-details.utils';
 import { useTenant } from '@/hooks/useTenant';
+import { AlertSeverityType } from '@ecdlink/ui';
 
 export const PractitionersList: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -69,10 +71,6 @@ export const PractitionersList: React.FC = () => {
     }
   }, [errorDialog, isGetPractitionerRejected]);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [practitionerListData, setPractitionerListData] =
-    useState<UserAlertListDataItem[]>();
-
   const [practitionersMessages, setPractitionersMessages] = useState<any[]>();
 
   const handleClick = (practitionerId: string) => {
@@ -81,11 +79,14 @@ export const PractitionersList: React.FC = () => {
     });
   };
 
-  const handleInvitedPractitioner = (id?: string) => {
-    const selectedInvite = invites?.find((item) => item?.id === id);
-    setSelectedInvite(selectedInvite);
-    setPractitionerInviteModal(true);
-  };
+  const handleInvitedPractitioner = useCallback(
+    (id?: string) => {
+      const selected = invites?.find((item) => item?.id === id);
+      setSelectedInvite(selected);
+      setPractitionerInviteModal(true);
+    },
+    [invites]
+  );
 
   const getPractitionerColleagues = async () => {
     if (userAuth && isOnline) {
@@ -100,71 +101,6 @@ export const PractitionersList: React.FC = () => {
         );
       }
     }
-  };
-
-  useEffect(() => {
-    getPractitionerColleagues();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    const hasPractitioners =
-      (!!practitionersList?.length && !!practitionersMessages?.length) ||
-      !!invites?.length;
-    if (hasPractitioners) {
-      const practitionerListItem: UserAlertListDataItem[] = [];
-      for (const invite of invites) {
-        practitionerListItem.push({
-          id: invite.id,
-          profileDataUrl: '',
-          title: `${formatPhonenumberLocal(invite.user?.phoneNumber!!)}`,
-          subTitle: `Not on ECD Connect`,
-          profileText: `${formatPhonenumberLocal(invite.user?.phoneNumber!!)}`,
-          alertSeverity: 'error',
-          avatarColor: getAvatarColor() || '',
-          onActionClick: () => handleInvitedPractitioner(invite.id || ''),
-        });
-      }
-
-      if (practitionersList?.length) {
-        for (const practitioner of practitionersList) {
-          practitionerListItem.push(mapUserListDataItem(practitioner));
-        }
-      }
-      setPractitionerListData(practitionerListItem);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [practitionersList?.length, practitionersMessages, invites]);
-
-  const classroomsDetailsForPractitioner = async () => {
-    if (isOnline) {
-      const practitionersMessageData = await appDispatch(
-        practitionerThunkActions.getPractitionerDisplayMetrics({})
-      ).unwrap();
-
-      setPractitionersMessages(practitionersMessageData);
-      return practitionersMessageData;
-    }
-  };
-
-  useEffect(() => {
-    classroomsDetailsForPractitioner();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const showTrialPeriodCompleteProfileBlockingDialog = () => {
-    dialog({
-      blocking: true,
-      position: DialogPosition.Middle,
-      render: (onSubmit, onCancel) => {
-        return (
-          <JoinOrAddPreschoolModal
-            onSubmit={onSubmit}
-            isTrialPeriod={!!isTrialPeriod}
-          />
-        );
-      },
-    });
   };
 
   const mapUserListDataItem = (
@@ -202,6 +138,80 @@ export const PractitionersList: React.FC = () => {
       avatarColor: getAvatarColor() || '',
       onActionClick: () => handleClick(practitioner?.userId!),
     };
+  };
+
+  useEffect(() => {
+    getPractitionerColleagues();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const practitionerListData = useMemo<
+    UserAlertListDataItem[] | undefined
+  >(() => {
+    if (!invites && !practitionersList?.length) return undefined;
+
+    const existingUserIds = new Set(
+      (practitionersList || []).map((p) => p?.user?.id).filter(Boolean)
+    );
+
+    const inviteItems = (invites || [])
+      .filter((invite) => {
+        const userId = invite.user?.id;
+        return userId && !existingUserIds.has(userId);
+      })
+      .map((invite) => ({
+        id: invite.id,
+        profileDataUrl: undefined,
+        title: formatPhonenumberLocal(invite.user?.phoneNumber ?? ''),
+        subTitle: 'Not on ECD Connect',
+        profileText: formatPhonenumberLocal(invite.user?.phoneNumber ?? ''),
+        alertSeverity: 'error' as AlertSeverityType,
+        avatarColor: getAvatarColor() || '',
+        onActionClick: () => handleInvitedPractitioner(invite.id || ''),
+      }));
+
+    const practitionerItems = (practitionersList || []).map((p) =>
+      mapUserListDataItem(p)
+    );
+
+    return [...inviteItems, ...practitionerItems];
+  }, [
+    invites,
+    practitionersList,
+    practitionersMessages,
+    handleInvitedPractitioner,
+  ]);
+
+  const classroomsDetailsForPractitioner = async () => {
+    if (isOnline) {
+      const practitionersMessageData = await appDispatch(
+        practitionerThunkActions.getPractitionerDisplayMetrics({})
+      ).unwrap();
+
+      setPractitionersMessages(practitionersMessageData);
+      return practitionersMessageData;
+    }
+  };
+
+  useEffect(() => {
+    classroomsDetailsForPractitioner();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const showTrialPeriodCompleteProfileBlockingDialog = () => {
+    dialog({
+      blocking: true,
+      position: DialogPosition.Middle,
+      render: (onSubmit, onCancel) => {
+        return (
+          <JoinOrAddPreschoolModal
+            onSubmit={onSubmit}
+            isTrialPeriod={!!isTrialPeriod}
+          />
+        );
+      },
+    });
   };
 
   const handleReassignClass = () => {
