@@ -42,17 +42,17 @@ export const upsertCalendarEvents = createAsyncThunk<
 
 export const getCalendarEventTypes = createAsyncThunk<
   CalendarEventTypeDto[],
-  { locale: string },
+  { locale: string; overrideCache?: boolean },
   ThunkApiType<RootState>
 >(
   'getCalendarEventTypes',
-  async ({ locale }, { getState, rejectWithValue }) => {
+  async ({ locale, overrideCache }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       calendar: { eventTypes },
     } = getState();
 
-    if (!eventTypes || eventTypes.length === 0) {
+    if (!eventTypes || eventTypes.length === 0 || !!overrideCache) {
       try {
         let types: CalendarEventTypeDto[] | undefined;
 

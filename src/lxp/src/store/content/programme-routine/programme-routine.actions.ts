@@ -5,18 +5,18 @@ import { RootState, ThunkApiType } from '../../types';
 
 export const getProgrammeRoutines = createAsyncThunk<
   ProgrammeRoutineDto[],
-  { locale: string },
+  { locale: string; overrideCache?: boolean },
   ThunkApiType<RootState>
 >(
   'getProgrammeRoutines',
   // eslint-disable-next-line no-empty-pattern
-  async ({ locale }, { getState, rejectWithValue }) => {
+  async ({ locale, overrideCache }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       programmeRoutineData: { programmeRoutines: programmeRoutineCache },
     } = getState();
 
-    if (!programmeRoutineCache) {
+    if (!programmeRoutineCache || !!overrideCache) {
       try {
         let programmeRoutines: ProgrammeRoutineDto[] | undefined;
 

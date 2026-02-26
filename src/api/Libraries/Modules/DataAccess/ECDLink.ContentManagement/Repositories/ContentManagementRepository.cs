@@ -6,6 +6,7 @@ using ECDLink.Core.Caching.Configuration;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
+using ECDLink.DataAccessLayer.Entities;
 using ECDLink.EGraphQL.Constants;
 using ECDLink.Tenancy.Context;
 using Microsoft.EntityFrameworkCore;
@@ -1060,6 +1061,107 @@ namespace ECDLink.ContentManagement.Repositories
             _context.SaveChanges();
 
             return true;
+        }
+
+
+       public async Task<CmsSyncStatus> GetCmsSyncStatus(DateTime lastSync)
+        {
+            var tenantId = TenantExecutionContext.Tenant.Id;
+            var activitiesId = ContentTypeConstants.ActivityId;
+            var calendarEventTypeId = ContentTypeConstants.CalendarEventTypeId;
+            var storyBookId = ContentTypeConstants.StoryBookId;
+            var consentId = ContentTypeConstants.ConsentId;
+            var resourceLinkId = ContentTypeConstants.ResourceLinkId;
+            var resourcesId = ContentTypeConstants.ClassroomBusinessResourceId;
+            var progressTrackingAgeGroupId = ContentTypeConstants.ProgressTrackingAgeGroupId;
+            var programmeRoutineId = ContentTypeConstants.ProgrammeRoutineId;
+            var programmeThemeId = ContentTypeConstants.ThemeId;
+
+            var activitiesCount = await _context.ContentValues.FromSql($@"
+            SELECT DISTINCT c.""Id""
+            FROM ""ContentValue"" cv 
+            INNER JOIN ""Content"" c ON c.""Id"" = cv.""ContentId""
+            WHERE (cv.""TenantId"" = {tenantId} AND c.""IsActive"" = true AND c.""ContentTypeId"" = {activitiesId})
+            AND cv.""UpdatedDate"" > {lastSync}
+            ").CountAsync();
+
+            // not implementing tenantid
+            var calendarEventTypeCount = await _context.ContentValues.FromSql($@"
+            SELECT DISTINCT c.""Id""
+            FROM ""ContentValue"" cv 
+            INNER JOIN ""Content"" c ON c.""Id"" = cv.""ContentId""
+            WHERE (c.""IsActive"" = true AND c.""ContentTypeId"" = {calendarEventTypeId})
+            AND cv.""InsertedDate"" > {lastSync}
+            ").CountAsync();
+
+            var storyBookCount = await _context.ContentValues.FromSql($@"
+            SELECT DISTINCT c.""Id""
+            FROM ""ContentValue"" cv 
+            INNER JOIN ""Content"" c ON c.""Id"" = cv.""ContentId""
+            WHERE (cv.""TenantId"" = {tenantId} AND c.""IsActive"" = true AND c.""ContentTypeId"" = {storyBookId})
+            AND cv.""UpdatedDate"" > {lastSync}
+            ").CountAsync();
+
+            var consentCount = await _context.ContentValues.FromSql($@"
+            SELECT DISTINCT c.""Id""
+            FROM ""ContentValue"" cv 
+            INNER JOIN ""Content"" c ON c.""Id"" = cv.""ContentId""
+            WHERE (cv.""TenantId"" = {tenantId} AND c.""IsActive"" = true AND c.""ContentTypeId"" = {consentId})
+            AND cv.""UpdatedDate"" > {lastSync}
+            ").CountAsync();
+
+            var resourceLinkCount = await _context.ContentValues.FromSql($@"
+            SELECT DISTINCT c.""Id""
+            FROM ""ContentValue"" cv 
+            INNER JOIN ""Content"" c ON c.""Id"" = cv.""ContentId""
+            WHERE (cv.""TenantId"" = {tenantId} AND c.""IsActive"" = true AND c.""ContentTypeId"" = {resourceLinkId})
+            AND cv.""UpdatedDate"" > {lastSync}
+            ").CountAsync();
+
+            var resourceCount = await _context.ContentValues.FromSql($@"
+            SELECT DISTINCT c.""Id""
+            FROM ""ContentValue"" cv 
+            INNER JOIN ""Content"" c ON c.""Id"" = cv.""ContentId""
+            WHERE (cv.""TenantId"" = {tenantId} AND c.""IsActive"" = true AND c.""ContentTypeId"" = {resourcesId})
+            AND cv.""UpdatedDate"" > {lastSync}
+            ").CountAsync();
+
+            var progressTrackingAgeGroupCount = await _context.ContentValues.FromSql($@"
+            SELECT DISTINCT c.""Id""
+            FROM ""ContentValue"" cv 
+            INNER JOIN ""Content"" c ON c.""Id"" = cv.""ContentId""
+            WHERE (cv.""TenantId"" = {tenantId} AND c.""IsActive"" = true AND c.""ContentTypeId"" = {progressTrackingAgeGroupId})
+            AND cv.""UpdatedDate"" > {lastSync}
+            ").CountAsync();
+
+            var programmeRoutineCount = await _context.ContentValues.FromSql($@"
+            SELECT DISTINCT c.""Id""
+            FROM ""ContentValue"" cv 
+            INNER JOIN ""Content"" c ON c.""Id"" = cv.""ContentId""
+            WHERE (cv.""TenantId"" = {tenantId} AND c.""IsActive"" = true AND c.""ContentTypeId"" = {programmeRoutineId})
+            AND cv.""UpdatedDate"" > {lastSync}
+            ").CountAsync();
+
+            var programmeThemeCount = await _context.ContentValues.FromSql($@"
+            SELECT DISTINCT c.""Id""
+            FROM ""ContentValue"" cv 
+            INNER JOIN ""Content"" c ON c.""Id"" = cv.""ContentId""
+            WHERE (cv.""TenantId"" = {tenantId} AND c.""IsActive"" = true AND c.""ContentTypeId"" = {programmeThemeId})
+            AND cv.""UpdatedDate"" > {lastSync}
+            ").CountAsync();
+
+            return new CmsSyncStatus
+            {
+                SyncActivities = activitiesCount >= 1,
+                SyncCalendarEventTypes = calendarEventTypeCount >= 1,
+                SyncStoryBooks = storyBookCount >= 1,
+                SyncConsent = consentCount >= 1,
+                SyncResourceLinks = resourceLinkCount >= 1,
+                SyncResources = resourceCount >= 1,
+                SyncAgeGroups = progressTrackingAgeGroupCount >= 1,
+                SyncProgrammeRoutines = programmeRoutineCount >= 1,
+                SyncProgrammeThemes = programmeThemeCount >= 1
+            };
         }
     }
 }
