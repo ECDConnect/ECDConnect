@@ -107,8 +107,6 @@ export const ProgressViewReportsSummary: React.FC = () => {
     });
   };
 
-  console.log('childReports', childReports);
-
   return (
     <BannerWrapper
       size="medium"

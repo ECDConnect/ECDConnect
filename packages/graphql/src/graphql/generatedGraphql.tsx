@@ -17,9 +17,12 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
+  /** The `DateTime` scalar represents an ISO-8601 compliant date time type. */
   DateTime: any;
+  /** The built-in `Decimal` scalar type. */
   Decimal: any;
   UUID: any;
+  /** The `Upload` scalar type represents a file upload. */
   Upload: any;
 };
 
@@ -137,6 +140,22 @@ export type ActionItemMissedProgressReportsDisplay = {
   subject?: Maybe<Scalars['String']>;
   userId?: Maybe<Scalars['UUID']>;
   userType?: Maybe<Scalars['String']>;
+};
+
+export enum ActionItemType {
+  AttendanceRate = 'ATTENDANCE_RATE',
+  AttendanceRegistersNotSaved = 'ATTENDANCE_REGISTERS_NOT_SAVED',
+  ContactMade = 'CONTACT_MADE',
+  IncomeStatemeent = 'INCOME_STATEMEENT',
+  MissedProgressReports = 'MISSED_PROGRESS_REPORTS',
+  ProgressSummary = 'PROGRESS_SUMMARY',
+}
+
+export type ActionItemTypeOperationFilterInput = {
+  eq?: InputMaybe<ActionItemType>;
+  in?: InputMaybe<Array<ActionItemType>>;
+  neq?: InputMaybe<ActionItemType>;
+  nin?: InputMaybe<Array<ActionItemType>>;
 };
 
 export type Activity = {
@@ -1965,6 +1984,20 @@ export type ClassroomSortInput = {
   userId?: InputMaybe<SortEnumType>;
 };
 
+export type CmsSyncStatus = {
+  __typename?: 'CmsSyncStatus';
+  syncActivities: Scalars['Boolean'];
+  syncAgeGroups: Scalars['Boolean'];
+  syncCalendarEventTypes: Scalars['Boolean'];
+  syncConsent: Scalars['Boolean'];
+  syncHolidays: Scalars['Boolean'];
+  syncProgrammeRoutines: Scalars['Boolean'];
+  syncProgrammeThemes: Scalars['Boolean'];
+  syncResourceLinks: Scalars['Boolean'];
+  syncResources: Scalars['Boolean'];
+  syncStoryBooks: Scalars['Boolean'];
+};
+
 export type Coach = {
   __typename?: 'Coach';
   aboutInfo?: Maybe<Scalars['String']>;
@@ -1985,6 +2018,71 @@ export type Coach = {
   updatedDate: Scalars['DateTime'];
   user?: Maybe<ApplicationUser>;
   userId?: Maybe<Scalars['UUID']>;
+};
+
+export type CoachContact = {
+  __typename?: 'CoachContact';
+  actionItemType: ActionItemType;
+  coach?: Maybe<Coach>;
+  coachId: Scalars['UUID'];
+  contactedDate: Scalars['DateTime'];
+  id: Scalars['UUID'];
+  insertedDate: Scalars['DateTime'];
+  isActive: Scalars['Boolean'];
+  period: Scalars['DateTime'];
+  practitioner?: Maybe<Practitioner>;
+  practitionerId?: Maybe<Scalars['UUID']>;
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+  userId?: Maybe<Scalars['UUID']>;
+};
+
+export type CoachContactFilterInput = {
+  actionItemType?: InputMaybe<ActionItemTypeOperationFilterInput>;
+  and?: InputMaybe<Array<CoachContactFilterInput>>;
+  coach?: InputMaybe<CoachFilterInput>;
+  coachId?: InputMaybe<ComparableGuidOperationFilterInput>;
+  contactedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  or?: InputMaybe<Array<CoachContactFilterInput>>;
+  period?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  practitioner?: InputMaybe<PractitionerFilterInput>;
+  practitionerId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  updatedBy?: InputMaybe<StringOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  userId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+};
+
+export type CoachContactInput = {
+  ActionItemType: ActionItemType;
+  Coach?: InputMaybe<CoachInput>;
+  CoachId: Scalars['UUID'];
+  ContactedDate: Scalars['DateTime'];
+  Id?: InputMaybe<Scalars['UUID']>;
+  IsActive: Scalars['Boolean'];
+  Period: Scalars['DateTime'];
+  Practitioner?: InputMaybe<PractitionerInput>;
+  PractitionerId?: InputMaybe<Scalars['UUID']>;
+  UpdatedBy?: InputMaybe<Scalars['String']>;
+  UserId?: InputMaybe<Scalars['UUID']>;
+};
+
+export type CoachContactSortInput = {
+  actionItemType?: InputMaybe<SortEnumType>;
+  coach?: InputMaybe<CoachSortInput>;
+  coachId?: InputMaybe<SortEnumType>;
+  contactedDate?: InputMaybe<SortEnumType>;
+  id?: InputMaybe<SortEnumType>;
+  insertedDate?: InputMaybe<SortEnumType>;
+  isActive?: InputMaybe<SortEnumType>;
+  period?: InputMaybe<SortEnumType>;
+  practitioner?: InputMaybe<PractitionerSortInput>;
+  practitionerId?: InputMaybe<SortEnumType>;
+  updatedBy?: InputMaybe<SortEnumType>;
+  updatedDate?: InputMaybe<SortEnumType>;
+  userId?: InputMaybe<SortEnumType>;
 };
 
 export type CoachFeedback = {
@@ -3335,17 +3433,27 @@ export type FormInput = {
 
 export type FormPage = {
   __typename?: 'FormPage';
+  canSkip?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
   formQuestions?: Maybe<Array<Maybe<FormQuestion>>>;
   id?: Maybe<Scalars['Int']>;
+  info?: Maybe<Scalars['String']>;
+  isScoreResult?: Maybe<Scalars['String']>;
+  isScored?: Maybe<Scalars['String']>;
+  multiAnswers?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
   stepNr?: Maybe<Scalars['String']>;
   updatedDate?: Maybe<Scalars['String']>;
 };
 
 export type FormPageInput = {
+  canSkip?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   formQuestions?: InputMaybe<Scalars['String']>;
+  info?: InputMaybe<Scalars['String']>;
+  isScoreResult?: InputMaybe<Scalars['String']>;
+  isScored?: InputMaybe<Scalars['String']>;
+  multiAnswers?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   stepNr?: InputMaybe<Scalars['String']>;
   updatedDate?: InputMaybe<Scalars['String']>;
@@ -3357,6 +3465,7 @@ export type FormQuestion = {
   description?: Maybe<Scalars['String']>;
   formQuestionOptions?: Maybe<Array<Maybe<FormQuestionOption>>>;
   id?: Maybe<Scalars['Int']>;
+  minValue?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
   updatedDate?: Maybe<Scalars['String']>;
 };
@@ -3365,6 +3474,7 @@ export type FormQuestionInput = {
   answerType?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   formQuestionOptions?: InputMaybe<Scalars['String']>;
+  minValue?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   updatedDate?: InputMaybe<Scalars['String']>;
 };
@@ -4517,6 +4627,7 @@ export type Mutation = {
   createClassroomBusinessResource?: Maybe<Scalars['String']>;
   createClassroomGroup?: Maybe<ClassroomGroup>;
   createCoach?: Maybe<Coach>;
+  createCoachContact?: Maybe<CoachContact>;
   createCoachFeedback?: Maybe<CoachFeedback>;
   createCoachFeedbackType?: Maybe<CoachFeedbackType>;
   createCoachingCircleTopics?: Maybe<Scalars['String']>;
@@ -4636,6 +4747,7 @@ export type Mutation = {
   deleteClassroomBusinessResource?: Maybe<Scalars['Boolean']>;
   deleteClassroomGroup?: Maybe<Scalars['Boolean']>;
   deleteCoach?: Maybe<Scalars['Boolean']>;
+  deleteCoachContact?: Maybe<Scalars['Boolean']>;
   deleteCoachFeedback?: Maybe<Scalars['Boolean']>;
   deleteCoachFeedbackType?: Maybe<Scalars['Boolean']>;
   deleteCoachingCircleTopics?: Maybe<Scalars['Boolean']>;
@@ -4773,6 +4885,7 @@ export type Mutation = {
   restartVisit?: Maybe<BasicVisitModel>;
   revertTenantSettingsToDefault?: Maybe<TenantInternalModel>;
   saveBulkMessagesForAdmin: Scalars['Boolean'];
+  saveCoachContact: Scalars['Boolean'];
   saveCoachFeedback?: Maybe<CoachFeedback>;
   saveCommunityProfile?: Maybe<CommunityProfileModel>;
   saveCommunityProfileConnections?: Maybe<
@@ -4814,6 +4927,7 @@ export type Mutation = {
   updateCoach?: Maybe<Coach>;
   updateCoachAboutInfo?: Maybe<Coach>;
   updateCoachCommunityTabStatus?: Maybe<Coach>;
+  updateCoachContact?: Maybe<CoachContact>;
   updateCoachFeedback?: Maybe<CoachFeedback>;
   updateCoachFeedbackType?: Maybe<CoachFeedbackType>;
   updateCoachingCircleTopics?: Maybe<CoachingCircleTopics>;
@@ -5222,6 +5336,10 @@ export type MutationCreateClassroomGroupArgs = {
 
 export type MutationCreateCoachArgs = {
   input?: InputMaybe<CoachInput>;
+};
+
+export type MutationCreateCoachContactArgs = {
+  input?: InputMaybe<CoachContactInput>;
 };
 
 export type MutationCreateCoachFeedbackArgs = {
@@ -5762,6 +5880,10 @@ export type MutationDeleteClassroomGroupArgs = {
 };
 
 export type MutationDeleteCoachArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDeleteCoachContactArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
 
@@ -6394,6 +6516,12 @@ export type MutationSaveBulkMessagesForAdminArgs = {
   input?: InputMaybe<MessageLogModelInput>;
 };
 
+export type MutationSaveCoachContactArgs = {
+  actionItemType: Scalars['Int'];
+  period: Scalars['DateTime'];
+  practitionerId: Scalars['UUID'];
+};
+
 export type MutationSaveCoachFeedbackArgs = {
   input?: InputMaybe<CoachFeedbackInputModelInput>;
 };
@@ -6592,6 +6720,11 @@ export type MutationUpdateCoachAboutInfoArgs = {
 
 export type MutationUpdateCoachCommunityTabStatusArgs = {
   coachUserId: Scalars['UUID'];
+};
+
+export type MutationUpdateCoachContactArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  input?: InputMaybe<CoachContactInput>;
 };
 
 export type MutationUpdateCoachFeedbackArgs = {
@@ -9247,6 +9380,7 @@ export type Query = {
   GetAllClassroomBusinessResource: Array<Maybe<ClassroomBusinessResource>>;
   GetAllClassroomGroup?: Maybe<Array<Maybe<ClassroomGroup>>>;
   GetAllCoach?: Maybe<Array<Maybe<Coach>>>;
+  GetAllCoachContact?: Maybe<Array<Maybe<CoachContact>>>;
   GetAllCoachFeedback?: Maybe<Array<Maybe<CoachFeedback>>>;
   GetAllCoachFeedbackType?: Maybe<Array<Maybe<CoachFeedbackType>>>;
   GetAllCoachingCircleTopics: Array<Maybe<CoachingCircleTopics>>;
@@ -9376,6 +9510,7 @@ export type Query = {
   GetClassroomById?: Maybe<Classroom>;
   GetClassroomGroupById?: Maybe<ClassroomGroup>;
   GetCoachById?: Maybe<Coach>;
+  GetCoachContactById?: Maybe<CoachContact>;
   GetCoachFeedbackById?: Maybe<CoachFeedback>;
   GetCoachFeedbackTypeById?: Maybe<CoachFeedbackType>;
   GetCoachingCircleTopicsById: Array<Maybe<CoachingCircleTopics>>;
@@ -9527,6 +9662,7 @@ export type Query = {
   classroomAttendanceOverviewReport?: Maybe<ClassroomGroupChildAttendanceReportOverviewModel>;
   classroomForUser?: Maybe<ClassroomModel>;
   classroomGroupsForUser?: Maybe<Array<Maybe<ClassroomGroupModel>>>;
+  cmsSyncStatus?: Maybe<CmsSyncStatus>;
   coachByCoachUserId?: Maybe<Coach>;
   coachByPractitionerId?: Maybe<Coach>;
   coachByUserId?: Maybe<Coach>;
@@ -9553,6 +9689,7 @@ export type Query = {
   countClassroom?: Maybe<Scalars['Int']>;
   countClassroomGroup?: Maybe<Scalars['Int']>;
   countCoach?: Maybe<Scalars['Int']>;
+  countCoachContact?: Maybe<Scalars['Int']>;
   countCoachFeedback?: Maybe<Scalars['Int']>;
   countCoachFeedbackType?: Maybe<Scalars['Int']>;
   countCommunityProfile?: Maybe<Scalars['Int']>;
@@ -9826,6 +9963,12 @@ export type QueryGetAllCoachArgs = {
   order?: InputMaybe<Array<CoachSortInput>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<CoachFilterInput>;
+};
+
+export type QueryGetAllCoachContactArgs = {
+  order?: InputMaybe<Array<CoachContactSortInput>>;
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<CoachContactFilterInput>;
 };
 
 export type QueryGetAllCoachFeedbackArgs = {
@@ -10464,6 +10607,11 @@ export type QueryGetClassroomGroupByIdArgs = {
 export type QueryGetCoachByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<CoachFilterInput>;
+};
+
+export type QueryGetCoachContactByIdArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  where?: InputMaybe<CoachContactFilterInput>;
 };
 
 export type QueryGetCoachFeedbackByIdArgs = {
@@ -11205,6 +11353,10 @@ export type QueryClassroomGroupsForUserArgs = {
   userId: Scalars['UUID'];
 };
 
+export type QueryCmsSyncStatusArgs = {
+  lastSync: Scalars['DateTime'];
+};
+
 export type QueryCoachByCoachUserIdArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -11321,6 +11473,11 @@ export type QueryCountClassroomGroupArgs = {
 };
 
 export type QueryCountCoachArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountCoachContactArgs = {
   pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ComparableInt32OperationFilterInput>;
 };
@@ -11695,6 +11852,7 @@ export type QueryDisplayMetricsArgs = {
 };
 
 export type QueryHasContentTypeBeenTranslatedArgs = {
+  ageGroup: Scalars['Int'];
   id: Scalars['Int'];
   localeId: Scalars['UUID'];
 };

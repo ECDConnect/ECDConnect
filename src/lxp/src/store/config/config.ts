@@ -45,7 +45,10 @@ import {
   programmeRoutinePersistConfig,
   programmeRoutineReducer,
 } from '../content/programme-routine/programme-routine';
-import { programmeThemeReducer } from '../content/programme-theme/programme-theme';
+import {
+  programmeThemePersistConfig,
+  programmeThemeReducer,
+} from '../content/programme-theme/programme-theme';
 import { contentReportReducer } from '../content/report';
 import { contentReportPersistConfig } from '../content/report/report';
 import {
@@ -92,6 +95,10 @@ import { communityPersistConfig } from '../community/community';
 import { pqaPersistConfig, pqaReducer } from '../pqa/pqa';
 import { pointsPersistConfig, pointsReducer } from '../points/points';
 import { tenantPersistConfig, tenantReducer } from '../tenant/tenant';
+import {
+  resourceReducer,
+  resourcesPersistConfig,
+} from '../resources/resources';
 
 const persistedReducers = {
   activityData: persistReducer(activityPersistConfig, activityReducer),
@@ -131,7 +138,11 @@ const persistedReducers = {
     programmeRoutinePersistConfig,
     programmeRoutineReducer
   ),
-  programmeThemeData: programmeThemeReducer,
+  programmeThemeData: persistReducer(
+    programmeThemePersistConfig,
+    programmeThemeReducer
+  ),
+  resourcesData: persistReducer(resourcesPersistConfig, resourceReducer),
   progressTracking: persistReducer(
     progressTrackingPersistConfig,
     progressTrackingReducer

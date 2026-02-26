@@ -5,6 +5,7 @@ import {
   setFulfilledThunkActionStatus,
   setThunkActionStatus,
 } from '@/store/utils';
+import localforage from 'localforage';
 
 const initialState: ProgrammeThemeState = {
   programmeThemes: undefined,
@@ -14,9 +15,9 @@ const programmeThemeSlice = createSlice({
   name: 'programmeTheme',
   initialState,
   reducers: {
-    resetProgrammeThemeState: (state) => {
-      state.programmeThemes = initialState.programmeThemes;
-    },
+    // resetProgrammeThemeState: (state) => {
+    //   state.programmeThemes = initialState.programmeThemes;
+    // },
   },
   extraReducers: (builder) => {
     setThunkActionStatus(builder, getProgrammeThemes);
@@ -30,4 +31,14 @@ const programmeThemeSlice = createSlice({
 const { reducer: programmeThemeReducer, actions: programmeThemeActions } =
   programmeThemeSlice;
 
-export { programmeThemeReducer, programmeThemeActions };
+const programmeThemePersistConfig = {
+  key: 'programmeTheme',
+  storage: localforage,
+  blacklist: [],
+};
+
+export {
+  programmeThemePersistConfig,
+  programmeThemeReducer,
+  programmeThemeActions,
+};
