@@ -216,11 +216,6 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     };
 
     if (isOnline) {
-      if (themes.length === 0) {
-        appDispatch(
-          programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
-        );
-      }
       navigateToTheme();
     } else {
       isWalkthrough ? navigateToTheme() : showOnlineOnly();
