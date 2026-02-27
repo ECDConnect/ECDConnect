@@ -486,11 +486,17 @@ class PQAService {
                 name
                 description
                 stepNr
+                isScored
+                isScoreResult
+                canSkip
+                multiAnswers
+                info
                 formQuestions {
                     id
                     name
                     description
                     answerType
+                    minValue
                     formQuestionOptions {
                         id
                         name
@@ -534,6 +540,9 @@ class PQAService {
               textQuestion
               textAnswer
               visitId
+              preschoolDetail
+              classroomDetail
+              safetyStandards
             }        
         }
           `,
@@ -572,6 +581,9 @@ class PQAService {
             textQuestion
             textAnswer
             visitId 
+            preschoolDetail
+            classroomDetail
+            safetyStandards
           }        
         }
       `,

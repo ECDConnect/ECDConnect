@@ -31,6 +31,8 @@ namespace EcdLink.Api.CoreApi
 
             public const string visitType_self_assessment = "self_assessment";
 
+            public const string visitType_health_and_safety_check = "health_and_safety_check";
+
             public const string visitType_practitioner_visit = "practitioner_visit";
             public const string visitType_practitioner_call = "practitioner_call";
             public const string answer_yes = "true";
@@ -413,7 +415,7 @@ namespace EcdLink.Api.CoreApi
             public const string franchisee_agreement_q1 = "I agree to take the actions described in the box above in order to meet & maintain all SmartSpace standards.";
             public const string franchisee_agreement_q2 = "I understand that the Club Coach will visit again within 2 weeks to make sure changes have been made and that my Practice Licence may be withdrawn if they have not.";
             public const string franchisee_agreement_q3 = "I understand that I cannot have more children in the programme than my space can accommodate.";
-
+            internal static string visitType_health_check;
         }
         
     
