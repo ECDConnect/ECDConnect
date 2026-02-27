@@ -36,25 +36,15 @@ import {
   classroomsForCoachReducer,
 } from '../classroomForCoach/classroomForCoach';
 import { activityReducer } from '../content/activity';
-import { activityPersistConfig } from '../content/activity/activity';
 import {
   contentConsentPersistConfig,
   contentConsentReducer,
 } from '../content/consent/consent';
-import {
-  programmeRoutinePersistConfig,
-  programmeRoutineReducer,
-} from '../content/programme-routine/programme-routine';
-import {
-  programmeThemePersistConfig,
-  programmeThemeReducer,
-} from '../content/programme-theme/programme-theme';
+import { programmeRoutineReducer } from '../content/programme-routine/programme-routine';
+import { programmeThemeReducer } from '../content/programme-theme/programme-theme';
 import { contentReportReducer } from '../content/report';
 import { contentReportPersistConfig } from '../content/report/report';
-import {
-  storyBookPersistConfig,
-  storyBookReducer,
-} from '../content/story-book/story-book';
+import { storyBookReducer } from '../content/story-book/story-book';
 import { documentPersistConfig, documentReducer } from '../document/document';
 import { notesPersistConfig, notesReducer } from '../notes/notes';
 import {
@@ -101,7 +91,6 @@ import {
 } from '../resources/resources';
 
 const persistedReducers = {
-  activityData: persistReducer(activityPersistConfig, activityReducer),
   analytics: persistReducer(analyticsPersistConfig, analyticsReducer),
   attendanceData: persistReducer(attendancePersistConfig, attendanceReducer),
   auth: persistReducer(authPersistConfig, authReducer),
@@ -134,14 +123,6 @@ const persistedReducers = {
     practitionerForCoachReducer
   ),
   programmeData: persistReducer(programmePersistConfig, programmeReducer),
-  programmeRoutineData: persistReducer(
-    programmeRoutinePersistConfig,
-    programmeRoutineReducer
-  ),
-  programmeThemeData: persistReducer(
-    programmeThemePersistConfig,
-    programmeThemeReducer
-  ),
   resourcesData: persistReducer(resourcesPersistConfig, resourceReducer),
   progressTracking: persistReducer(
     progressTrackingPersistConfig,
@@ -150,10 +131,14 @@ const persistedReducers = {
   settings: persistReducer(settingPersistConfig, settingReducer),
   statements: persistReducer(statementsPersistConfig, statementsReducer),
   staticData: persistReducer(staticDataPersistConfig, staticDataReducer),
-  storyBookData: persistReducer(storyBookPersistConfig, storyBookReducer),
   sync: syncReducer,
   tenant: persistReducer(tenantPersistConfig, tenantReducer),
   user: persistReducer(userPersistConfig, userReducer),
+  // Data for activities tab should not be stored in redux - datasets are too large
+  programmeThemeData: programmeThemeReducer,
+  activityData: activityReducer,
+  storyBookData: storyBookReducer,
+  programmeRoutineData: programmeRoutineReducer,
 };
 
 const rootReducer = combineReducers(persistedReducers);

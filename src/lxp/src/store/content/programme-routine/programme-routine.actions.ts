@@ -3,12 +3,16 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { ContentRoutineService } from '@services/ContentRoutineService';
 import { RootState, ThunkApiType } from '../../types';
 
+export const ProgrammeRoutineActions = {
+  GET_PROGRAMME_ROUTINES: 'getProgrammeRoutines',
+};
+
 export const getProgrammeRoutines = createAsyncThunk<
   ProgrammeRoutineDto[],
   { locale: string; overrideCache?: boolean },
   ThunkApiType<RootState>
 >(
-  'getProgrammeRoutines',
+  ProgrammeRoutineActions.GET_PROGRAMME_ROUTINES,
   // eslint-disable-next-line no-empty-pattern
   async ({ locale, overrideCache }, { getState, rejectWithValue }) => {
     const {
