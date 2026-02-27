@@ -13,16 +13,22 @@ import {
   classroomsThunkActions,
 } from './store/classroom';
 import { contentConsentThunkActions } from './store/content/consent';
-import { programmeRoutineThunkActions } from './store/content/programme-routine';
-import { programmeThemeThunkActions } from './store/content/programme-theme';
+import {
+  programmeRoutineActions,
+  programmeRoutineThunkActions,
+} from './store/content/programme-routine';
+import {
+  programmeThemeActions,
+  programmeThemeThunkActions,
+} from './store/content/programme-theme';
 import { contentReportActions } from './store/content/report';
-import { storyBookThunkActions } from './store/content/story-book';
+import {
+  storyBookActions,
+  storyBookThunkActions,
+} from './store/content/story-book';
 import { documentActions, documentThunkActions } from './store/document';
 import { notesActions, notesThunkActions } from './store/notes';
-import {
-  progressTrackingActions,
-  progressTrackingThunkActions,
-} from './store/progress-tracking';
+import { progressTrackingThunkActions } from './store/progress-tracking';
 import { settingActions, settingThunkActions } from './store/settings';
 import { staticDataThunkActions } from './store/static-data';
 import { userActions, userThunkActions } from './store/user';
@@ -45,7 +51,6 @@ import {
 } from './store/classroomForCoach';
 import { programmeActions, programmeThunkActions } from './store/programme';
 import { calendarActions, calendarThunkActions } from './store/calendar';
-import { activityThunkActions } from '@store/content/activity';
 import { authSelectors } from '@store/auth';
 import { statementsActions, statementsThunkActions } from '@store/statements';
 import {
@@ -61,6 +66,7 @@ import { pqaActions } from './store/pqa';
 import { googleLogout } from '@react-oauth/google';
 import { CmsSyncStatus } from '@ecdlink/graphql';
 import { resourcesThunkActions } from './store/resources';
+import { activityActions } from './store/content/activity';
 
 type IntialStoreSetupContextValues = {
   initLoading: boolean;
@@ -277,186 +283,61 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const initCmsStaticStoreSetup = async (cmsStatus: CmsSyncStatus) => {
     setStaticDataLoading(true);
 
-    const promises: Promise<any>[] = [];
-    if (cmsStatus?.syncConsent) {
-      promises.push(
-        appDispatch(
-          contentConsentThunkActions.getConsent({
-            locale: 'en-za',
-            overrideCache: true,
-          })
-        ).unwrap()
-      );
-    } else {
-      promises.push(
-        appDispatch(
-          contentConsentThunkActions.getConsent({ locale: 'en-za' })
-        ).unwrap()
-      );
-    }
+    const promises: Promise<any>[] = [
+      appDispatch(
+        contentConsentThunkActions.getConsent({
+          locale: 'en-za',
+          overrideCache: cmsStatus?.syncConsent,
+        })
+      ).unwrap(),
 
-    if (cmsStatus?.syncCalendarEventTypes) {
-      promises.push(
-        appDispatch(
-          calendarThunkActions.getCalendarEventTypes({
-            locale: 'en-za',
-            overrideCache: true,
-          })
-        ).unwrap()
-      );
-    } else {
-      promises.push(
-        appDispatch(
-          calendarThunkActions.getCalendarEventTypes({ locale: 'en-za' })
-        ).unwrap()
-      );
-    }
+      appDispatch(
+        calendarThunkActions.getCalendarEventTypes({
+          locale: 'en-za',
+          overrideCache: cmsStatus?.syncCalendarEventTypes,
+        })
+      ).unwrap(),
+
+      appDispatch(
+        staticDataThunkActions.getHolidays({
+          year: new Date().getFullYear(),
+          overrideCache: cmsStatus?.syncHolidays,
+        })
+      ).unwrap(),
+      appDispatch(
+        progressTrackingThunkActions.getResourceLinks({
+          locale: 'en-za',
+          force: cmsStatus?.syncResourceLinks,
+        })
+      ).unwrap(),
+      appDispatch(
+        resourcesThunkActions.getResources({
+          locale: ResourceLocaleId,
+          sectionType: 'business',
+          overrideCache: cmsStatus?.syncResources,
+        })
+      ).unwrap(),
+      appDispatch(
+        resourcesThunkActions.getResources({
+          locale: ResourceLocaleId,
+          sectionType: 'classroom',
+          overrideCache: cmsStatus?.syncResources,
+        })
+      ).unwrap(),
+    ];
+
+    // clear non persistent activity planning data if data changed in the database
     if (cmsStatus?.syncActivities) {
-      promises.push(
-        appDispatch(
-          activityThunkActions.getActivities({
-            locale: 'en-za',
-            overrideCache: true,
-          })
-        ).unwrap()
-      );
-    } else {
-      promises.push(
-        appDispatch(
-          activityThunkActions.getActivities({ locale: 'en-za' })
-        ).unwrap()
-      );
-    }
-    if (cmsStatus?.syncAgeGroups) {
-      promises.push(
-        appDispatch(
-          progressTrackingThunkActions.getProgressTrackingAgeGroups({
-            locale: 'en-za',
-            overrideCache: true,
-          })
-        ).unwrap()
-      );
-    } else {
-      promises.push(
-        appDispatch(
-          progressTrackingThunkActions.getProgressTrackingAgeGroups({
-            locale: 'en-za',
-          })
-        ).unwrap()
-      );
-    }
-    if (cmsStatus?.syncHolidays) {
-      promises.push(
-        appDispatch(
-          staticDataThunkActions.getHolidays({
-            year: new Date().getFullYear(),
-            overrideCache: true,
-          })
-        ).unwrap()
-      );
-    } else {
-      promises.push(
-        appDispatch(
-          staticDataThunkActions.getHolidays({ year: new Date().getFullYear() })
-        ).unwrap()
-      );
+      appDispatch(activityActions.resetActivityState());
     }
     if (cmsStatus?.syncProgrammeRoutines) {
-      promises.push(
-        appDispatch(
-          programmeRoutineThunkActions.getProgrammeRoutines({
-            locale: 'en-za',
-            overrideCache: true,
-          })
-        ).unwrap()
-      );
-    } else {
-      promises.push(
-        appDispatch(
-          programmeRoutineThunkActions.getProgrammeRoutines({ locale: 'en-za' })
-        ).unwrap()
-      );
+      appDispatch(programmeRoutineActions.resetProgrammeRoutine());
     }
-    if (cmsStatus?.syncProgrammeRoutines) {
-      promises.push(
-        appDispatch(
-          programmeThemeThunkActions.getProgrammeThemes({
-            locale: 'en-za',
-            overrideCache: true,
-          })
-        ).unwrap()
-      );
-    } else {
-      promises.push(
-        appDispatch(
-          programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
-        ).unwrap()
-      );
-    }
-    if (cmsStatus?.syncResourceLinks) {
-      promises.push(
-        appDispatch(
-          progressTrackingThunkActions.getResourceLinks({
-            locale: 'en-za',
-            force: true,
-          })
-        ).unwrap()
-      );
-    } else {
-      promises.push(
-        appDispatch(
-          progressTrackingThunkActions.getResourceLinks({ locale: 'en-za' })
-        ).unwrap()
-      );
+    if (cmsStatus?.syncProgrammeThemes) {
+      appDispatch(programmeThemeActions.resetProgrammeTheme());
     }
     if (cmsStatus?.syncStoryBooks) {
-      promises.push(
-        appDispatch(
-          storyBookThunkActions.getStoryBooks({
-            locale: 'en-za',
-            overrideCache: true,
-          })
-        ).unwrap()
-      );
-    } else {
-      promises.push(
-        appDispatch(
-          storyBookThunkActions.getStoryBooks({ locale: 'en-za' })
-        ).unwrap()
-      );
-    }
-    if (cmsStatus?.syncResources) {
-      promises.push(
-        appDispatch(
-          resourcesThunkActions.getResources({
-            locale: ResourceLocaleId,
-            sectionType: 'business',
-            overrideCache: true,
-          })
-        ).unwrap(),
-        appDispatch(
-          resourcesThunkActions.getResources({
-            locale: ResourceLocaleId,
-            sectionType: 'classroom',
-            overrideCache: true,
-          })
-        ).unwrap()
-      );
-    } else {
-      promises.push(
-        appDispatch(
-          resourcesThunkActions.getResources({
-            locale: ResourceLocaleId,
-            sectionType: 'business',
-          })
-        ).unwrap(),
-        appDispatch(
-          resourcesThunkActions.getResources({
-            locale: ResourceLocaleId,
-            sectionType: 'classroom',
-          })
-        ).unwrap()
-      );
+      appDispatch(storyBookActions.resetStoryBookState());
     }
 
     Promise.allSettled(promises).then((results) => {
@@ -474,6 +355,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       appDispatch(staticDataThunkActions.getDocumentTypes({})).unwrap(),
       appDispatch(staticDataThunkActions.getNoteTypes({})).unwrap(),
       appDispatch(staticDataThunkActions.getPermissions({})).unwrap(),
+      // move to communnity
       appDispatch(staticDataThunkActions.getCommunitySkills({})).unwrap(),
       appDispatch(staticDataThunkActions.getGenders({})).unwrap(),
       appDispatch(staticDataThunkActions.getRaces({})).unwrap(),
@@ -492,8 +374,14 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       appDispatch(
         staticDataThunkActions.getReasonsForPractitionerLeavingProgramme({})
       ).unwrap(),
+      // Progress tracking
       appDispatch(
         progressTrackingThunkActions.getProgressTrackingContent({
+          locale: 'en-za',
+        })
+      ).unwrap(),
+      appDispatch(
+        progressTrackingThunkActions.getProgressTrackingAgeGroups({
           locale: 'en-za',
         })
       ).unwrap(),

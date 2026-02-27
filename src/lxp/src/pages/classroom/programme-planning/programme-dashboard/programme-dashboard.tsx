@@ -38,6 +38,13 @@ import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { practitionerSelectors } from '@/store/practitioner';
 import { userGreetingName } from '@/utils/user/user-name-greeting.utils';
+import { activityThunkActions } from '@/store/content/activity';
+import { useAppDispatch } from '@/store';
+import { programmeRoutineThunkActions } from '@/store/content/programme-routine';
+import { programmeThemeThunkActions } from '@/store/content/programme-theme';
+import { storyBookThunkActions } from '@/store/content/story-book';
+import { ProgrammeThemeActions } from '@/store/content/programme-theme/programme-theme.actions';
+import { ProgrammeRoutineActions } from '@/store/content/programme-routine/programme-routine.actions';
 
 const { usePDF } = require('react-to-pdf');
 export interface iSkills {
@@ -56,8 +63,20 @@ export const ProgrammeDashboard: React.FC = () => {
     'storyBookData',
     StoryBookActions.GET_STORY_BOOKS
   );
+  const { isLoading: isLoadingThemes } = useThunkFetchCall(
+    'programmeThemeData',
+    ProgrammeThemeActions.GET_PROGRAMME_THEMES
+  );
+  const { isLoading: isLoadingRoutines } = useThunkFetchCall(
+    'programmeRoutineData',
+    ProgrammeRoutineActions.GET_PROGRAMME_ROUTINES
+  );
 
-  const isLoading = isLoadingActivities || isLoadingStoryBooks;
+  const isLoading =
+    isLoadingActivities ||
+    isLoadingStoryBooks ||
+    isLoadingThemes ||
+    isLoadingRoutines;
 
   const programmeStartDate = new Date();
 
@@ -74,6 +93,20 @@ export const ProgrammeDashboard: React.FC = () => {
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   const dialog = useDialog();
+  const appDispatch = useAppDispatch();
+
+  // ─── Data fetching ───────────────────────────────────────
+  useEffect(() => {
+    const locale = 'en-za';
+    if (isOnline) {
+      appDispatch(programmeThemeThunkActions.getProgrammeThemes({ locale }));
+      appDispatch(storyBookThunkActions.getStoryBooks({ locale }));
+      appDispatch(
+        programmeRoutineThunkActions.getProgrammeRoutines({ locale })
+      );
+      appDispatch(activityThunkActions.getActivities({ locale }));
+    }
+  }, [appDispatch, isOnline]);
 
   const isTrialPeriod = useIsTrialPeriod();
 

@@ -116,6 +116,14 @@ namespace ECDLink.ContentManagement.Repositories
                     _logger.LogWarning(errorMessage, contentTypeId);
                 }
 
+                // get all contentIds
+                var allContentIds = contents
+                    .Select(x => x.Id)
+                    .Distinct()
+                    .ToList();
+                // get dict languages for contentid 
+                var allLanguagesByContentIds = GetAllLanguagesByContentIds(allContentIds);
+
                 var allContentValuePairs = new List<object>();
 
                 foreach (var item in contents ?? new List<Content>())
@@ -137,10 +145,6 @@ namespace ECDLink.ContentManagement.Repositories
                      .Select(y => new { y.Id, y.ContentTypeField, y.Value, y.ContentId })
                      .OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId)
                      .ToList();
-
-                    //var allContents = contentValues.Union(noTenantContenValues).ToList();
-                    // Union just merges the two lists and no duplicates.  With ContentValues.Id in the object, it will never be duplicates.
-
 
                     var mergedContentValues = contentValues.ToDictionary(cv => new { cv.ContentTypeField, cv.ContentId });
                     foreach (var ntcv in noTenantContenValues)
@@ -166,7 +170,9 @@ namespace ECDLink.ContentManagement.Repositories
                     }
                     if (item.ContentValues.Any(x => x.ContentTypeField.FieldName == "availableLanguages"))
                     {
-                        var langsList = this.GetAllLanguagesForContentId(item.Id, item.ContentTypeId);
+                        var langsList = allLanguagesByContentIds.TryGetValue(item.Id, out var langs)
+                                        ? langs
+                                        : new List<Guid>();
                         if (!contentFieldValuePairs.ContainsKey("availableLanguages"))
                         {
                             //add list if non existent
@@ -286,6 +292,36 @@ namespace ECDLink.ContentManagement.Repositories
             return result;
         }
 
+        private Dictionary<int, List<Guid>> GetAllLanguagesByContentIds(
+                List<int> contentIds)  
+            {
+                if (contentIds == null || !contentIds.Any())
+                {
+                    return new Dictionary<int, List<Guid>>();
+                }
+
+                var languagesByContent = _context.ContentValues
+                    .Where(cv => contentIds.Contains(cv.ContentId))
+                    .Select(cv => new
+                    {
+                        cv.ContentId,
+                        cv.LocaleId
+                    })
+                    .AsEnumerable()
+                    .GroupBy(x => x.ContentId)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g
+                            .Select(x => x.LocaleId)
+                            .Where(lang => lang != null)
+                            .DistinctBy(lang => lang) 
+                            .ToList()
+                    );
+
+                return languagesByContent;
+            }
+
+        // This function is called from other extensions
         public List<Guid> GetAllLanguagesForContentId(int contentId, int contentTypeId)
         {
             var currentTenant = TenantExecutionContext.Tenant.Id;
@@ -485,6 +521,14 @@ namespace ECDLink.ContentManagement.Repositories
                 _logger.LogWarning(errorMessage, contentType.ToString(), key, value);
             }
 
+            // get all contentIds
+            var allContentIds = content
+                .Select(x => x.Id)
+                .Distinct()
+                .ToList();
+            // get dict languages for contentid 
+            var allLanguagesByContentIds = GetAllLanguagesByContentIds(allContentIds);
+
             var allContentValuePairs = new List<object>();
 
             foreach (var item in content)
@@ -513,7 +557,9 @@ namespace ECDLink.ContentManagement.Repositories
                 {
                     contentFieldValuePairs["updatedDate"] = item.UpdatedDate.ToString();
                 }
-                var langsList = this.GetAllLanguagesForContentId(item.Id, item.ContentTypeId);
+                var langsList = allLanguagesByContentIds.TryGetValue(item.Id, out var langs)
+                                        ? langs
+                                        : new List<Guid>();
                 if (!contentFieldValuePairs.ContainsKey("availableLanguages"))
                 {
                     //add list if non existent
@@ -653,6 +699,14 @@ namespace ECDLink.ContentManagement.Repositories
                 _logger.LogWarning(errorMessage, contentType.ToString(), "title", title);
             }
 
+            // get all contentIds
+            var allContentIds = content
+                .Select(x => x.Id)
+                .Distinct()
+                .ToList();
+            // get dict languages for contentid 
+            var allLanguagesByContentIds = GetAllLanguagesByContentIds(allContentIds);
+
             var allContentValuePairs = new List<object>();
 
             foreach (var item in content)
@@ -674,7 +728,9 @@ namespace ECDLink.ContentManagement.Repositories
                 {
                     contentFieldValuePairs["updatedDate"] = item.UpdatedDate.ToString();
                 }
-                var langsList = this.GetAllLanguagesForContentId(item.Id, item.ContentTypeId);
+                var langsList = allLanguagesByContentIds.TryGetValue(item.Id, out var langs)
+                                        ? langs
+                                        : new List<Guid>();
                 if (!contentFieldValuePairs.ContainsKey("availableLanguages"))
                 {
                     //add list if non existent
@@ -1039,14 +1095,6 @@ namespace ECDLink.ContentManagement.Repositories
                         .Where(x => x.Id == contentId)
                         .OrderBy(x => x.Id)
                         .FirstOrDefault();
-
-// I am not sure if default is applicable here!!!!
-            // Use global tenant as a fallback, mostly for static and dynamic links            
-            // content ??= _context.Contents
-            //               .Where(x => x.Id == contentId
-            //                 && x.TenantId == null)
-            //               .OrderBy(x => x.Id)
-            //               .FirstOrDefault();
 
             // No Content Found
             if (content == default)

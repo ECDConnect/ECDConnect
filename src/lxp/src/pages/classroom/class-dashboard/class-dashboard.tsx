@@ -1,9 +1,4 @@
-import {
-  LocalStorageKeys,
-  RoleSystemNameEnum,
-  useDialog,
-  usePrevious,
-} from '@ecdlink/core';
+import { LocalStorageKeys, RoleSystemNameEnum, useDialog } from '@ecdlink/core';
 import {
   ActionModal,
   BannerWrapper,
@@ -177,13 +172,6 @@ export const ClassDashboard: React.FC = () => {
   const setTabSelected = (tab: TabItem, tabIndex: number) => {
     setPreviousTabIndex(selectedTabIndex);
     setSelectedTabIndex(tabIndex);
-    if (tabIndex === TabsItems.ACTIVITES) {
-      if (themes.length === 0) {
-        appDispatch(
-          programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
-        );
-      }
-    }
   };
 
   const displayTutorial = (type?: string) => {
