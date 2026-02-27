@@ -16,7 +16,10 @@ import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { programmeThemeSelectors } from '@store/content/programme-theme';
+import {
+  programmeThemeSelectors,
+  programmeThemeThunkActions,
+} from '@store/content/programme-theme';
 import ROUTES from '@routes/routes';
 import ProgrammeWrapper from '../programme-dashboard/walkthrough/programme-wrapper';
 import { ProgrammeThemeRouteState } from './programme-theme.types';
@@ -30,6 +33,7 @@ import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { ProgrammeThemeActions } from '@/store/content/programme-theme/programme-theme.actions';
 import { useAppContext } from '@/walkthrougContext';
 import { dummyThemes } from '../programme-dashboard/walkthrough/dummy-content';
+import { useAppDispatch } from '@/store';
 
 const ProgrammeTheme: React.FC = () => {
   const dialog = useDialog();
@@ -54,6 +58,15 @@ const ProgrammeTheme: React.FC = () => {
     'programmeThemeData',
     ProgrammeThemeActions.GET_PROGRAMME_THEMES
   );
+
+  const appDispatch = useAppDispatch();
+
+  useEffect(() => {
+    const locale = 'en-za';
+    if (isOnline) {
+      appDispatch(programmeThemeThunkActions.getProgrammeThemes({ locale }));
+    }
+  }, [appDispatch, isOnline]);
 
   useEffect(() => {
     if (!location.state?.classroomGroupId) {
