@@ -74,6 +74,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 })
                 .ToListAsync();
 
+            var safetyAssessments = await dbContext.Visits
+                .AsNoTracking()
+                .Where(x => x.VisitType.Name == Constants.SSSettings.visitType_health_and_safety_check &&
+                            x.PractitionerId == practitioner.Id && x.IsActive)
+                .OrderByDescending(x => x.ActualVisitDate)
+                .Select(x => new
+                {
+                    x.Id,
+                    x.ActualVisitDate
+                })
+                .ToListAsync();
+
             timeline.AddRange(selfAssessments
                 .Where(x => x.ActualVisitDate.HasValue)
                 .Select(x => new JourneyTimeline
@@ -85,6 +97,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     Type = "Self-assessment",
                     VisitId = x.Id
                 }));
+
+            timeline.AddRange(safetyAssessments
+                .Where(x => x.ActualVisitDate.HasValue)
+                .Select(x => new JourneyTimeline
+                {
+                    Name = "Health and safety check completed",
+                    DateCompleted = x.ActualVisitDate.Value.ToString("dd MMMM yyyy"),
+                    IconName = "CheckIcon",
+                    DateValue = x.ActualVisitDate.Value,
+                    Type = "Health and safety check",
+                    VisitId = x.Id
+                }));
+
 
             return timeline.OrderBy(x => x.DateValue).ToList();
         }
