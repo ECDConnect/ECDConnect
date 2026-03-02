@@ -27,7 +27,7 @@ export const ProgressTrackingActions = {
 
 export const getProgressTrackingAgeGroups = createAsyncThunk<
   ProgressTrackingAgeGroupDto[],
-  { locale: string } & OverrideCache,
+  { locale: string; overrideCache?: boolean },
   ThunkApiType<RootState>
 >(
   ProgressTrackingActions.GET_PROGRESS_TRACKING_AGE_GROUPS,

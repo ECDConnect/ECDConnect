@@ -18,6 +18,7 @@ import { ComingSoon } from '@/pages/business/components/coming-soon/coming-soon'
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { useDialog } from '@ecdlink/core';
+import { resourcesSelectors } from '@/store/resources';
 
 export const Resources = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -25,13 +26,15 @@ export const Resources = () => {
   const [locale, setLocale] = useState<string>(
     '9688cd08-adef-408c-9d34-5d75ae5c44df'
   );
-  const [resources, setResources] = useState<any[]>([]);
+  // const [resources, setResources] = useState<any[]>([]);
   const [resourcesLikedByUser, setResourcesLikedByUser] = useState<any[]>([]);
   const [viewAllResources, setViewAllResources] = useState(false);
   const [resourceTypeItem, setResourceTypeItem] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { isOnline } = useOnlineStatus();
   const dialog = useDialog();
+
+  const resources = useSelector(resourcesSelectors.getClassroomResources);
 
   const activitiesResources = useMemo(
     () =>
@@ -60,15 +63,15 @@ export const Resources = () => {
     [resources]
   );
 
-  const handleGetResources = useCallback(async () => {
-    const response = await new ResourcesService(
-      userAuth?.auth_token!
-    )?.getResources(locale, 'classroom', '', [], [], null, null);
+  // const handleGetResources = useCallback(async () => {
+  //   const response = await new ResourcesService(
+  //     userAuth?.auth_token!
+  //   )?.getResources(locale, 'classroom', '', [], [], null, null);
 
-    if (response) {
-      setResources(response);
-    }
-  }, [locale, userAuth?.auth_token]);
+  //   if (response) {
+  //     setResources(response);
+  //   }
+  // }, [locale, userAuth?.auth_token]);
 
   const handleGetResourcesLikedByUser = useCallback(async () => {
     const response = await new ResourcesService(
@@ -82,10 +85,10 @@ export const Resources = () => {
 
   const handleGetResourcesQueries = useCallback(async () => {
     setIsLoading(true);
-    await handleGetResources();
+    // await handleGetResources();
     await handleGetResourcesLikedByUser();
     setIsLoading(false);
-  }, [handleGetResources, handleGetResourcesLikedByUser]);
+  }, [handleGetResourcesLikedByUser]);
 
   useEffect(() => {
     handleGetResourcesQueries();

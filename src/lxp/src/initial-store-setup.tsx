@@ -12,11 +12,7 @@ import {
   classroomsSelectors,
   classroomsThunkActions,
 } from './store/classroom';
-import { activityActions } from './store/content/activity';
-import {
-  contentConsentActions,
-  contentConsentThunkActions,
-} from './store/content/consent';
+import { contentConsentThunkActions } from './store/content/consent';
 import {
   programmeRoutineActions,
   programmeRoutineThunkActions,
@@ -32,12 +28,9 @@ import {
 } from './store/content/story-book';
 import { documentActions, documentThunkActions } from './store/document';
 import { notesActions, notesThunkActions } from './store/notes';
-import {
-  progressTrackingActions,
-  progressTrackingThunkActions,
-} from './store/progress-tracking';
+import { progressTrackingThunkActions } from './store/progress-tracking';
 import { settingActions, settingThunkActions } from './store/settings';
-import { staticDataActions, staticDataThunkActions } from './store/static-data';
+import { staticDataThunkActions } from './store/static-data';
 import { userActions, userThunkActions } from './store/user';
 import { coachActions, coachThunkActions } from './store/coach';
 import {
@@ -58,16 +51,22 @@ import {
 } from './store/classroomForCoach';
 import { programmeActions, programmeThunkActions } from './store/programme';
 import { calendarActions, calendarThunkActions } from './store/calendar';
-import { activityThunkActions } from '@store/content/activity';
 import { authSelectors } from '@store/auth';
 import { statementsActions, statementsThunkActions } from '@store/statements';
-import { LocalStorageKeys, RoleSystemNameEnum } from '@ecdlink/core';
+import {
+  LocalStorageKeys,
+  ResourceLocaleId,
+  RoleSystemNameEnum,
+} from '@ecdlink/core';
 import { communityActions, communityThunkActions } from './store/community';
 import { ClassroomService } from './services/ClassroomService';
 import { pointsActions, pointsThunkActions } from './store/points';
 import { notificationActions } from './store/notifications';
 import { pqaActions } from './store/pqa';
 import { googleLogout } from '@react-oauth/google';
+import { CmsSyncStatus } from '@ecdlink/graphql';
+import { resourcesThunkActions } from './store/resources';
+import { activityActions } from './store/content/activity';
 
 type IntialStoreSetupContextValues = {
   initLoading: boolean;
@@ -78,7 +77,6 @@ type IntialStoreSetupContextValues = {
   getLoadingMessage: () => string;
   syncClassroom: () => Promise<void>;
   refreshClassroom: () => Promise<void>;
-  refreshChildren: () => Promise<void>;
 };
 
 export const IntialStoreSetupContext =
@@ -128,15 +126,8 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   };
 
   const resetStaticStoreSetup = async () => {
-    appDispatch(activityActions.resetActivityState());
     appDispatch(analyticsActions.resetAnalyticsState());
-    appDispatch(contentConsentActions.resetContentConsentState());
-    appDispatch(programmeRoutineActions.resetProgrammeRoutineState());
-    appDispatch(programmeThemeActions.resetProgrammeThemeState());
     appDispatch(settingActions.resetSettingsState());
-    appDispatch(staticDataActions.resetHolidayState()); // we only reset the holidays - rest of static data can stay
-    appDispatch(statementsActions.resetStatementsStaticState());
-    appDispatch(storyBookActions.resetStoryBookState());
   };
 
   const resetAdditionalStoreSetup = async (isSync?: boolean) => {
@@ -161,20 +152,27 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     appDispatch(practitionerActions.resetPractitionerState());
     appDispatch(practitionerForCoachActions.resetPractitionerState());
     appDispatch(programmeActions.resetProgrammeState());
-    appDispatch(progressTrackingActions.resetProgressTrackingState());
     appDispatch(statementsActions.resetStatementsState());
   };
 
   const initStoreSetup = useCallback(async () => {
-    if (isOnline) {
-      setInitLoading(true);
-      await initStaticStoreSetup();
-      await initAdditionalStoreSetup();
-      appDispatch(settingActions.setLastDataSync());
-      setInitLoading(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOnline]);
+    if (!isOnline) return;
+
+    setInitLoading(true);
+
+    const cmsStatus = await appDispatch(
+      staticDataThunkActions.getCmsSyncStatus()
+    ).unwrap();
+    // Only update cms status - this is just
+    appDispatch(settingActions.setLastCmsDataSync());
+
+    await initCmsStaticStoreSetup(cmsStatus);
+    await initStaticStoreSetup();
+
+    await initAdditionalStoreSetup();
+
+    setInitLoading(false);
+  }, [isOnline, appDispatch]);
 
   const initAdditionalStoreSetup = async () => {
     // SPECIFIC DATA
@@ -282,18 +280,82 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     setOtherLoading(false);
   };
 
+  const initCmsStaticStoreSetup = async (cmsStatus: CmsSyncStatus) => {
+    setStaticDataLoading(true);
+
+    const promises: Promise<any>[] = [
+      appDispatch(
+        contentConsentThunkActions.getConsent({
+          locale: 'en-za',
+          overrideCache: cmsStatus?.syncConsent,
+        })
+      ).unwrap(),
+
+      appDispatch(
+        calendarThunkActions.getCalendarEventTypes({
+          locale: 'en-za',
+          overrideCache: cmsStatus?.syncCalendarEventTypes,
+        })
+      ).unwrap(),
+
+      appDispatch(
+        staticDataThunkActions.getHolidays({
+          year: new Date().getFullYear(),
+          overrideCache: cmsStatus?.syncHolidays,
+        })
+      ).unwrap(),
+      appDispatch(
+        progressTrackingThunkActions.getResourceLinks({
+          locale: 'en-za',
+          force: cmsStatus?.syncResourceLinks,
+        })
+      ).unwrap(),
+      appDispatch(
+        resourcesThunkActions.getResources({
+          locale: ResourceLocaleId,
+          sectionType: 'business',
+          overrideCache: cmsStatus?.syncResources,
+        })
+      ).unwrap(),
+      appDispatch(
+        resourcesThunkActions.getResources({
+          locale: ResourceLocaleId,
+          sectionType: 'classroom',
+          overrideCache: cmsStatus?.syncResources,
+        })
+      ).unwrap(),
+    ];
+
+    // clear non persistent activity planning data if data changed in the database
+    if (cmsStatus?.syncActivities) {
+      appDispatch(activityActions.resetActivityState());
+    }
+    if (cmsStatus?.syncProgrammeRoutines) {
+      appDispatch(programmeRoutineActions.resetProgrammeRoutine());
+    }
+    if (cmsStatus?.syncProgrammeThemes) {
+      appDispatch(programmeThemeActions.resetProgrammeTheme());
+    }
+    if (cmsStatus?.syncStoryBooks) {
+      appDispatch(storyBookActions.resetStoryBookState());
+    }
+
+    Promise.allSettled(promises).then((results) => {
+      setStaticDataLoading(false);
+    });
+  };
+
   const initStaticStoreSetup = async () => {
     setStaticDataLoading(true);
-    const promises = [
+
+    const promises: Promise<any>[] = [
       appDispatch(settingThunkActions.getSettings({})).unwrap(),
-      appDispatch(
-        staticDataThunkActions.getHolidays({ year: new Date().getFullYear() })
-      ).unwrap(),
       appDispatch(staticDataThunkActions.getProvinces({})).unwrap(),
       appDispatch(staticDataThunkActions.getGrants({})).unwrap(),
       appDispatch(staticDataThunkActions.getDocumentTypes({})).unwrap(),
       appDispatch(staticDataThunkActions.getNoteTypes({})).unwrap(),
       appDispatch(staticDataThunkActions.getPermissions({})).unwrap(),
+      // move to communnity
       appDispatch(staticDataThunkActions.getCommunitySkills({})).unwrap(),
       appDispatch(staticDataThunkActions.getGenders({})).unwrap(),
       appDispatch(staticDataThunkActions.getRaces({})).unwrap(),
@@ -301,21 +363,10 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       appDispatch(staticDataThunkActions.getLanguages({})).unwrap(),
       appDispatch(staticDataThunkActions.getEducationLevels({})).unwrap(),
       appDispatch(staticDataThunkActions.getWorkflowStatuses({})).unwrap(),
-
-      appDispatch(
-        contentConsentThunkActions.getConsent({ locale: 'en-za' })
-      ).unwrap(),
-      appDispatch(
-        calendarThunkActions.getCalendarEventTypes({
-          locale: 'en-za',
-        })
-      ).unwrap(),
       appDispatch(staticDataThunkActions.getProgrammeTypes({})).unwrap(),
-
       appDispatch(
         staticDataThunkActions.getProgrammeAttendanceReasons({})
       ).unwrap(),
-
       appDispatch(staticDataThunkActions.getReasonsForLeaving({})).unwrap(),
       appDispatch(
         staticDataThunkActions.getReasonsForPractitionerLeaving({})
@@ -323,37 +374,22 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       appDispatch(
         staticDataThunkActions.getReasonsForPractitionerLeavingProgramme({})
       ).unwrap(),
-      appDispatch(
-        activityThunkActions.getActivities({ locale: 'en-za' })
-      ).unwrap(),
-      appDispatch(
-        storyBookThunkActions.getStoryBooks({ locale: 'en-za' })
-      ).unwrap(),
-      appDispatch(
-        programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
-      ).unwrap(),
-      appDispatch(
-        progressTrackingThunkActions.getProgressTrackingAgeGroups({
-          locale: 'en-za',
-        })
-      ).unwrap(),
+      // Progress tracking
       appDispatch(
         progressTrackingThunkActions.getProgressTrackingContent({
           locale: 'en-za',
         })
       ).unwrap(),
       appDispatch(
-        progressTrackingThunkActions.getResourceLinks({
+        progressTrackingThunkActions.getProgressTrackingAgeGroups({
           locale: 'en-za',
         })
       ).unwrap(),
-      appDispatch(
-        programmeRoutineThunkActions.getProgrammeRoutines({ locale: 'en-za' })
-      ).unwrap(),
     ];
 
-    Promise.allSettled(promises);
-    setStaticDataLoading(false);
+    Promise.allSettled(promises).then((results) => {
+      setStaticDataLoading(false);
+    });
   };
 
   const syncClassroom = async () => {
@@ -363,28 +399,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     ).unwrap();
     await appDispatch(
       classroomsThunkActions.upsertClassroomGroupLearners({})
-    ).unwrap();
-  };
-
-  const refreshChildren = async () => {
-    appDispatch(settingActions.setLastDataSync());
-    if (isPrincipal) {
-      appDispatch(
-        childrenThunkActions.getChildrenForClassroom({ userId: userData?.id! })
-      ).unwrap();
-    } else {
-      appDispatch(
-        childrenThunkActions.getChildren({ overrideCache: true })
-      ).unwrap();
-    }
-    appDispatch(
-      childrenThunkActions.getChildren({ overrideCache: true })
-    ).unwrap();
-    appDispatch(
-      documentThunkActions.getDocuments({ overrideCache: true })
-    ).unwrap();
-    appDispatch(
-      classroomsThunkActions.getClassroomGroups({ overrideCache: true })
     ).unwrap();
   };
 
@@ -432,7 +446,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     getLoadingMessage,
     syncClassroom,
     refreshClassroom,
-    refreshChildren,
   };
 
   useEffect(() => {

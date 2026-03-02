@@ -1,5 +1,4 @@
 import { createSlice } from '@reduxjs/toolkit';
-import localForage from 'localforage';
 import { getActivities } from './activity.actions';
 import { ActivityState } from './activity.types';
 import {
@@ -30,10 +29,4 @@ const activitySlice = createSlice({
 
 const { reducer: activityReducer, actions: activityActions } = activitySlice;
 
-const activityPersistConfig = {
-  key: 'activity',
-  storage: localForage,
-  blacklist: [],
-};
-
-export { activityPersistConfig, activityReducer, activityActions };
+export { activityReducer, activityActions };

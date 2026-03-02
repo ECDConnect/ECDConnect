@@ -215,12 +215,6 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
 
   const onClickTheme = async () => {
     if (isOnline) {
-      if (themes.length === 0) {
-        await appDispatch(
-          programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
-        );
-      }
-
       if (!themeName || themeName === 'No theme') {
         history.push(ROUTES.PROGRAMMES.THEME, {
           classroomGroupId,

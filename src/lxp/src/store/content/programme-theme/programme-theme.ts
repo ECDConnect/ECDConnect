@@ -14,7 +14,7 @@ const programmeThemeSlice = createSlice({
   name: 'programmeTheme',
   initialState,
   reducers: {
-    resetProgrammeThemeState: (state) => {
+    resetProgrammeTheme: (state) => {
       state.programmeThemes = initialState.programmeThemes;
     },
   },
