@@ -827,7 +827,7 @@ export const CoachPractitionerJourney = () => {
       size="small"
       renderOverflow
       displayOffline={!isOnline}
-      title="SmartStarter journey"
+      title="Journey"
       subTitle={`${practitionerFirstName} ${practitioner?.user?.surname}`}
       onBack={() => history.goBack()}
       className="p-4"
@@ -882,11 +882,6 @@ export const CoachPractitionerJourney = () => {
             }
           />
           {renderAlert()}
-          <Typography
-            className="mt-4 mb-2"
-            type="h4"
-            text={`${practitionerFirstName} has been a SmartStarter for`}
-          />
           <div className="mb-4 flex gap-2">
             <p className="bg-primary text-14 w-fit w-auto rounded-2xl py-1 px-2 font-semibold text-white">
               {getFormattedDateInYearsMonthsAndDays(

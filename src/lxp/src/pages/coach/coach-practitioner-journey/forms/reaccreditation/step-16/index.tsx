@@ -38,7 +38,7 @@ export const Step16ReAccreditation = ({
   const firstName =
     smartStarter?.user?.firstName ||
     smartStarter?.firstName ||
-    'the smartStarter';
+    'the practitioner';
   const fullName = `${firstName} ${smartStarter?.user?.surname || ''}`;
 
   const { practitionerId } = useParams<PractitionerJourneyParams>();
@@ -234,7 +234,7 @@ export const Step16ReAccreditation = ({
         label={reAccreditationQuestionStep16}
         subLabel={
           isToRemoveSmartStarter
-            ? 'Discuss the decision with the SmartStarter.'
+            ? 'Discuss the decision with the practitioner.'
             : 'Discuss next steps and agreed priorities for action or improvement.'
         }
         placeholder={

@@ -95,7 +95,7 @@ export const CoachingAndVisitOrCallStep = ({
   const isReAccreditationFollowUp =
     activityName === visitTypes.reaccreditation.followUp.name;
 
-  const firstName = smartStarter?.user?.firstName || 'the smartStarter';
+  const firstName = smartStarter?.user?.firstName || 'the practitioner';
   const visitSection = 'Coaching visit or call';
 
   const { practitionerId } = useParams<PractitionerJourneyParams>();
