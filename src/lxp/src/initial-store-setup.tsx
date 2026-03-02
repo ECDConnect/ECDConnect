@@ -159,14 +159,13 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     if (!isOnline) return;
 
     setInitLoading(true);
-
     const cmsStatus = await appDispatch(
       staticDataThunkActions.getCmsSyncStatus()
     ).unwrap();
-    // Only update cms status - this is just
     appDispatch(settingActions.setLastCmsDataSync());
 
     await initCmsStaticStoreSetup(cmsStatus);
+
     await initStaticStoreSetup();
 
     await initAdditionalStoreSetup();
@@ -180,22 +179,35 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     setOtherLoading(true);
 
-    const promises: Promise<any>[] = [
-      appDispatch(practitionerThunkActions.getAllPractitioners({})).unwrap(),
-      appDispatch(documentThunkActions.getDocuments({})).unwrap(),
-      appDispatch(staticDataThunkActions.getRoles({})).unwrap(),
-      appDispatch(notesThunkActions.getNotes({})).unwrap(),
-      appDispatch(programmeThunkActions.getUserProgrammes({})).unwrap(),
-      appDispatch(userThunkActions.getUserConsents({})).unwrap(),
-      appDispatch(
-        calendarThunkActions.getCalendarEvents({
-          start: subMonths(
-            new Date(new Date().getFullYear(), new Date().getMonth(), 0),
-            1
+    const promises: Promise<any>[] = !isCoach
+      ? [
+          appDispatch(
+            practitionerThunkActions.getAllPractitioners({})
+          ).unwrap(),
+          appDispatch(documentThunkActions.getDocuments({})).unwrap(),
+          appDispatch(staticDataThunkActions.getRoles({})).unwrap(),
+          appDispatch(notesThunkActions.getNotes({})).unwrap(),
+          appDispatch(programmeThunkActions.getUserProgrammes({})).unwrap(),
+          appDispatch(userThunkActions.getUserConsents({})).unwrap(),
+          appDispatch(
+            calendarThunkActions.getCalendarEvents({
+              start: subMonths(
+                new Date(new Date().getFullYear(), new Date().getMonth(), 0),
+                1
+              ),
+            })
           ),
-        })
-      ),
-    ];
+        ]
+      : [
+          appDispatch(
+            calendarThunkActions.getCalendarEvents({
+              start: subMonths(
+                new Date(new Date().getFullYear(), new Date().getMonth(), 0),
+                1
+              ),
+            })
+          ),
+        ];
 
     if (isPrincipal) {
       promises.push(
@@ -283,48 +295,72 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const initCmsStaticStoreSetup = async (cmsStatus: CmsSyncStatus) => {
     setStaticDataLoading(true);
 
-    const promises: Promise<any>[] = [
-      appDispatch(
-        contentConsentThunkActions.getConsent({
-          locale: 'en-za',
-          overrideCache: cmsStatus?.syncConsent,
-        })
-      ).unwrap(),
+    const promises: Promise<any>[] = isCoach
+      ? [
+          appDispatch(
+            contentConsentThunkActions.getConsent({
+              locale: 'en-za',
+              overrideCache: cmsStatus?.syncConsent,
+            })
+          ).unwrap(),
 
-      appDispatch(
-        calendarThunkActions.getCalendarEventTypes({
-          locale: 'en-za',
-          overrideCache: cmsStatus?.syncCalendarEventTypes,
-        })
-      ).unwrap(),
+          appDispatch(
+            calendarThunkActions.getCalendarEventTypes({
+              locale: 'en-za',
+              overrideCache: cmsStatus?.syncCalendarEventTypes,
+            })
+          ).unwrap(),
 
-      appDispatch(
-        staticDataThunkActions.getHolidays({
-          year: new Date().getFullYear(),
-          overrideCache: cmsStatus?.syncHolidays,
-        })
-      ).unwrap(),
-      appDispatch(
-        progressTrackingThunkActions.getResourceLinks({
-          locale: 'en-za',
-          force: cmsStatus?.syncResourceLinks,
-        })
-      ).unwrap(),
-      appDispatch(
-        resourcesThunkActions.getResources({
-          locale: ResourceLocaleId,
-          sectionType: 'business',
-          overrideCache: cmsStatus?.syncResources,
-        })
-      ).unwrap(),
-      appDispatch(
-        resourcesThunkActions.getResources({
-          locale: ResourceLocaleId,
-          sectionType: 'classroom',
-          overrideCache: cmsStatus?.syncResources,
-        })
-      ).unwrap(),
-    ];
+          appDispatch(
+            staticDataThunkActions.getHolidays({
+              year: new Date().getFullYear(),
+              overrideCache: cmsStatus?.syncHolidays,
+            })
+          ).unwrap(),
+        ]
+      : [
+          appDispatch(
+            contentConsentThunkActions.getConsent({
+              locale: 'en-za',
+              overrideCache: cmsStatus?.syncConsent,
+            })
+          ).unwrap(),
+
+          appDispatch(
+            calendarThunkActions.getCalendarEventTypes({
+              locale: 'en-za',
+              overrideCache: cmsStatus?.syncCalendarEventTypes,
+            })
+          ).unwrap(),
+
+          appDispatch(
+            staticDataThunkActions.getHolidays({
+              year: new Date().getFullYear(),
+              overrideCache: cmsStatus?.syncHolidays,
+            })
+          ).unwrap(),
+
+          appDispatch(
+            progressTrackingThunkActions.getResourceLinks({
+              locale: 'en-za',
+              force: cmsStatus?.syncResourceLinks,
+            })
+          ).unwrap(),
+          appDispatch(
+            resourcesThunkActions.getResources({
+              locale: ResourceLocaleId,
+              sectionType: 'business',
+              overrideCache: cmsStatus?.syncResources,
+            })
+          ).unwrap(),
+          appDispatch(
+            resourcesThunkActions.getResources({
+              locale: ResourceLocaleId,
+              sectionType: 'classroom',
+              overrideCache: cmsStatus?.syncResources,
+            })
+          ).unwrap(),
+        ];
 
     // clear non persistent activity planning data if data changed in the database
     if (cmsStatus?.syncActivities) {
@@ -348,44 +384,46 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const initStaticStoreSetup = async () => {
     setStaticDataLoading(true);
 
-    const promises: Promise<any>[] = [
-      appDispatch(settingThunkActions.getSettings({})).unwrap(),
-      appDispatch(staticDataThunkActions.getProvinces({})).unwrap(),
-      appDispatch(staticDataThunkActions.getGrants({})).unwrap(),
-      appDispatch(staticDataThunkActions.getDocumentTypes({})).unwrap(),
-      appDispatch(staticDataThunkActions.getNoteTypes({})).unwrap(),
-      appDispatch(staticDataThunkActions.getPermissions({})).unwrap(),
-      // move to communnity
-      appDispatch(staticDataThunkActions.getCommunitySkills({})).unwrap(),
-      appDispatch(staticDataThunkActions.getGenders({})).unwrap(),
-      appDispatch(staticDataThunkActions.getRaces({})).unwrap(),
-      appDispatch(staticDataThunkActions.getRelations({})).unwrap(),
-      appDispatch(staticDataThunkActions.getLanguages({})).unwrap(),
-      appDispatch(staticDataThunkActions.getEducationLevels({})).unwrap(),
-      appDispatch(staticDataThunkActions.getWorkflowStatuses({})).unwrap(),
-      appDispatch(staticDataThunkActions.getProgrammeTypes({})).unwrap(),
-      appDispatch(
-        staticDataThunkActions.getProgrammeAttendanceReasons({})
-      ).unwrap(),
-      appDispatch(staticDataThunkActions.getReasonsForLeaving({})).unwrap(),
-      appDispatch(
-        staticDataThunkActions.getReasonsForPractitionerLeaving({})
-      ).unwrap(),
-      appDispatch(
-        staticDataThunkActions.getReasonsForPractitionerLeavingProgramme({})
-      ).unwrap(),
-      // Progress tracking
-      appDispatch(
-        progressTrackingThunkActions.getProgressTrackingContent({
-          locale: 'en-za',
-        })
-      ).unwrap(),
-      appDispatch(
-        progressTrackingThunkActions.getProgressTrackingAgeGroups({
-          locale: 'en-za',
-        })
-      ).unwrap(),
-    ];
+    const promises: Promise<any>[] = !isCoach
+      ? [
+          appDispatch(settingThunkActions.getSettings({})).unwrap(),
+          appDispatch(staticDataThunkActions.getProvinces({})).unwrap(),
+          appDispatch(staticDataThunkActions.getGrants({})).unwrap(),
+          appDispatch(staticDataThunkActions.getDocumentTypes({})).unwrap(),
+          appDispatch(staticDataThunkActions.getNoteTypes({})).unwrap(),
+          appDispatch(staticDataThunkActions.getPermissions({})).unwrap(),
+          // move to communnity
+          appDispatch(staticDataThunkActions.getCommunitySkills({})).unwrap(),
+          appDispatch(staticDataThunkActions.getGenders({})).unwrap(),
+          appDispatch(staticDataThunkActions.getRaces({})).unwrap(),
+          appDispatch(staticDataThunkActions.getRelations({})).unwrap(),
+          appDispatch(staticDataThunkActions.getLanguages({})).unwrap(),
+          appDispatch(staticDataThunkActions.getEducationLevels({})).unwrap(),
+          appDispatch(staticDataThunkActions.getWorkflowStatuses({})).unwrap(),
+          appDispatch(staticDataThunkActions.getProgrammeTypes({})).unwrap(),
+          appDispatch(
+            staticDataThunkActions.getProgrammeAttendanceReasons({})
+          ).unwrap(),
+          appDispatch(staticDataThunkActions.getReasonsForLeaving({})).unwrap(),
+          appDispatch(
+            staticDataThunkActions.getReasonsForPractitionerLeaving({})
+          ).unwrap(),
+          appDispatch(
+            staticDataThunkActions.getReasonsForPractitionerLeavingProgramme({})
+          ).unwrap(),
+          // Progress tracking
+          appDispatch(
+            progressTrackingThunkActions.getProgressTrackingContent({
+              locale: 'en-za',
+            })
+          ).unwrap(),
+          appDispatch(
+            progressTrackingThunkActions.getProgressTrackingAgeGroups({
+              locale: 'en-za',
+            })
+          ).unwrap(),
+        ]
+      : [appDispatch(settingThunkActions.getSettings({})).unwrap()];
 
     Promise.allSettled(promises).then((results) => {
       setStaticDataLoading(false);
