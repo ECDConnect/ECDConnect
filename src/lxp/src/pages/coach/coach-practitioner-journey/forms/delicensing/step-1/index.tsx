@@ -34,7 +34,7 @@ export const Step1Delicensing = ({
   const [question1, question2] = questions;
   const question1Answers = question1.answer as string[];
 
-  const firstName = smartStarter?.user?.firstName || 'The smartStarter';
+  const firstName = smartStarter?.user?.firstName || 'The practitioner';
   const fullName = `${firstName} ${smartStarter?.user?.surname || ''}`;
 
   const checkboxOptions = [

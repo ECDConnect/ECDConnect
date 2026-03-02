@@ -28,7 +28,7 @@ export const ReAccreditationSummaryStep1 = ({
   const firstName =
     smartStarter?.user?.firstName ||
     smartStarter?.firstName ||
-    'the smartStarter';
+    'the practitioner';
 
   const visitId = window.sessionStorage.getItem(practitionerVisitIdKey) || '';
 

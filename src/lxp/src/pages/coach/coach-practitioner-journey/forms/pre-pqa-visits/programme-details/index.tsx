@@ -56,7 +56,7 @@ export const ProgrammeDetails = ({
     { text: 'No', value: false, disabled: isView },
   ];
 
-  const name = smartStarter?.user?.firstName || 'the smartStarter';
+  const name = smartStarter?.user?.firstName || 'the practitioner';
   const visitSection = 'Programme details';
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
 

@@ -124,7 +124,7 @@ export const Step8ReAccreditation = ({
 
   const renderDialog = ({ index }: { index?: number }) => {
     let title = 'Check all of the statements that are true';
-    let detailText = `If you are not there for the whole session or do not see certain activities, ask the SmartStarter which statements are true for today’s session.
+    let detailText = `If you are not there for the whole session or do not see certain activities, ask the practitioner which statements are true for today’s session.
 
     See some suggested questions in the boxes below.`;
 

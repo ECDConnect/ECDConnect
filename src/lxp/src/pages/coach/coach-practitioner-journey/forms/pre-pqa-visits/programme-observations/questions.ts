@@ -7,12 +7,12 @@ export const questions = [
   {
     title: 'Use the daily routine:',
     subTitle:
-      'is the SmartStarter running the programme according to the daily routine?',
+      'is the practitioner running the programme according to the daily routine?',
   },
   {
     title: 'Use the message board:',
     subTitle:
-      'if you saw this, did the SmartStarter use the message board to give children information about the day?',
+      'if you saw this, did the practitioner use the message board to give children information about the day?',
   },
   {
     title: 'Unpack the playkit:',
@@ -27,22 +27,22 @@ export const questions = [
   {
     title: 'Participate in play:',
     subTitle:
-      'does the SmartStarter participate in the child’s play and get on their level?',
+      'does the practitioner participate in the child’s play and get on their level?',
   },
   {
     title: 'Talk in a warm, positive way:',
     subTitle:
-      'does the SmartStarter talk to the children in a warm, positive way?',
+      'does the practitioner talk to the children in a warm, positive way?',
   },
   {
     title: 'Giving children choice:',
     subTitle:
-      'does the SmartStarter give the children choice in what to play with and how to play with it? ',
+      'does the practitioner give the children choice in what to play with and how to play with it? ',
   },
   {
     title: 'Supervising children:',
     subTitle:
-      'did the SmartStarter make sure children were supervised at all times while you were there?',
+      'did the practitioner make sure children were supervised at all times while you were there?',
   },
   {
     title: 'Interesting learning space:',
@@ -52,21 +52,21 @@ export const questions = [
   {
     title: 'Caring for children:',
     subTitle:
-      'did the SmartStarter make children feel loved and comfort them when upset?',
+      'did the practitioner make children feel loved and comfort them when upset?',
   },
   {
     title: 'Encouraging talking:',
     subTitle:
-      'did the SmartStarter chat to the children and encourage conversation through questions? ',
+      'did the practitioner chat to the children and encourage conversation through questions? ',
   },
   {
     title: 'Story time:',
     subTitle:
-      'if you saw story time, did the SmartStarter share a story (book or oral) and encourage children to participate with questions and talking?',
+      'if you saw story time, did the practitioner share a story (book or oral) and encourage children to participate with questions and talking?',
   },
   {
     title: 'Free play:',
     subTitle:
-      'if you were there at free play time, did the SmartStarter give children at least 45 minutes to play and choose freely?',
+      'if you were there at free play time, did the practitioner give children at least 45 minutes to play and choose freely?',
   },
 ];
