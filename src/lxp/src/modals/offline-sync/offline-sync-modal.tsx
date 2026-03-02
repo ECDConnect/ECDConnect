@@ -39,19 +39,19 @@ const OfflineSyncModal: React.FC<OfflineSyncModalProps> = ({
     useAppSelector((state) => state.sync);
 
   const handleSync = async () => {
-    if (practitioner?.isPrincipal === true) {
-      await dispatch(syncThunkActions.syncOfflineData({}));
-      dispatch(settingActions.setLastDataSync());
-    } else {
-      dispatch(syncThunkActions.syncOfflineDataForPractitioner({}));
-    }
-    dispatch(settingActions.setLastDataSync());
+    // if (practitioner?.isPrincipal === true) {
+    //   await dispatch(syncThunkActions.syncOfflineData({}));
+    //   dispatch(settingActions.setLastDataSync());
+    // } else {
+    //   dispatch(syncThunkActions.syncOfflineDataForPractitioner({}));
+    // }
+    // dispatch(settingActions.setLastDataSync());
   };
 
   const handleOnErrorSubmit = () => {
     setUnableToSync(false);
     dispatch(syncActions.setError(undefined));
-    handleSync();
+    // handleSync();
   };
 
   const handleSyncSuccess = async () => {

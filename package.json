@@ -33,6 +33,7 @@
     "patch:fixups": "node ./patch-fixups.js",
     "setnode": "nvm use 20.19.2",
     "fixmodules": "xcopy node_modules.fixup\\20.x node_modules /s/e/y",
+    "serve:app:azure": "cd ./src/lxp && cross-env NODE_OPTIONS=--openssl-legacy-provider yarn serve:azure",
     "serve:app": "serve -s -l 3000 src\\lxp\\build",
     "serve:app-wl": "serve -s -l 3005 src\\lxp\\build",
     "serve:portal": "serve -s -l 3003 src\\admin-portal\\build",
