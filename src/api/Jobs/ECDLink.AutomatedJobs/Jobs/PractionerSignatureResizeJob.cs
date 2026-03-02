@@ -17,7 +17,7 @@ namespace ECDLink.AutomatedJobs.Jobs;
 
 public class PractitionerSignatureResizeJob : CronJobService
 {
-    private string _jobId = "ProfileImageResize";
+    private string _jobId = "PractitionerSignatureResize";
     public PractitionerSignatureResizeJob(IServiceScopeFactory scopeFactory,
         CronJobConfig<PractitionerSignatureResizeJob> config, ILogger<PractitionerSignatureResizeJob> logger)
             : base(scopeFactory, config, logger)
@@ -91,9 +91,9 @@ $@"
             using (MemoryStream inputStream = new MemoryStream(imageBytes))
             using (Image image = Image.Load(inputStream))
             {
-                if (image.Height < imageHeight)
+                if (image.Height <= imageHeight)
                 {
-                    _logger.LogInformation($"{id} image size: {imageBytes.Length} Width < 100 IGNORED");
+                    _logger.LogInformation($"{id} image size: {imageBytes.Length} Height <= 80 IGNORED");
                 }
                 else
                 {

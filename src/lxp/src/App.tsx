@@ -21,9 +21,7 @@ import InitialNotificationSetup from './initial-notifications-setup';
 import InitialStoreSetup from './initial-store-setup';
 import { LoginModal } from './pages/auth/login-modal/login-modal';
 import { authSelectors } from './store/auth';
-import { settingActions } from './store/settings';
 import { differenceInHours, isSameDay } from 'date-fns';
-import { syncThunkActions } from './store/sync';
 import { useAppDispatch } from './store';
 import { practitionerSelectors } from './store/practitioner';
 import { stopReportingRuntimeErrors } from 'react-error-overlay';
@@ -44,7 +42,6 @@ const App: React.FC = () => {
   const dispatch = useAppDispatch();
   const user = useSelector(authSelectors.getAuthUser);
   const userExpired = useSelector(authSelectors.getUserExpired);
-  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const [freeMemory, setFreeMemory] = useState(0);
   const [errorMessage, setErrorMessage] = useState(false);
 
@@ -173,7 +170,6 @@ const App: React.FC = () => {
     );
 
     if (!isSameDayItem || differenceInHoursBetweenItems > 6) {
-      handleSync();
       localStorage.setItem('appFocus', JSON.stringify(new Date()));
     }
   };
@@ -324,16 +320,6 @@ const App: React.FC = () => {
       clearTimeout(timeout);
     };
   }, [dialog]);
-
-  const handleSync = async () => {
-    if (practitioner?.isPrincipal === true) {
-      await dispatch(syncThunkActions.syncOfflineData({}));
-      dispatch(settingActions.setLastDataSync());
-    } else {
-      dispatch(syncThunkActions.syncOfflineDataForPractitioner({}));
-    }
-    dispatch(settingActions.setLastDataSync());
-  };
 
   const routerContent = (
     <IonReactRouter>

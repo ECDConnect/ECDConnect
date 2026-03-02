@@ -2,11 +2,6 @@ import { ActionModal } from '@ecdlink/ui';
 import { useStoreSetup } from '@hooks/useStoreSetup';
 import { useHistory } from 'react-router-dom';
 import ROUTES from '@/routes/routes';
-import { syncThunkActions } from '@/store/sync';
-import { useAppDispatch } from '@/store';
-import { useSelector } from 'react-redux';
-import { practitionerSelectors } from '@/store/practitioner';
-import { settingActions } from '@/store/settings';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useState } from 'react';
 
@@ -19,18 +14,7 @@ export const Logout: React.FC<LogoutProps> = ({ onSubmit, onCancel }) => {
   const { isOnline } = useOnlineStatus();
   const { resetAuth, resetAppStore, resetUser } = useStoreSetup();
   const history = useHistory();
-  const dispatch = useAppDispatch();
-  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-
-  const sync = async () => {
-    if (practitioner?.isPrincipal) {
-      await dispatch(syncThunkActions.syncOfflineData({}));
-    } else {
-      await dispatch(syncThunkActions.syncOfflineDataForPractitioner({}));
-    }
-    dispatch(settingActions.setLastDataSync());
-  };
 
   const handleLogout = async () => {
     if (isLoggingOut) return; // prevent double-click
@@ -39,7 +23,6 @@ export const Logout: React.FC<LogoutProps> = ({ onSubmit, onCancel }) => {
 
     try {
       if (isOnline) {
-        await sync();
         await resetAppStore();
         await resetAuth();
         await resetUser();
@@ -61,7 +44,6 @@ export const Logout: React.FC<LogoutProps> = ({ onSubmit, onCancel }) => {
     }
 
     if (isOnline) {
-      await sync();
       await resetAppStore();
       await resetAuth();
       await resetUser();
@@ -80,13 +62,7 @@ export const Logout: React.FC<LogoutProps> = ({ onSubmit, onCancel }) => {
       icon="ExclamationCircleIcon"
       iconColor="alertDark"
       iconBorderColor="alertBg"
-      detailText={
-        isLoggingOut
-          ? isOnline
-            ? 'Syncing data and logging out...'
-            : 'Logging out...'
-          : ''
-      }
+      detailText={isLoggingOut ? 'Logging out...' : ''}
       actionButtons={[
         {
           text: isLoggingOut ? 'Logging out...' : 'Yes, log out',

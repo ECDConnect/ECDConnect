@@ -19,6 +19,7 @@ import {
   DialogPosition,
   Divider,
   IMAGE_WIDTH,
+  IMAGE_WIDTH_PROFILE,
   ListItem,
   ListItemProps,
   ProfileAvatar,
@@ -835,7 +836,7 @@ export const ChildProfile: React.FC = () => {
       >
         <div className={'p-4'}>
           <PhotoPrompt
-            resolutionLimit={IMAGE_WIDTH}
+            resolutionLimit={IMAGE_WIDTH_PROFILE}
             isLoading={isLoading}
             title="Profile Photo"
             onClose={() => setEditProfilePictureVisible(false)}

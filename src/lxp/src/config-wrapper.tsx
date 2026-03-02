@@ -8,6 +8,7 @@ import { WalkthroughProvider } from './walkthrougContext';
 import { OnlineStatusProvider } from './hooks/useOnlineStatus';
 import { persistor, store } from './store';
 import { TenantContextProvider, TenantThemeProvider } from './hooks/useTenant';
+import { syncThunkActions } from './store/sync';
 
 const ConfigWrapper: React.FC = () => {
   const { loading } = useConfig();
@@ -37,6 +38,13 @@ const ConfigWrapper: React.FC = () => {
         interval={20000}
         timeout={10000}
         enablePolling={!isDevelopmentMode}
+        onConnectionRestored={() => {
+          store.dispatch(
+            syncThunkActions.triggerBackgroundSync({
+              includeOfflineSyncData: true,
+            })
+          );
+        }}
       >
         <Provider store={store}>
           <PersistGate loading={null} persistor={persistor}>

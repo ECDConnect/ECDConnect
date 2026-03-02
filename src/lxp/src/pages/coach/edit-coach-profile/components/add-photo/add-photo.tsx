@@ -13,6 +13,7 @@ import {
   Divider,
   ProfileAvatar,
   Typography,
+  IMAGE_WIDTH_PROFILE,
 } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@store';
@@ -134,6 +135,7 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit }) => {
       >
         <div className={'p-4'}>
           <PhotoPrompt
+            resolutionLimit={IMAGE_WIDTH_PROFILE}
             title="Profile Photo"
             onClose={displayProfilePicturePrompt}
             onAction={picturePromptOnAction}

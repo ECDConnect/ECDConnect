@@ -8,7 +8,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CreateUserForm } from './components/create-user-form/create-user-form';
 import { useHistory, useLocation } from 'react-router';
 import TransparentLayer from '../../assets/TransparentLayer.png';
@@ -137,6 +137,16 @@ export const UserRegistration: React.FC<UserRegistrationProps> = ({}) => {
   const onFacebookLoginError = (error: Error) => {
     console.log('Facebook login failed', error);
   };
+
+  useEffect(() => {
+    if (
+      (!!userId && !!token) ||
+      (shareInfoPartners !== undefined && !!phoneNumber)
+    ) {
+      return;
+    }
+    history.push(ROUTES.ROOT);
+  });
 
   return (
     <BannerWrapper
