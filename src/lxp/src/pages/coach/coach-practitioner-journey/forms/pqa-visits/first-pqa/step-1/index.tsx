@@ -50,7 +50,7 @@ export const Step1 = ({
       />
       <Typography
         type="h4"
-        text="Sit out of the way and use form Q2 to assess the SmartStarter. When the programme is done, tap the Next button below."
+        text="Sit out of the way and use form Q2 to assess the Practitioner. When the programme is done, tap the Next button below."
         color="textLight"
       />
       <FormInput

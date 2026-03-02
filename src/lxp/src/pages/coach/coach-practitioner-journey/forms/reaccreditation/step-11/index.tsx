@@ -121,7 +121,7 @@ export const Step11ReAccreditation = ({
       )}
       <Alert
         type="info"
-        title="Ask the SmartStarter if you can look at their records together. Check all of the statements that are true."
+        title="Ask the practitioner if you can look at their records together. Check all of the statements that are true."
       />
       <Divider dividerType="dashed" className="my-4" />
       {options.map((item) => {
