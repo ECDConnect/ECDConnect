@@ -197,7 +197,7 @@ export const Step6ReAccreditation = ({
       />
       <Typography
         type="h4"
-        text="Help the SmartStarter clear the space so that it is laid out as it will be when the programme is running. Now use your measuring tape to measure it."
+        text="Help the practitioner clear the space so that it is laid out as it will be when the programme is running. Now use your measuring tape to measure it."
         color="textMid"
         className="my-4"
       />
