@@ -55,6 +55,7 @@ namespace EcdLink.Api.CoreApi
     using Microsoft.AspNetCore.ResponseCompression;
   using Microsoft.Extensions.Options;
   using System;
+    using System.IO;
     using System.Threading.Tasks;
 
     public static class MaintainCorsExtension
@@ -303,6 +304,49 @@ namespace EcdLink.Api.CoreApi
 
                 app.UseDeveloperExceptionPage();
             }
+
+            // SSRF + long-path protection (blocks the 127.0.0.1 attack immediately)
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Method == "POST")
+                {
+                    var path = context.Request.Path.Value?.ToLowerInvariant() ?? "";
+
+                    // Adjust these if your create endpoint is /api/shorten, /create, /new, etc.
+                    if (path == "/" ||
+                        path.Contains("shorten") ||
+                        path.Contains("create") ||
+                        path.Contains("new") ||
+                        path.Contains("url"))
+                    {
+                        context.Request.EnableBuffering();
+                        using var reader = new StreamReader(context.Request.Body, leaveOpen: true);
+                        var body = await reader.ReadToEndAsync();
+                        context.Request.Body.Position = 0;
+
+                        if (body.Length > 50_000 ||
+                            body.Contains("127.0.0.1", StringComparison.OrdinalIgnoreCase) ||
+                            body.Contains("localhost", StringComparison.OrdinalIgnoreCase) ||
+                            body.Contains("169.254.169.254"))
+                        {
+                            context.Response.StatusCode = 400;
+                            await context.Response.WriteAsync("Invalid request");
+                            return;
+                        }
+                    }
+                }
+
+                // Global protection against the huge /?/?/?... paths
+                if ((context.Request.Path.Value?.Length ?? 0) > 2000 ||
+                    (context.Request.QueryString.Value?.Length ?? 0) > 8000)
+                {
+                    context.Response.StatusCode = 400;
+                    await context.Response.WriteAsync("Request too large");
+                    return;
+                }
+
+                await next();
+            });
 
             var compressionSettings = app.ApplicationServices.GetRequiredService<IOptions<ResponseCompressionSettings>>().Value;
             if (compressionSettings.Enabled)
