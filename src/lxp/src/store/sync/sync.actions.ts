@@ -287,7 +287,7 @@ export const pullRemoteChanges = createAsyncThunk<
     try {
       // 1. Get sync status (critical – retry this one too)
       const userSyncStatus = (await retryWithExponentialBackoff(
-        () => dispatch(userThunkActions.getUserSyncStatus({ userId })).unwrap(),
+        () => dispatch(userThunkActions.getUserSyncStatus({})).unwrap(),
         {
           maxAttempts: 3,
           onRetry: (attempt, err) =>
@@ -299,6 +299,8 @@ export const pullRemoteChanges = createAsyncThunk<
         console.warn('No sync status returned from server');
         return;
       }
+
+      //console.log('userSyncStatus--------------------', userSyncStatus)
 
       // ──────────────────────────────────────────────────────────────
       // Children block
@@ -330,7 +332,6 @@ export const pullRemoteChanges = createAsyncThunk<
           );
         }
 
-        // Follow-up fetches – can be parallel
         await Promise.all([
           retryWithExponentialBackoff(
             () =>

@@ -336,9 +336,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public async Task<UserSyncStatus> GetUserSyncStatus(
+           [Service] IHttpContextAccessor contextAccessor,
            AuthenticationDbContext dbContext,
-           Guid userId, DateTime lastSync, Guid classroomId)
+           DateTime lastSync, Guid classroomId)
         {
+            var userId = contextAccessor.HttpContext.GetUser().Id;
+
             var childrenCount = await dbContext.Children.FromSql($@"
             SELECT c.""Id""
             FROM ""Child"" c 
