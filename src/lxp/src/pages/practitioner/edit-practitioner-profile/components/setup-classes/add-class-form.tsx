@@ -26,8 +26,10 @@ import { newGuid } from '@/utils/common/uuid.utils';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
+  const { isOnline } = useOnlineStatus();
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const practitioners = useSelector(
     practitionerSelectors.getPrincipalPractitioners
@@ -134,7 +136,7 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
             isActive: true,
             programmeStartDate: today,
             isFullDay: data?.isFullDay || false,
-            synced: false,
+            synced: isOnline,
           };
         }),
       };
@@ -142,10 +144,12 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
       await appDispatch(
         classroomsActions.createClassroomGroup(classroomGroupModel)
       );
-      await appDispatch(classroomsThunkActions.upsertClassroomGroups({}));
-      await appDispatch(
-        classroomsThunkActions.upsertClassroomGroupProgrammes({})
-      );
+      if (isOnline) {
+        await appDispatch(classroomsThunkActions.upsertClassroomGroups({}));
+        await appDispatch(
+          classroomsThunkActions.upsertClassroomGroupProgrammes({})
+        );
+      }
     }
   };
 

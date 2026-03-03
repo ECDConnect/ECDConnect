@@ -25,8 +25,8 @@ import { newGuid } from '@/utils/common/uuid.utils';
 import { practitionerSelectors } from '@/store/practitioner';
 import { buttonDays } from '../setup-classes/setup-classes.types';
 import { yesNoOptions } from '../add-programme-form/add-programme-form.types';
-import { userSelectors } from '@/store/user';
 import { useTenant } from '@/hooks/useTenant';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 // TODO: Refactor this into add-class component
 export const EditClass = ({
@@ -40,6 +40,7 @@ export const EditClass = ({
 }) => {
   const appDispatch = useAppDispatch();
   const tenant = useTenant();
+  const { isOnline } = useOnlineStatus();
   const isOpenAccess = tenant?.isOpenAccess;
   const practitioners = useSelector(
     practitionerSelectors?.getPrincipalPractitioners
@@ -139,7 +140,7 @@ export const EditClass = ({
           meetingDay: i,
           isActive: true,
           programmeStartDate: new Date().toUTCString(),
-          synced: false,
+          synced: isOnline,
         });
       }
     });
@@ -155,20 +156,22 @@ export const EditClass = ({
       })
     );
 
-    appDispatch(
-      classroomsThunkActions.updateClassroomGroup({
-        id: classToEdit.id,
-        classroomGroup: {
-          classroomId: editClassroomId,
+    if (isOnline) {
+      appDispatch(
+        classroomsThunkActions.updateClassroomGroup({
           id: classToEdit.id,
-          name: name || '',
-          userId: practitionerId!,
-          learners: [],
-        },
-      })
-    );
+          classroomGroup: {
+            classroomId: editClassroomId,
+            id: classToEdit.id,
+            name: name || '',
+            userId: practitionerId!,
+            learners: [],
+          },
+        })
+      );
 
-    appDispatch(classroomsThunkActions.upsertClassroomGroupProgrammes({}));
+      appDispatch(classroomsThunkActions.upsertClassroomGroupProgrammes({}));
+    }
 
     onSubmit();
   };
