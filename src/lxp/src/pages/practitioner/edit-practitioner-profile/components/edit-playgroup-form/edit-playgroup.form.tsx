@@ -287,7 +287,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
       handleDaySelection(playgroup?.meetingDays as Weekdays[]);
     }
 
-    if (playgroup.classroomGroupId) {
+    if (playgroup.classroomGroupId && isOnline) {
       const getClassgroupRequest = async (classroomGroupId: string) => {
         const result = await new ClassroomGroupService(
           authUser?.auth_token || ''
@@ -388,26 +388,6 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
           </div>
         </div>
       )}
-      {/* {isPlaygroup && (
-        <div className="mt-1">
-          <span className={styles.label}>
-            Do children attend this playgroup for half the day or the full day?
-          </span>
-          <div className="mt-2">
-            <ButtonGroup<boolean>
-              onOptionSelected={(value: boolean | boolean[]) =>
-                setPlaygroupFormValue('isFullDay', value as boolean, {
-                  shouldValidate: true,
-                })
-              }
-              type={ButtonGroupTypes.Button}
-              options={dayTypes}
-              selectedOptions={isFullDay}
-              color="secondary"
-            />
-          </div>
-        </div>
-      )} */}
       <div className="mt-auto">
         <Button
           type="filled"
