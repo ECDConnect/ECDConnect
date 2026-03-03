@@ -352,14 +352,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var classroomCount = await dbContext.ClassroomGroups.FromSql($@"
             SELECT cg.""Id""
             FROM ""ClassroomGroup"" cg 
-            WHERE cg.""UserId"" = {userId}::uuid 
+            WHERE cg.""UserId"" = {userId}::uuid and cg.""UpdatedBy"" != {userId}::text
             AND cg.""InsertedDate"" > {lastSync}
             ").CountAsync();
 
             var pointsCount = await dbContext.PointsUserSummary.FromSql($@"
             SELECT pus.""Id""
             FROM ""PointsUserSummary"" pus 
-            WHERE pus.""UserId"" = {userId}::uuid 
+            WHERE pus.""UserId"" = {userId}::uuid  and pus.""UpdatedBy"" != {userId}::text
             AND pus.""UpdatedDate"" > {lastSync}
             ").CountAsync();
 
