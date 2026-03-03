@@ -204,6 +204,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
         name: playgroupData?.name ?? 'Class 1',
         userId: playgroupData?.userId!,
         learners: [],
+        synced: isOnline,
         classProgrammes: playgroupData.meetingDays.map((x) => {
           return {
             id: newGuid(),
@@ -212,7 +213,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
             isActive: true,
             programmeStartDate: today,
             isFullDay: playgroupData?.isFullDay || false,
-            synced: false,
+            synced: isOnline,
           };
         }),
       };
@@ -220,10 +221,12 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
       await appDispatch(
         classroomsActions.createClassroomGroup(classroomGroupModel)
       );
-      await appDispatch(classroomsThunkActions.upsertClassroomGroups({}));
-      await appDispatch(
-        classroomsThunkActions.upsertClassroomGroupProgrammes({})
-      );
+      if (isOnline) {
+        await appDispatch(classroomsThunkActions.upsertClassroomGroups({}));
+        await appDispatch(
+          classroomsThunkActions.upsertClassroomGroupProgrammes({})
+        );
+      }
     }
     // redirect to add child
     history.push(ROUTES?.CHILD_REGISTRATION_LANDING);
