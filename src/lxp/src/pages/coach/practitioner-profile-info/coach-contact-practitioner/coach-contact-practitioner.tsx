@@ -100,7 +100,7 @@ export const CoachContactPractitioner: React.FC = () => {
                 <Typography
                   text={`Removed from ${
                     practitionerClassroom?.name || `their preschool`
-                  }.`}
+                  }`}
                   type="h1"
                   color="textDark"
                   className={'m-4'}
@@ -112,7 +112,7 @@ export const CoachContactPractitioner: React.FC = () => {
                     principal?.user?.firstName || `The principal`
                   } has removed ${practitioner?.user?.firstName} from ${
                     practitionerClassroom?.name || `their preschool`
-                  }.`}
+                  }`}
                   type="h2"
                   color="textDark"
                   className={'m-4'}
@@ -141,7 +141,7 @@ export const CoachContactPractitioner: React.FC = () => {
                 type="h5"
                 weight="bold"
                 lineHeight="snug"
-                color="quatenary"
+                color="secondary"
                 text={`${
                   practitioner?.user?.phoneNumber == null
                     ? 'Number not available'

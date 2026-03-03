@@ -52,7 +52,8 @@ class UserService {
               name
               systemName
             }   
-            resetData         
+            resetData  
+            registerType       
           }
         }
       `,
