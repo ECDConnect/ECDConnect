@@ -261,6 +261,7 @@ export const EditPlaygroups: React.FC = () => {
               name: playGroup.name || `Class ${results?.length}`,
               userId: playGroup.userId!,
               classProgrammes: currentPlayGroupProgrammes,
+              synced: !hasChanges,
             })
           );
           if (updatedClassroom && isOnline) {
