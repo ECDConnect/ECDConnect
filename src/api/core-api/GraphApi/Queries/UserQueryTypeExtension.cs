@@ -373,7 +373,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             AND cprp.""InsertedDate"" > {lastSync}
             ").CountAsync();
 
-            var permissionsCount = await dbContext.PointsUserSummary.FromSql($@"
+            var permissionsCount = await dbContext.UserPermissions.FromSql($@"
             SELECT up.""Id""
             FROM ""UserPermission"" up 
             WHERE up.""UserId"" = {userId}::uuid 

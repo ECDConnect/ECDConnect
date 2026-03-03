@@ -145,6 +145,7 @@ export const EditPlaygroups: React.FC = () => {
       name: playgroup?.name ?? '',
       userId: playgroup?.userId!,
       learners: [],
+      // synced: isOnline,
       classProgrammes: playgroup.meetingDays.map((x) => {
         return {
           id: newGuid(),
@@ -153,7 +154,7 @@ export const EditPlaygroups: React.FC = () => {
           isActive: true,
           programmeStartDate: today,
           isFullDay: playgroup?.isFullDay || false,
-          synced: false,
+          synced: isOnline,
         };
       }),
     };
@@ -161,11 +162,12 @@ export const EditPlaygroups: React.FC = () => {
     await appDispatch(
       classroomsActions.createClassroomGroup(classroomGroupModel)
     );
-
-    await appDispatch(classroomsThunkActions.upsertClassroomGroups({}));
-    await appDispatch(
-      classroomsThunkActions.upsertClassroomGroupProgrammes({})
-    );
+    if (isOnline) {
+      await appDispatch(classroomsThunkActions.upsertClassroomGroups({}));
+      await appDispatch(
+        classroomsThunkActions.upsertClassroomGroupProgrammes({})
+      );
+    }
   };
 
   const confirmPlaygroups = async (playgroups: EditPlaygroupModel[]) => {
@@ -175,27 +177,28 @@ export const EditPlaygroups: React.FC = () => {
       (group) => !playgroups.some((pg) => pg.classroomGroupId === group.id)
     );
 
-    // TODO
-    for (const playG of removedClassroomGroups) {
-      appDispatch(
-        classroomsThunkActions.updateClassroomGroup({
-          id: playG.id,
-          classroomGroup: {
-            id: playG?.id,
-            name: playG?.name || `Class ${playgroups?.length}`,
-            classroomId: playG?.classroomId,
-            isActive: false,
-            practitionerId: playG?.userId!,
-            userId: playG?.userId,
-          },
-        })
-      ).then(() => {
-        showMessage({
-          message: 'Class deleted',
-          type: 'success',
-          duration: 3000,
+    if (isOnline) {
+      for (const playG of removedClassroomGroups) {
+        appDispatch(
+          classroomsThunkActions.updateClassroomGroup({
+            id: playG.id,
+            classroomGroup: {
+              id: playG?.id,
+              name: playG?.name || `Class ${playgroups?.length}`,
+              classroomId: playG?.classroomId,
+              isActive: false,
+              practitionerId: playG?.userId!,
+              userId: playG?.userId,
+            },
+          })
+        ).then(() => {
+          showMessage({
+            message: 'Class deleted',
+            type: 'success',
+            duration: 3000,
+          });
         });
-      });
+      }
     }
 
     await saveEditedPlayGroups(playgroups);
@@ -247,7 +250,7 @@ export const EditPlaygroups: React.FC = () => {
                 isFullDay: playGroup?.isFullDay || false,
                 programmeStartDate: new Date().toISOString(),
                 isActive: true,
-                synced: false,
+                synced: isOnline,
               });
             }
           });
@@ -260,13 +263,13 @@ export const EditPlaygroups: React.FC = () => {
               classProgrammes: currentPlayGroupProgrammes,
             })
           );
-          if (updatedClassroom) {
+          if (updatedClassroom && isOnline) {
             await appDispatch(
               classroomsThunkActions.upsertClassroomGroupProgrammes({})
             );
           }
 
-          if (hasChanges) {
+          if (hasChanges && isOnline) {
             await appDispatch(
               classroomsThunkActions.updateClassroomGroup({
                 id: currentPlayGroup?.id!,
