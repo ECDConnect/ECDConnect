@@ -155,15 +155,14 @@ class UserService {
   }
 
   async getUserSyncStatus(
-    userId: string,
     lastSyncDate: Date,
     classroomId: string
   ): Promise<UserSyncStatus> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      query getUserSyncStatus($userId: UUID!, $lastSync: DateTime!, $classroomId: UUID!) {
-        userSyncStatus(userId: $userId, lastSync: $lastSync, classroomId: $classroomId) {
+      query getUserSyncStatus($lastSync: DateTime!, $classroomId: UUID!) {
+        userSyncStatus(lastSync: $lastSync, classroomId: $classroomId) {
           syncChildren
           syncClassroom
           syncReportingPeriods
@@ -173,7 +172,6 @@ class UserService {
       }
       `,
       variables: {
-        userId: userId,
         lastSync: lastSyncDate,
         classroomId: classroomId,
       },
