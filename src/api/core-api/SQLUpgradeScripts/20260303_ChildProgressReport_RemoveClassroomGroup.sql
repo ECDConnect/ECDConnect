@@ -1,0 +1,1 @@
+ALTER TABLE "ChildProgressReport" DROP Column "ClassroomGroupId";
