@@ -308,12 +308,16 @@ export const PractitionerAbout: React.FC = () => {
   // };
 
   const setNewStackListItems = (currentUser: UserDto) => {
-    const list: ActionListDataItem[] = [
-      {
+    const list: ActionListDataItem[] = [];
+
+    if (currentUser.registerType === 'username') {
+      list.push({
         title: 'Username',
         subTitle: currentUser?.userName,
         switchTextStyles: true,
-      },
+      });
+    }
+    list.push(
       {
         title: 'Name',
         subTitle: currentUser?.firstName || 'Add name',
@@ -376,8 +380,8 @@ export const PractitionerAbout: React.FC = () => {
         onActionClick: communityProfile
           ? () => history.push(ROUTES.COMMUNITY.PROFILE)
           : () => history.push(ROUTES.COMMUNITY.WELCOME),
-      },
-    ];
+      }
+    );
 
     setListItems(list);
   };
