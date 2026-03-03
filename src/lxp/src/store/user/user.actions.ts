@@ -214,7 +214,6 @@ export const getUserSyncStatus = createAsyncThunk<
   async ({}, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      user: { user },
       settings: { lastDataSync },
       classroomData: { classroom },
     } = getState();
@@ -222,11 +221,10 @@ export const getUserSyncStatus = createAsyncThunk<
     try {
       let userSyncStatus: UserSyncStatus;
 
-      if (userAuth?.auth_token && user) {
+      if (userAuth?.auth_token) {
         userSyncStatus = await new UserService(
           userAuth?.auth_token
         ).getUserSyncStatus(
-          userAuth.id,
           new Date(lastDataSync) || new Date(),
           classroom?.id || newGuid()
         );
