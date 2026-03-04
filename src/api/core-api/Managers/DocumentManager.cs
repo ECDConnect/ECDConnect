@@ -83,7 +83,7 @@ namespace EcdLink.Api.CoreApi.Managers
             return docDate.ToString("MMMM", CultureInfo.InvariantCulture) + " " + docDate.ToString("yyyy", CultureInfo.InvariantCulture);
         }
 
-        public string GetDocumentHeaderAddress([Service] ApplicationUserManager userManager, PdfDocumentHeader pdfDocumentHeader, string filename, string classroomImageUrl=null)
+        public string GetDocumentHeaderAddress([Service] ApplicationUserManager userManager, PdfDocumentHeader pdfDocumentHeader, string filename, string classroomImageUrl=null, string classroomName = null)
         {
             var _headerAddress = "";
             ApplicationUser user = userManager.FindByIdAsync(pdfDocumentHeader.UserId).Result;
@@ -99,17 +99,20 @@ namespace EcdLink.Api.CoreApi.Managers
             if (pdfDocumentHeader.ReportType == "StatementsPDF")
             {
                 string headerHtml = !string.IsNullOrEmpty(classroomImageUrl)
-                    ? $@"<div style='display: inline-block'><h1><img src='{classroomImageUrl}' style='height: 80px; vertical-align: middle; alt='Logo'/>
-                    {filename}</h1></div>"
-                    : $@"<div style='display: inline-block'><h1>{filename}</h1></div>";
+                    ? $@"<div style='padding: 0 20px;'><div style='display: inline-block'><img src='{classroomImageUrl}' style='height:180px; vertical-align: middle; margin-right: 20px;'/></div>
+                    <div style='display: inline-block; vertical-align: middle; margin-left: 20px;'><h1>{filename}</h1></div>"
+                    : $@"<div style='padding: 0 20px;'><div style='display: inline-block'><h1>{filename}</h1></div>";
 
-                _headerAddress = headerHtml;
+                string classroomInfo = !string.IsNullOrEmpty(classroomName) ? $"<div style='text-align: center;'><h1 style='font-size: 50px;'>{classroomName}</h1></div>" : "";
+
+                _headerAddress = classroomInfo;        
+                _headerAddress += headerHtml;
                 _headerAddress += "<div style='float: right;'><table style='padding-top: 12px;'>";
                 _headerAddress += "<tr><th style='width:50%'>Name:</th><td>" + firstName + "</td></tr>";
                 _headerAddress += "<tr><th>Phone number:</th><td>" + phoneNumber + "</td></tr>";
                 _headerAddress += "<tr><th>ID number:</th><td>" + idNumber + "</td></tr>";
                 _headerAddress += "<tr><th>Site Address:</th><td>" + siteAddress + "</td></tr>";
-                _headerAddress += "</table></div>";
+                _headerAddress += "</table></div></div>";
 
             } else if (pdfDocumentHeader.ReportType == "AttendancePDF")
             {
@@ -118,7 +121,7 @@ namespace EcdLink.Api.CoreApi.Managers
                 _headerAddress += "<tr><th>Phone number:</th><td>" + phoneNumber + "</td><th></th><td></td><th>Programme days:</th><td>"+ programmeDays + "</td></tr>";
                 _headerAddress += "<tr><th>ID number</th><td>" + idNumber + "</td><th></th><td></td><th>Programme type:</th><td>"+programmeType+"</td></tr></table></div>";
             }
-
+          //  Console.Write(_headerAddress);
             return _headerAddress;
         }
 
