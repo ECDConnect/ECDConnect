@@ -406,7 +406,7 @@ namespace ECDLink.Core.Services
             pdfDocumentHeader.SiteAddress = siteAddress.ToString();
 
             pdfDocumentHeader.ReportType = "StatementsPDF";
-            var userInfo = _documentManager.GetDocumentHeaderAddress(_userManager, pdfDocumentHeader, filename, classroom?.ClassroomImageUrl);
+            var userInfo = _documentManager.GetDocumentHeaderAddress(_userManager, pdfDocumentHeader, filename, classroom?.ClassroomImageUrl, classroom?.Name);
 
             html += userInfo;
 
