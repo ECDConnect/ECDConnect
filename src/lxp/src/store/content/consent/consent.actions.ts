@@ -59,12 +59,16 @@ export const getOpenConsent = createAsyncThunk<
   // eslint-disable-next-line no-empty-pattern
   async ({ locale, name }, { getState, rejectWithValue }) => {
     const {
-      auth: { userAuth },
       contentConsentData: { consent: consentCache },
     } = getState();
 
     if (consentCache) {
-      return consentCache;
+      const consentForName = consentCache.find(
+        (x) => x.name === name && x.locale === locale
+      );
+      if (consentForName) {
+        return [consentForName];
+      }
     }
 
     try {
