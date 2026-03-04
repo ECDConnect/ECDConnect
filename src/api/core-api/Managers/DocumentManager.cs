@@ -121,7 +121,6 @@ namespace EcdLink.Api.CoreApi.Managers
                 _headerAddress += "<tr><th>Phone number:</th><td>" + phoneNumber + "</td><th></th><td></td><th>Programme days:</th><td>"+ programmeDays + "</td></tr>";
                 _headerAddress += "<tr><th>ID number</th><td>" + idNumber + "</td><th></th><td></td><th>Programme type:</th><td>"+programmeType+"</td></tr></table></div>";
             }
-          //  Console.Write(_headerAddress);
             return _headerAddress;
         }
 
