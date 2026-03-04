@@ -244,9 +244,15 @@ export const ChildProfile: React.FC = () => {
     });
   }, [dialog]);
 
+  const childCreationPending =
+    child &&
+    (child?.workflowStatusId === childPendingWorkflowStatusId ||
+      child?.workflowStatusId === childExternalWorkflowStatusId);
+
   // TODO - This useEffect needs to be fixed, causing infinite re-renders!!!
   useEffect(() => {
-    if (!attendanceData || !child) return;
+    // we don't want to call this if child creation is not complete
+    if (!attendanceData || !child || childCreationPending) return;
 
     const fetchAttendance = async () => {
       setIsLoadingAttendance(true);
