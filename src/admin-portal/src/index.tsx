@@ -11,6 +11,8 @@ ReactDOM.render(
       authApi: process.env.REACT_APP_API || '',
       graphQlApi: process.env.REACT_APP_GRAPHQLAPI || '',
       themeUrl: process.env.REACT_APP_THEME || '',
+      facebookAppId: '',
+      googleClientId: '',
     }}
   >
     <SnackbarProvider>
