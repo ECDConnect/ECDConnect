@@ -46,7 +46,7 @@ export const Article = ({
 
   useEffect(() => {
     if (consent && visible && !isOpen) {
-      getContent(consent);
+      getContent(consent, language.locale);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [consent, visible, isOpen]);
@@ -112,8 +112,13 @@ export const Article = ({
     }
   };
 
-  const getContent = async (consentList: ConsentDto[] | undefined) => {
-    const consentFilter = consentList?.find((x) => x.name === consentEnumType);
+  const getContent = async (
+    consentList: ConsentDto[] | undefined,
+    locale: string
+  ) => {
+    const consentFilter = consentList?.find(
+      (x) => x.name === consentEnumType && x.locale === locale
+    );
     var description = consentFilter?.description ?? '';
     setArticleImage(consentFilter?.image ?? '');
 

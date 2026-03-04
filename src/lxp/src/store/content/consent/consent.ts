@@ -19,42 +19,64 @@ const contentConsentSlice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(getConsent.fulfilled, (state, action) => {
       const locale = action.meta.arg.locale;
-      if (action.payload) {
-        state.consent = action.payload.map((consent) => ({
-          ...consent,
-          locale,
-        }));
+
+      if (!action.payload || !Array.isArray(action.payload)) {
+        setFulfilledThunkActionStatus(state, action);
+        return;
       }
+
+      state.consent = state.consent ?? [];
+
+      action.payload.forEach((incoming) => {
+        const index = state.consent!.findIndex(
+          (item) => item.id === incoming.id && item.locale === locale
+        );
+        if (index === -1) {
+          state.consent!.push({
+            ...incoming,
+            locale,
+          });
+        } else {
+          state.consent![index] = {
+            ...state.consent![index],
+            ...incoming,
+            locale,
+          };
+        }
+      });
 
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(getOpenConsent.fulfilled, (state, action) => {
       const locale = action.meta.arg.locale;
-      const payload = action.payload;
+      const name = action.meta.arg.name;
 
-      if (!payload) {
+      if (!action.payload || !Array.isArray(action.payload)) {
         setFulfilledThunkActionStatus(state, action);
         return;
       }
 
-      const dataRecord = payload[0];
-      const newConsent = {
-        ...dataRecord,
-        locale,
-      };
+      state.consent = state.consent ?? [];
 
-      if (!state.consent) {
-        state.consent = [];
-      }
-
-      const existingIndex = state.consent.findIndex(
-        (c) => c.id === newConsent.id && c.locale === locale
-      );
-      if (existingIndex === -1) {
-        state.consent.push(newConsent);
-      } else {
-        state.consent[existingIndex] = newConsent;
-      }
+      action.payload.forEach((incoming) => {
+        const index = state.consent!.findIndex(
+          (item) => item.id === incoming.id && item.locale === locale
+        );
+        if (index === -1) {
+          state.consent!.push({
+            ...incoming,
+            locale,
+            name,
+          });
+        } else {
+          state.consent![index] = {
+            ...state.consent![index],
+            ...incoming,
+            locale,
+            name,
+          };
+        }
+      });
       setFulfilledThunkActionStatus(state, action);
     });
   },
