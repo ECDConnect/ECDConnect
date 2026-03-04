@@ -35,6 +35,8 @@ function ConfigProvider({
           Config.authApi = data.authApi;
           Config.graphQlApi = data.graphQlApi;
           Config.themeUrl = data.themeUrl;
+          Config.facebookAppId = data.facebookAppId;
+          Config.googleClientId = data.googleClientId;
         }
 
         setLoading(false);
@@ -51,6 +53,8 @@ function ConfigProvider({
       Config.authApi = config.authApi;
       Config.graphQlApi = config.graphQlApi;
       Config.themeUrl = config.themeUrl;
+      Config.facebookAppId = config.facebookAppId;
+      Config.googleClientId = config.googleClientId;
     } else {
       getData();
     }

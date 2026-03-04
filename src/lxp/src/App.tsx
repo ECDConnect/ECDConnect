@@ -1,5 +1,6 @@
 import {
   AppErrorHandler,
+  Config,
   DialogServiceProvider,
   SnackbarProvider,
   useDialog,
@@ -352,10 +353,8 @@ const App: React.FC = () => {
     </IonApp>
   );
 
-  const googleLogin = process.env.REACT_APP_GOOGLE_CLIENT_ID ? (
-    <GoogleOAuthProvider
-      clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID || ''}
-    >
+  const googleLogin = Config.googleClientId ? (
+    <GoogleOAuthProvider clientId={Config.googleClientId}>
       {appShell}
     </GoogleOAuthProvider>
   ) : (
@@ -363,8 +362,8 @@ const App: React.FC = () => {
   );
 
   const facebookLogin =
-    process.env.REACT_APP_FACEBOOK_APP_ID && isSslEnabled ? (
-      <FacebookProvider appId={process.env.REACT_APP_FACEBOOK_APP_ID}>
+    Config.facebookAppId && isSslEnabled ? (
+      <FacebookProvider appId={Config.facebookAppId}>
         {googleLogin}
       </FacebookProvider>
     ) : (
