@@ -137,8 +137,18 @@ export const upsertClassroom = createAsyncThunk<
       auth: { userAuth },
       classroomData: { classroom },
     } = getState();
+
+    const token = userAuth?.auth_token;
+    const shouldSyncClassroom = Boolean(
+      token && classroom && !classroom.synced
+    );
+
+    if (shouldSyncClassroom) {
+      return false;
+    }
+
     try {
-      if (userAuth?.auth_token && classroom) {
+      if (userAuth?.auth_token && classroom && !classroom?.synced) {
         const input: ClassroomInput = {
           Id: classroom.id,
           UserId: classroom.principal.userId,
