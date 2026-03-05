@@ -28,6 +28,7 @@ export const Business: React.FC = () => {
   const [selectedTabIndex, setSelectedTabIndex] = useState<number>(
     state?.activeTabIndex !== undefined ? state?.activeTabIndex : 0
   );
+  const [previousTabIndex, setPreviousTabIndex] = useState<number>();
   const appDispatch = useAppDispatch();
   const [currentTab, setCurrentTab] = useState<TabItem>();
   const { isOnline } = useOnlineStatus();
@@ -57,6 +58,10 @@ export const Business: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTabIndex]);
 
+  const goBackFromResources = () => {
+    setSelectedTabIndex(previousTabIndex!);
+  };
+
   const tabItemsForPrincipal: TabItem[] = [
     {
       title: NavigationNames.Business.Staff,
@@ -73,13 +78,14 @@ export const Business: React.FC = () => {
       initActive: false,
       child: (
         <div className={'p-4'}>
-          <Resources />
+          <Resources setSelectedTabIndex={goBackFromResources} />
         </div>
       ),
     },
   ];
 
   const setTabSelected = (tabIndex: number) => {
+    setPreviousTabIndex(selectedTabIndex);
     setSelectedTabIndex(tabIndex);
   };
 
