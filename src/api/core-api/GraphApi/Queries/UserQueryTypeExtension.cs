@@ -348,6 +348,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             JOIN ""Practitioner"" p ON c.""Hierarchy"" LIKE p.""Hierarchy"" || '%'
             WHERE (p.""UserId"" = {userId}::uuid OR p.""PrincipalHierarchy"" = {userId}::uuid)
             AND c.""IsActive"" IS TRUE 
+            AND c.""UpdatedBy"" != {userId}::text
             AND c.""UpdatedDate"" > {lastSync}
             ").CountAsync();
 
