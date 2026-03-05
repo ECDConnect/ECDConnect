@@ -25,6 +25,11 @@ console.log("Compression settings → level:", compressionOptions.level, "thresh
 
 app.use(compression(compressionOptions));
 
+app.use((req, res, next) => {
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+  next();
+});
+
 // ────────────────────────────────────────────────
 // Serve static files
 const buildPath = runningInAzureAppService ? __dirname : path.join(__dirname, 'build');

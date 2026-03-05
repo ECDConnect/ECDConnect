@@ -38,6 +38,8 @@ ReactDOM.render(
       authApi: process.env.REACT_APP_API || '',
       graphQlApi: process.env.REACT_APP_GRAPHQLAPI || '',
       themeUrl: process.env.REACT_APP_THEME || '',
+      facebookAppId: process.env.REACT_APP_FACEBOOK_APP_ID || '',
+      googleClientId: process.env.REACT_APP_GOOGLE_CLIENT_ID || '',
     }}
   >
     <ConfigWrapper />
