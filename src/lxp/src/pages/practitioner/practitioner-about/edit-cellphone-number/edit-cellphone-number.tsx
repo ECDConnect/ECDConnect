@@ -85,7 +85,6 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
       } else {
         copy.whatsappNumber = practitionerForm?.whatsapp;
       }
-
       // await appDispatch(userActions.updateUser(copy));
       // const updatedUser = await appDispatch(userThunkActions.updateUser(copy));
       // setIsLoading(false);
@@ -115,9 +114,12 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
       } else {
         copy.whatsappNumber = practitionerForm?.whatsapp;
       }
+      copy.synced = isOnline;
 
       await appDispatch(userActions.updateUser(copy));
-      await appDispatch(userThunkActions.updateUser(copy));
+      if (isOnline) {
+        await appDispatch(userThunkActions.updateUser(copy));
+      }
       setIsLoading(false);
     }
   };
