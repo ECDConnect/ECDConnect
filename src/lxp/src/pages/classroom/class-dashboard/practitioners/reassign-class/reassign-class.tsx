@@ -443,7 +443,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
 
     const processReassignment = async (item: any) => {
       const service = new ClassroomGroupService(userAuth.auth_token);
-      const startDate = new Date(selectedDate);
+      const startDate = new Date(new Date(selectedDate).setHours(12, 0, 0, 0));
       const endDateToUse = isOneDayLeave ? startDate : endDate || startDate;
 
       if (item?.absenteeId) {
@@ -482,7 +482,9 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
         await processReassignment(allAbsenteeClasses[0]);
       } else {
         const service = new ClassroomGroupService(userAuth.auth_token);
-        const startDate = new Date(selectedDate);
+        const startDate = new Date(
+          new Date(selectedDate).setHours(12, 0, 0, 0)
+        );
         const endDateToUse = isOneDayLeave ? startDate : endDate || startDate;
 
         await service.updateReassignClassroomGroup(
