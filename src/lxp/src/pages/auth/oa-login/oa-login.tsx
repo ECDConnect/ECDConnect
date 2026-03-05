@@ -3,6 +3,7 @@ import {
   LocalStorageKeys,
   useDialog,
   LoginType,
+  Config,
 } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
@@ -619,7 +620,7 @@ export const OaLogin: React.FC = () => {
         </Dialog>
         {!autoLogin && isOnline && (
           <div className="mb-6">
-            {!!process.env.REACT_APP_GOOGLE_CLIENT_ID && (
+            {!!Config.googleClientId && (
               <div className="mb-6 flex justify-center">
                 <GoogleLogin
                   onSuccess={(credentialResponse) =>
@@ -634,7 +635,7 @@ export const OaLogin: React.FC = () => {
                 />
               </div>
             )}
-            {!!process.env.REACT_APP_FACEBOOK_APP_ID && isSslEnabled && (
+            {!!Config.facebookAppId && isSslEnabled && (
               <div className="mb-6 flex justify-center">
                 <FacebookLogin
                   onSuccess={(response: any) =>
