@@ -32,6 +32,7 @@ export const LanguageSelector = ({
   className,
   isConsentScreen,
 }: LanguageSelectorProps) => {
+  const [selectedLocale, setSelectedLocale] = useState<string>(currentLocale);
   const languages = useSelector(staticDataSelectors.getLanguages);
   const [isOfflineAlert, setIsOfflineAlert] = useState(false);
   const { i18n } = useTranslation();
@@ -89,7 +90,7 @@ export const LanguageSelector = ({
 
       <Dropdown
         fillType="clear"
-        selectedValue={currentLocale}
+        selectedValue={selectedLocale}
         disabled={disabled}
         fillColor="quatenary"
         labelColor="white"
@@ -105,6 +106,7 @@ export const LanguageSelector = ({
         }
         onChange={(item) => {
           setLanguage(item);
+          setSelectedLocale(item);
         }}
         className={`${isConsentScreen ? 'w-44' : 'w-auto'}`}
       />

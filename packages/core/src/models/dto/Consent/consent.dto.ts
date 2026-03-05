@@ -6,4 +6,5 @@ export interface ConsentDto {
   description: string;
   image: string;
   availableLanguages: LanguageDto[];
+  locale?: string;
 }

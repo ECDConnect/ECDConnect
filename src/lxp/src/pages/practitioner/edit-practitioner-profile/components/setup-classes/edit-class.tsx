@@ -1,5 +1,3 @@
-import { ClassProgrammeDto } from '@ecdlink/core';
-import { ProgrammeTypeEnum } from '@ecdlink/graphql';
 import {
   Typography,
   FormInput,
@@ -27,6 +25,7 @@ import { useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 import { newGuid } from '@/utils/common/uuid.utils';
 import { practitionerSelectors } from '@/store/practitioner';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 // TODO: Refactor this into add-class component
 export const EditClass = ({
@@ -39,6 +38,7 @@ export const EditClass = ({
   onSubmit: () => void;
 }) => {
   const appDispatch = useAppDispatch();
+  const { isOnline } = useOnlineStatus();
   const practitioners = useSelector(
     practitionerSelectors.getPrincipalPractitioners
   );
@@ -134,7 +134,7 @@ export const EditClass = ({
           meetingDay: i,
           isActive: true,
           programmeStartDate: new Date().toUTCString(),
-          synced: false,
+          synced: isOnline,
         });
       }
     });
@@ -151,18 +151,20 @@ export const EditClass = ({
     );
 
     // TODO - this probably needs to be updated
-    appDispatch(
-      classroomsThunkActions.updateClassroomGroup({
-        id: classToEdit.id,
-        classroomGroup: {
-          name: name || '',
-          classroomId: editClassroomId,
-          isActive: true,
-          practitionerId: practitionerId,
-        },
-      })
-    );
-    appDispatch(classroomsThunkActions.upsertClassroomGroupProgrammes({}));
+    if (isOnline) {
+      appDispatch(
+        classroomsThunkActions.updateClassroomGroup({
+          id: classToEdit.id,
+          classroomGroup: {
+            name: name || '',
+            classroomId: editClassroomId,
+            isActive: true,
+            practitionerId: practitionerId,
+          },
+        })
+      );
+      appDispatch(classroomsThunkActions.upsertClassroomGroupProgrammes({}));
+    }
 
     onSubmit();
   };

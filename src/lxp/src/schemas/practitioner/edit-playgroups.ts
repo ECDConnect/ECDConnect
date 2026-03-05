@@ -11,6 +11,7 @@ export interface EditPlaygroupModel {
   isFullDay?: boolean;
   userId?: string;
   id?: string;
+  synced?: boolean;
 }
 
 export interface EditGroupedPlaygroupModel {
