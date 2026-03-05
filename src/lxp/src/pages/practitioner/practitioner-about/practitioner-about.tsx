@@ -249,67 +249,6 @@ export const PractitionerAbout: React.FC = () => {
     });
   };
 
-  // const getPhotoOnProgressReportItem = (): ActionListDataItem => {
-  //   var item: ActionListDataItem = {
-  //     title: `Photo on ${reportingPeriod.monthName} progress report`,
-  //     subTitle: '',
-  //     switchTextStyles: true,
-  //     actionName: '',
-  //     actionIcon: '',
-  //     buttonType: 'filled',
-  //     onActionClick: () => {},
-  //   };
-  //   const prefix = `${reportingPeriod.monthName}-${reportingPeriod.year}-`;
-  //   const hasAnswered =
-  //     !!practitioner?.usePhotoInReport &&
-  //     practitioner?.usePhotoInReport.startsWith(prefix);
-  //   const answer = hasAnswered
-  //     ? practitioner?.usePhotoInReport?.endsWith('-yes')
-  //       ? 'yes'
-  //       : 'no'
-  //     : undefined;
-  //   if (!hasAnswered && !hasCreatedReportForCurrentPeriod) {
-  //     item = {
-  //       ...item,
-  //       subTitle: `Add your photo to ${reportingPeriod.monthName} report`,
-  //       actionName: 'Add',
-  //       actionIcon: 'PlusIcon',
-  //       onActionClick: () => {
-  //         promptPhotoReportPermission();
-  //       },
-  //     };
-  //   }
-  //   if (hasAnswered && !hasCreatedReportForCurrentPeriod) {
-  //     item = {
-  //       ...item,
-  //       subTitle:
-  //         answer === 'yes'
-  //           ? `Photo added to ${reportingPeriod.monthName} report`
-  //           : `Photo not added to ${reportingPeriod.monthName} report`,
-  //       actionName: 'Edit',
-  //       actionIcon: 'PencilIcon',
-  //       onActionClick: () => {
-  //         promptPhotoReportPermission();
-  //       },
-  //     };
-  //   }
-  //   if (hasAnswered && hasCreatedReportForCurrentPeriod) {
-  //     item = {
-  //       ...item,
-  //       subTitle:
-  //         answer === 'yes'
-  //           ? `Photo added to ${reportingPeriod.monthName} report`
-  //           : `Photo not added to ${reportingPeriod.monthName} report`,
-  //       actionName: 'View',
-  //       actionIcon: 'EyeIcon',
-  //       onActionClick: () => {
-  //         handleUsingPhotoInReports(answer === 'yes');
-  //       },
-  //     };
-  //   }
-  //   return item;
-  // };
-
   const setNewStackListItems = (currentUser: UserDto) => {
     const list: ActionListDataItem[] = [];
 
@@ -488,9 +427,12 @@ export const PractitionerAbout: React.FC = () => {
       if (imageBaseString?.length > 0) {
         copy.profileImageUrl = imageBaseString;
       }
+      copy.synced = isOnline;
 
       appDispatch(userActions.updateUser(copy));
-      appDispatch(userThunkActions.updateUser(copy));
+      if (isOnline) {
+        appDispatch(userThunkActions.updateUser(copy));
+      }
 
       setNewStackListItems(copy);
       if (isFromCommunityWelcome) {
