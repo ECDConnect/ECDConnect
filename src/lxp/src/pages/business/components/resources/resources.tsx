@@ -19,14 +19,15 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useDialog } from '@ecdlink/core';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { resourcesSelectors } from '@/store/resources';
+import { useHistory } from 'react-router';
 
-export const Resources = () => {
+interface ResourceProps {
+  setSelectedTabIndex: React.Dispatch<React.SetStateAction<number>>;
+}
+
+export const Resources = ({ setSelectedTabIndex }: ResourceProps) => {
   const userAuth = useSelector(authSelectors.getAuthUser);
   const user = useSelector(userSelectors.getUser);
-  const [locale, setLocale] = useState<string>(
-    '9688cd08-adef-408c-9d34-5d75ae5c44df'
-  );
-  // const [resources, setResources] = useState<any[]>([]);
   const [resourcesLikedByUser, setResourcesLikedByUser] = useState<any[]>([]);
   const [viewAllResources, setViewAllResources] = useState(false);
   const [resourceTypeItem, setResourceTypeItem] = useState('');
@@ -61,16 +62,6 @@ export const Resources = () => {
     [resources]
   );
 
-  // const handleGetResources = useCallback(async () => {
-  //   const response = await new ResourcesService(
-  //     userAuth?.auth_token!
-  //   )?.getResources(locale, 'business', '', [], [], null, null);
-
-  //   if (response) {
-  //     setResources(response);
-  //   }
-  // }, [locale, userAuth?.auth_token]);
-
   const handleGetResourcesLikedByUser = useCallback(async () => {
     const response = await new ResourcesService(
       userAuth?.auth_token!
@@ -82,10 +73,12 @@ export const Resources = () => {
   }, [user?.id, userAuth?.auth_token]);
 
   const handleGetResourcesQueries = useCallback(async () => {
-    setIsLoading(true);
-    await handleGetResourcesLikedByUser();
-    setIsLoading(false);
-  }, [handleGetResourcesLikedByUser]);
+    if (isOnline) {
+      setIsLoading(true);
+      await handleGetResourcesLikedByUser();
+      setIsLoading(false);
+    }
+  }, [handleGetResourcesLikedByUser, isOnline]);
 
   useEffect(() => {
     if (isOnline) {
@@ -157,7 +150,14 @@ export const Resources = () => {
     dialog({
       color: 'bg-white',
       position: DialogPosition.Middle,
-      render: (onSubmit) => <OnlineOnlyModal onSubmit={onSubmit} />,
+      render: (onSubmit) => (
+        <OnlineOnlyModal
+          onSubmit={() => {
+            setSelectedTabIndex(0);
+            onSubmit();
+          }}
+        />
+      ),
     });
   }, [dialog]);
 
