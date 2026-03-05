@@ -20,7 +20,7 @@ import {
   EditPlaygroupsSteps,
 } from './save-practitioner-playgroups.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { useStoreSetup } from '@hooks/useStoreSetup';
+// import { useStoreSetup } from '@hooks/useStoreSetup';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { practitionerSelectors } from '@/store/practitioner';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
@@ -42,7 +42,7 @@ export const EditPlaygroups: React.FC = () => {
   const [activePage, setActivePage] = useState<EditPlaygroupsSteps>(
     EditPlaygroupsSteps.confirm
   );
-  const { syncClassroom } = useStoreSetup();
+  // const { syncClassroom } = useStoreSetup();
   const [addingPlayGroup, setAddingPlayGroup] = useState<boolean>(false);
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
@@ -123,18 +123,18 @@ export const EditPlaygroups: React.FC = () => {
     removeNotifications();
   };
 
-  const updateClassroomData = async () => {
-    try {
-      if (isOnline) {
-        setIsLoading(true);
-        await syncClassroom();
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // const updateClassroomData = async () => {
+  //   try {
+  //     if (isOnline) {
+  //       setIsLoading(true);
+  //       await syncClassroom();
+  //     }
+  //   } catch (e) {
+  //     console.error(e);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   const createPlayGroup = async (playgroup: EditPlaygroupModel) => {
     const classroomGroupId = newGuid();
@@ -221,7 +221,8 @@ export const EditPlaygroups: React.FC = () => {
       );
 
       if (!existing) {
-        continue; // nothing to do
+        createPlayGroup(edited);
+        continue;
       }
 
       // ─── UPDATE EXISTING GROUP ──────────────────────────────────
