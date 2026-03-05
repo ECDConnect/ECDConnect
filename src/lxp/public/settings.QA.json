@@ -1,5 +1,7 @@
 {
   "graphQlApi": "https://ecdconnect-qa-api.azurewebsites.net/graphql/",
   "authApi": "https://ecdconnect-qa-api.azurewebsites.net",
-  "themeUrl": "https://ecdconnectstoragedev.blob.core.windows.net/theme/ecdconnect.json"
+  "themeUrl": "https://ecdconnectstoragedev.blob.core.windows.net/theme/ecdconnect.json",
+  "facebookAppId": "",
+  "googleClientId": ""
 }
