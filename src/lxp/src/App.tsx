@@ -22,11 +22,9 @@ import InitialStoreSetup from './initial-store-setup';
 import { LoginModal } from './pages/auth/login-modal/login-modal';
 import { authSelectors } from './store/auth';
 import { differenceInHours, isSameDay } from 'date-fns';
-import { useAppDispatch } from './store';
 import { stopReportingRuntimeErrors } from 'react-error-overlay';
 import { useTenant } from './hooks/useTenant';
 import { Helmet } from 'react-helmet';
-import { userActions, userSelectors } from './store/user';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { FacebookProvider } from 'react-facebook';
 
@@ -38,15 +36,10 @@ const App: React.FC = () => {
   const tenant = useTenant();
   const { theme } = useTheme();
   const dialog = useDialog();
-  const dispatch = useAppDispatch();
   const user = useSelector(authSelectors.getAuthUser);
   const userExpired = useSelector(authSelectors.getUserExpired);
   const [freeMemory, setFreeMemory] = useState(0);
   const [errorMessage, setErrorMessage] = useState(false);
-
-  const userUnstableConnection = useSelector(
-    userSelectors.getUserUnstableConnection
-  );
 
   const isSslEnabled = window.location.protocol === 'https:';
 
@@ -185,43 +178,6 @@ const App: React.FC = () => {
   const reloadView = () => {
     window.location.reload();
   };
-
-  useEffect(() => {
-    if (userUnstableConnection) {
-      dialog({
-        position: DialogPosition.Middle,
-        blocking: false,
-        render: (onSubmit, onClose) => {
-          return (
-            <ActionModal
-              customIcon={renderIcon(
-                'ExclamationIcon',
-                `z-20 w-28 h-28 text-alertMain`
-              )}
-              className={'bg-white'}
-              title={'Weak connection'}
-              detailText={
-                'Your internet connection is unstable. Turn off mobile data and Wi-Fi to keep using the app, or connect to a stronger network.'
-              }
-              actionButtons={[
-                {
-                  text: 'Okay',
-                  textColour: 'white',
-                  colour: 'quatenary',
-                  type: 'filled',
-                  leadingIcon: 'CheckCircleIcon',
-                  onClick: () => {
-                    dispatch(userActions.updateConnectionStatus(false));
-                    onSubmit();
-                  },
-                },
-              ]}
-            />
-          );
-        },
-      });
-    }
-  }, [dialog, dispatch, userUnstableConnection]);
 
   useEffect(() => {
     if (errorMessage) {

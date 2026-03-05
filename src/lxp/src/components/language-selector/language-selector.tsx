@@ -78,9 +78,6 @@ export const LanguageSelector = ({
     }
   }, [currentLocale, i18n]);
 
-  console.log('currentLocale', currentLocale);
-  console.log('selectedLocale', selectedLocale);
-
   return (
     <div className={classNames(styles.localeDropDownWrapper, className)}>
       <label
