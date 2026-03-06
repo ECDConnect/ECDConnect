@@ -21,6 +21,7 @@ import { ChildRegistrationDto } from '@/models/child/child-registration.dto';
 import { RetrieveFromCache } from '@/models/sync/retrieve-from-cache';
 
 export const ChildrenActions = {
+  GET_CHILD_BY_ID: 'getChildById',
   GET_CHILDREN: 'getChildren',
   GET_CHILDREN_CLASS_GROUP: 'getChildrenForClassroomGroup',
   GET_CHILDREN_CLASSROOM: 'getChildrenForClassroom',
@@ -34,6 +35,38 @@ export const ChildrenActions = {
   REMOVE_CHILD: 'removeChild',
 };
 
+export const getChildById = createAsyncThunk<
+  { child: ChildDto },
+  { childId: string },
+  ThunkApiType<RootState>
+>(
+  ChildrenActions.GET_CHILD_BY_ID,
+  async ({ childId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let child: ChildDto;
+
+      if (userAuth?.auth_token) {
+        child = await new ChildService(userAuth?.auth_token).getChildById(
+          childId
+        );
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!child) {
+        return rejectWithValue('Error getting GetChildById');
+      }
+      return { child };
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 export const getChildren = createAsyncThunk<
   { children: ChildDto[] } & RetrieveFromCache,
   {} & OverrideCache,
@@ -46,14 +79,7 @@ export const getChildren = createAsyncThunk<
       children: { childData: childDataCache },
     } = getState();
 
-    let oneDayAgo = new Date();
-    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
-
-    if (
-      !!overrideCache ||
-      !childDataCache.dateRefreshed ||
-      new Date(childDataCache.dateRefreshed) < oneDayAgo
-    ) {
+    if (!childDataCache || !!overrideCache) {
       try {
         let children: ChildDto[];
 
@@ -89,14 +115,7 @@ export const getChildrenForCoach = createAsyncThunk<
       children: { childData: childDataCache },
     } = getState();
 
-    let oneDayAgo = new Date();
-    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
-
-    if (
-      !!overrideCache ||
-      !childDataCache.dateRefreshed ||
-      new Date(childDataCache.dateRefreshed) < oneDayAgo
-    ) {
+    if (!!overrideCache || !childDataCache) {
       try {
         let children: ChildDto[];
 

@@ -96,7 +96,12 @@ export const getCommunityProfile = createAsyncThunk<
   async ({ userId }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
+      community: { communityProfile: cache },
     } = getState();
+
+    if (cache) {
+      return cache;
+    }
 
     try {
       if (userAuth?.auth_token) {

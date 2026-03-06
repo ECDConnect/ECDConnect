@@ -28,10 +28,6 @@ import { practitionerSelectors } from '@/store/practitioner';
 import robot from '@/assets/iconRobot.svg';
 import { childrenSelectors } from '@/store/children';
 import { userSelectors } from '@/store/user';
-import {
-  programmeThemeSelectors,
-  programmeThemeThunkActions,
-} from '@/store/content/programme-theme';
 import { usePractitionerAbsentees } from '@/hooks/usePractitionerAbsentees';
 import { Classes } from '../classes/classes';
 import { NavigationNames } from '@/pages/navigation';
@@ -72,7 +68,6 @@ export const ClassDashboard: React.FC = () => {
   );
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const children = useSelector(childrenSelectors.getChildren);
-  const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
   const tenant = useTenant();
   const isWhiteLabel = tenant?.isWhiteLabel;
   const { attendanceEnabled, classroomActivitiesEnabled, progressEnabled } =
