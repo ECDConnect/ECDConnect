@@ -36,7 +36,8 @@ export const AbsenceCard: React.FC<AbsenceCardProps> = ({
 
   const dialog = useDialog();
 
-  const { allAbsentees } = usePractitionerAbsentees(practitioner!);
+  const { allAbsentees, practitionerIsOnLeave, isScheduledLeave } =
+    usePractitionerAbsentees(practitioner!);
 
   const onClick = () => {
     if (!isOnline) {
@@ -52,7 +53,11 @@ export const AbsenceCard: React.FC<AbsenceCardProps> = ({
     handleReassignClass(practitionerUserId);
   };
 
-  if (practitioner && !!allAbsentees?.length) {
+  if (
+    practitioner &&
+    !!allAbsentees?.length &&
+    (practitionerIsOnLeave || isScheduledLeave)
+  ) {
     return (
       <>
         {allAbsentees?.map((absentee) => {
