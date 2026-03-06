@@ -89,6 +89,7 @@ import {
   resourceReducer,
   resourcesPersistConfig,
 } from '../resources/resources';
+import { invitesPersistConfig, invitesReducer } from '../invites/invites';
 
 const persistedReducers = {
   analytics: persistReducer(analyticsPersistConfig, analyticsReducer),
@@ -139,6 +140,7 @@ const persistedReducers = {
   activityData: activityReducer,
   storyBookData: storyBookReducer,
   programmeRoutineData: programmeRoutineReducer,
+  invitesData: persistReducer(invitesPersistConfig, invitesReducer),
 };
 
 const rootReducer = combineReducers(persistedReducers);

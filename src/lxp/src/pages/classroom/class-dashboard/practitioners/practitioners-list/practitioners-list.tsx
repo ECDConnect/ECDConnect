@@ -10,7 +10,7 @@ import {
   RoundIcon,
   DialogPosition,
   Dialog,
-  Alert,
+  AlertSeverityType,
 } from '@ecdlink/ui';
 import { getAvatarColor, useDialog } from '@ecdlink/core';
 import { useHistory } from 'react-router-dom';
@@ -31,13 +31,10 @@ import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { JoinOrAddPreschoolModal } from '@/components/join-or-add-preschool-modal/join-or-add-preschool-modal';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { InviteDto } from '@ecdlink/core/src/models/dto/Invite/invite.dto';
-import { InviteService } from '@/services/InviteService';
-import { authSelectors } from '@/store/auth';
 import { userSelectors } from '@/store/user';
 import { InvitedPractitioner } from '@/pages/practitioner/practitioner-programme-information/practitioner-list/invited-practitioner/invited-practitioner';
 import { formatPhonenumberLocal } from '@utils/common/contact-details.utils';
-import { useTenant } from '@/hooks/useTenant';
-import { AlertSeverityType } from '@ecdlink/ui';
+import { invitesSelectors } from '@/store/invites';
 
 export const PractitionersList: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -47,17 +44,17 @@ export const PractitionersList: React.FC = () => {
   const { errorDialog } = useRequestResponseDialog();
   const { isOnline } = useOnlineStatus();
   const user = useSelector(userSelectors.getUser);
-  const [invites, setInvites] = useState<InviteDto[]>([]);
-  const userAuth = useSelector(authSelectors.getAuthUser);
   const [selectedInvite, setSelectedInvite] = useState<InviteDto>();
   const [practitionerInviteModal, setPractitionerInviteModal] = useState(false);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
+  const invites = useSelector(
+    invitesSelectors.getInvitesByPrincipalId(user?.id)
+  );
+
   const practitionersList = practitioners?.filter(
     (item) => item.userId !== practitioner?.userId
   );
-  const tenant = useTenant();
-  const isOpenAccess = tenant?.isOpenAccess;
 
   const { isLoading, isRejected: isGetPractitionerRejected } =
     useThunkFetchCall(
@@ -87,21 +84,6 @@ export const PractitionersList: React.FC = () => {
     },
     [invites]
   );
-
-  const getPractitionerColleagues = async () => {
-    if (userAuth && isOnline) {
-      await appDispatch(
-        practitionerThunkActions.getAllPractitioners({})
-      ).unwrap();
-      if (isOpenAccess) {
-        setInvites(
-          await new InviteService(userAuth?.auth_token).getInvitesByPrincipalId(
-            user?.id!
-          )
-        );
-      }
-    }
-  };
 
   const mapUserListDataItem = (
     practitionerRecord: PractitionerDto
@@ -139,11 +121,6 @@ export const PractitionersList: React.FC = () => {
       onActionClick: () => handleClick(practitioner?.userId!),
     };
   };
-
-  useEffect(() => {
-    getPractitionerColleagues();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const practitionerListData = useMemo<
@@ -370,7 +347,7 @@ export const PractitionersList: React.FC = () => {
           userId={selectedInvite?.user.id || ''}
           phoneNumber={selectedInvite?.user.phoneNumber || ''}
           dateInvited={selectedInvite?.insertedDate}
-          setInvites={setInvites}
+          // setInvites={setInvites}
         />
       </Dialog>
     </>

@@ -59,11 +59,11 @@ export const LeaveCardMenu = ({
         await appDispatch(
           practitionerThunkActions.getAllPractitioners({})
         ).unwrap();
-        await appDispatch(
-          practitionerThunkActions.getPractitionerByUserId({
-            userId: practitioner?.userId!,
-          })
-        ).unwrap();
+        //await appDispatch(
+        //  practitionerThunkActions.getPractitionerByUserId({
+        //    userId: practitioner?.userId!,
+        //  })
+        //).unwrap();
       } catch (error) {
         console.error('Error deleting leave:', error);
       } finally {
