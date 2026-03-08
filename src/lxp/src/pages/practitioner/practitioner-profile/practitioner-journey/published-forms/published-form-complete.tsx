@@ -336,7 +336,7 @@ export const CompletePublishedForm: React.FC<CompletePublishedFormProps> = ({
                   size="normal"
                   color="quatenary"
                   type="filled"
-                  text="Save classroom"
+                  text="Save"
                   textColor="white"
                 />
               </div>

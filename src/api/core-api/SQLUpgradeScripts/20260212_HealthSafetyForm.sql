@@ -66,7 +66,7 @@ DECLARE
     ];
 
     step_4 TEXT[] := ARRAY['Notes or next steps'];
-    step_5_A TEXT[] := ARRAY['How many cms is the short side of the room?','How many cms is the long side of the room?'];
+    step_5_A TEXT[] := ARRAY['How many cms is the short side of the room?', 'How many cms is the long side of the room?'];
     step_5_B TEXT[] := ARRAY['How many assistants support this class?'];
     step_6 TEXT[] := ARRAY['Where is the preschool located?'];
 
@@ -151,6 +151,7 @@ BEGIN
             VALUES
                 (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId1, question, tenant_id::uuid, now(), now()),
                 (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId2, answerType1, tenant_id::uuid, now(), now()),
+                (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId5, '0', tenant_id::uuid, now(), now()),
                 (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId4, 'Any classroom with more than 10 children must have an assistant.', tenant_id::uuid, now(), now());
         END LOOP;
 
@@ -373,6 +374,7 @@ BEGIN
             (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId2, page_4_description, tenant_id::uuid, now(), now()),
             (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId3, page_4_step, tenant_id::uuid, now(), now()),
 			(nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId4, page_4_questions, tenant_id::uuid, now(), now()),
+            (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId7, 'true', tenant_id::uuid, now(), now()),
             (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId6, 'true', tenant_id::uuid, now(), now());
 		---------
 		new_content_id := nextval('public."Content_Id_seq"');
