@@ -1,5 +1,5 @@
 import { AssessmentPageDto } from '@/models/journey/Journey.dto';
-import { Score } from '@/pages/coach/coach-practitioner-journey/forms/reaccreditation/components/score';
+import { Score } from './score';
 import {
   Alert,
   Divider,
@@ -458,14 +458,17 @@ export const PublishedFormStep: React.FC<PublishedFormStepProps> = ({
                       answerId: '',
                     });
                   }}
-                  {...(!!question.answer &&
+                  {...((!!question.answer &&
                     !!question.minValue &&
-                    Number(question.answer) < Number(question.minValue) && {
-                      error: {
-                        type: 'max',
-                        message: `Please enter a number that is more than ${question.minValue}.`,
-                      },
-                    })}
+                    Number(question.answer) < Number(question.minValue)) ||
+                  (!!question.answer && Number(question.answer) < 0)
+                    ? {
+                        error: {
+                          type: 'max',
+                          message: `Please enter a number that is more than ${question.minValue}.`,
+                        },
+                      }
+                    : {})}
                 />
               )}
               {/* ✏️ Map Input */}
