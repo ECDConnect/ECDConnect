@@ -115,16 +115,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
         public async Task<ClassroomGroupChildAttendanceReportOverviewModel> ClassroomAttendanceOverviewReport(
             [Service] ChildAttendanceReport report,
-            string userId,
+            [Service] IHttpContextAccessor httpContextAccessor,
             DateTime startDate,
             DateTime endDate)
         {
+            var userId = httpContextAccessor.HttpContext.GetUser().Id;
             var startMonth = startDate.GetStartOfMonth();
             //var endMonth = endDate.GetEndOfMonth();
             //if current month, do not project as per business rules and use current date as enddate - if its the 1st of the month and dates match, then add 1 day
             var endMonth = (endDate.Month == DateTime.Now.Month ? (startMonth.Date == DateTime.Now.Date ? DateTime.Now.AddDays(1) : DateTime.Now) : endDate.GetEndOfMonth());
 
-            return report.GetClassroomAttendanceOverView(userId, startMonth.Date, endMonth.GetEndOfDay());
+            return report.GetClassroomAttendanceOverView(userId.ToString(), startMonth.Date, endMonth.GetEndOfDay());
         }
     }
 }
