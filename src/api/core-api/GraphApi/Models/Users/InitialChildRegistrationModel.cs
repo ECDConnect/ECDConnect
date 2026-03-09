@@ -1,5 +1,4 @@
-﻿using ECDLink.Security.Managers;
-using System;
+﻿using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models.Users
 {

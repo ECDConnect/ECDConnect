@@ -10,6 +10,7 @@ import {
   upsertClassroomGroupLearners,
   upsertClassroomGroupProgrammes,
   addChildProgressReportPeriods,
+  getClassroomGroupForClassId,
 } from './classroom.actions';
 import { ClassroomState } from './classroom.types';
 import { ClassroomDto as SimpleClassroomDto } from '@/models/classroom/classroom.dto';
@@ -217,6 +218,19 @@ const classroomsSlice = createSlice({
           dateRefreshed: new Date().toDateString(),
           synced: true,
         };
+      }
+    });
+    builder.addCase(getClassroomGroupForClassId.fulfilled, (state, action) => {
+      if (!action.payload) return;
+
+      const classIndex = state.classroomGroupData.classroomGroups.findIndex(
+        (item) => item.id === action.payload.id
+      );
+
+      if (classIndex === -1) {
+        state.classroomGroupData.classroomGroups.push(action.payload);
+      } else {
+        state.classroomGroupData.classroomGroups[classIndex] = action.payload;
       }
     });
     builder.addCase(getClassroomGroups.fulfilled, (state, action) => {

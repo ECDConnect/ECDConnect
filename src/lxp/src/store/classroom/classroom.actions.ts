@@ -23,6 +23,7 @@ export const ClassroomActions = {
   GET_CLASSROOM: 'getClassroom',
   GET_CLASSROOM_GROUPS: 'getClassroomGroups',
   UPSERT_CLASSROOM_GROUPS: 'upsertClassroomGroups',
+  GET_CLASSROOM_GROUP_FOR_CLASS_ID: 'getClassroomGroupForClassId',
   UPSERT_CLASSROOM_GROUPS_LEARNERS: 'upsertClassroomGroupLearners',
   UPDATE_CLASSROOM_GROUP: 'updateClassroomGroup',
   UPSERT_CLASS_PROGRAMMES: 'upsertClassroomGroupProgrammes',
@@ -45,15 +46,7 @@ export const getClassroom = createAsyncThunk<
       classroomData: { classroom: cache },
     } = getState();
 
-    let oneDayAgo = new Date();
-    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
-
-    if (
-      !!overrideCache ||
-      !cache ||
-      !cache.dateRefreshed ||
-      new Date(cache.dateRefreshed) < oneDayAgo
-    ) {
+    if (!!overrideCache || !cache) {
       try {
         let classroom: SimpleClassroomDto | undefined;
         if (userAuth?.auth_token) {
@@ -87,14 +80,9 @@ export const getClassroomGroups = createAsyncThunk<
       classroomData: { classroomGroupData: cache },
     } = getState();
 
-    let oneDayAgo = new Date();
-    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+    const hasClasses = cache.classroomGroups.length !== 0;
 
-    if (
-      !!overrideCache ||
-      !cache.dateRefreshed ||
-      new Date(cache.dateRefreshed) < oneDayAgo
-    ) {
+    if (!!overrideCache || !cache || !hasClasses) {
       try {
         let groups: SimpleClassroomGroupDto[] | undefined;
 
@@ -124,6 +112,39 @@ export const getClassroomGroups = createAsyncThunk<
   }
 );
 
+export const getClassroomGroupForClassId = createAsyncThunk<
+  SimpleClassroomGroupDto,
+  { classroomGroupId?: string },
+  ThunkApiType<RootState>
+>(
+  ClassroomActions.GET_CLASSROOM_GROUP_FOR_CLASS_ID,
+  // eslint-disable-next-line no-empty-pattern
+  async ({ classroomGroupId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let group: SimpleClassroomGroupDto | undefined;
+
+      if (userAuth?.auth_token) {
+        group = await new ClassroomGroupService(
+          userAuth?.auth_token
+        ).getClassroomGroupForClassId(classroomGroupId);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!group) {
+        return rejectWithValue('Error getting Classroom Groups');
+      }
+      return group;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 export const upsertClassroom = createAsyncThunk<
   boolean,
   // eslint-disable-next-line @typescript-eslint/ban-types
@@ -137,8 +158,18 @@ export const upsertClassroom = createAsyncThunk<
       auth: { userAuth },
       classroomData: { classroom },
     } = getState();
+
+    const token = userAuth?.auth_token;
+    const shouldSyncClassroom = Boolean(
+      token && classroom && !classroom.synced
+    );
+
+    if (shouldSyncClassroom) {
+      return false;
+    }
+
     try {
-      if (userAuth?.auth_token && classroom) {
+      if (userAuth?.auth_token && classroom && !classroom?.synced) {
         const input: ClassroomInput = {
           Id: classroom.id,
           UserId: classroom.principal.userId,
