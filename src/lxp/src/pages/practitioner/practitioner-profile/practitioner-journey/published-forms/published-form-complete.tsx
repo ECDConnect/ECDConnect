@@ -360,7 +360,7 @@ export const CompletePublishedForm: React.FC<CompletePublishedFormProps> = ({
             className=""
             type="small"
             text={`${format(today, 'dd MMMM yyyy')}`}
-            color="textLight"
+            color="textMid"
           />
           <Divider dividerType="dashed" className="my-2" />
           <Typography
