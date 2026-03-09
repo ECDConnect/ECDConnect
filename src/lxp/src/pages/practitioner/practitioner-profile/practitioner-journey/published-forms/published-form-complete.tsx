@@ -353,14 +353,13 @@ export const CompletePublishedForm: React.FC<CompletePublishedFormProps> = ({
         <>
           <Typography
             className="mt-3"
-            type="h5"
+            type="h4"
             text={`About the ${assessmentFormData?.name} form`}
           />
           <Typography
             className=""
-            type="small"
+            type="h4"
             text={`${format(today, 'dd MMMM yyyy')}`}
-            color="textMid"
           />
           <Divider dividerType="dashed" className="my-2" />
           <Typography
