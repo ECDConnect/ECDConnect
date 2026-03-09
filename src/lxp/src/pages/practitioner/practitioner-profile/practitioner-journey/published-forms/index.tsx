@@ -20,6 +20,7 @@ import {
   getJourneyPublishedAssessmentForms,
 } from '@/store/pqa/pqa.actions';
 import { CompletePublishedForm } from './published-form-complete';
+import { useSnackbar } from '@ecdlink/core/lib/services/snackbar';
 
 interface FormProps {
   onBack: () => void;
@@ -30,6 +31,7 @@ export const PublishedFormsList = ({ onBack }: FormProps) => {
   const appDispatch = useAppDispatch();
   const tenant = useTenant();
   const [isLoading, setIsLoading] = useState(false);
+  const { showMessage } = useSnackbar();
 
   // Published Forms
   const publishedForms = useSelector(getJourneyTimelinePublishedFormsSelector);
@@ -73,6 +75,13 @@ export const PublishedFormsList = ({ onBack }: FormProps) => {
 
   const onFormComplete = () => {
     setShowAssessmentFormData(false);
+    showMessage({
+      message: `${
+        assessmentFormData.name === 'Self-assessment'
+          ? 'Self-assessment form'
+          : 'Health and safety check'
+      } completed!`,
+    });
     onBack();
   };
 

@@ -10,6 +10,7 @@ import { notesThunkActions } from '../notes';
 import { programmeThunkActions } from '../programme';
 import { RootState, ThunkApiType } from '../types';
 import { userThunkActions } from '../user';
+import { queryErrorsActions, queryErrorsThunkActions } from '../queryErrors';
 import { pqaThunkActions } from '../pqa';
 import { calendarThunkActions } from '../calendar';
 import { progressTrackingThunkActions } from '../progress-tracking';
@@ -99,6 +100,10 @@ const PRACTITIONER_SYNC_STEPS: SyncStep[] = [
   {
     title: 'Calendar events',
     action: calendarThunkActions.cancelCalendarEvent,
+  },
+  {
+    title: 'API errors',
+    action: queryErrorsThunkActions.upsertQueryErrors,
   },
 ];
 

@@ -6,6 +6,8 @@ import { store } from '@store';
 import { refreshToken } from '@store/auth/auth.actions';
 import { userActions } from '@/store/user';
 import { TIMEOUTS } from '@/constants/timeouts';
+import { queryErrorsActions } from '@/store/queryErrors';
+import { upsertQueryErrors } from '@/store/queryErrors/queryErrors.actions';
 
 const disableGraphqlErrorAlert =
   process.env.REACT_APP_DISABLE_GRAPHQL_ERROR_ALERT;
@@ -139,7 +141,7 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
    * RESPONSE INTERCEPTOR
    */
   axiosInstance.interceptors.response.use(
-    (response: AxiosResponse | any) => {
+    async (response: AxiosResponse | any) => {
       if (response.config.baseURL === Config.graphQlApi) {
         const hasInternalErrors = response.data.errors !== undefined;
 
@@ -162,6 +164,22 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
               ? `: ${response.data.errors[0].message}`
               : '');
 
+          const user = store?.getState()?.auth?.userAuth;
+          if (
+            process.env.REACT_APP_SUPPRESS_ERROR_LOGGING === undefined ||
+            process.env.REACT_APP_SUPPRESS_ERROR_LOGGING === '1'
+          ) {
+            for (let err of response.data.errors) {
+              store.dispatch(
+                queryErrorsActions.addError({
+                  ...err,
+                  timestamp: Date.now(),
+                  eventDate: Date.now(),
+                })
+              );
+            }
+            await store.dispatch(upsertQueryErrors(user?.id || ''));
+          }
           logGraphQL(
             console.error,
             response.statusText,
