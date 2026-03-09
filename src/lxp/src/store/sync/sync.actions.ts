@@ -10,7 +10,7 @@ import { notesThunkActions } from '../notes';
 import { programmeThunkActions } from '../programme';
 import { RootState, ThunkApiType } from '../types';
 import { userThunkActions } from '../user';
-
+import { queryErrorsActions, queryErrorsThunkActions } from '../queryErrors';
 import { pqaThunkActions } from '../pqa';
 import { calendarThunkActions } from '../calendar';
 import { progressTrackingThunkActions } from '../progress-tracking';
@@ -115,6 +115,10 @@ export const syncOfflineData = createAsyncThunk<
     {
       title: 'Statements',
       action: statementsThunkActions.upsertIncomeStatements,
+    },
+    {
+      title: 'API Errors',
+      action: queryErrorsThunkActions.upsertQueryErrors,
     },
   ];
 
@@ -224,6 +228,10 @@ export const syncOfflineDataForPractitioner = createAsyncThunk<
       {
         title: 'Calendar events',
         action: calendarThunkActions.cancelCalendarEvent,
+      },
+      {
+        title: 'API Errors',
+        action: queryErrorsThunkActions.upsertQueryErrors,
       },
     ];
 
