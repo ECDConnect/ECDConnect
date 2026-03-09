@@ -253,7 +253,7 @@ export const ChildBasicInfo: React.FC<
     const childInformation = {
       dobDay: 1,
       dobMonth: 1,
-      dobYear: new Date().getFullYear(),
+      dobYear: 1,
       firstname: firstName,
       surname: surname,
       playgroupId: getSelectedClassroomGroupId(),
