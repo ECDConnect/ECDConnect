@@ -678,13 +678,16 @@ export default function Practitioners() {
             filters={[
               {
                 type: 'search-dropdown',
-                menuItemClassName: 'w-11/12 mx-8 mt-1',
                 options: tenant.isWhiteLabel
                   ? wlSortByConnectUsage
                   : oaSortByConnectUsage,
                 selectedOptions: connectUsageFilter,
                 onChange: setConnectUsageFilter,
                 placeholder: ColumnNames.Usage,
+                menuItemClassName: 'w-11/12 left-4',
+                className: 'h-11 mb-2 border-2 border-transparent',
+                color: 'quatenary',
+                bgColor: 'white',
                 multiple: true,
                 info: { name: ColumnNames.Usage + ':' },
               },
@@ -710,7 +713,10 @@ export default function Practitioners() {
               },
               {
                 type: 'search-dropdown',
-                menuItemClassName: 'w-11/12 mx-8 mt-1',
+                menuItemClassName: 'w-11/12 left-4',
+                className: 'h-11 mb-2 border-2 border-transparent',
+                color: 'quatenary',
+                bgColor: 'white',
                 options: provinces,
                 selectedOptions: provincesFiltered,
                 onChange: setProvincesFiltered,
@@ -720,7 +726,10 @@ export default function Practitioners() {
               },
               {
                 type: 'search-dropdown',
-                menuItemClassName: 'w-11/12 mx-8 mt-1',
+                menuItemClassName: 'w-11/12 left-4',
+                className: 'h-11 mb-2 border-2 border-transparent',
+                color: 'quatenary',
+                bgColor: 'white',
                 options: sortByClientStatusOptions,
                 selectedOptions: statusFilter,
                 onChange: setStatusFilter,
@@ -730,7 +739,10 @@ export default function Practitioners() {
               },
               {
                 type: 'search-dropdown',
-                menuItemClassName: 'w-11/12 mx-8 mt-1',
+                menuItemClassName: 'w-11/12 left-4',
+                className: 'h-11 mb-2 border-2 border-transparent',
+                color: 'quatenary',
+                bgColor: 'white',
                 options: sortByPractitionerTypeOptions,
                 selectedOptions: practitionerTypeFiltered,
                 onChange: setPractitionerTypeFiltered,

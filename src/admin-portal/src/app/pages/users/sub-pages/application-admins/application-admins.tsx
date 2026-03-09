@@ -29,6 +29,7 @@ import { format } from 'date-fns';
 import { AdminTypes, Status } from './applications-admins.types';
 import UiTable from './components/ui-table';
 import { filterByValue } from '../../../../utils/string-utils/string-utils';
+import * as styles from '../../../pages.styles';
 
 export const sortByClientStatusOptions: SearchDropDownOption<string>[] = [
   Status?.ACTIVE,
@@ -274,7 +275,7 @@ export default function ApplicationAdmins() {
   if (tableData) {
     return (
       <div>
-        <div className="flex flex-col">
+        <div className="flex flex-col bg-white p-6">
           <div className="pb-5 sm:flex sm:items-center sm:justify-between">
             <div className="text-body w-11/12 sm:flex  sm:justify-around">
               <div className="text-body w-11/12 flex-col sm:flex sm:justify-around">
@@ -285,7 +286,7 @@ export default function ApplicationAdmins() {
                     )}
                   </span>
                   <input
-                    className="focus:outline-none sm:text-md block w-full rounded-md bg-white py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
+                    className="focus:outline-none sm:text-md bg-adminPortalBg block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
                     placeholder="      Search by email or name..."
                     onChange={search}
                   />
@@ -299,8 +300,8 @@ export default function ApplicationAdmins() {
                       >
                         <Dropdown
                           fillType="filled"
-                          textColor={'textLight'}
-                          fillColor={endDate ? 'secondary' : 'white'}
+                          textColor={'textMid'}
+                          fillColor={endDate ? 'secondary' : 'adminPortalBg'}
                           placeholder={dateDropdownValue || 'Date invited'}
                           labelColor={endDate ? 'white' : 'textLight'}
                           list={[]}
@@ -318,23 +319,24 @@ export default function ApplicationAdmins() {
                         selectsRange={true}
                         inline
                         shouldCloseOnSelect={true}
+                        className="mt-1 h-11 w-64 border-2 border-transparent"
                       />
                     )}
 
                     <div className="items-left mr-2 flex gap-2">
                       <SearchDropDown<string>
                         displayMenuOverlay={true}
-                        className={'mr-1'}
-                        menuItemClassName={
-                          'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
-                        }
+                        menuItemClassName="w-11/12 left-4"
+                        className="mb-2 h-11 border-2 border-transparent"
+                        color="quatenary"
+                        bgColor="white"
                         overlayTopOffset={'120'}
                         options={sortByClientStatusOptions}
                         selectedOptions={statusFilter}
                         onChange={setStatusFilter}
                         placeholder={'Status'}
                         multiple={true}
-                        color={'secondary'}
+                        // color={'adminPortalBg'}
                         info={{
                           name: `Status:`,
                         }}
@@ -345,7 +347,7 @@ export default function ApplicationAdmins() {
                       <button
                         onClick={clearFilters}
                         type="button"
-                        className="text-secondary hover:bg-secondary outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium hover:text-white  "
+                        className={styles.clearButton}
                       >
                         Clear All
                       </button>
@@ -359,13 +361,7 @@ export default function ApplicationAdmins() {
                   <button
                     onClick={() => setShowFilter(!showFilter)}
                     id="dropdownHoverButton"
-                    className={`${
-                      numberOfFilters
-                        ? ' bg-secondary'
-                        : 'border-secondary border-2 bg-white'
-                    } focus:border-secondary focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg px-4 py-2.5 text-center text-sm font-medium ${
-                      numberOfFilters ? 'text-white' : 'text-textMid'
-                    } hover:bg-gray-300 focus:ring-2`}
+                    className={styles.filterButton}
                     type="button"
                   >
                     <div className="flex items-center gap-1">
@@ -403,7 +399,7 @@ export default function ApplicationAdmins() {
                 <button
                   onClick={displayUserPanel}
                   type="button"
-                  className="bg-secondary hover:bg-uiLight focus:outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                  className={styles.mainButton}
                 >
                   <PlusIcon className="mr-4 h-5 w-5"> </PlusIcon>
                   Create Administrator

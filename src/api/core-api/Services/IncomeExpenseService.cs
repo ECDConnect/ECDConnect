@@ -201,14 +201,15 @@ namespace ECDLink.Core.Services
             #region Update Income Items
 
             // Deletes
-            var removedItems = exisitingStatement.IncomeItems.Where(x => !input.IncomeItems.Any(y => y.Id == x.Id)).ToList();
+            var removedIncomeIds = input.IncomeItems.Where(x => !x.IsActive).Select(x => x.Id).ToList();
+            var removedItems = exisitingStatement.IncomeItems.Where(x => removedIncomeIds.Contains(x.Id)).ToList();
             foreach (var item in removedItems)
             {
-                _statementsIncomeRepo.Delete(item.Id);
+                item.IsActive = false;
             }
 
             // Updates
-            foreach (var item in exisitingStatement.IncomeItems)
+            foreach (var item in exisitingStatement.IncomeItems.Where(x => x.IsActive))
             {
                 var inputItem = input.IncomeItems.FirstOrDefault(x => x.Id == item.Id);
                 if (inputItem == null)
@@ -288,14 +289,15 @@ namespace ECDLink.Core.Services
 
             #region Update Expense Items
             // Deletes
-            var removedExpenses = exisitingStatement.ExpenseItems.Where(x => input.ExpenseItems.Any(y => y.Id == x.Id)).ToList();
-            foreach (var item in removedItems)
+            var removedExpensesIds = input.ExpenseItems.Where(x => !x.IsActive).Select(x => x.Id).ToList();
+            var removedExpenses = exisitingStatement.ExpenseItems.Where(x => removedExpensesIds.Contains(x.Id)).ToList();
+            foreach (var item in removedExpenses)
             {
-                _statementsExpensesRepo.Delete(item.Id);
+                item.IsActive = false;
             }
 
             // Updates
-            foreach (var item in exisitingStatement.ExpenseItems)
+            foreach (var item in exisitingStatement.ExpenseItems.Where(x => x.IsActive))
             {
                 var inputItem = input.ExpenseItems.FirstOrDefault(x => x.Id == item.Id);
                 if (inputItem == null)
@@ -362,6 +364,10 @@ namespace ECDLink.Core.Services
 
         public string CreateIncomeStatementPDFDocument(string userId, StatementsIncomeStatement statement)
         {
+            // Filter only active items
+            statement.IncomeItems = statement.IncomeItems.Where(i => i.IsActive).ToList();
+            statement.ExpenseItems = statement.ExpenseItems.Where(e => e.IsActive).ToList();
+
             // update statement Download field
             if (statement?.Downloaded == false)
             {
@@ -392,15 +398,15 @@ namespace ECDLink.Core.Services
             var pdfDocumentHeader = new PdfDocumentHeader();
             pdfDocumentHeader.UserId = userId;
 
-            var siteAddress = new StringBuilder(classroom.SiteAddress?.AddressLine1 ?? "");
-            if (!string.IsNullOrWhiteSpace(classroom.SiteAddress?.AddressLine2)) siteAddress.Append(", " + classroom.SiteAddress?.AddressLine2);
-            if (!string.IsNullOrWhiteSpace(classroom.SiteAddress?.AddressLine3)) siteAddress.Append(", " + classroom.SiteAddress?.AddressLine3 ?? "");
-            if (!string.IsNullOrWhiteSpace(classroom.SiteAddress?.PostalCode)) siteAddress.Append(", " + classroom.SiteAddress?.PostalCode ?? "");
-            if (classroom.SiteAddress?.Province != null) siteAddress.Append(", " + classroom.SiteAddress?.Province.Description ?? "");
+            var siteAddress = new StringBuilder(classroom?.SiteAddress?.AddressLine1 ?? "");
+            if (!string.IsNullOrWhiteSpace(classroom?.SiteAddress?.AddressLine2)) siteAddress.Append(", " + classroom?.SiteAddress?.AddressLine2);
+            if (!string.IsNullOrWhiteSpace(classroom?.SiteAddress?.AddressLine3)) siteAddress.Append(", " + classroom?.SiteAddress?.AddressLine3 ?? "");
+            if (!string.IsNullOrWhiteSpace(classroom?.SiteAddress?.PostalCode)) siteAddress.Append(", " + classroom?.SiteAddress?.PostalCode ?? "");
+            if (classroom?.SiteAddress?.Province != null) siteAddress.Append(", " + classroom?.SiteAddress?.Province.Description ?? "");
             pdfDocumentHeader.SiteAddress = siteAddress.ToString();
 
             pdfDocumentHeader.ReportType = "StatementsPDF";
-            var userInfo = _documentManager.GetDocumentHeaderAddress(_userManager, pdfDocumentHeader);
+            var userInfo = _documentManager.GetDocumentHeaderAddress(_userManager, pdfDocumentHeader, filename, classroom?.ClassroomImageUrl);
 
             html += userInfo;
 
@@ -614,20 +620,23 @@ namespace ECDLink.Core.Services
             html += "</body></html>";
 
             // discard result
-            var doc = _documentManager.GetPdfSettings(html, filename, "portrait");
+            var doc = _documentManager.GetPdfSettings(html, "portrait");
             var pdf = _pdfConverter.Convert(doc);
             var base64Result = Convert.ToBase64String(pdf);
 
             return base64Result;
         }
 
-        public List<IncomeExpensePDFTableModel> GetStatementsIncomeExpensesPDFData(Guid statementId)
+       public List<IncomeExpensePDFTableModel> GetStatementsIncomeExpensesPDFData(Guid statementId)
         {
             var statement = _statementsRepo.GetAll()
                 .Include(x => x.IncomeItems)
                 .Include(x => x.ExpenseItems)
                 .Where(x => x.Id == statementId)
                 .First();
+            // Filter only active items
+            statement.IncomeItems = statement.IncomeItems.Where(i => i.IsActive).ToList();
+            statement.ExpenseItems = statement.ExpenseItems.Where(e => e.IsActive).ToList();
 
             return GetStatementsIncomeExpensesPDFData(statement);
         }

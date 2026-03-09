@@ -26,6 +26,7 @@ const settingSlice = createSlice({
       state.childInitialObservationPeriod =
         initialState.childInitialObservationPeriod;
       state.settings = initialState.settings;
+      state.notificationPollInterval = initialState.notificationPollInterval;
     },
     setLastDataSync: (state) => {
       state.lastDataSync = format(new Date(), 'MM/dd/yyyy hh:mm aa');

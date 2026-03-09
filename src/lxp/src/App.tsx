@@ -1,4 +1,5 @@
 import {
+  AppErrorHandler,
   DialogServiceProvider,
   SnackbarProvider,
   useDialog,
@@ -21,17 +22,16 @@ import InitialStoreSetup from './initial-store-setup';
 import { LoginModal } from './pages/auth/login-modal/login-modal';
 import { authSelectors } from './store/auth';
 import { settingActions } from './store/settings';
-// import BackgroundSync from './components/background-sync/background-sync';
-import { differenceInHours, getTime, isSameDay } from 'date-fns';
+import { differenceInHours, isSameDay } from 'date-fns';
 import { syncThunkActions } from './store/sync';
 import { useAppDispatch } from './store';
 import { practitionerSelectors } from './store/practitioner';
-import { AppErrorHandler } from '@ecdlink/core';
 import { stopReportingRuntimeErrors } from 'react-error-overlay';
 import { useTenant } from './hooks/useTenant';
 import { Helmet } from 'react-helmet';
 import { userActions, userSelectors } from './store/user';
-import { useOnlineStatus } from './hooks/useOnlineStatus';
+import { GoogleOAuthProvider } from '@react-oauth/google';
+import { FacebookProvider } from 'react-facebook';
 
 if (process.env.NODE_ENV === 'development') {
   stopReportingRuntimeErrors();
@@ -44,21 +44,19 @@ const App: React.FC = () => {
   const dispatch = useAppDispatch();
   const user = useSelector(authSelectors.getAuthUser);
   const userExpired = useSelector(authSelectors.getUserExpired);
-  const userLocalxpiration = JSON.parse(
-    localStorage?.getItem('userLocalxpiration')!
-  );
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const [freeMemory, setFreeMemory] = useState(0);
+  const [errorMessage, setErrorMessage] = useState(false);
 
-  const { isOnline } = useOnlineStatus();
   const userUnstableConnection = useSelector(
     userSelectors.getUserUnstableConnection
   );
 
-  const [expirationTime, setExpirationTime] = useState<number>();
+  const isSslEnabled = window.location.protocol === 'https:';
 
   const getTitle = () => {
     const env = process.env.REACT_APP_RUNENVIRONMENT || '';
-    var title = env;
+    let title = env;
     if (title !== '') title += ' ';
     title +=
       (tenant.isWhiteLabel
@@ -68,35 +66,38 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
-    const intervalId = setInterval(updateTime, 3600000);
-
-    // Clean up the interval when the component unmounts
-    return () => {
-      clearInterval(intervalId);
-    };
+    if (navigator?.storage?.estimate) {
+      navigator.storage
+        .estimate()
+        .then((estimate) => {
+          if (estimate?.quota) {
+            const freeMemoryMB = estimate.quota / (1024 * 1024);
+            setFreeMemory(Math.round(freeMemoryMB));
+          }
+        })
+        .catch(() => {
+          setFreeMemory(0);
+        });
+    } else {
+      setFreeMemory(0);
+    }
   }, []);
 
-  const updateTime = () => {
-    setExpirationTime(getTime(new Date()));
-  };
-
   useEffect(() => {
-    if (!!tenant && !!tenant.tenant) {
-      if (!!tenant.tenant.googleAnalyticsTag) {
+    if (tenant?.tenant) {
+      if (tenant.tenant.googleAnalyticsTag) {
         ReactGA.initialize([
           {
             trackingId: tenant.tenant.googleAnalyticsTag,
             gaOptions: {
               debug_mode:
-                (window.location.host.indexOf('localhost') > 0
-                  ? true
-                  : false) || !!process.env.REACT_APP_GADEBUGMODE,
+                window.location.host.indexOf('localhost') > 0 ||
+                !!process.env.REACT_APP_GADEBUGMODE,
             },
             gtagOptions: {
               debug_mode:
-                (window.location.host.indexOf('localhost') > 0
-                  ? true
-                  : false) || !!process.env.REACT_APP_GADEBUGMODE,
+                window.location.host.indexOf('localhost') > 0 ||
+                !!process.env.REACT_APP_GADEBUGMODE,
             },
           },
           // {
@@ -110,7 +111,7 @@ const App: React.FC = () => {
         });
       }
 
-      if (!!tenant.tenant.googleTagManager) {
+      if (tenant.tenant.googleTagManager) {
         const tagManagerArgs = {
           gtmId: tenant.tenant.googleTagManager,
         };
@@ -122,13 +123,13 @@ const App: React.FC = () => {
   }, [tenant]);
 
   useEffect(() => {
-    if (theme && theme.images) {
+    if (theme?.images) {
       try {
         let favicons = document.querySelectorAll('link[rel~="icon"]');
         favicons.forEach(function (favicon) {
           favicon?.parentNode?.removeChild(favicon);
         });
-        var favicon_link_html = document.createElement('link');
+        let favicon_link_html = document.createElement('link');
         favicon_link_html.rel = 'icon';
         favicon_link_html.href = theme.images.faviconUrl;
         favicon_link_html.type = 'image/x-icon';
@@ -141,7 +142,7 @@ const App: React.FC = () => {
         preloadFavicon.src = theme.images.faviconUrl;
       } catch (e) {}
     }
-  }, [theme?.images]);
+  }, [theme, theme?.images]);
 
   useEffect(() => {
     if (userExpired) {
@@ -149,14 +150,19 @@ const App: React.FC = () => {
         position: DialogPosition.Middle,
         blocking: true,
         render: (onSubmit, onClose) => {
-          return (
-            <LoginModal loginSuccessful={onSubmit} updateTime={updateTime} />
-          );
+          return <LoginModal loginSuccessful={onSubmit} />;
         },
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userExpired]);
+
+  useEffect(() => {
+    if (freeMemory !== 0 && freeMemory <= 200) {
+      setErrorMessage(true);
+      // Optionally block form or show message immediately
+    }
+  }, [freeMemory]);
 
   const onFocus = () => {
     const focusItem = JSON.parse(localStorage?.getItem('appFocus')!);
@@ -181,6 +187,10 @@ const App: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const reloadView = () => {
+    window.location.reload();
+  };
+
   useEffect(() => {
     if (userUnstableConnection) {
       dialog({
@@ -193,6 +203,7 @@ const App: React.FC = () => {
                 'ExclamationIcon',
                 `z-20 w-28 h-28 text-alertMain`
               )}
+              className={'bg-white'}
               title={'Weak connection'}
               detailText={
                 'Your internet connection is unstable. Turn off mobile data and Wi-Fi to keep using the app, or connect to a stronger network.'
@@ -201,7 +212,7 @@ const App: React.FC = () => {
                 {
                   text: 'Okay',
                   textColour: 'white',
-                  colour: 'primary',
+                  colour: 'quatenary',
                   type: 'filled',
                   leadingIcon: 'CheckCircleIcon',
                   onClick: () => {
@@ -215,7 +226,104 @@ const App: React.FC = () => {
         },
       });
     }
-  }, [userUnstableConnection]);
+  }, [dialog, dispatch, userUnstableConnection]);
+
+  useEffect(() => {
+    if (errorMessage) {
+      dialog({
+        position: DialogPosition.Middle,
+        blocking: false,
+        fullOverlay: true,
+        render: (onSubmit, onClose) => {
+          return (
+            <ActionModal
+              customIcon={renderIcon(
+                'ExclamationIcon',
+                `z-20 w-28 h-28 text-alertMain`
+              )}
+              className={'bg-white'}
+              title={'Your phone storage is almost full!'}
+              detailText={
+                'You have less than 10MB available. Please clear some items to keep using ECD Connect'
+              }
+              actionButtons={[
+                {
+                  text: 'Close',
+                  textColour: 'white',
+                  colour: 'quatenary',
+                  type: 'filled',
+                  leadingIcon: 'CheckCircleIcon',
+                  onClick: () => {
+                    onSubmit();
+                  },
+                },
+              ]}
+            />
+          );
+        },
+      });
+    }
+  }, [dialog, errorMessage]);
+
+  useEffect(() => {
+    let hasShownModal = false;
+
+    const handleOutdatedBrowser = (e: CustomEvent) => {
+      if (hasShownModal) return;
+      hasShownModal = true;
+
+      dialog({
+        position: DialogPosition.Middle,
+        blocking: true,
+        color: 'bg-white',
+        fullOverlay: true,
+        render: (onClose) => (
+          <ActionModal
+            customIcon={renderIcon(
+              'ExclamationIcon',
+              `z-20 w-28 h-28 text-alertMain`
+            )}
+            title={`Your internet browser is out of date!`}
+            detailText={`Please go to your app store and update your browser before continuing. Tap refresh to try again.`}
+            actionButtons={[
+              {
+                text: 'Refresh',
+                colour: 'quatenary',
+                type: 'filled',
+                onClick: reloadView,
+                textColour: 'white',
+                leadingIcon: 'RefreshIcon',
+              },
+            ]}
+          />
+        ),
+      });
+    };
+
+    window.addEventListener(
+      'browser-outdated',
+      handleOutdatedBrowser as EventListener
+    );
+
+    // Fallback: re-trigger detection if the script loaded late
+    const timeout = setTimeout(() => {
+      if (
+        !hasShownModal &&
+        (window as any).$buo &&
+        typeof (window as any).$buo.show === 'function'
+      ) {
+        (window as any).$buo.show();
+      }
+    }, 4000); // 4 seconds is safe
+
+    return () => {
+      window.removeEventListener(
+        'browser-outdated',
+        handleOutdatedBrowser as EventListener
+      );
+      clearTimeout(timeout);
+    };
+  }, [dialog]);
 
   const handleSync = async () => {
     if (practitioner?.isPrincipal === true) {
@@ -225,52 +333,61 @@ const App: React.FC = () => {
       dispatch(syncThunkActions.syncOfflineDataForPractitioner({}));
     }
     dispatch(settingActions.setLastDataSync());
-    // asyncCheck();
   };
 
-  // const asyncCheck = async () => {
-  //   if (user?.auth_token) {
-  //     const asyncCheckresponse = await new SettingsService(
-  //       user?.auth_token!
-  //     ).queryChangesToSync(lastDataSyncDate);
+  const routerContent = (
+    <IonReactRouter>
+      <AppErrorHandler>
+        <IonRouterOutlet>
+          {user && user.isTempUser !== true ? (
+            <InitialStoreSetup>
+              <SnackbarProvider>
+                <DialogServiceProvider>
+                  <InitialNotificationSetup>
+                    <AuthRoutes />
+                  </InitialNotificationSetup>
+                </DialogServiceProvider>
+              </SnackbarProvider>
+            </InitialStoreSetup>
+          ) : (
+            <PublicRoutes />
+          )}
+        </IonRouterOutlet>
+      </AppErrorHandler>
+    </IonReactRouter>
+  );
 
-  //     if (asyncCheckresponse === false) {
-  //       window.location.reload();
-  //     }
-  //   }
-  // };
-
-  const getRoutes = () => {
-    if (user && user.isTempUser !== true) {
-      return (
-        <InitialStoreSetup>
-          <SnackbarProvider>
-            <DialogServiceProvider>
-              <InitialNotificationSetup>
-                <AuthRoutes />
-                {/* <BackgroundSync /> */}
-              </InitialNotificationSetup>
-            </DialogServiceProvider>
-          </SnackbarProvider>
-        </InitialStoreSetup>
-      );
-    } else {
-      return <PublicRoutes />;
-    }
-  };
-
-  return (
+  const appShell = (
     <IonApp className="m-auto max-w-4xl bg-white">
       <Helmet>
         <title>{getTitle()}</title>
       </Helmet>
-      <IonReactRouter>
-        <AppErrorHandler>
-          <IonRouterOutlet>{getRoutes()}</IonRouterOutlet>
-        </AppErrorHandler>
-      </IonReactRouter>
+      {routerContent}
     </IonApp>
   );
+
+  const googleLogin = process.env.REACT_APP_GOOGLE_CLIENT_ID ? (
+    <GoogleOAuthProvider
+      clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID || ''}
+    >
+      {appShell}
+    </GoogleOAuthProvider>
+  ) : (
+    appShell
+  );
+
+  const facebookLogin =
+    process.env.REACT_APP_FACEBOOK_APP_ID && isSslEnabled ? (
+      <FacebookProvider appId={process.env.REACT_APP_FACEBOOK_APP_ID}>
+        {googleLogin}
+      </FacebookProvider>
+    ) : (
+      googleLogin
+    );
+
+  const root = facebookLogin;
+
+  return root;
 };
 
 export default App;

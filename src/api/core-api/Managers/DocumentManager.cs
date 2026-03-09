@@ -3,6 +3,7 @@ using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Workflow;
 using ECDLink.DataAccessLayer.Hierarchy;
@@ -82,7 +83,7 @@ namespace EcdLink.Api.CoreApi.Managers
             return docDate.ToString("MMMM", CultureInfo.InvariantCulture) + " " + docDate.ToString("yyyy", CultureInfo.InvariantCulture);
         }
 
-        public string GetDocumentHeaderAddress([Service] ApplicationUserManager userManager, PdfDocumentHeader pdfDocumentHeader)
+        public string GetDocumentHeaderAddress([Service] ApplicationUserManager userManager, PdfDocumentHeader pdfDocumentHeader, string filename, string classroomImageUrl=null)
         {
             var _headerAddress = "";
             ApplicationUser user = userManager.FindByIdAsync(pdfDocumentHeader.UserId).Result;
@@ -97,7 +98,13 @@ namespace EcdLink.Api.CoreApi.Managers
 
             if (pdfDocumentHeader.ReportType == "StatementsPDF")
             {
-                _headerAddress = "<div style='float: right;'><table>";
+                string headerHtml = !string.IsNullOrEmpty(classroomImageUrl)
+                    ? $@"<div style='display: inline-block'><h1><img src='{classroomImageUrl}' style='height: 80px; vertical-align: middle; alt='Logo'/>
+                    {filename}</h1></div>"
+                    : $@"<div style='display: inline-block'><h1>{filename}</h1></div>";
+
+                _headerAddress = headerHtml;
+                _headerAddress += "<div style='float: right;'><table style='padding-top: 12px;'>";
                 _headerAddress += "<tr><th style='width:50%'>Name:</th><td>" + firstName + "</td></tr>";
                 _headerAddress += "<tr><th>Phone number:</th><td>" + phoneNumber + "</td></tr>";
                 _headerAddress += "<tr><th>ID number:</th><td>" + idNumber + "</td></tr>";
@@ -115,27 +122,26 @@ namespace EcdLink.Api.CoreApi.Managers
             return _headerAddress;
         }
 
-        public HtmlToPdfDocument GetPdfSettings(string _html, string _header, string orientation)
+        public HtmlToPdfDocument GetPdfSettings(string _html, string orientation)
         {
             return new HtmlToPdfDocument()
             {
                 GlobalSettings = {
-                    ColorMode = ColorMode.Color,
-                    Orientation = orientation == "portrait" ?  Orientation.Portrait : Orientation.Landscape,
-                    PaperSize = PaperKind.A4,
-                    Margins = new MarginSettings() { Top = 10, Bottom=10, Left=5, Right=5 },
-                    // Use Out when you want to save the pdf to your local disk
-                    //Out = @"C:\DinkToPdf\" + _header.Replace(" ", "_") + ".pdf",
-                },
+            ColorMode = ColorMode.Color,
+            Orientation = orientation == "portrait" ?  Orientation.Portrait : Orientation.Landscape,
+            PaperSize = PaperKind.A4,
+            Margins = new MarginSettings { Top = 10, Bottom = 10, Left = 5, Right = 5 }, 
+        },
                 Objects = {
-                    new ObjectSettings() {
-                        PagesCount = true,
-                        HtmlContent = _html,
-                        WebSettings = { DefaultEncoding = "utf-8" },
-                        HeaderSettings = { FontSize=12, FontName="Arial", Left= _header, Line=false },
-                        FooterSettings = { FontSize=8, FontName="Arial", Right="Page [page] of [toPage]", Line = false },
-                        }
-                    }
+            new ObjectSettings()
+            {
+                PagesCount = true,
+                HtmlContent = _html,  
+                WebSettings = { DefaultEncoding = "utf-8"},
+                HeaderSettings = { FontSize = 12, FontName = "Arial" },  // Optional: Plain line as fallback
+                FooterSettings = { FontSize = 8, FontName = "Arial", Right = "Page [page] of [toPage]", Line = false },
+            }
+        }
             };
         }
     }

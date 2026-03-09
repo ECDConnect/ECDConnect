@@ -32,10 +32,10 @@ class ChildService {
             id
             workflowStatusId
             insertedDate
-            languageId
             allergies
             disabilities
             otherHealthConditions
+            otherLanguages
             isActive
             insertedBy
             userId
@@ -51,6 +51,9 @@ class ChildService {
               isActive
               isSouthAfricanCitizen
               verifiedByHomeAffairs
+              userLanguages {
+                languageId
+              }
             }
             caregiverId 
             caregiver {
@@ -108,21 +111,21 @@ class ChildService {
     return response.data.data.childrenForClassroomGroup;
   }
 
-  async getChildren(): Promise<ChildDto[]> {
+  async getChildrenForClassroom(userId: string): Promise<ChildDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { GetAllChild: ChildDto[] };
+      data: { childrenForClassroom: ChildDto[] };
       errors?: {};
     }>(``, {
-      query: `query($isActive: Boolean = true) {
-          GetAllChild(where: { isActive: { eq: $isActive } }) {
+      query: `query($userId: UUID!) {
+           childrenForClassroom(userId: $userId) {
             id
             workflowStatusId
             insertedDate
-            languageId
             allergies
             disabilities
             otherHealthConditions
+            otherLanguages
             isActive
             insertedBy
             userId
@@ -138,6 +141,99 @@ class ChildService {
               isActive
               isSouthAfricanCitizen
               verifiedByHomeAffairs
+              userLanguages {
+                languageId
+              }
+            }
+            caregiverId 
+            caregiver {
+              id
+              phoneNumber
+              idNumber
+              firstName
+              surname
+              fullName  
+              siteAddressId          
+              siteAddress {
+                id
+                provinceId
+                province {
+                  id
+                  description
+                }
+                name
+                addressLine1
+                addressLine2
+                addressLine3
+                postalCode
+                ward
+                isActive
+              }
+              relationId
+              educationId
+              emergencyContactFirstName
+              emergencyContactSurname
+              emergencyContactPhoneNumber
+              additionalFirstName
+              additionalSurname
+              additionalPhoneNumber
+              joinReferencePanel
+              contribution
+              grants {
+                id
+                description
+              }
+              isActive
+              isAllowedCustody
+            }
+          }
+        }
+      `,
+      variables: {
+        userId: userId,
+      },
+    });
+
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error('Get Children Failed - Server connection error');
+    }
+
+    return response.data.data.childrenForClassroom;
+  }
+
+  async getChildren(): Promise<ChildDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { GetAllChild: ChildDto[] };
+      errors?: {};
+    }>(``, {
+      query: `query($isActive: Boolean = true) {
+          GetAllChild(where: { isActive: { eq: $isActive } }) {
+            id
+            workflowStatusId
+            insertedDate
+            allergies
+            disabilities
+            otherHealthConditions
+            otherLanguages
+            isActive
+            insertedBy
+            userId
+            user {
+              id
+              firstName
+              surname
+              fullName
+              email
+              genderId
+              dateOfBirth
+              profileImageUrl
+              isActive
+              isSouthAfricanCitizen
+              verifiedByHomeAffairs
+              userLanguages {
+                languageId
+              }
             }
             caregiverId 
             caregiver {
@@ -193,21 +289,18 @@ class ChildService {
   }
 
   // Will this still be needed?
-  async getChildrenForCoach(userId: string): Promise<ChildDto[]> {
+  async getChildrenForCoach(): Promise<ChildDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
 
     const response = await apiInstance.post<any>(``, {
       query: `
-        query allChildrenForCoach($userId: String) {
-          allChildrenForCoach(userId: $userId) {
+        query allChildrenForCoach {
+          allChildrenForCoach {
             id
             userId
           }
         }    
       `,
-      variables: {
-        userId,
-      },
     });
 
     if (response.status !== 200) {
@@ -238,6 +331,30 @@ class ChildService {
 
     if (response.status !== 200 || !!response.data.errors) {
       throw new Error('Updating child failed - Server connection error');
+    }
+
+    return true;
+  }
+
+  async removeChild(input: UpdateChildAndCaregiverInput): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { removeChild: boolean };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation RemoveChild($input: UpdateChildAndCaregiverInput) {
+          removeChild(input: $input){
+          }
+        }
+      `,
+      variables: {
+        input: input,
+      },
+    });
+
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error('Removing child failed - Server connection error');
     }
 
     return true;

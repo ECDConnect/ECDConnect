@@ -44,7 +44,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return new BulkDeactivateResult() { Failed = failed, Success = success };
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
+[Permission(PermissionGroups.USER, GraphActionEnum.Update)]
+
         public bool BulkUpdateCoachingCircleTopicDates(
             [Service] ContentManagementRepository contentRepo,
             int contentId,

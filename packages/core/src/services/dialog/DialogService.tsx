@@ -8,7 +8,9 @@ export interface DialogModalOptions {
   color?: string;
   transitionClassName?: string;
   blocking?: boolean;
+  fullOverlay?: boolean;
 }
+
 const DialogServiceContext = React.createContext<
   (options: DialogModalOptions) => void
 >(() => {
@@ -17,31 +19,33 @@ const DialogServiceContext = React.createContext<
 
 export const useDialog = () => React.useContext(DialogServiceContext);
 
-export const DialogServiceProvider = ({ children }: any) => {
+export const DialogServiceProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   const [dialogState, setDialogState] =
     React.useState<DialogModalOptions | null>(null);
 
-  const openConfirmation = (options: DialogModalOptions) => {
+  const openConfirmation = React.useCallback((options: DialogModalOptions) => {
     setDialogState(options);
-  };
+  }, []);
 
-  const handleClose = () => {
-    if (dialogState?.blocking) {
-      return;
+  const handleClose = React.useCallback(() => {
+    if (!dialogState?.blocking) {
+      setDialogState(null);
     }
-    setDialogState(null);
-  };
+  }, [dialogState]);
 
-  const handleSubmit = () => {
+  const handleSubmit = React.useCallback(() => {
     setDialogState(null);
-  };
+  }, []);
 
   return (
     <>
-      <DialogServiceContext.Provider
-        value={openConfirmation}
-        children={children}
-      />
+      <DialogServiceContext.Provider value={openConfirmation}>
+        {children}
+      </DialogServiceContext.Provider>
       {dialogState && (
         <DialogModal
           open={Boolean(dialogState)}

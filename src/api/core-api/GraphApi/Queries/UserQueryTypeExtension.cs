@@ -35,10 +35,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+
+
         // TODO: Move paging code into a "Pagination" service
         // TODO: Builder pattern for query?
         [UseSorting]
+        [Permission(PermissionGroups.PORTAL, GraphActionEnum.View)]
         public async Task<IQueryable<ApplicationUser>> GetUsersAsync(
             [Service] ApplicationUserManager userManager,
             [Service] IGenericRepositoryFactory repoFactory,
@@ -107,7 +109,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return usersQuery;
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.PORTAL, GraphActionEnum.View)]
         // TODO: Move paging code into a "Pagination" service
         // TODO: Builder pattern for query?
         public async Task<int> GetCountUsersAsync(
@@ -270,6 +272,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return user;
         }
 
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public UserByToken GetUserByToken(
             [Service] ApplicationUserManager userManager,
             IGenericRepositoryFactory repoFactory,
@@ -314,63 +317,65 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public string getMoodleSessionForCurrentUser(
+        public async Task<string> getMoodleSessionForCurrentUser(
             [Service] IHttpContextAccessor httpContextAccessor,
             [Service] ITrainingService moodleService)
         {
             var currentUser = httpContextAccessor.HttpContext.GetUser();
             if (currentUser == null) return null;
-            return moodleService.CreateUserAsync(currentUser).Result.ToString();
+            return (await moodleService.CreateUserAsync(currentUser.Id)).ToString();
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public string GetLatestUrlInviteForUser(
+// [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+
+        public async Task<string> GetLatestUrlInviteForUser(
             [Service] ShortUrlManager shortUrlManager,
             Guid userId)
         {
-            return shortUrlManager.GetLatestUrlInviteForUser(userId, TemplateTypeConstants.Invitation);
+            return await shortUrlManager.GetLatestUrlInviteForUser(userId, TemplateTypeConstants.Invitation);
         }
 
-        public UserSyncStatus GetUserSyncStatus(
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public async Task<UserSyncStatus> GetUserSyncStatus(
            AuthenticationDbContext dbContext,
            Guid userId, DateTime lastSync, Guid classroomId)
         {
-            var childrenCount = dbContext.Children.FromSql($@"
+            var childrenCount = await dbContext.Children.FromSql($@"
             SELECT c.""Id""
             FROM ""Child"" c 
             JOIN ""Practitioner"" p ON c.""Hierarchy"" LIKE p.""Hierarchy"" || '%'
             WHERE (p.""UserId"" = {userId}::uuid OR p.""PrincipalHierarchy"" = {userId}::uuid)
             AND c.""IsActive"" IS TRUE 
             AND c.""UpdatedDate"" > {lastSync}
-            ").Count();
+            ").CountAsync();
 
-            var classroomCount = dbContext.ClassroomGroups.FromSql($@"
+            var classroomCount = await dbContext.ClassroomGroups.FromSql($@"
             SELECT cg.""Id""
             FROM ""ClassroomGroup"" cg 
             WHERE cg.""UserId"" = {userId}::uuid 
             AND cg.""InsertedDate"" > {lastSync}
-            ").Count();
+            ").CountAsync();
 
-            var pointsCount = dbContext.PointsUserSummary.FromSql($@"
+            var pointsCount = await dbContext.PointsUserSummary.FromSql($@"
             SELECT pus.""Id""
             FROM ""PointsUserSummary"" pus 
             WHERE pus.""UserId"" = {userId}::uuid 
             AND pus.""UpdatedDate"" > {lastSync}
-            ").Count();
+            ").CountAsync();
 
-            var periodCount = dbContext.ChildProgressReportPeriod.FromSql($@"
+            var periodCount = await dbContext.ChildProgressReportPeriod.FromSql($@"
             SELECT cprp.""Id""
             FROM ""ChildProgressReportPeriod"" cprp 
             WHERE cprp.""ClassroomId"" = {classroomId}::uuid 
             AND cprp.""InsertedDate"" > {lastSync}
-            ").Count();
+            ").CountAsync();
 
-            var permissionsCount = dbContext.PointsUserSummary.FromSql($@"
+            var permissionsCount = await dbContext.PointsUserSummary.FromSql($@"
             SELECT up.""Id""
             FROM ""UserPermission"" up 
             WHERE up.""UserId"" = {userId}::uuid 
             AND up.""UpdatedDate"" > {lastSync}
-            ").Count();
+            ").CountAsync();
 
             return new UserSyncStatus
             {

@@ -22,7 +22,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     [ExtendObjectType(OperationTypeNames.Query)]
     public class CaregiveQueryExtension
     {
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
         public List<Caregiver> GetAllCaregiver(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] PersonnelService personnelManager,
@@ -89,7 +89,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
         public List<Caregiver> GetAllCaregiverByPractitioner(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -121,7 +121,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             }
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
         public List<UserGrant> GetCaregiverGrants(
             [Service] AuthenticationDbContext context,
             Guid careGiverId)

@@ -178,7 +178,7 @@ export const ProgressViewReport: React.FC = () => {
                         type="small"
                         color="textMid"
                         className="mt-2"
-                        text={'Todo:'}
+                        text={'To do:'}
                       />
                       <Typography
                         type="body"

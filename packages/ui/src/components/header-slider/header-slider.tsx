@@ -102,6 +102,7 @@ export const HeaderSlider: React.FC<HeaderSliderProps> = ({
       autoPlay={autoPlay}
       renderIndicator={renderIndicator}
       showIndicators={isSetupComponent ? false : true}
+      showThumbs={false}
       {...(transitionTime && { transitionTime })}
     >
       {slides.map((slide, idx) => {

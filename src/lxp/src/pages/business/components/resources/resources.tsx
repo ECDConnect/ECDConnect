@@ -15,6 +15,9 @@ import { authSelectors } from '@/store/auth';
 import { AllResources } from './all-resources/all-resources';
 import { userSelectors } from '@/store/user';
 import { ComingSoon } from '../coming-soon/coming-soon';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useDialog } from '@ecdlink/core';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 
 export const Resources = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -27,6 +30,8 @@ export const Resources = () => {
   const [viewAllResources, setViewAllResources] = useState(false);
   const [resourceTypeItem, setResourceTypeItem] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { isOnline } = useOnlineStatus();
+  const dialog = useDialog();
 
   const activitiesResources = useMemo(
     () =>
@@ -81,8 +86,12 @@ export const Resources = () => {
   }, [handleGetResources, handleGetResourcesLikedByUser]);
 
   useEffect(() => {
-    handleGetResourcesQueries();
-  }, []);
+    if (isOnline) {
+      handleGetResourcesQueries();
+    } else {
+      openOfflineDialog();
+    }
+  }, [isOnline]);
 
   const handleOpenResources = useCallback(() => {
     setViewAllResources(true);
@@ -142,11 +151,13 @@ export const Resources = () => {
     });
   }
 
-  const isComingSoon = false;
-
-  if (isComingSoon) {
-    return <Typography color="textDark" text={`Coming soon`} type={'h2'} />;
-  }
+  const openOfflineDialog = useCallback(() => {
+    dialog({
+      color: 'bg-white',
+      position: DialogPosition.Middle,
+      render: (onSubmit) => <OnlineOnlyModal onSubmit={onSubmit} />,
+    });
+  }, [dialog]);
 
   return (
     <div className="p-4">

@@ -11,6 +11,7 @@ import { EditRegistersAttendanceListProps } from './attendance-list/attendance-l
 import { attendanceSelectors } from '@/store/attendance';
 import ROUTES from '@/routes/routes';
 import { MonthlyAttendanceReportRouteState } from '../components/attendance-report/components/attendance-monthly-report/attendance-report.types';
+import { newGuid } from '@/utils/common/uuid.utils';
 
 export const EditRegisters = () => {
   const [selectedRegister, setSelectedRegister] =
@@ -103,7 +104,7 @@ export const EditRegisters = () => {
             (c) => c.id === classroomGroupId
           );
           return (
-            <Fragment key={dayReport.day + index}>
+            <Fragment key={newGuid()}>
               <div className="flex items-center justify-between">
                 <div>
                   <Typography

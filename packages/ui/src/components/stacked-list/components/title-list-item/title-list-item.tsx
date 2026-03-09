@@ -23,10 +23,27 @@ export function TitleListItem({ item, onClickItem }: TitleListItemProps) {
     >
       <div className={styles.contentWrapper}>
         <div className={stackedListStyles.textRowsWrapper}>
-          <RoundIcon
-            icon={item.titleIcon}
-            className={classNames('mr-4', item.titleIconClassName)}
-          />
+          {item && item.icon && item.icon.startsWith('data:image/') ? (
+            <img
+              src={item.icon}
+              alt=""
+              style={{
+                width: '60px',
+                height: '60px',
+                display: 'block',
+                objectFit: 'contain',
+                marginRight: '7px',
+                marginTop: '-5px',
+                marginBottom: '-5px',
+              }}
+            />
+          ) : (
+            <RoundIcon
+              icon={item.titleIcon}
+              className={classNames('mr-4', item.titleIconClassName)}
+            />
+          )}
+
           <div className={stackedListStyles.paragraphWrapper}>
             <div className="flex flex-col">
               <h2 className={styles.title}>{item.title}</h2>

@@ -3,4 +3,5 @@ export interface ChildProfileRouteState {
   practitionerIsOnLeave?: boolean;
   classroomGroupIdFromRedirect?: string;
   isFromInfoPage?: boolean;
+  notificationReference?: string;
 }

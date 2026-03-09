@@ -1,7 +1,6 @@
 import {
   ChildDto,
   ContentConsentTypeEnum,
-  SmartStartPointsLibrary,
   useDialog,
   useStepNavigation,
 } from '@ecdlink/core';
@@ -42,14 +41,11 @@ import {
   ChildRegistrationSteps,
 } from './child-registration.types';
 import ROUTES from '@routes/routes';
-import { authSelectors } from '@store/auth';
 import { practitionerSelectors } from '@/store/practitioner';
 import { CaregiverMultipleChildrenModal } from '../components/caregiver-multiple-children-modal';
 import { ReactComponent as Emoji3 } from '@/assets/ECD_Connect_emoji3.svg';
-import { pointsSelectors } from '@/store/points';
 import { ClassDashboardRouteState } from '@/pages/business/business.types';
 import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
-import { PointsService } from '@/services/PointsService';
 import { classroomsSelectors } from '@/store/classroom';
 import { ChildEmergencyContactFormModel } from '@/schemas/child/child-registration/child-emergency-contact-form';
 import {
@@ -188,9 +184,11 @@ export const ChildRegistration: React.FC = () => {
     if (!child) return;
 
     appDispatch(childrenActions.updateChild(child));
-    await appDispatch(
-      childrenThunkActions.updateChild({ child: child, id: String(child.id) })
-    ).unwrap();
+    if (isOnline) {
+      await appDispatch(
+        childrenThunkActions.updateChild({ child: child, id: String(child.id) })
+      ).unwrap();
+    }
   };
 
   const onSaveChildAndCaregiver = async (
@@ -361,7 +359,6 @@ export const ChildRegistration: React.FC = () => {
             }
           }}
           onClose={exitRegistrationPrompt}
-          isOnline={isOnline}
         >
           <Step
             stepKey={ChildRegistrationSteps.registrationForm}

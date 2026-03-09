@@ -17,6 +17,11 @@ export interface FormFieldProps {
   showPassword?: boolean;
   customStyle?: string;
   defaultValue?: any;
+  min?: any;
+  max?: any;
+  onChange?: (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => void;
 }
 
 const FormField: React.FC<FormFieldProps> = ({
@@ -34,6 +39,9 @@ const FormField: React.FC<FormFieldProps> = ({
   togglePasswordVisibility,
   showPassword,
   defaultValue,
+  min,
+  max,
+  onChange,
 }) => {
   const checkboxStyle =
     'focus:ring-secondary h-6 w-6 text-secondary border-gray-600 rounded';
@@ -88,10 +96,13 @@ const FormField: React.FC<FormFieldProps> = ({
           type={type}
           {...register(nameProp, {
             required: required,
-            validate: validation,
+            ...validation,
           })}
           className={error ? errorStyle : getInputTypeStyles()}
           placeholder={placeholder}
+          min={min}
+          max={max}
+          onChange={onChange}
         />
 
         {nameProp === 'acceptedTerms' && (

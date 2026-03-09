@@ -1,4 +1,4 @@
-import { useTheme, LoginRequestModel, useDialog } from '@ecdlink/core';
+import { LoginRequestModel, useDialog } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
   Alert,
@@ -44,7 +44,7 @@ export const Login: React.FC = () => {
   const history = useHistory();
   const dialog = useDialog();
   const [displayError, setDisplayError] = useState(false);
-  const displayMessage = 'Password or ID incorrect. Please try again';
+  const displayMessage = 'Password or username incorrect. Please try again';
   const [displayWrongUserError, setDisplayWrongUserError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [idFieldVisible, setIdFieldVisible] = useState(true);
@@ -56,10 +56,12 @@ export const Login: React.FC = () => {
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
-  const { resetAppStore, resetAuth } = useStoreSetup();
+  const { resetAppStore, resetAuth, resetUser } = useStoreSetup();
 
   useEffect(() => {
-    resetAppStore();
+    if (isOnline) {
+      resetAppStore();
+    }
   }, []);
 
   navigator?.storage?.estimate &&
@@ -132,6 +134,7 @@ export const Login: React.FC = () => {
 
       await resetAppStore();
       await resetAuth();
+      await resetUser();
     }
   };
 
@@ -202,8 +205,6 @@ export const Login: React.FC = () => {
     loginSetValue('preferId', flag);
     setIdFieldVisible(flag);
   };
-
-  const { theme } = useTheme();
 
   const handleIncorrectBrowser = () => {
     dialog({
@@ -338,7 +339,7 @@ export const Login: React.FC = () => {
                 <Typography
                   type="buttonSmall"
                   color="secondary"
-                  text={'Forgot my password'}
+                  text={'Forgot my password/username'}
                 ></Typography>
               </Button>
             </div>

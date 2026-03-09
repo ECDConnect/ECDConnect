@@ -33,6 +33,10 @@ namespace ECDLink.EGraphQL
 
             var builder = services
               .AddGraphQLServer(maxAllowedRequestSize: maxRequestSize)
+              //.AddErrorFilter<Diagnostic.ErrorFilter>(services => new Diagnostic.ErrorFilter(services))
+              .AddDiagnosticEventListener<Diagnostic.AppServerDiagnosticEventListener>(services => new Diagnostic.AppServerDiagnosticEventListener(services))
+              .AddDiagnosticEventListener<Diagnostic.AppExecutionDiagnosticEventListener>(services => new Diagnostic.AppExecutionDiagnosticEventListener(services))
+              //.AddDiagnosticEventListener<Diagnostic.AppDataLoaderDiagnosticEventListener>(services => new Diagnostic.AppDataLoaderDiagnosticEventListener(services))
               .ModifyOptions(o => o.DefaultResolverStrategy = HotChocolate.Execution.ExecutionStrategy.Serial)
               .ModifyRequestOptions(opt => opt.IncludeExceptionDetails = isDevelopment)
               .AddQueryType<Query>()
@@ -45,6 +49,7 @@ namespace ECDLink.EGraphQL
               .AddDirectiveType<PermissionDirectiveType>()
               .AddFiltering()
               .AddSorting()
+              .AllowIntrospection(isDevelopment)
               .RegisterDbContext<AuthenticationDbContext>(HotChocolate.Data.DbContextKind.Synchronized)
               .RegisterService<HierarchyEngine>(ServiceKind.Synchronized)
               .RegisterService<IDbContextFactory<AuthenticationDbContext>>(ServiceKind.Synchronized)

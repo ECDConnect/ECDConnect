@@ -1,4 +1,4 @@
-import { PractitionerDto, useTheme } from '@ecdlink/core';
+import { PractitionerDto } from '@ecdlink/core';
 import {
   BannerWrapper,
   Typography,
@@ -18,7 +18,6 @@ import {
   PractitionerListRouteState,
 } from './practitioner-list.types';
 import { practitionerSelectors } from '@/store/practitioner';
-import { EditPractitioner } from './edit-practitioner/edit-practitioner';
 import { userSelectors } from '@store/user';
 import { PractitionerService } from '@/services/PractitionerService';
 import { authSelectors } from '@/store/auth';
@@ -26,12 +25,16 @@ import { OtherPractitionerProfile } from './other-practitioner-view/other-practi
 import ROUTES from '@routes/routes';
 import { EditPractitionerModal } from './components/edit-practitioner-modal';
 import TransparentLayer from '../../../../assets/TransparentLayer.png';
+import { InviteService } from '@/services/InviteService';
+import { InviteDto } from '@ecdlink/core/src/models/dto/Invite/invite.dto';
+import { InvitedPractitioner } from './invited-practitioner/invited-practitioner';
+import { formatPhonenumberLocal } from '@utils/common/contact-details.utils';
+import { useTenant } from '@/hooks/useTenant';
 
 export const PractitionerList: React.FC<PractitionerListProps> = () => {
   const location = useLocation<PractitionerListRouteState>();
 
   const history = useHistory();
-  const { theme } = useTheme();
   const user = useSelector(userSelectors.getUser);
   const userAuth = useSelector(authSelectors.getAuthUser);
   const { isOnline } = useOnlineStatus();
@@ -40,27 +43,39 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const isPrincipal = practitioner?.isPrincipal === true;
   const practitionerId = practitioner?.user?.id;
-  const [editPractitionerVisible, setEditiPractitionerVisible] =
-    useState(false);
   const [otherColleagues, setOtherColleagues] = useState<any[]>([]); // FIX THIS
   const [otherColleaguesFiltered, setOtherColleaguesFiltered] = useState<any>( // FIX THIS
     []
   );
   const [colleagueProfile, setColleagueProfile] = useState({});
   const [practitionerEditModal, setEditPractitionerModal] = useState(false);
+  const [practitionerInviteModal, setPractitionerInviteModal] = useState(false);
   const [selectedPractitioner, setSelectedPractitioner] =
     useState<PractitionerDto>();
+  const [invites, setInvites] = useState<InviteDto[]>([]);
+  const [selectedInvite, setSelectedInvite] = useState<InviteDto>();
   const [isLoading, setIsLoading] = useState(false);
+  const tenant = useTenant();
+  const isOpenAccess = tenant?.isOpenAccess;
 
   const getPractitionerColleagues = async () => {
     // Check if the practitioner exists
     let practitionerColleagues: PractitionerColleagues[] = [];
+    let invites: InviteDto[] = [];
+    let practitionerInvites: PractitionerColleagues[] = [];
 
     if (userAuth) {
       setIsLoading(true);
       practitionerColleagues = await new PractitionerService(
         userAuth?.auth_token
       ).practitionerColleagues(user?.id!);
+      if (isOpenAccess) {
+        invites = await new InviteService(
+          userAuth?.auth_token
+        ).getInvitesByPrincipalId(user?.id!);
+        setInvites(invites);
+      }
+
       setIsLoading(false);
     }
 
@@ -74,20 +89,18 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
       setColleagueProfile({
         name: principal?.name,
         classroomNames: principal?.classroomNames,
-        contactNumber: principal?.contactNumber,
+        contactNumber: formatPhonenumberLocal(principal?.contactNumber!!),
         profilePhoto: principal?.profilePhoto,
         title: 'Principal',
         nickName: principal?.nickName,
       });
     }
 
-    return practitionerColleagues;
+    return [...practitionerColleagues, ...practitionerInvites];
   };
 
   useEffect(() => {
-    if (practitioner?.isPrincipal !== true) {
-      getPractitionerColleagues();
-    }
+    getPractitionerColleagues();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -98,10 +111,11 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
       );
 
       const firstNameFilteredColleagues = filteredColleagues.map((item) => ({
-        name: item?.name?.split(' ')[0] || item?.nickName,
+        name:
+          item?.name?.split(' ')[0] || item?.nickName || item?.contactNumber,
         title: item?.title === 'Practitioner' ? 'Practitioner' : 'Principal',
         classroomNames: item?.classroomNames,
-        contactNumber: item?.contactNumber,
+        contactNumber: formatPhonenumberLocal(item?.contactNumber!!),
         profilePhoto: item?.profilePhoto,
         nickName: item?.nickName,
       }));
@@ -115,44 +129,67 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
     setEditPractitionerModal(true);
   };
 
+  const handleInvitedPractitioner = (id?: string) => {
+    const selectedInvite = invites?.find((item) => item?.id === id);
+    setSelectedInvite(selectedInvite);
+    setPractitionerInviteModal(true);
+  };
+
   const stackedListItems: ActionListDataItem[] = practitioner?.isPrincipal
-    ? [practitioner, ...(practitioners || [])].map((item) => {
-        return {
-          title: item?.user?.firstName || item?.user?.userName || '',
-          subTitle: item?.isPrincipal ? 'Principal' : 'Practitioner',
-          switchTextStyles: false,
-          actionName: !!practitioners && practitioners.length ? 'Edit' : '',
-          buttonColor: 'quatenary',
-          textColor: 'white',
-          actionIcon: 'PencilIcon',
-          buttonType:
-            !!practitioners && practitioners.length ? 'filled' : 'ghost',
-          onActionClick: () => {
+    ? [
+        practitioner,
+        ...(practitioners || []),
+        ...(invites || []).map((invite) => ({
+          id: null,
+          user: {
+            id: invite.id,
+            firstName: formatPhonenumberLocal(invite.user?.phoneNumber!!),
+            userName: formatPhonenumberLocal(invite.user?.phoneNumber!!),
+          },
+          dateLinked: null,
+          isPrincipal: false,
+        })),
+      ].map((item) => ({
+        title: item?.user?.firstName || item?.user?.userName || '',
+        subTitle: item?.isPrincipal
+          ? 'Principal'
+          : item.dateLinked === null
+          ? 'Practitioner - invited'
+          : 'Practitioner',
+        switchTextStyles: false,
+        actionName: 'Edit',
+        buttonColor: 'quatenary',
+        textColor: 'white',
+        actionIcon: isPrincipal ? 'PencilIcon' : 'EyeIcon',
+        buttonType:
+          !!practitioners && practitioners.length ? 'filled' : 'ghost',
+        onActionClick: () => {
+          if (item.dateLinked === null && item?.id === null) {
+            handleInvitedPractitioner(item?.user?.id);
+          } else {
             handleEditPractitioner(item?.id);
-          },
-        };
-      })
-    : otherColleaguesFiltered?.map((item: any) => {
-        return {
-          title: item?.name,
-          subTitle: item?.title,
-          switchTextStyles: false,
-          actionName: 'View',
-          actionIcon: 'PencilIcon',
-          onActionClick: () => {
-            setPractitionerInfo(true);
-            setColleagueProfile({
-              name: item?.name,
-              classroomNames: item?.classroomNames,
-              contactNumber: item?.contactNumber,
-              profilePhoto: item?.profilePhoto,
-              title:
-                item?.title === 'Practitioner' ? 'Practitioner' : 'Principal',
-              nickName: item?.nickName,
-            });
-          },
-        };
-      });
+          }
+        },
+      }))
+    : otherColleaguesFiltered?.map((item: any) => ({
+        title: item?.name,
+        subTitle: item?.title,
+        switchTextStyles: false,
+        actionName: 'View',
+        actionIcon: 'PencilIcon',
+        onActionClick: () => {
+          setPractitionerInfo(true);
+          setColleagueProfile({
+            name: item?.name,
+            classroomNames: item?.classroomNames,
+            contactNumber: item?.contactNumber,
+            profilePhoto: item?.profilePhoto,
+            title:
+              item?.title === 'Practitioner' ? 'Practitioner' : 'Principal',
+            nickName: item?.nickName,
+          });
+        },
+      }));
 
   return (
     <>
@@ -210,11 +247,14 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
       </div>
       <Dialog
         fullScreen
-        visible={editPractitionerVisible}
+        visible={practitionerInviteModal}
         position={DialogPosition.Top}
       >
-        <EditPractitioner
-          setEditiPractitionerVisible={setEditiPractitionerVisible}
+        <InvitedPractitioner
+          setPractitionerInviteModal={setPractitionerInviteModal}
+          userId={selectedInvite?.user.id || ''}
+          phoneNumber={selectedInvite?.user.phoneNumber || ''}
+          dateInvited={selectedInvite?.insertedDate}
         />
       </Dialog>
       <Dialog

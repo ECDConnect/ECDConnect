@@ -95,6 +95,7 @@ export const PreschoolFees: React.FC<PreschoolFeesStep2> = ({
             dateReceived: endDate.toISOString(),
             incomeTypeId: IncomeTypeIds.PRESCHOOL_FEE_ID,
             childUserId: x.childUserId,
+            isActive: true,
           } as IncomeItemDto)
       );
 
@@ -103,8 +104,8 @@ export const PreschoolFees: React.FC<PreschoolFeesStep2> = ({
 
   return (
     <>
-      {groupedChildList.map((group) => (
-        <>
+      {groupedChildList.map((group, index) => (
+        <div key={index}>
           <Divider dividerType="dashed" className="mt-4" />
           <Typography
             className={'mr-1 pt-2'}
@@ -114,6 +115,7 @@ export const PreschoolFees: React.FC<PreschoolFeesStep2> = ({
           />
           {group.children.map((child) => (
             <FormInput<Number>
+              key={child.childUserId}
               label={child.name}
               visible={true}
               className="mt-2"
@@ -137,7 +139,7 @@ export const PreschoolFees: React.FC<PreschoolFeesStep2> = ({
               }}
             />
           ))}
-        </>
+        </div>
       ))}
       {!disabled && (
         <Button

@@ -6,13 +6,20 @@ import {
   ButtonGroup,
   ButtonGroupTypes,
   Checkbox,
+  Dialog,
+  DialogPosition,
+  FormInput,
+  SA_CELL_REGEX,
   Typography,
 } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ContentConsentTypeEnum, useTheme } from '@ecdlink/core';
 import Article from '@/components/article/article';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
+import { FieldError } from 'react-hook-form';
+import { VerifySignupPhoneNumberAuthCode } from '@/components/user-registration/components/verify-signup-phone-number';
+import { generateSignupCellPhoneNumberToken } from '@/utils/user/user-registration.utils';
 
 interface OAAgreementsProps {
   closeAction?: (item: boolean) => void;
@@ -22,6 +29,28 @@ export const yesOrNoOptions = [
   { text: 'Yes', value: true },
   { text: 'No', value: false },
 ];
+
+// Function for cellphone number preventing characters
+const handleKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
+  const allowedKeys = [
+    'Backspace',
+    'Delete',
+    'Tab',
+    'ArrowLeft',
+    'ArrowRight',
+    'Home',
+    'End',
+  ];
+
+  // Allow numbers, plus sign, and control keys
+  if (
+    !/[0-9+]/.test(event.key) &&
+    !allowedKeys.includes(event.key) &&
+    !(event.ctrlKey || event.metaKey)
+  ) {
+    event.preventDefault();
+  }
+};
 
 export const OAAgreements: React.FC<OAAgreementsProps> = ({ closeAction }) => {
   const { isOnline } = useOnlineStatus();
@@ -33,13 +62,19 @@ export const OAAgreements: React.FC<OAAgreementsProps> = ({ closeAction }) => {
   const [articleTitle, setArticleTitle] = useState<string>();
   const [termsAndConditions, setTermsAndConditions] = useState(false);
   const [termsAndConditionsError, setTermsAndConditionsError] = useState(false);
-  const [permissionsAgreement, setPermissionAgreement] = useState(false);
-  const [permissionsAgreementError, setPermissionAgreementError] =
+  const [permissionsAgreement, setPermissionsAgreement] = useState(false);
+  const [permissionsAgreementError, setPermissionsAgreementError] =
     useState(false);
   const [permissionsErrorMessage, setPermissionsErrorMessage] = useState('');
   const [shareConsent, setShareConsent] = useState<
     boolean | boolean[] | undefined
   >(undefined);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [isValidPhoneNumber, setIsValidPhoneNumber] = useState(true);
+  const [phoneMessageError, setPhoneMessageError] = useState('');
+  const [openVerifyPhoneNumber, setOpenVerifyPhoneNumber] = useState(false);
+  const [verifyPhoneNumberToken, setVerifyPhoneNumberToken] =
+    useState<string>('');
 
   const displayArticle = async (key: ContentConsentTypeEnum, title: string) => {
     setContentConsentTypeEnum(key);
@@ -47,7 +82,7 @@ export const OAAgreements: React.FC<OAAgreementsProps> = ({ closeAction }) => {
     setArticleTitle(title);
   };
 
-  const handleSubmitAgreements = () => {
+  const handleSubmit = async () => {
     if (!termsAndConditions || !permissionsAgreement) {
       setPermissionsErrorMessage(
         'You must accept both agreements to continue.'
@@ -56,12 +91,18 @@ export const OAAgreements: React.FC<OAAgreementsProps> = ({ closeAction }) => {
         setTermsAndConditionsError(true);
       }
       if (!permissionsAgreement) {
-        setPermissionAgreementError(true);
+        setPermissionsAgreementError(true);
       }
       return;
     }
 
-    history.push(ROUTES.CREATE_USERNAME, { shareInfoPartners: shareConsent });
+    const token = await generateSignupCellPhoneNumberToken(phoneNumber);
+    if (!token) {
+      setPhoneMessageError('Unable to verify cellphone number.');
+      return;
+    }
+    setVerifyPhoneNumberToken(token);
+    setOpenVerifyPhoneNumber(true);
   };
 
   useEffect(() => {
@@ -70,22 +111,87 @@ export const OAAgreements: React.FC<OAAgreementsProps> = ({ closeAction }) => {
     }
 
     if (permissionsAgreement) {
-      setPermissionAgreementError(false);
+      setPermissionsAgreementError(false);
     }
   }, [permissionsAgreement, termsAndConditions]);
+
+  const handleCellphoneChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const inputValue = e.target.value.replaceAll(/[^0-9+]/g, '');
+      setPhoneNumber(inputValue);
+
+      // Regular expression for South African cellphone number validation
+      const cellphonePattern = SA_CELL_REGEX;
+      const isValid = cellphonePattern.test(inputValue);
+      setIsValidPhoneNumber(isValid);
+    },
+    []
+  );
+
+  const onCellphoneVerified = useCallback(
+    (verified: boolean) => {
+      setOpenVerifyPhoneNumber(false);
+
+      if (verified) {
+        history.push(ROUTES.CREATE_USERNAME, {
+          shareInfoPartners: shareConsent,
+          phoneNumber: phoneNumber,
+        });
+      }
+    },
+    [shareConsent, phoneNumber]
+  );
 
   return (
     <BannerWrapper
       size="small"
-      onBack={() => closeAction && closeAction(false)}
+      onBack={() => closeAction?.(false)}
       color="primary"
       className={'h-screen'}
       menuLogoUrl={theme?.images?.logoUrl}
       displayOffline={!isOnline}
     >
-      <div className="p-4">
+      <div className="mt-4 space-y-1 p-4">
         <Typography
           type={'h2'}
+          text={'Sign up'}
+          className={'pb-4 text-sm font-normal'}
+          color={'textDark'}
+        />
+        <FormInput
+          label={'Cellphone number'}
+          nameProp={'phoneNumber'}
+          placeholder="e.g 0123456789"
+          onKeyDown={handleKeyDown}
+          onChange={(e) => {
+            handleCellphoneChange(e);
+            setPhoneMessageError('');
+          }}
+          error={
+            (phoneMessageError as unknown as FieldError) ||
+            (!isValidPhoneNumber && phoneNumber)
+          }
+          type="number"
+        />
+        {phoneMessageError && (
+          <Typography
+            type={'help'}
+            text={phoneMessageError}
+            className={'mt-1 text-sm font-normal'}
+            color={'errorMain'}
+          />
+        )}
+        {!isValidPhoneNumber && phoneNumber && (
+          <Typography
+            type="help"
+            text="Please enter a valid cellphone number"
+            color="errorMain"
+          />
+        )}
+      </div>
+      <div className="p-4">
+        <Typography
+          type={'h4'}
           text={'Accept the agreements to continue'}
           className={'text-sm font-normal'}
           color={'textDark'}
@@ -140,7 +246,7 @@ export const OAAgreements: React.FC<OAAgreementsProps> = ({ closeAction }) => {
                 : 'bg-uiBg'
             } bg-uiBg flex w-full flex-row items-center justify-between gap-2 rounded-xl p-4`}
             onClick={() => {
-              setPermissionAgreement((prevState) => !prevState);
+              setPermissionsAgreement((prevState) => !prevState);
               setPermissionsErrorMessage('');
             }}
           >
@@ -212,11 +318,15 @@ export const OAAgreements: React.FC<OAAgreementsProps> = ({ closeAction }) => {
           className={'mt-5 w-full rounded-xl'}
           type="filled"
           color={'quatenary'}
-          onClick={handleSubmitAgreements}
+          onClick={handleSubmit}
           icon="ArrowCircleRightIcon"
           textColor="white"
           text="Next"
-          disabled={shareConsent === undefined}
+          disabled={
+            shareConsent === undefined ||
+            !isValidPhoneNumber ||
+            phoneNumber === ''
+          }
         ></Button>
       </div>
       {contentConsentTypeEnum && (
@@ -230,6 +340,18 @@ export const OAAgreements: React.FC<OAAgreementsProps> = ({ closeAction }) => {
           isConsentScreen={true}
         />
       )}
+      <Dialog
+        visible={openVerifyPhoneNumber}
+        position={DialogPosition.Full}
+        className="w-full"
+        stretch
+      >
+        <VerifySignupPhoneNumberAuthCode
+          closeAction={onCellphoneVerified}
+          phoneNumber={phoneNumber}
+          verifyToken={verifyPhoneNumberToken}
+        />
+      </Dialog>
     </BannerWrapper>
   );
 };

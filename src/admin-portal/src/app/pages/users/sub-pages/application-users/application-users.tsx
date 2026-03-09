@@ -281,7 +281,10 @@ export default function ApplicationUsers() {
               },
               {
                 type: 'search-dropdown',
-                menuItemClassName: 'w-11/12 mx-8 mt-1',
+                menuItemClassName: 'w-11/12 left-4',
+                className: 'h-11 mb-2 border-2 border-transparent',
+                color: 'quatenary',
+                bgColor: 'white',
                 options: sortByClientStatusOptions,
                 selectedOptions: statusFilter,
                 onChange: setStatusFilter,

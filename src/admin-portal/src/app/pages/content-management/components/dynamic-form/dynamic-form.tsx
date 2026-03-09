@@ -29,6 +29,8 @@ import {
 import Editor from '../../../../components/form-markdown-editor/form-markdown-editor';
 import { InformationCircleIcon } from '@heroicons/react/solid';
 import { ContentTypeDto, useDialog } from '@ecdlink/core';
+import * as styles from '../../../pages.styles';
+import ContentLoader from '../../../../components/content-loader/content-loader';
 
 const acceptedFormats = ['svg', 'png', 'jpg', 'jpeg'];
 const acceptedVideoFormats = ['mp4'];
@@ -39,6 +41,7 @@ export interface DynamicFormProps {
   handleform: any;
   setValue: any;
   defaultLanguageId: string;
+  selectedLanguageId: string;
   acceptedFileFormats?: string[];
   allowedFileSize?: number;
   formType?: string;
@@ -59,6 +62,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   handleform,
   setValue,
   defaultLanguageId,
+  selectedLanguageId,
   acceptedFileFormats,
   allowedFileSize,
   formType,
@@ -72,6 +76,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   contentType,
 }) => {
   const { register, control, errors } = handleform;
+  const [isLoading, setIsLoading] = useState(true);
 
   const dialog = useDialog();
   const isEdit = template && template.fields.some((f) => !!f.contentValue);
@@ -114,9 +119,9 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             buttonClass="rounded-2xl"
             actionButtons={[
               {
-                colour: 'secondary',
+                colour: 'tertiary',
                 text: 'Close',
-                textColour: 'secondary',
+                textColour: 'tertiary',
                 type: 'outlined',
                 leadingIcon: 'XIcon',
                 onClick: onClose,
@@ -221,6 +226,18 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
     setDisableActivitiesInputs(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contentView?.content]);
+
+  useEffect(() => {
+    if (isEdit) {
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 2500);
+      // Cleanup function to clear the timeout if the component unmounts
+      return () => clearTimeout(timer);
+    } else {
+      setIsLoading(false);
+    }
+  }, [isEdit]);
 
   useEffect(() => {
     if (contentType.name === ContentTypes.ACTIVITY && contentView?.content) {
@@ -351,7 +368,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                       <div className="justify-stretch flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
                         <button
                           type="button"
-                          className="bg-secondary hover:bg-uiLight focus:outline-none focus:ring-secondary-500 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                          className={styles.mainButton}
                           onClick={() => renderDialog()}
                         >
                           Learn more
@@ -364,7 +381,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                     color={'textMid'}
                     text={`If you select 'Yes', then any future edits made & all translations of this activity can be shared with other organisations.`}
                   />
-                  <div className={`bg-uiBg gap-2 sm:col-span-12`}>
+                  <div className={`gap-2 sm:col-span-12`}>
                     <ButtonGroup
                       options={shareContentOptions}
                       onOptionSelected={(value: string | string[]) => {
@@ -372,7 +389,8 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                       }}
                       selectedOptions={field?.contentValue?.value}
                       color="tertiary"
-                      notSelectedColor="tertiaryAccent2"
+                      notSelectedColor="errorBg"
+                      textColor="tertiary"
                       type={ButtonGroupTypes.Button}
                       className={'mr-2 w-full rounded-2xl'}
                       multiple={false}
@@ -387,7 +405,10 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             isSmallLargeGroup &&
             template?.title === ContentForms.ACTIVITY_FROM
           ) {
-            if (isEdit || disableActivitiesInputs) {
+            if (
+              (isEdit && selectedLanguageId !== defaultLanguageId) ||
+              disableActivitiesInputs
+            ) {
               return null;
             }
 
@@ -400,7 +421,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                   {field?.title}
                 </label>
                 <div
-                  className={`bg-uiBg sm:col-span-12 ${
+                  className={`sm:col-span-12 ${
                     disableActivitiesInputs
                       ? 'pointer-events-none opacity-25'
                       : ''
@@ -412,6 +433,8 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                       onStateChange(propName, value);
                     }}
                     color="tertiary"
+                    textColor="tertiary"
+                    notSelectedColor="errorBg"
                     selectedOptions={
                       field.contentValue
                         ? field.contentValue.value
@@ -673,8 +696,9 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
               }
 
               if (contentView?.content && disableActivitiesInputs) {
-                const valueFormattedToArray =
-                  initialValues[propName]?.split(',');
+                const valueFormattedToArray = initialValues[propName]
+                  ?.split(',')
+                  .filter((x) => x !== '');
                 setSmallLargeGroupsSkills(valueFormattedToArray);
                 return (
                   <div key={propName} className={contentWrapper}>
@@ -721,7 +745,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                 );
               }
               const skills = initialValues[propName];
-              const skillsArray = skills?.split(',');
+              const skillsArray = skills?.split(',').filter((x) => x !== '');
               setSmallLargeGroupsSkills(skillsArray);
               return (
                 <div key={propName} className={contentWrapper}>
@@ -895,7 +919,15 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
 
   return (
     <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-1">
-      {fields}
+      {isLoading ? (
+        <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-white">
+          <div className="flex flex-col items-center">
+            <ContentLoader />
+          </div>
+        </div>
+      ) : (
+        fields
+      )}
     </div>
   );
 };

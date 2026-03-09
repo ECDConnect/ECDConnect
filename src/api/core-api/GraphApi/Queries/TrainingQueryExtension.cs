@@ -21,7 +21,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.TRAINING, GraphActionEnum.View)]
         public async Task<IEnumerable<UserTrainingCourse>> GetCurrentUserCompletedTrainingCourses(
           [Service] IHttpContextAccessor httpContextAccessor,
           [Service] ITrainingService trainingService)

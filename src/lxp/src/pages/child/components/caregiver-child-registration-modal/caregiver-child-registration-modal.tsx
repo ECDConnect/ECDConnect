@@ -3,7 +3,7 @@ import { ChildBasicInfoModel } from '@schemas/child/child-registration/child-bas
 
 interface CaregiverChildRegistrationModalProps extends ComponentBaseProps {
   caregiverUrl: string;
-  childDetails: Omit<ChildBasicInfoModel, 'playgroupId'>;
+  firstName: string;
   couldCopyToClipboard: boolean;
   onSubmit: () => void;
   onCancel: () => void;
@@ -11,23 +11,14 @@ interface CaregiverChildRegistrationModalProps extends ComponentBaseProps {
 
 export const CaregiverChildRegistrationModal: React.FC<
   CaregiverChildRegistrationModalProps
-> = ({
-  childDetails,
-  caregiverUrl,
-  couldCopyToClipboard,
-  onSubmit,
-  onCancel,
-}) => {
+> = ({ firstName, caregiverUrl, couldCopyToClipboard, onSubmit, onCancel }) => {
   return (
     <ActionModal
       icon={couldCopyToClipboard ? 'CheckCircleIcon' : 'InformationCircleIcon'}
       iconBorderColor={couldCopyToClipboard ? 'successBg' : 'alertBg'}
       iconColor={couldCopyToClipboard ? 'successMain' : 'infoMain'}
       title={couldCopyToClipboard ? 'Link Copied!' : 'Please Copy Link'}
-      detailText={`
-        Go to WhatsApp and send the link to ${childDetails.firstName}’s caregiver, or paste and send it in an SMS.
-
-You can also access this link on ${childDetails.firstName}'s profile.
+      detailText={`Send the link to ${firstName}'s caregiver.
         `}
       actionButtons={[
         {
@@ -51,17 +42,6 @@ You can also access this link on ${childDetails.firstName}'s profile.
           },
         },
       ]}
-    >
-      {/* <Typography
-        className="mb-2"
-        onClick={async () => {
-          window.prompt('Copy value from input', caregiverUrl);
-        }}
-        text={`<u>Click here to copy link manually</u>`}
-        color="primary"
-        type="unspecified"
-        hasMarkup
-      /> */}
-    </ActionModal>
+    ></ActionModal>
   );
 };

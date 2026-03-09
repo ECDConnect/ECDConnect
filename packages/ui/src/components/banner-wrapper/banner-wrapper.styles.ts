@@ -7,13 +7,13 @@ export const content = (scrollable: boolean) =>
 export const titleWrapper =
   'inline-block py-2 pr-2 text-center z-0 w-10/12 justify-between';
 export const titleSubWrapper = 'inline-flex flex-col';
-export const iconWrapperLeft = 'w-4/12 flex justify-start';
-export const iconWrapperRight = 'w-4/12 flex justify-end';
+export const iconWrapperLeft = 'w-3/12 flex justify-start';
+export const iconWrapperRight = 'w-3/12 flex justify-end';
 export const icons = 'cursor-pointer z-10 w-auto primaryAccent2';
 export const menuIcons =
   'cursor-pointer z-10 rounded-10 bg-primaryAccent1 h-10 w-10 p-2';
 export const logo =
-  'inline-block py-2 pr-2 text-left z-0 w-10/12 justify-between bg-bannerx2 h-16 w-16 mt-2';
+  'inline-block text-left z-0 w-10/12 justify-start bg-bannerx2 h-10 w-10';
 export const overlayImage = 'w-full';
 
 export const header = (

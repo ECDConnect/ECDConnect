@@ -6,7 +6,6 @@ import {
   useDialog,
   useNotifications,
   useQueryParams,
-  useTheme,
 } from '@ecdlink/core';
 import {
   ActionModal,
@@ -37,13 +36,11 @@ import AuthService from '@services/AuthService/AuthService';
 import { useAppDispatch } from '@store';
 import { staticDataThunkActions } from '@store/static-data';
 import * as styles from './sign-up.styles';
-import { UserService } from '@/services/UserService';
 import { HelpForm } from '@/components/help-form/help-form';
 import ROUTES from '@/routes/routes';
 import { useTenant } from '@/hooks/useTenant';
 import TransparentLayer from '../../../assets/TransparentLayer.png';
-
-const token = new URLSearchParams(window.location.search).get('token');
+import { InvalidToken } from '../invalid-token/invalid-token';
 
 export const SignUp: React.FC = () => {
   const tenant = useTenant();
@@ -65,7 +62,7 @@ export const SignUp: React.FC = () => {
     mode: 'onChange',
   });
   const { errors } = useFormState({ control });
-  const { resetAppStore, resetAuth } = useStoreSetup();
+  const { resetAppStore, resetAuth, resetUser } = useStoreSetup();
   const [preferId, setPreferId] = useState<boolean>(true);
   const [contentConsentTypeEnum, setContentConsentTypeEnum] =
     useState<ContentConsentTypeEnum>();
@@ -74,14 +71,14 @@ export const SignUp: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [presentCellNumberMismatch, setPresentCellNumberMismatch] =
     useState<boolean>(false);
+  const [presentInvalidToken, setPresentInvalidToken] =
+    useState<boolean>(false);
   const [articleTitle, setArticleTitle] = useState<string>();
   const history = useHistory();
   const location = useLocation();
-  const { theme } = useTheme();
   const queryParams = useQueryParams(location.search);
   const authToken = queryParams.getValue('token');
   const { isOnline } = useOnlineStatus();
-  const [userDetails, setUserDetails] = useState<any>();
   const [openHelp, setOpenHelp] = useState(false);
   const appName = tenant?.tenant?.applicationName;
   const isWhitelabel = tenant?.isWhiteLabel;
@@ -92,29 +89,13 @@ export const SignUp: React.FC = () => {
       if (resetAppStore) {
         await resetAppStore(false);
         await resetAuth();
+        await resetUser();
       }
 
       await appDispatch(staticDataThunkActions.getOpenLanguages({})).unwrap();
     }
     init().catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const getUserDetailsByToken = async () => {
-    let user_details_from_request;
-    if (token) {
-      user_details_from_request = await new UserService('').getUserByToken(
-        token
-      );
-      setUserDetails(user_details_from_request);
-    } else {
-      console.log('user not found');
-    }
-  };
-  useEffect(() => {
-    if (token) {
-      getUserDetailsByToken();
-    }
   }, []);
 
   watch();
@@ -152,6 +133,11 @@ export const SignUp: React.FC = () => {
 
     if (informationVerified.errorCode) {
       if (informationVerified.verified === false) {
+        if (informationVerified.errorCode === 3) {
+          setPresentInvalidToken(true);
+          setIsLoading(false);
+          return;
+        }
         if (informationVerified.errorCode === 1) {
           setRequestError(`If you are having trouble, tap "Get help"`);
           setIsLoading(false);
@@ -263,11 +249,33 @@ export const SignUp: React.FC = () => {
     }
   }, [userAgent]);
 
+  // Function for cellphone number preventing characters
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
+    const allowedKeys = [
+      'Backspace',
+      'Delete',
+      'Tab',
+      'ArrowLeft',
+      'ArrowRight',
+      'Home',
+      'End',
+    ];
+
+    // Allow numbers, plus sign, and control keys
+    if (
+      !/[0-9+]/.test(event.key) &&
+      !allowedKeys.includes(event.key) &&
+      !(event.ctrlKey || event.metaKey)
+    ) {
+      event.preventDefault();
+    }
+  };
+
   return (
     <div className={styles.wrapper}>
       <BannerWrapper
         color={'primary'}
-        showBackground={isWhitelabel ? false : true}
+        showBackground={!isWhitelabel}
         backgroundUrl={TransparentLayer}
         backgroundImageColour={'primary'}
         className={styles.contentWrapper}
@@ -323,6 +331,7 @@ export const SignUp: React.FC = () => {
             visible={true}
             type={'number'}
             register={signUpRegister}
+            onKeyDown={handleKeyDown}
             error={errors?.cellphone}
           />
 
@@ -446,14 +455,6 @@ export const SignUp: React.FC = () => {
               type={'error'}
             />
           )}
-          {/* {errorStrings.length > 0 && (
-            <Alert
-              title={`There were ${errorStrings.length} errors with your submission`}
-              type={'error'}
-              list={errorStrings}
-              className={styles.marginTop}
-            />
-          )} */}
           {(requestError?.length ?? 0) > 0 && (
             <Alert
               title={`Please check your ID and cellphone number.`}
@@ -481,6 +482,7 @@ export const SignUp: React.FC = () => {
             isLoading={isLoading}
             disabled={!isOnline || isLoading}
             onClick={handleSubmit(submitForm)}
+            icon="ArrowCircleRightIcon"
           >
             <Typography type="help" color="white" text={'Next'}></Typography>
           </Button>
@@ -560,6 +562,17 @@ export const SignUp: React.FC = () => {
         stretch
       >
         <HelpForm closeAction={setOpenHelp} />
+      </Dialog>
+      <Dialog
+        visible={presentInvalidToken}
+        position={DialogPosition.Full}
+        className="w-full"
+        stretch
+      >
+        <InvalidToken
+          closeAction={setPresentInvalidToken}
+          username={signUpFormGetValues().username}
+        />
       </Dialog>
       {!isOnline && (
         <Alert

@@ -1,4 +1,4 @@
-import { ActionModal, DialogPosition, Dialog } from '@ecdlink/ui';
+import { ActionModal } from '@ecdlink/ui';
 import { useStoreSetup } from '@hooks/useStoreSetup';
 import { useHistory } from 'react-router-dom';
 import ROUTES from '@/routes/routes';
@@ -8,68 +8,105 @@ import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
 import { settingActions } from '@/store/settings';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useState } from 'react';
 
-export const Logout: React.FC = () => {
+export type LogoutProps = {
+  onSubmit?: () => void;
+  onCancel?: () => void;
+};
+
+export const Logout: React.FC<LogoutProps> = ({ onSubmit, onCancel }) => {
   const { isOnline } = useOnlineStatus();
-
-  const { resetAuth, resetAppStore } = useStoreSetup();
+  const { resetAuth, resetAppStore, resetUser } = useStoreSetup();
   const history = useHistory();
   const dispatch = useAppDispatch();
-  const practitioner = useSelector(practitionerSelectors?.getPractitioner);
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
   const sync = async () => {
-    if (practitioner?.isPrincipal === true) {
+    if (practitioner?.isPrincipal) {
       await dispatch(syncThunkActions.syncOfflineData({}));
     } else {
       await dispatch(syncThunkActions.syncOfflineDataForPractitioner({}));
     }
-
     dispatch(settingActions.setLastDataSync());
   };
 
-  const handleSync = async () => {
+  const handleLogout = async () => {
+    if (isLoggingOut) return; // prevent double-click
+
+    setIsLoggingOut(true);
+
+    try {
+      if (isOnline) {
+        await sync();
+        await resetAppStore();
+        await resetAuth();
+        await resetUser();
+        history.push(ROUTES.LOGIN);
+      } else {
+        // Offline: just clear auth and go to login
+        await resetAuth();
+        await resetUser();
+        history.push(ROUTES.LOGIN);
+      }
+
+      onSubmit?.();
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Optional: show error toast/notification here
+      // e.g. showToast({ title: 'Logout failed', variant: 'error' });
+    } finally {
+      setIsLoggingOut(false);
+    }
+
     if (isOnline) {
       await sync();
       await resetAppStore();
       await resetAuth();
-      history.push('/');
+      await resetUser();
+      history.push(ROUTES.LOGIN);
     } else {
+      await resetAuth();
+      await resetUser();
       history.push(ROUTES.LOGIN);
     }
   };
 
   return (
-    <Dialog
-      visible
-      position={DialogPosition.Middle}
-      fullScreen
-      className="overflow-auto"
-    >
-      <ActionModal
-        className={'mx-4'}
-        title={'Are you sure you want to log out?'}
-        importantText={''}
-        icon={'ExclamationCircleIcon'}
-        iconColor={'alertDark'}
-        iconBorderColor={'alertBg'}
-        actionButtons={[
-          {
-            text: 'Yes, log out',
-            colour: 'quatenary',
-            onClick: handleSync,
-            type: 'filled',
-            textColour: 'white',
-            leadingIcon: 'CheckCircleIcon',
-          },
-          {
-            text: 'No, cancel',
-            textColour: 'white',
-            colour: 'quatenary',
-            type: 'filled',
-            onClick: () => history.push(ROUTES.DASHBOARD),
-            leadingIcon: 'XCircleIcon',
-          },
-        ]}
-      />
-    </Dialog>
+    <ActionModal
+      className="mx-4"
+      title="Are you sure you want to log out?"
+      icon="ExclamationCircleIcon"
+      iconColor="alertDark"
+      iconBorderColor="alertBg"
+      detailText={
+        isLoggingOut
+          ? isOnline
+            ? 'Syncing data and logging out...'
+            : 'Logging out...'
+          : ''
+      }
+      actionButtons={[
+        {
+          text: isLoggingOut ? 'Logging out...' : 'Yes, log out',
+          colour: 'quatenary',
+          onClick: handleLogout,
+          type: 'filled',
+          textColour: 'white',
+          leadingIcon: isLoggingOut ? undefined : 'CheckCircleIcon',
+          disabled: isLoggingOut, // ← important!
+        },
+        {
+          text: 'No, cancel',
+          textColour: 'white',
+          colour: 'quatenary',
+          type: 'filled',
+          onClick: () => onCancel?.(),
+          leadingIcon: 'XCircleIcon',
+          disabled: isLoggingOut, // disable cancel during logout
+        },
+      ]}
+    />
   );
 };

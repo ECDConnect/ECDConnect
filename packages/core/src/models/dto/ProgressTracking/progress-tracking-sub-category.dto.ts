@@ -7,4 +7,5 @@ export interface ProgressTrackingSubCategoryDto {
   title?: string;
   description: string;
   skills: ProgressTrackingSkillDto[];
+  imageHexColor?: string;
 }

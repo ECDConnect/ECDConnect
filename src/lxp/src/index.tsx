@@ -6,7 +6,7 @@ import reportWebVitals from './reportWebVitals';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import './styles.css';
 import './i18n';
-import Loader from './components/loader/loader';
+import pwa from './utils/pwa';
 
 if (
   process.env.NODE_ENV === 'development' &&
@@ -25,13 +25,21 @@ const updateHandler = (registration: ServiceWorkerRegistration) => {
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
 // Learn more about service workers: https://cra.link/PWA
-const registering = serviceWorkerRegistration.register({
+serviceWorkerRegistration.register({
   onUpdate: updateHandler,
 });
 
+pwa.addInstallEventListeners();
+
 console.log('[REACT] render app');
 ReactDOM.render(
-  <ConfigProvider>
+  <ConfigProvider
+    config={{
+      authApi: process.env.REACT_APP_API || '',
+      graphQlApi: process.env.REACT_APP_GRAPHQLAPI || '',
+      themeUrl: process.env.REACT_APP_THEME || '',
+    }}
+  >
     <ConfigWrapper />
   </ConfigProvider>,
   document.getElementById('root')

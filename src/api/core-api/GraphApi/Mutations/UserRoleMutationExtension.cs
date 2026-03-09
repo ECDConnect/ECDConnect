@@ -20,7 +20,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class UserRoleMutationExtension
     {
-        [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
+[Permission(PermissionGroups.ROLES, GraphActionEnum.Update)]
+
         public async Task<bool> AddUsersToRoleAsync(
           [Service] ApplicationUserManager userManager,
           [Service] HierarchyEngine engine,
@@ -62,7 +63,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         }
 
         // TODO: Refactor
-        [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
+[Permission(PermissionGroups.ROLES, GraphActionEnum.Update)]
+
         public async Task<bool> RemoveUserFromRolesAsync(
           [Service] ApplicationUserManager userManager,
           [Service] ILogger<UserMutationExtension> _logger,

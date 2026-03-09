@@ -15,9 +15,12 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Namotion.Reflection;
+using Org.BouncyCastle.Math.EC.Rfc7748;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static EcdLink.Api.CoreApi.Constants;
 
 namespace ECDLink.Core.Services
 {
@@ -127,12 +130,33 @@ namespace ECDLink.Core.Services
 
         public void ExpireRelationshipLinks()
         {
+            DateTime today = DateTime.Today;
+            var sevenDaysBack = today.AddDays(-7).Date;
             var practiRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
             var pracsToExpire = practiRepo.GetAll()
-                                        .Where(x => x.IsLeaving == true)
-                                        .Where(x => x.DateToBeRemoved != null)
+                                        .Where(x => (x.IsLeaving == true && x.DateToBeRemoved.HasValue && x.DateToBeRemoved.Value.Date < today.Date) ||
+                                        (!x.DateAccepted.HasValue && x.DateLinked.HasValue && x.DateLinked.Value.Date < sevenDaysBack.Date))
+                                        .OrderBy(x => x.InsertedDate)
                                         .ToList();
+            var inviteRepo = _repositoryFactory.CreateRepository<Invite>(userContext: _applicationUserId);
+            var invitesToExpire = inviteRepo.GetAll().Where(x => x.Status == InviteStatus.Pending && x.InsertedDate < sevenDaysBack.Date).ToList();
 
+            if (invitesToExpire.Any())
+            {
+                foreach (var invite in invitesToExpire)
+                {
+                    var expireUser = _userManager.FindByIdAsync(invite.UserId).Result;
+                    if (expireUser != null)
+                    {
+                        invite.Status = InviteStatus.Expired;
+                        invite.IsActive = false;
+                        invite.UserId = null; 
+                        inviteRepo.Update(invite);
+                    
+                        _userManager.DeleteAsync(expireUser);
+                     }
+                }
+            }
             if (pracsToExpire.Count > 0)
             {
                 foreach (var prac in pracsToExpire)
@@ -141,15 +165,15 @@ namespace ECDLink.Core.Services
                     {
                         //Reassign all classes and programmes back to principal
                         AddReassignmentForPractitioner(
-                            prac.UserId.ToString(), 
-                            prac.PrincipalHierarchy.ToString(), 
-                            "Removing link between Principal and Practitioner", 
+                            prac.UserId.ToString(),
+                            prac.PrincipalHierarchy.ToString(),
+                            "Removing link between Principal and Practitioner",
                             DateTime.Now,
-                            _applicationUserId.ToStringOrNull(), 
-                            null, 
+                            _applicationUserId.ToStringOrNull(),
+                            null,
                             true);
 
-                        _notificationService.ExpireNotificationsTypesForUser(prac.PrincipalHierarchy.ToString(), TemplateTypeConstants.RejectedInvitation, prac.User.FirstName + " " + prac.User.Surname );
+                        _notificationService.ExpireNotificationsTypesForUser(prac.PrincipalHierarchy.ToString(), TemplateTypeConstants.RejectedInvitation, prac.User.FirstName + " " + prac.User.Surname);
                     }
 
                     prac.DateToBeRemoved = null;
@@ -160,7 +184,7 @@ namespace ECDLink.Core.Services
                     prac.PrincipalHierarchy = null;
                     prac.ShareInfo = false;
 
-                    practiRepo.Update(prac);                    
+                    practiRepo.Update(prac);
                 }
             }
         }
@@ -340,7 +364,7 @@ namespace ECDLink.Core.Services
             return isReassigned;
         }
 
-        public ClassReassignmentHistory ProcessReassignments(Guid reassignmentId, bool reassignBack = false)
+        public bool ProcessReassignments(Guid reassignmentId, bool reassignBack = false)
         {
             if (reassignmentId != Guid.Empty)
             {
@@ -386,7 +410,8 @@ namespace ECDLink.Core.Services
                                 }
                             }
                         }
-                    } else if (reassignBack) //only back assignments its the end due date of the reassignment to end and everything needs to be shifted back to before the reassignment/absentee)
+                    }
+                    else if (reassignBack) //only back assignments its the end due date of the reassignment to end and everything needs to be shifted back to before the reassignment/absentee)
                     {
 
                         if (reassignment.ReassignedBackToDate == null) //hasnt been processed yet
@@ -404,12 +429,12 @@ namespace ECDLink.Core.Services
                                     if (reassignment.AssignedRole == Roles.PRINCIPAL && reassignment.ReassignedRoleBack == Roles.PRACTITIONER)
                                     {
                                         //swap ids for reassigning back
-                                        _personnelService.SwitchPrincipal(reassignment.ReassignedBackToUserId.ToString(),reassignment.UserId.ToString());
+                                        _personnelService.SwitchPrincipal(reassignment.ReassignedBackToUserId.ToString(), reassignment.UserId.ToString());
 
                                     }
                                     if (reassignment.AssignedRole == Roles.PRACTITIONER && reassignment.ReassignedRoleBack == Roles.PRINCIPAL)
                                     {
-                                        _personnelService.SwitchPrincipal(reassignment.UserId.ToString(),reassignment.ReassignedBackToUserId.ToString());
+                                        _personnelService.SwitchPrincipal(reassignment.UserId.ToString(), reassignment.ReassignedBackToUserId.ToString());
 
                                     }
                                     reassignment.AssignedRoleDate = DateTime.Now;
@@ -423,15 +448,17 @@ namespace ECDLink.Core.Services
 
                     //remove all notifications for the users
                     _notificationService.ExpireNotificationsTypesForUser(reassignment.UserId.ToString(), TemplateTypeConstants.PractitionerMarkedAbsent);
-                    if (reassignment.ReassignedBackToUserId.ToString() != "") {
+                    if (reassignment.ReassignedBackToUserId.ToString() != "")
+                    {
                         _notificationService.ExpireNotificationsTypesForUser(reassignment.ReassignedBackToUserId.ToString(), TemplateTypeConstants.PractitionerMarkedAbsent);
                         _notificationService.ExpireNotificationsTypesForUser(reassignment.ReassignedBackToUserId.ToString(), TemplateTypeConstants.PrincipalMarkedOnLeave);
                         _notificationService.ExpireNotificationsTypesForUser(reassignment.ReassignedBackToUserId.ToString(), TemplateTypeConstants.PractitionerMarkedOnLeave);
 
                     }
                 }
-                return reassignment;
-            } else { return null; }
+                return true;
+            }
+            else { return false; }
 
         }
 
@@ -565,6 +592,7 @@ namespace ECDLink.Core.Services
                     Child children = childRepo.GetByUserId(learnerId);
                     if (children != null)
                     {
+                        childrenReassigned.Add(children.UserId.ToString());
                         string childNewHierarchy = "";
                         UserHierarchyEntity childHierarchy = staticHierarchyRepo.GetAll().Where(x => x.UserId == children.UserId.Value).FirstOrDefault();
 

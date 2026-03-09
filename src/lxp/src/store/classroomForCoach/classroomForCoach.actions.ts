@@ -14,12 +14,12 @@ export const ClassroomForCoachActions = {
 export const getClassroomForCoach = createAsyncThunk<
   ClassroomDto[],
   // eslint-disable-next-line @typescript-eslint/ban-types
-  { id: string },
+  {},
   ThunkApiType<RootState>
 >(
   ClassroomForCoachActions.GET_CLASSROOM_FOR_COACH,
   // eslint-disable-next-line no-empty-pattern
-  async ({ id }, { getState, rejectWithValue }) => {
+  async ({}, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -31,7 +31,7 @@ export const getClassroomForCoach = createAsyncThunk<
     if (userAuth?.auth_token) {
       classroomsForCoach = await new ClassroomService(
         userAuth?.auth_token
-      ).getAllClassroomForCoach(id);
+      ).getAllClassroomForCoach();
     } else {
       return rejectWithValue('no access token, profile check required');
     }

@@ -9,6 +9,9 @@ export const APIs = {
   refreshJwtToken: `api/authentication/refresh-token`,
   onlineCheck: `api/authentication/online-check`,
   verifyCellPhoneNumber: 'api/authentication/verify-cellphone-number',
+  verifySignupCellPhoneNumber:
+    'api/authentication/verify-signup-cellphone-number',
+  verifyPasswordToken: 'api/authentication/verify-password-token',
   submitUserHelpForm: 'api/authentication/submit-user-help-form',
   tenantCurrent: 'api/tenancy/current',
   checkUsernamePhoneNumber: 'api/authentication/check-username-phone-number',
@@ -25,4 +28,5 @@ export const APIs = {
   validateNewTenant: 'api/setup/validate-new-tenant',
   fetchAllLanguages: 'api/setup/fetch-available-languages',
   getConsentForPortal: 'api/setup/get-consent-for-portal',
+  sendNewInvitation: 'api/invitation/send-new-invitation',
 };

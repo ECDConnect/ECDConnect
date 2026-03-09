@@ -1,5 +1,8 @@
 using EcdLink.Api.CoreApi.GraphApi.Models.Statements;
+using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
+using ECDLink.EGraphQL.Authorization;
+using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
@@ -18,12 +21,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         // Probably don't need this
+        [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.View)]
         public List<IncomeExpensePDFTableModel> GetStatementsIncomeExpensesPDFData(
             [Service] IIncomeExpenseService incomeManager, Guid statementId)
         {
             return incomeManager.GetStatementsIncomeExpensesPDFData(statementId);
         }
 
+        [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.View)]
         /// <summary>
         /// Fetches a list of income statements, including lists of all income and expense items linked to it
         /// </summary>
@@ -41,6 +46,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return statements.Select(x => new IncomeStatementModel(x)).ToList();
         }
 
+        [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
         public string GetIncomeStatementPdf(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] IIncomeExpenseService incomeExpenseService,

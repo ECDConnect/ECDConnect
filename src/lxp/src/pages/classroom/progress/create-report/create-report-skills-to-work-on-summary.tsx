@@ -24,7 +24,7 @@ export const ProgressCreateReportSkillsToWorkOnSummary: React.FC<
         >
           <Typography type="small" color="textMid" text={'Skill:'} />
           <Typography type="body" color="textDark" text={skill.skillName} />
-          <Typography type="small" color="textMid" text={'Todo:'} />
+          <Typography type="small" color="textMid" text={'To do:'} />
           <Typography type="body" color="textDark" text={skill.howToSupport} />
         </Card>
       ))}

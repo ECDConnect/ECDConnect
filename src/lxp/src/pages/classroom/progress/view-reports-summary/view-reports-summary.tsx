@@ -24,6 +24,7 @@ import { TabsItems } from '../../class-dashboard/class-dashboard.types';
 export type ProgressViewReportsSummaryState = {
   ageGroupId: number;
   classroomGroupId: string;
+  reportPeriodId: string;
 };
 
 export const ProgressViewReportsSummary: React.FC = () => {
@@ -40,14 +41,15 @@ export const ProgressViewReportsSummary: React.FC = () => {
     classroomGroup,
     ageGroup,
     childReports,
+    currentReportingPeriodForSummary,
     currentReportingPeriod,
   } = useProgressForClassAndAgeGroup(
     routeState.classroomGroupId,
-    routeState.ageGroupId
+    routeState.ageGroupId,
+    routeState.reportPeriodId
   );
 
-  const { generateReport } = useProgressGenerateSummaryPdfReport();
-
+  const { asyncGenerateReport } = useProgressGenerateSummaryPdfReport();
   const splitPdf = useMemo(() => {
     if (reportsSummary.length < 3) {
       return false;
@@ -105,11 +107,15 @@ export const ProgressViewReportsSummary: React.FC = () => {
     });
   };
 
+  console.log('childReports', childReports);
+
   return (
     <BannerWrapper
-      size={'small'}
+      size="medium"
+      renderBorder={true}
       title={`${classroomGroup?.name} progress summary`}
       onBack={() => handleGoBack()}
+      displayOffline={!isOnline}
     >
       <div className={'flex h-full flex-col px-4 pb-4 pt-4'}>
         <Typography
@@ -197,7 +203,9 @@ export const ProgressViewReportsSummary: React.FC = () => {
             <ProgresseportsSummaryPdf
               ageGroup={ageGroup}
               classroomGroupName={classroomGroup?.name || ''}
-              currentReportingPeriod={currentReportingPeriod!}
+              currentReportingPeriod={
+                currentReportingPeriodForSummary! || currentReportingPeriod
+              }
               practitionerName={`${classPractitioner?.user?.firstName} ${
                 classPractitioner?.user?.surname || ''
               }`}
@@ -210,7 +218,9 @@ export const ProgressViewReportsSummary: React.FC = () => {
                 <ProgresseportsSummaryPdf
                   ageGroup={ageGroup}
                   classroomGroupName={classroomGroup?.name || ''}
-                  currentReportingPeriod={currentReportingPeriod!}
+                  currentReportingPeriod={
+                    currentReportingPeriodForSummary! || currentReportingPeriod
+                  }
                   practitionerName={`${classPractitioner?.user?.firstName} ${
                     classPractitioner?.user?.surname || ''
                   }`}
@@ -225,7 +235,7 @@ export const ProgressViewReportsSummary: React.FC = () => {
         <Button
           disabled={!isOnline}
           onClick={() => {
-            generateReport(
+            asyncGenerateReport(
               shareRef.current!,
               shareRef.current?.offsetWidth || 750
             );

@@ -3,7 +3,6 @@ using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Helpers;
-using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -14,8 +13,6 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Identity;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -27,7 +24,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [UseSorting]
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.DOCUMENTS, GraphActionEnum.View)]
         public IQueryable<Document> GetAllDocument(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,

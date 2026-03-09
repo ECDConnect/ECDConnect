@@ -222,7 +222,8 @@ export const AddPractitioner = ({
             practitionerPhoneNumber,
             classroom?.preschoolCode!,
             classroom?.name!,
-            user?.id!
+            user?.id!,
+            idNumber || passport
           )
           .catch((error) => {
             console.log(error);
@@ -342,6 +343,10 @@ export const AddPractitioner = ({
     }
   };
 
+  const disableSearchButton = preferId
+    ? Object.keys(errors).length !== 0
+    : false;
+
   return (
     <div>
       <BannerWrapper
@@ -392,7 +397,10 @@ export const AddPractitioner = ({
                       background={'transparent'}
                       size="small"
                       text="Enter ID number instead"
-                      onClick={() => setValue('preferId', true)}
+                      onClick={() => {
+                        setValue('preferId', true);
+                        setValue('passport', '');
+                      }}
                     />
                   )}
                   {preferId && (
@@ -404,7 +412,10 @@ export const AddPractitioner = ({
                       background={'transparent'}
                       textColor="secondary"
                       text="Enter passport number instead"
-                      onClick={() => setValue('preferId', false)}
+                      onClick={() => {
+                        setValue('preferId', false);
+                        setValue('idNumber', '');
+                      }}
                     />
                   )}
                 </div>
@@ -419,7 +430,7 @@ export const AddPractitioner = ({
                   textColor="white"
                   icon="SearchIcon"
                   onClick={handleSearch}
-                  disabled={!idNumber && !passport}
+                  disabled={disableSearchButton}
                 />
               )}
               {(addNote || isPrincipal) && (
@@ -609,7 +620,7 @@ export const AddPractitioner = ({
               {isValidPractitioner === true && (
                 <Button
                   size="normal"
-                  className="mb-12 w-full"
+                  className="mb-4 w-full"
                   type="outlined"
                   color="quatenary"
                   text="Add another practitioner"
@@ -651,7 +662,7 @@ export const AddPractitioner = ({
         className="w-full"
         stretch
       >
-        <HelpForm closeAction={setOpenHelp} />
+        <HelpForm closeAction={setOpenHelp} userId={user?.id} />
       </Dialog>
     </div>
   );

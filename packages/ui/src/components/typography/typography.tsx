@@ -15,6 +15,7 @@ export interface TypographyProps extends ComponentBaseProps {
   type: TypographyType;
   text?: string;
   hasMarkup?: boolean;
+  autoLink?: boolean;
   fontSize?: TypographyFontSizes;
   weight?: TypographyWeight;
   underline?: boolean;
@@ -25,6 +26,15 @@ export interface TypographyProps extends ComponentBaseProps {
   onClick?: () => void;
 }
 
+const linkifyText = (text: string): string => {
+  const urlRegex = /(https?:\/\/[^\s<>"']+)/g;
+  return text.replace(
+    urlRegex,
+    (url) =>
+      `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">${url}</a>`
+  );
+};
+
 export const Typography: React.FC<TypographyProps> = ({
   type,
   text,
@@ -34,6 +44,7 @@ export const Typography: React.FC<TypographyProps> = ({
   align,
   fontSize,
   hasMarkup = false,
+  autoLink = false,
   underline = false,
   hover = false,
   className,
@@ -42,15 +53,22 @@ export const Typography: React.FC<TypographyProps> = ({
   ...restProps
 }) => {
   const getTag = (type: TypographyType, text?: string) => {
+    let processedText = text;
+
+    if (autoLink && text && !hasMarkup) {
+      processedText = linkifyText(text);
+    }
+
     let splitText;
-    if (text && text.includes('\n')) {
-      splitText = text.split('\n').map((str, ix) =>
+    if (processedText && processedText.includes('\n')) {
+      splitText = processedText.split('\n').map((str, ix) =>
         str ? (
           <span
             key={`paragraph-${ix}`}
             className={`mt-${ix !== 0 ? '3' : '0'} block`}
+            dangerouslySetInnerHTML={autoLink ? { __html: str } : undefined}
           >
-            {str}
+            {!autoLink ? str : null}
           </span>
         ) : null
       );
@@ -63,7 +81,7 @@ export const Typography: React.FC<TypographyProps> = ({
             ref={inputRef}
             onClick={onClick}
             className={classNames('prose', className)}
-            dangerouslySetInnerHTML={{ __html: text || '' }}
+            dangerouslySetInnerHTML={{ __html: processedText || '' }}
             {...restProps}
           />
         );
@@ -79,8 +97,11 @@ export const Typography: React.FC<TypographyProps> = ({
               `text-${color}`,
               `${lineHeight ? `leading-${lineHeight}` : ''}`
             )}
+            dangerouslySetInnerHTML={
+              autoLink ? { __html: processedText || '' } : undefined
+            }
           >
-            {splitText ?? text}
+            {!autoLink ? splitText ?? processedText : null}
           </h1>
         );
       case 'h2':
@@ -97,8 +118,11 @@ export const Typography: React.FC<TypographyProps> = ({
               `${fontSize ? `text-${fontSize}` : ''}`,
               `${lineHeight ? `leading-${lineHeight}` : ''}`
             )}
+            dangerouslySetInnerHTML={
+              autoLink ? { __html: processedText || '' } : undefined
+            }
           >
-            {text}
+            {!autoLink ? splitText ?? processedText : null}
           </h2>
         );
       case 'h3':
@@ -115,8 +139,11 @@ export const Typography: React.FC<TypographyProps> = ({
               `${fontSize ? `text-${fontSize}` : ''}`,
               `${lineHeight ? `leading-${lineHeight}` : ''}`
             )}
+            dangerouslySetInnerHTML={
+              autoLink ? { __html: processedText || '' } : undefined
+            }
           >
-            {splitText ?? text}
+            {!autoLink ? splitText ?? processedText : null}
           </h3>
         );
       case 'h4':
@@ -133,8 +160,11 @@ export const Typography: React.FC<TypographyProps> = ({
               `${fontSize ? `text-${fontSize}` : ''}`,
               `${lineHeight ? `leading-${lineHeight}` : ''}`
             )}
+            dangerouslySetInnerHTML={
+              autoLink ? { __html: processedText || '' } : undefined
+            }
           >
-            {splitText ?? text}
+            {!autoLink ? splitText ?? processedText : null}
           </h4>
         );
       case 'h5':
@@ -150,8 +180,11 @@ export const Typography: React.FC<TypographyProps> = ({
               `${fontSize ? `text-${fontSize}` : ''}`,
               `${lineHeight ? `leading-${lineHeight}` : ''}`
             )}
+            dangerouslySetInnerHTML={
+              autoLink ? { __html: processedText || '' } : undefined
+            }
           >
-            {splitText ?? text}
+            {!autoLink ? splitText ?? processedText : null}
           </h5>
         );
       case 'h6':
@@ -168,8 +201,11 @@ export const Typography: React.FC<TypographyProps> = ({
               `${fontSize ? `text-${fontSize}` : ''}`,
               `${lineHeight ? `leading-${lineHeight}` : ''}`
             )}
+            dangerouslySetInnerHTML={
+              autoLink ? { __html: processedText || '' } : undefined
+            }
           >
-            {splitText ?? text}
+            {!autoLink ? splitText ?? processedText : null}
           </h6>
         );
       case 'span':
@@ -186,8 +222,11 @@ export const Typography: React.FC<TypographyProps> = ({
               `${fontSize ? `text-${fontSize}` : ''}`,
               `${lineHeight ? `leading-${lineHeight}` : ''}`
             )}
+            dangerouslySetInnerHTML={
+              autoLink ? { __html: processedText || '' } : undefined
+            }
           >
-            {splitText ?? text}
+            {!autoLink ? splitText ?? processedText : null}
           </span>
         );
       case 'unspecified':
@@ -204,8 +243,11 @@ export const Typography: React.FC<TypographyProps> = ({
               'font-body',
               `${lineHeight ? `leading-${lineHeight}` : ''}`
             )}
+            dangerouslySetInnerHTML={
+              autoLink ? { __html: processedText || '' } : undefined
+            }
           >
-            {splitText ?? stripPTag(text)}
+            {!autoLink ? splitText ?? stripPTag(processedText) : null}
           </div>
         );
       case 'buttonSmall':
@@ -223,14 +265,16 @@ export const Typography: React.FC<TypographyProps> = ({
               'font-body',
               `${lineHeight ? `leading-${lineHeight}` : ''}`
             )}
+            dangerouslySetInnerHTML={
+              autoLink ? { __html: processedText || '' } : undefined
+            }
           >
-            {splitText ?? text}
+            {!autoLink ? splitText ?? processedText : null}
           </p>
         );
       case 'body':
       case 'help':
       case 'small':
-
       default:
         return (
           <p
@@ -244,8 +288,11 @@ export const Typography: React.FC<TypographyProps> = ({
               `text-${color}`,
               `${lineHeight ? `leading-${lineHeight}` : ''}`
             )}
+            dangerouslySetInnerHTML={
+              autoLink ? { __html: processedText || '' } : undefined
+            }
           >
-            {splitText ?? text}
+            {!autoLink ? splitText ?? processedText : null}
           </p>
         );
     }

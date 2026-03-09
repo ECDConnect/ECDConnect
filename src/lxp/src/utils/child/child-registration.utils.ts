@@ -34,7 +34,7 @@ export const mapChildUserDto = (
 ): UserDto => {
   const dateOfBirth = new Date(
     childInformationForm.dobYear ?? 0,
-    childInformationForm.dobMonth - 1 ?? 0,
+    (childInformationForm.dobMonth ?? 1) - 1,
     childInformationForm.dobDay ?? 0,
     new Date().getHours()
   );
@@ -88,15 +88,11 @@ export const mapChildDto = (
     } = child;
     return {
       ...restChild,
-      // TODO: update language field to be an array
-      languageId:
-        childExtraInformationForm?.homeLanguages &&
-        childExtraInformationForm.homeLanguages[0]
-          ? childExtraInformationForm.homeLanguages[0]
-          : undefined,
+      homeLanguageIds: childExtraInformationForm?.homeLanguageIds,
       allergies: healthInformationForm?.allergies ?? '',
       disabilities: healthInformationForm?.disabilities ?? '',
       otherHealthConditions: healthInformationForm?.healthConditions ?? '',
+      otherLanguages: childExtraInformationForm?.otherLanguages ?? '',
       workflowStatusId: childStatusId,
     };
   }
@@ -106,14 +102,12 @@ export const mapChildDto = (
     isActive: true,
     userId: userId,
     caregiverId: '',
-    languageId:
-      childExtraInformationForm?.homeLanguages &&
-      childExtraInformationForm.homeLanguages[0]
-        ? childExtraInformationForm.homeLanguages[0]
-        : undefined,
+
     allergies: healthInformationForm?.allergies ?? '',
     disabilities: healthInformationForm?.disabilities ?? '',
     otherHealthConditions: healthInformationForm?.healthConditions ?? '',
+    otherLanguages: childExtraInformationForm?.otherLanguages ?? '',
+    homeLanguageIds: childExtraInformationForm?.homeLanguageIds,
     workflowStatusId: childStatusId,
     insertedDate: new Date().toISOString(),
     insertedBy: '',
@@ -199,14 +193,10 @@ export const mapCaregiverDto = (
   caregiver?: CaregiverDto
 ): CaregiverDto => {
   if (caregiver) {
-    const { fullName, siteAddressId, isActive, grants, ...restCaregiver } =
+    const { fullName, siteAddressId, isActive, grantIds, ...restCaregiver } =
       caregiver;
     return {
       ...restCaregiver,
-      // idNumber:
-      //   caregiverInformationForm?.careGiverIdField ??
-      //   caregiverInformationForm?.careGiverPassportField ??
-      //   '',
       firstName: caregiverInformationForm?.firstname ?? '',
       surname: caregiverInformationForm?.surname ?? '',
       relationId: caregiverInformationForm?.relationId,
@@ -278,6 +268,7 @@ export const mapAddChildCaregiverTokenModelInput = (
     surname: caregiverInformationForm?.surname ?? '',
     relationId: caregiverInformationForm?.relationId,
     educationId: childCareGiverExtraInformationForm?.highestEducationId,
+    grantIds: childCareGiverExtraInformationForm?.familyGrants,
     emergencyContactFirstName: childEmergencyContactForm?.firstname ?? '',
     emergencyContactSurname: childEmergencyContactForm?.surname ?? '',
     emergencyContactPhoneNumber: childEmergencyContactForm?.phoneNumber ?? '',
@@ -354,14 +345,11 @@ export const mapAddChildTokenModelInput = (
     verifiedByHomeAffairs: false,
     userId: userId,
     raceId: null,
-    languageId:
-      childExtraInformationForm?.homeLanguages &&
-      childExtraInformationForm.homeLanguages[0]
-        ? childExtraInformationForm.homeLanguages[0]
-        : undefined,
     allergies: healthInformationForm?.allergies ?? '',
     disabilities: healthInformationForm?.disabilities ?? '',
     otherHealthConditions: healthInformationForm?.healthConditions ?? '',
+    otherLanguages: childExtraInformationForm?.otherLanguages ?? '',
     workflowStatusId: childWorkflowStatusId,
+    homeLanguageIds: childInformation.homeLanguageIds,
   };
 };

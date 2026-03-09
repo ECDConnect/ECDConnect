@@ -21,7 +21,6 @@ import {
 import { CompletedCaregiverChildRegistration } from './completed-caregiver-child-registration/completed-caregiver-child-registration';
 import { childrenThunkActions } from '@store/children';
 import { ChildRegistrationFormState, StateAction } from '@models/child/child';
-import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { staticDataThunkActions } from '@store/static-data';
 import { ActionModal, DialogPosition } from '@ecdlink/ui';
 import { useStaticData } from '@hooks/useStaticData';
@@ -41,7 +40,6 @@ export const CaregiverChildRegistration: React.FC<
   const [staticDataLoading, setStaticDataLoading] = useState(false);
   const appDispatch = useAppDispatch();
   const [formState, setFormState] = useState<ChildRegistrationFormState>({});
-  const { isOnline } = useOnlineStatus();
   const dialog = useDialog();
   const { getWorkflowStatusIdByEnum } = useStaticData();
 
@@ -238,7 +236,6 @@ export const CaregiverChildRegistration: React.FC<
       }}
       activeStep={activeStepKey}
       onClose={exitRegistrationPrompt}
-      isOnline={isOnline}
     >
       <Step
         stepKey={CaregiverChildRegistrationSteps.welcome}

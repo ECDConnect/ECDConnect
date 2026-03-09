@@ -8,7 +8,7 @@ import {
   openAccessAddChildDetail,
   updateChild,
   upsertChildren,
-  // getChildrenForClassroomGroup,
+  getChildrenForClassroom,
 } from './children.actions';
 import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 import { CaregiverContactHistory, ChildrenState } from './children.types';
@@ -28,12 +28,10 @@ const childrenSlice = createSlice({
       state.childData = initialState.childData;
     },
     createChild: (state, action: PayloadAction<ChildDto>) => {
-      //const isOnline = navigator.onLine;
       const payloadUpdated = { ...action.payload, synced: false };
       state.childData.children.push(payloadUpdated);
     },
     updateChild: (state, action: PayloadAction<ChildDto>) => {
-      //const isOnline = navigator.onLine;
       const payloadUpdated = { ...action.payload, synced: false };
 
       const childIndex = state.childData.children.findIndex(
@@ -107,45 +105,46 @@ const childrenSlice = createSlice({
     });
     builder.addCase(getChildren.fulfilled, (state, action) => {
       if (!action.payload.retrievedFromCache) {
-        const unsyncedChildren = state.childData.children.filter(
-          (child) => !child.synced
-        );
-        const newChildren = action.payload.children.map((x) => ({
-          ...x,
-          synced: true,
-        }));
+        const newChildren = action.payload.children
+          .filter(
+            (newChild) =>
+              !state.childData.children.some(
+                (existingChild) => existingChild.id === newChild.id
+              )
+          )
+          .map((x) => ({
+            ...x,
+            synced: true,
+          }));
 
         state.childData = {
-          children: unsyncedChildren.concat(newChildren),
+          children: [...state.childData.children, ...newChildren],
           dateRefreshed: new Date().toDateString(),
         };
       }
     });
 
-    // builder.addCase(getChildrenForClassroomGroup.fulfilled, (state, action) => {
-    //   // if (!action.payload.retrievedFromCache) {
-    //   //   const unsyncedChildren = state.childData.children.filter(
-    //   //     (child) => !child.synced
-    //   //   );
-    //   const newChildren = action.payload.childrenTest?.map((x) => ({
-    //     ...x,
-    //     synced: true,
-    //   }));
+    builder.addCase(getChildrenForClassroom.fulfilled, (state, action) => {
+      if (!action.payload.retrievedFromCache) {
+        // Filter out new children that already exist in the state based on id
+        const newChildren = action.payload.children
+          .filter(
+            (newChild) =>
+              !state.childData.children.some(
+                (existingChild) => existingChild.id === newChild.id
+              )
+          )
+          .map((x) => ({
+            ...x,
+            synced: true,
+          }));
 
-    //   state.childData = {
-    //     children: newChildren,
-    //     dateRefreshed: new Date().toDateString(),
-    //   };
-
-    //   // Store learner count per classroom
-    //   const classroomGroupId = action.meta.arg.classroomGroupId;
-    //   state.learnersByClassroom = {
-    //     ...state.learnersByClassroom,
-    //     [classroomGroupId]: newChildren.filter(
-    //       (child) => child.isActive !== false
-    //     ).length,
-    //   };
-    // });
+        state.childData = {
+          children: [...state.childData.children, ...newChildren],
+          dateRefreshed: new Date().toDateString(),
+        };
+      }
+    });
 
     builder.addCase(updateChild.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);

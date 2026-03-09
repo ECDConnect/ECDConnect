@@ -1,6 +1,9 @@
+using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.ContentManagement.Repositories;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.EGraphQL.Authorization;
+using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
 using System;
@@ -9,9 +12,12 @@ using System.Collections.Generic;
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
 {
     [ExtendObjectType(OperationTypeNames.Query)]
+
+    
     public class MoreInformationQueryExtension
     {
         [GraphQLType("[MoreInformation]!")]
+        // Permission not necessary for generic content view
         public IEnumerable<object> GetMoreInformation(
            [Service] ContentManagementRepository contentRepo,
            [Service] ILocaleService<Language> localeService,

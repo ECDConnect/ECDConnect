@@ -32,7 +32,7 @@ namespace ECDLink.Notifications.NoSms
             if (cancellationToken.IsCancellationRequested)
                 return;
 
-            _message.MessageBody = _templateProcessor
+            _message.MessageBody = await _templateProcessor
                                         .SetUserContext(_model)
                                         .SetMessageBody(_message.MessageBody)
                                         .SetMessageTemplate(_messageTemplate)

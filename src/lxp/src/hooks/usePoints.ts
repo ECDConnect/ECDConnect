@@ -9,7 +9,6 @@ import { Colours } from '@ecdlink/ui';
 export const usePoints = () => {
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const tenant = useTenant();
-  const isWhiteLabel = tenant?.isWhiteLabel;
   const pointsToDo = useSelector(pointsSelectors.getPointsToDo);
   const totalYearPoints = useSelector(pointsSelectors.getTotalYearPoints);
 

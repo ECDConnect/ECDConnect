@@ -80,7 +80,7 @@ export default function Shell() {
       inApp: false,
       protocol: 'portal',
     },
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: 'network-only',
   });
 
   const notifications = notificationsData?.allNotifications;
@@ -115,7 +115,7 @@ export default function Shell() {
         NavbarTypes.CMS,
         // [NavbarTypes.Reporting],
         NavbarTypes.Messaging,
-        NavbarTypes.SiteData,
+        isSuperAdmin && [NavbarTypes.SiteData],
         isSuperAdmin && [NavbarTypes.Settings],
         NavbarTypes.Notifications,
       ];
@@ -169,7 +169,7 @@ export default function Shell() {
   const renderFooter = useMemo(() => {
     return (
       <div className="mb-2 flex flex-col px-4 md:py-4">
-        <Button
+        {/* <Button
           className={
             'hover:bg-secondary mb-2 w-full rounded-xl hover:text-white'
           }
@@ -180,7 +180,7 @@ export default function Shell() {
           text="Help"
           // TODO: Implement help
           onClick={() => {}}
-        />
+        /> */}
         <Button
           className={
             'hover:bg-secondary w-full justify-self-start rounded-xl hover:text-white '
@@ -312,14 +312,14 @@ export default function Shell() {
           </button>
           <div className="flex flex-1 items-center justify-between px-4">
             <div className="flex flex-1 cursor-pointer pl-4">
-              {activeNavigation && (
+              {/* {activeNavigation && (
                 <InformationCircleIcon
                   onClick={() => displayInformationPanel()}
                   className="text-infoMain ml-2"
                   height="25"
                   width="25"
                 />
-              )}
+              )} */}
               <span className="pl-2 font-semibold text-black">
                 {activeNavigation?.name}
               </span>

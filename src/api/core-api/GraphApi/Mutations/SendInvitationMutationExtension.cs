@@ -1,5 +1,6 @@
 using EcdLink.Api.CoreApi.GraphApi.Models.Users;
 using EcdLink.Api.CoreApi.Managers.Notifications;
+using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Security.Managers;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using ECDLink.Abstractrions.Constants;
@@ -28,7 +29,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class SendInvitationMutationExtension
     {
-       [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Create)]
         public async Task<bool> SendInviteToApplication(
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           [Service] InvitationNotificationManager notificationManager,
@@ -66,7 +67,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return true;
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Create)]
         public async Task<BulkInvitationResult> SendBulkInviteToPortal(
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           [Service] InvitationNotificationManager notificationManager,
@@ -127,15 +128,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return result;
         }
 
+        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Create)]
         public async Task<string> SendPractitionerInviteToPreSchool(
                 [Service] ITokenManager<ApplicationUser, OpenAccessTokenManager> tokenManager,
                 [Service] InvitationNotificationManager notificationManager,
                 [Service] ApplicationUserManager userManager,
+                [Service] InvitationManager inviteManager,
                 [Service] IHttpContextAccessor httpContext,
                  string practitionerPhoneNumber,
                  string preSchoolNameCode,
                  string preSchoolName,
-                 Guid principalUserId)
+                 Guid principalUserId,
+                 string? idOrPassport)
         {
             if (string.IsNullOrEmpty(practitionerPhoneNumber))
             {
@@ -164,10 +168,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 IsActive = true,
                 TenantId = tenantId,
                 PhoneNumber = UserHelper.NormalizePhoneNumber(practitionerPhoneNumber),
-                ContactPreference = MessageTypeConstants.SMS
+                ContactPreference = MessageTypeConstants.SMS,
+                IdNumber = idOrPassport
             };
-            await userManager.CreateAsync(user);
 
+            await userManager.CreateAsync(user);
+            inviteManager.CreateUserInvitation(user.Id, principal.Id);
+            
             var tokenWrapper = new PrincipalPractitionerTokenWrapperModel
             {
                 AddedByUserId = userId,
@@ -193,6 +200,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
         }
 
+        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Create)]
         public async Task<string> SendPrincipalInviteToApplication(
                 [Service] ITokenManager<ApplicationUser, OpenAccessTokenManager> tokenManager,
                 [Service] InvitationNotificationManager notificationManager,

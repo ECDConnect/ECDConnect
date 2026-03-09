@@ -34,7 +34,7 @@ export const SelectPractitionerRole = ({
   const appDispatch = useAppDispatch();
   const tenant = useTenant();
   const isOpenAccess = tenant?.isOpenAccess;
-  const [shareSomeDetails, setShareSomeDetails] = useState(false);
+  const [showShareSomeDetails, setShowShareSomeDetails] = useState(false);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const user = useSelector(userSelectors.getUser);
 
@@ -75,7 +75,7 @@ export const SelectPractitionerRole = ({
           ? () => {
               setIsNotPrincipal(false);
               savePractitionerIsPrincipal();
-              setShareSomeDetails(true);
+              setShowShareSomeDetails(true);
             }
           : () => {
               setIsNotPrincipal(false);
@@ -102,7 +102,7 @@ export const SelectPractitionerRole = ({
           ? () => {
               setIsNotPrincipal(true);
               savePractitionerIsNotPrincipal();
-              setShareSomeDetails(true);
+              setShowShareSomeDetails(true);
             }
           : () => {
               setIsNotPrincipal(true);
@@ -149,17 +149,15 @@ export const SelectPractitionerRole = ({
           type={'MenuList'}
           className="flex flex-col gap-2"
         />
-        <Dialog
-          stretch={true}
-          visible={shareSomeDetails}
-          position={DialogPosition.Full}
-        >
-          <ShareSomeDetails
-            onNext={() => setPage(PractitionerSetupSteps.SETUP_PROGRAMME)}
-            setIsNotPrincipal={setIsNotPrincipal}
-            setShareSomeDetails={setShareSomeDetails}
-          />
-        </Dialog>
+        {showShareSomeDetails && (
+          <Dialog stretch visible position={DialogPosition.Full}>
+            <ShareSomeDetails
+              onNext={() => setPage(PractitionerSetupSteps.SETUP_PROGRAMME)}
+              setIsNotPrincipal={setIsNotPrincipal}
+              setShareSomeDetails={setShowShareSomeDetails}
+            />
+          </Dialog>
+        )}
       </div>
     </>
   );

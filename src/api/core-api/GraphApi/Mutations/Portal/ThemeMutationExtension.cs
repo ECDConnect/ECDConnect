@@ -1,6 +1,5 @@
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
-using ECDLink.AzureStorage.Blob;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -20,7 +19,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Portal
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class ThemeMutationExtension
     {
-        [Permission(PermissionGroups.SYSTEM, GraphActionEnum.Update)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.Update)]
         public Task<string> UpdateTenantTheme(
             [Service] ITenantService tenantService,
             [Service] IFileService fileService, 
@@ -37,7 +36,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Portal
             return Task.FromResult(fileName);
         }
 
-        [Permission(PermissionGroups.SYSTEM, GraphActionEnum.Update)]
+        [Permission(PermissionGroups.PORTAL, GraphActionEnum.Update)]
         public TenantInternalModel UpdateTenantInfo(
             [Service] ITenantService tenantService,
             TenantInfoInputModel input)
@@ -50,7 +49,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Portal
             return tenantService.UpdateTenantInfo(TenantExecutionContext.Tenant.Id, input);
         }
 
-        [Permission(PermissionGroups.SYSTEM, GraphActionEnum.Update)]
+        [Permission(PermissionGroups.PORTAL, GraphActionEnum.Update)]
         public async Task<TenantInternalModel> RevertTenantSettingsToDefault(
             [Service] ITenantService tenantService,
             [Service] IFileService fileService)

@@ -57,7 +57,6 @@ export default function Children() {
     return {
       ...child,
       fullName: `${child.user?.firstName} ${child.user?.surname}`,
-      language: child.language?.description,
       statusChip: [
         {
           statusValue: child.workflowStatus?.description,

@@ -1,15 +1,5 @@
-import {
-  NOTIFICATION,
-  useDialog,
-  useNotifications,
-  useSnackbar,
-  useTheme,
-} from '@ecdlink/core';
-import {
-  FileTypeEnum,
-  PractitionerColleagues,
-  WorkflowStatusEnum,
-} from '@ecdlink/graphql';
+import { useDialog, useSnackbar } from '@ecdlink/core';
+import { PractitionerColleagues } from '@ecdlink/graphql';
 import {
   ActionListDataItem,
   BannerWrapper,
@@ -23,12 +13,13 @@ import {
   Typography,
   Alert,
   Card,
+  ActionModal,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
 import { useDocuments } from '@hooks/useDocuments';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
@@ -58,8 +49,10 @@ import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { JoinOrAddPreschoolModal } from '@/components/join-or-add-preschool-modal/join-or-add-preschool-modal';
 import { formatAddress } from '@/components/address-map/address-map';
 import TransparentLayer from '../../../assets/TransparentLayer.png';
-import { p } from 'msw/lib/glossary-297d38ba';
-import { is } from 'date-fns/locale';
+import { format } from 'date-fns';
+import { usePractitionerAbsentees } from '@/hooks/usePractitionerAbsentees';
+import { PractitionerListRouteState } from './practitioner-list/practitioner-list.types';
+import { EditLogo } from './edit-logo/edit-logo';
 
 export const PractitionerProgrammeInformation: React.FC = () => {
   const history = useHistory();
@@ -68,7 +61,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
   const tenant = useTenant();
   const isOpenAccess = tenant?.isOpenAccess;
   const isTrialPeriod = useIsTrialPeriod();
-
+  const location = useLocation();
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
 
@@ -89,20 +82,19 @@ export const PractitionerProgrammeInformation: React.FC = () => {
     (item) => item.userId !== practitioner?.userId
   );
 
+  const { practitionerIsOnLeave, currentAbsentee } = usePractitionerAbsentees(
+    practitioner!
+  );
+
   const isPrincipal = practitioner?.isPrincipal === true;
-  const { createNewDocument, classroomImage, updateDocument, deleteDocument } =
-    useDocuments();
+  const { classroomImage, deleteDocument } = useDocuments();
   const [editFieldVisible, setEditFieldVisible] = useState(false);
   const [editProfilePictureVisible, setEditProfilePictureVisible] =
     useState(false);
   const [showEditAddress, setShowEditAddress] = useState(false);
+  const [showEditLogo, setShowEditLogo] = useState(false);
 
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
-  const { theme } = useTheme();
-
-  const userClassroomGroups = useSelector(
-    classroomsSelectors.getClassroomGroupsForUser(practitioner?.id || '')
-  );
 
   const missingProgramme =
     (practitioner?.isRegistered === null || practitioner?.isRegistered) &&
@@ -152,7 +144,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
   }, [classroom, classroomGroups, otherColleaguesFiltered]);
 
   const displayProfilePicturePrompt = () => {
-    setEditProfilePictureVisible(!editProfilePictureVisible);
+    setShowEditLogo(!showEditLogo);
   };
 
   const closeEditField = () => {
@@ -223,6 +215,71 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       },
     });
   };
+
+  const handleIsOnLeaveModal = useCallback(() => {
+    dialog({
+      blocking: true,
+      position: DialogPosition.Middle,
+      color: 'bg-white',
+      render: (onClose) => {
+        return (
+          <ActionModal
+            icon="ExclamationCircleIcon"
+            iconColor="alertMain"
+            iconSize={24}
+            importantText={`You are on leave and cannot use this section`}
+            detailText={`You are on leave from ${format(
+              new Date((currentAbsentee?.absentDate as Date) || new Date()),
+              'd MMM yyyy'
+            )} to ${format(
+              currentAbsentee?.absentDateEnd
+                ? new Date(currentAbsentee?.absentDateEnd)
+                : new Date(),
+
+              'd MMM yyyy'
+            )}. If you believe this is a mistake please reach out to ${
+              currentAbsentee?.loggedByPerson
+            }.`}
+            actionButtons={[
+              {
+                text: `Contact ${currentAbsentee?.loggedByPerson}`,
+                textColour: 'white',
+                colour: 'quatenary',
+                type: 'filled',
+                onClick: () => {
+                  history.push({
+                    pathname: ROUTES.PRINCIPAL.PRACTITIONER_LIST,
+                    state: {
+                      returnRoute: ROUTES.DASHBOARD,
+                      isToShowPrincipal: true,
+                    } as PractitionerListRouteState,
+                  });
+                  onClose();
+                },
+                leadingIcon: 'ChatAltIcon',
+              },
+              {
+                text: `Close`,
+                textColour: 'quatenary',
+                colour: 'quatenary',
+                type: 'outlined',
+                onClick: () => {
+                  onClose();
+                },
+                leadingIcon: 'XIcon',
+              },
+            ]}
+          />
+        );
+      },
+    });
+  }, [
+    currentAbsentee?.absentDate,
+    currentAbsentee?.absentDateEnd,
+    currentAbsentee?.loggedByPerson,
+    dialog,
+    history,
+  ]);
 
   useEffect(() => {
     getPractitionerColleagues();
@@ -335,7 +392,11 @@ export const PractitionerProgrammeInformation: React.FC = () => {
           if (isTrialPeriod) {
             showTrialPeriodCompleteProfileBlockingDialog();
           } else {
-            history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS);
+            if (practitionerIsOnLeave) {
+              handleIsOnLeaveModal();
+            } else {
+              history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS);
+            }
           }
         },
       });
@@ -448,7 +509,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
             onPressed={isPrincipal ? displayProfilePicturePrompt : () => {}}
             hasConsent={true}
             isPreschoolImage={true}
-            canChangeImage={practitioner?.isPrincipal ? true : false}
+            canChangeImage={true}
           />
         </div>
 
@@ -567,6 +628,9 @@ export const PractitionerProgrammeInformation: React.FC = () => {
           setShowEditAddress={setShowEditAddress}
           practitioner={practitioner}
         />
+      </Dialog>
+      <Dialog fullScreen visible={showEditLogo} position={DialogPosition.Full}>
+        <EditLogo setShowEditLogo={setShowEditLogo} />
       </Dialog>
 
       <Dialog

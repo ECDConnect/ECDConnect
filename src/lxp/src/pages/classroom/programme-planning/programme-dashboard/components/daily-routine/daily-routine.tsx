@@ -95,7 +95,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const programmeRoutineById = useSelector(
-    programmeRoutineSelectors.getProgrammeRoutineById(1)
+    programmeRoutineSelectors.getProgrammeRoutineItem()
   );
 
   const programmeRoutine = isWalkthrough
@@ -126,10 +126,6 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     selectedDate
   );
 
-  // const { getAdditionalRecommendedSubCategories } =
-  //   useProgrammePlanningRecommendations();
-  // const additionalRecommendedActivities =
-  //   getAdditionalRecommendedSubCategories(programme);
   const isCurrentDayEmpty =
     !currentDailyProgramme?.largeGroupActivityId &&
     !currentDailyProgramme?.smallGroupActivityId &&
@@ -161,6 +157,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   );
 
   const [selectedActivity, setSelectedActivity] = useState(0);
+  const [selectedStoryActivity, setSelectedStoryActivity] = useState(0);
   const [routineItemSet, setRoutineItemSet] =
     useState<ProgrammeRoutineItemDto>();
   const [triggerSaveActivity, setTriggerSaveActivity] = useState(false);
@@ -407,6 +404,28 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     openActivityItem(routineItem);
   };
 
+  const onStoryAndActivitySelected = async (
+    storyId?: number,
+    activityId?: number,
+    day?: DailyProgrammeDto
+  ) => {
+    if (!currentDailyProgramme) {
+      await createOrEditProgramme(
+        classroomGroupId,
+        selectedDate!,
+        'en-za',
+        undefined,
+        selectedDate!
+      );
+    }
+    if (day) {
+      const currentDayCopy = { ...day };
+      currentDayCopy.storyBookId = storyId;
+      currentDayCopy.storyActivityId = activityId;
+      saveCurrentDay(currentDayCopy);
+    }
+  };
+
   const onActivitySelected = async (
     routineItem: ProgrammeRoutineItemDto,
     day?: DailyProgrammeDto,
@@ -432,7 +451,6 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
           currentDayCopy.smallGroupActivityId = activityId;
           break;
       }
-
       saveCurrentDay(currentDayCopy);
     }
   };
@@ -448,6 +466,9 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
           case DailyRoutineItemType.smallGroup:
             currentDayCopy.smallGroupActivityId = selectedActivity;
             break;
+          case DailyRoutineItemType.storyBook:
+            currentDayCopy.storyBookId = selectedStoryActivity;
+            currentDayCopy.storyActivityId = selectedActivity;
         }
       }
 
@@ -482,24 +503,6 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     selectedDate,
   ]);
 
-  const unsavedDay = currentProgramme?.dailyProgrammes.find((dailyRoutine) =>
-    isSameDay(new Date(dailyRoutine?.dayDate), selectedDate!)
-  );
-
-  const onStoryAndActivitySelected = async (
-    storyId?: number,
-    activityId?: number,
-    day?: DailyProgrammeDto
-  ) => {
-    if (day) {
-      const currentDayCopy = { ...day };
-      currentDayCopy.storyBookId = storyId;
-      currentDayCopy.storyActivityId = activityId;
-
-      saveCurrentDay(currentDayCopy);
-    }
-  };
-
   useEffect(() => {
     // Celebrate message
     if (plannedWeeksCount > 1) {
@@ -508,12 +511,12 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
           `Wow, great job ${userData?.firstName}! You have planned for ${plannedWeeksCount} weeks in a row. Keep it up!`
         );
       }
-    } else if (selectedDate && isWholeWeekPlanned) {
+    }
+
+    if (selectedDate && isWholeWeekPlanned) {
       setCelebrateMessage(
         `Great job ${userData?.firstName}! Your whole week is planned.`
       );
-    } else {
-      setCelebrateMessage('');
     }
 
     if (plannedActivities) {
@@ -594,7 +597,11 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
               currentDailyProgramme?.dayDate || new Date()
             ).toLocaleString('en-ZA', DateFormats.dayWithLongMonthName)}
             onSave={(storyId?: number, activityId?: number) => {
-              onStoryAndActivitySelected(storyId, activityId, unsavedDay);
+              onStoryAndActivitySelected(storyId, activityId, day);
+              setRoutineItemSet(routineItem);
+              setSelectedStoryActivity(storyId!);
+              setSelectedActivity(activityId!);
+              setTriggerSaveActivity(true);
               onSubmit();
             }}
             onClose={onClose}

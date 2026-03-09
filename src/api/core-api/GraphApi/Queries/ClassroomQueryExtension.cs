@@ -87,7 +87,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 Id = x.Id,
                 ClassroomId = x.ClassroomId,
                 Name = x.Name,
-                UserId = x.UserId.Value,
+                UserId = x.UserId.HasValue ? x.UserId.Value : null,
                 Learners = x.Learners.Select(y => new BaseLearnerModel
                 {
                     LearnerId = y.Id,

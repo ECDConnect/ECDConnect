@@ -14,14 +14,14 @@ import {
   UserAvatar,
   ScoreCard,
   NoPointsScoreCard,
+  renderIcon,
 } from '@ecdlink/ui';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useDocuments } from '@hooks/useDocuments';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { OfflineSyncModal, SyncTimeExceeded } from '../../modals';
-import OfflineSyncTimeExceeded from '../../modals/offline-sync/offline-sync-time-exceeded';
+import { SyncTimeExceeded } from '../../modals';
 import { useAppDispatch } from '@store';
 import { classroomsSelectors, classroomsThunkActions } from '@store/classroom';
 import {
@@ -33,7 +33,8 @@ import { userSelectors, userThunkActions } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
 import TransparentLayer from '../../assets/TransparentLayer.png';
-
+import BusinessIconTile from '../../assets/businessIconTile.png';
+import BusinessIconNavigation from '../../assets/BusinessIconNavigation.png';
 import {
   practitionerSelectors,
   practitionerThunkActions,
@@ -52,8 +53,6 @@ import { ReactComponent as EmojiBlueSmile } from '../../assets/neutral_blue_emot
 import { ReactComponent as EmojiOrangeSmile } from '../../assets/mehFace.svg';
 import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
 import { syncThunkActions } from '@store/sync';
-import { settingActions } from '@/store/settings';
-
 import {
   TabsItemForPrincipal,
   TabsItems,
@@ -73,6 +72,8 @@ import { PermissionsNames } from '../principal/components/add-practitioner/add-p
 import { usePoints } from '@/hooks/usePoints';
 import { usePointsToDoEmoji } from '@/hooks/usePointsToDoEmoji';
 import { useStoreSetup } from '@hooks/useStoreSetup';
+import { Logout } from '../auth/logout/logout';
+import { useBrowserVersionCheck } from '@/hooks/useBrowserVersionCheck';
 
 const { version } = require('../../../package.json');
 
@@ -90,9 +91,9 @@ export const Dashboard: React.FC = () => {
     attendanceEnabled,
     businessEnabled,
     calendarEnabled,
+    trainingEnabled,
     classroomActivitiesEnabled,
     progressEnabled,
-    trainingEnabled,
   } = useTenantModules();
 
   const appName = tenant?.tenant?.applicationName;
@@ -125,6 +126,9 @@ export const Dashboard: React.FC = () => {
   const isRegistered = practitioner?.isRegistered;
   const isProgress = practitioner?.progress;
   const hasConsent = practitioner?.shareInfo;
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const isBrowserOutOfDate = useBrowserVersionCheck();
 
   const missingProgramme =
     (practitioner?.isRegistered === null || practitioner?.isRegistered) &&
@@ -141,6 +145,9 @@ export const Dashboard: React.FC = () => {
   const pointsSummaryData = useSelector(pointsSelectors.getPointsSummary);
   const [pointsScoreProps, setPointsScoreProps] = useState<ScoreCardProps>();
   const totalYearPoints = useSelector(pointsSelectors.getTotalYearPoints);
+
+  const [freeMemory, setFreeMemory] = useState(0);
+  const [errorMessage, setErrorMessage] = useState(false);
 
   const planActivitiesPermission = practitioner?.permissions?.find(
     (item) =>
@@ -208,6 +215,12 @@ export const Dashboard: React.FC = () => {
     }
   }, [practitioner?.userId]);
 
+  useEffect(() => {
+    if (isBrowserOutOfDate) {
+      handleOutdatedBrowser();
+    }
+  }, [isBrowserOutOfDate]);
+
   const offlineCommunity = () => {
     if (!isOnline) {
       return dialog({
@@ -238,6 +251,24 @@ export const Dashboard: React.FC = () => {
       practitioner?.principalHierarchy
     ) {
       history.push(ROUTES.PRACTITIONER.PROFILE.EDIT);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (navigator?.storage?.estimate) {
+      navigator.storage
+        .estimate()
+        .then((estimate) => {
+          if (estimate?.quota) {
+            const freeMemoryMB = estimate.quota / (1024 * 1024);
+            setFreeMemory(Math.round(freeMemoryMB));
+          }
+        })
+        .catch(() => {
+          setFreeMemory(0);
+        });
+    } else {
+      setFreeMemory(0);
     }
   }, []);
 
@@ -374,6 +405,84 @@ export const Dashboard: React.FC = () => {
     }
   }, []);
 
+  useEffect(() => {
+    if (freeMemory !== 0 && freeMemory <= 200) {
+      setErrorMessage(true);
+      // Optionally block form or show message immediately
+    }
+  }, [freeMemory]);
+
+  useEffect(() => {
+    if (errorMessage) {
+      dialog({
+        position: DialogPosition.Middle,
+        blocking: false,
+        render: (onSubmit, onClose) => {
+          return (
+            <ActionModal
+              customIcon={renderIcon(
+                'ExclamationIcon',
+                `z-20 w-28 h-28 text-alertMain`
+              )}
+              className={'bg-white'}
+              title={'Your phone storage is almost full!'}
+              detailText={
+                'You have less than 10MB available. Please clear some items to keep using ECD Connect'
+              }
+              actionButtons={[
+                {
+                  text: 'Close',
+                  textColour: 'white',
+                  colour: 'quatenary',
+                  type: 'filled',
+                  leadingIcon: 'CheckCircleIcon',
+                  onClick: () => {
+                    onSubmit();
+                  },
+                },
+              ]}
+            />
+          );
+        },
+      });
+    }
+  }, [dialog, errorMessage]);
+
+  const handleOutdatedBrowser = () => {
+    return dialog({
+      position: DialogPosition.Middle,
+      blocking: true,
+      fullOverlay: true,
+      render: (onSubmit, onClose) => {
+        return (
+          <ActionModal
+            customIcon={renderIcon(
+              'ExclamationIcon',
+              `z-20 w-28 h-28 text-alertMain`
+            )}
+            className={'bg-white'}
+            title={'Your internet browser is out of date!'}
+            detailText={
+              'Please go to your app store and update your browser before continuing. Tap refresh to try again.'
+            }
+            actionButtons={[
+              {
+                text: 'Refresh',
+                textColour: 'white',
+                colour: 'quatenary',
+                type: 'filled',
+                leadingIcon: 'CheckCircleIcon',
+                onClick: () => {
+                  onSubmit();
+                },
+              },
+            ]}
+          />
+        );
+      },
+    });
+  };
+
   const { userProfilePicture } = useDocuments();
 
   const initStaticStoreSetup = async () => {
@@ -434,6 +543,24 @@ export const Dashboard: React.FC = () => {
     });
   };
 
+  const showLogoutDialog = () => {
+    dialog({
+      color: 'bg-white',
+      position: DialogPosition.Middle,
+      blocking: true,
+      render: (onClose) => (
+        <Logout
+          onSubmit={() => {
+            onClose();
+          }}
+          onCancel={() => {
+            onClose();
+          }}
+        />
+      ),
+    });
+  };
+
   const onNavigation = (navItem: any) => {
     if (navItem.href.includes('community') && !isOnline) {
       history.push(ROUTES.DASHBOARD);
@@ -471,6 +598,10 @@ export const Dashboard: React.FC = () => {
         ((isWhiteLabel && missingProgramme) || wlNotAcceptThePrincipalInvite))
     ) {
       showCompleteProfileBlockingDialog();
+    } else if (navItem.href.includes('logout')) {
+      setTimeout(() => {
+        showLogoutDialog();
+      }, 180); // small delay to let menu close animation finish
     } else {
       history.push(navItem.href, navItem.params);
     }
@@ -509,10 +640,16 @@ export const Dashboard: React.FC = () => {
           current: false,
         },
         {
+          name: NavigationNames.Profile.Help,
+          href: isOpenAccess ? ROUTES.PRACTITIONER.HELP.ROOT : ROUTES.HELP,
+          onNavigation: onNavigation,
+          current: false,
+        },
+        {
           name: NavigationNames.Profile.Journey,
           href: ROUTES.PRACTITIONER.PROFILE.ROOT,
           onNavigation: onNavigation,
-          params: { tabIndex: 1 },
+          params: { tabIndex: 1, visitId: '' },
           current: false,
         },
       ],
@@ -601,7 +738,7 @@ export const Dashboard: React.FC = () => {
           {
             name: NavigationNames.Business.Business,
             href: ROUTES.BUSINESS,
-            icon: styles.businessIconName,
+            icon: BusinessIconNavigation,
             current: false,
             showDivider: true,
             nestedChildren: [
@@ -632,6 +769,13 @@ export const Dashboard: React.FC = () => {
         ]
       : []),
     {
+      name: NavigationNames.Community.Community,
+      href: ROUTES.COMMUNITY.ROOT,
+      icon: styles.communityIconName,
+      current: false,
+      showDivider: true,
+    },
+    {
       name: NavigationNames.Training,
       href: ROUTES.TRAINING,
       icon: styles.trainingIconName,
@@ -660,6 +804,7 @@ export const Dashboard: React.FC = () => {
       icon: styles.logoutIconName,
       current: false,
       showDivider: true,
+      onNavigation: onNavigation,
     },
   ];
 
@@ -688,6 +833,7 @@ export const Dashboard: React.FC = () => {
       icon: styles.profileIconName,
       current: false,
       showDivider: true,
+      params: { tabIndex: 0, visitId: '' },
     },
     {
       name: NavigationNames.Practitioners,
@@ -717,6 +863,7 @@ export const Dashboard: React.FC = () => {
       icon: styles.logoutIconName,
       current: false,
       showDivider: true,
+      onNavigation: onNavigation,
     },
   ];
 
@@ -759,8 +906,7 @@ export const Dashboard: React.FC = () => {
   if (isPrincipal || isTrialPeriod) {
     dashboardItems.splice(1, 0, {
       title: NavigationNames.Business.Business,
-      titleIcon: styles.businessIconName,
-      titleIconClassName: styles.businessIcon,
+      icon: BusinessIconTile,
       onActionClick: () => {
         goToBusiness();
       },
@@ -855,57 +1001,37 @@ export const Dashboard: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    if (shouldUserSyncOffline) {
-      dialog({
-        position: DialogPosition.Bottom,
-        blocking: true,
-        render: (onSubmitParent, onCancel) => {
-          return (
-            <OfflineSyncTimeExceeded
-              onSubmit={() => {
-                onSubmitParent();
-
-                dialog({
-                  position: DialogPosition.Bottom,
-                  blocking: true,
-                  render: (onSubmit, onCancel) => {
-                    return (
-                      <OfflineSyncModal onSubmit={onSubmit}></OfflineSyncModal>
-                    );
-                  },
-                });
-              }}
-            ></OfflineSyncTimeExceeded>
-          );
-        },
-      });
-    }
-  }, [shouldUserSyncOffline]);
+  const hasShownModal = useRef(false);
 
   useEffect(() => {
-    if (isOnline && shouldUserSyncOnline) {
+    if (
+      !hasShownModal.current && // ← only once per mount (or reset when needed)
+      isOnline &&
+      shouldUserSyncOnline
+    ) {
+      hasShownModal.current = true; // mark as shown
+
       dialog({
         position: DialogPosition.Middle,
         blocking: true,
-        render: (onSubmit) => {
-          return (
-            <SyncTimeExceeded
-              onSubmit={async () => {
-                if (practitioner?.isPrincipal === true) {
-                  await appDispatch(syncThunkActions.syncOfflineData({}));
-                } else {
-                  await appDispatch(
-                    syncThunkActions.syncOfflineDataForPractitioner({})
-                  );
-                }
-                await resetAppStore();
-                await resetAuth();
-                return history.push(ROUTES.LOGIN);
-              }}
-            ></SyncTimeExceeded>
-          );
-        },
+        render: (closeDialog) => (
+          <SyncTimeExceeded
+            onSubmit={async () => {
+              if (practitioner?.isPrincipal === true) {
+                await appDispatch(syncThunkActions.syncOfflineData({}));
+              } else {
+                await appDispatch(
+                  syncThunkActions.syncOfflineDataForPractitioner({})
+                );
+              }
+
+              await resetAppStore();
+              await resetAuth();
+              history.push(ROUTES.LOGIN);
+              closeDialog();
+            }}
+          />
+        ),
       });
     }
   }, [isOnline, shouldUserSyncOnline]);
@@ -917,42 +1043,19 @@ export const Dashboard: React.FC = () => {
       ? ROUTES.COACH.PROFILE.ROOT
       : ROUTES.PRACTITIONER.PROFILE.ROOT;
 
-    history.push(profileRoute);
+    history.push(profileRoute, { tabIndex: 0, visitId: '' });
   };
-
-  // const goToClassroom = () => {
-  //   if (
-  //     (classroom &&
-  //       !!classroom.id &&
-  //       classroomGroups &&
-  //       classroomGroups.length > 0) ||
-  //     (practitioner?.progress === 2 && classroom && classroom?.name) ||
-  //     (classroomGroups &&
-  //       classroomGroups.length > 0 &&
-  //       !!classroom?.id &&
-  //       isRegistered &&
-  //       isProgress &&
-  //       isProgress > 0 &&
-  //       hasConsent &&
-  //       !missingProgramme) ||
-  //     isTrialPeriod
-  //   ) {
-  //     history.push(ROUTES.CLASSROOM.ROOT, {
-  //       activeTabIndex: TabsItems.CLASSES,
-  //     });
-  //   } else if (
-  //     (missingProgramme && isWhiteLabel) ||
-  //     wlNotAcceptThePrincipalInvite
-  //   ) {
-  //     showCompleteProfileBlockingDialog();
-  //   }
-  // };
 
   const goToClassroom = () => {
     if (
-      (classroom && classroom.id) ||
+      (classroom &&
+        !!classroom.id &&
+        classroomGroups &&
+        classroomGroups.length > 0) ||
       (practitioner?.progress === 2 && classroom && classroom?.name) ||
-      (classroom?.id &&
+      (classroomGroups &&
+        classroomGroups.length > 0 &&
+        !!classroom?.id &&
         isRegistered &&
         isProgress &&
         isProgress > 0 &&
@@ -1055,6 +1158,18 @@ export const Dashboard: React.FC = () => {
     <>
       <DashboardWrapper />
       <BannerWrapper
+        onNavigation={(navItem) => {
+          // Always close menu on any navigation click
+          setSidebarOpen(false);
+
+          if (navItem.href?.includes('logout')) {
+            showLogoutDialog();
+          } else {
+            onNavigation(navItem);
+          }
+        }}
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
         backgroundColour={'white'}
         backgroundImageColour={'primary'}
         avatar={
@@ -1078,7 +1193,6 @@ export const Dashboard: React.FC = () => {
           )
         }
         menuItems={isCoach ? navigationForCoach : navigation}
-        onNavigation={onNavigation}
         menuLogoUrl={theme?.images?.logoUrl || hamburgerLogo}
         calendarRender={
           (calendarEnabled && isWhiteLabel) || isOpenAccess
@@ -1110,7 +1224,7 @@ export const Dashboard: React.FC = () => {
         }}
         onAvatarSelect={goToProfile}
         showBackground
-        size="large"
+        size={dashboardNotification ? 'large' : 'medium'}
         renderBorder={true}
         backgroundUrl={TransparentLayer}
         className={styles.bannerContent}
@@ -1123,7 +1237,7 @@ export const Dashboard: React.FC = () => {
           text={name}
           className={styles.welcomeText}
         />
-        <div className={`${styles.wrapper} pb-4`}>
+        <div className={`${styles.wrapper} mt-4 pb-4`}>
           <DashboardItems
             listItems={dashboardItems}
             notification={dashboardNotification}
@@ -1133,7 +1247,7 @@ export const Dashboard: React.FC = () => {
           {(!isPhase1Completed && !isCoach) || totalYearPoints === 0 ? (
             <NoPointsScoreCard
               image={renderPointsToDoEmoji}
-              className="mt-1 w-full py-4"
+              className="mt-4 w-full py-4"
               mainText={''}
               currentPoints={getCurrentPointsToDo}
               maxPoints={
@@ -1164,7 +1278,7 @@ export const Dashboard: React.FC = () => {
           !isCoach &&
           !!pointsScoreProps ? (
             <ScoreCard
-              className="mt-1 mb-1 h-20 w-full"
+              className="mt-4 mb-1 h-20 w-full"
               progressBarClassName="flex pt-2"
               mainText={pointsScoreProps?.mainText!}
               hint={pointsScoreProps?.hint}

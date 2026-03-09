@@ -11,4 +11,5 @@ export interface Child extends EntityCacheBase {
   otherHealthConditions?: string;
   childStatusId?: number;
   insertedDate?: string;
+  otherLanguages?: string;
 }

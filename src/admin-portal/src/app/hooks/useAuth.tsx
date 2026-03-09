@@ -18,6 +18,7 @@ import {
   RegisterRequestModel,
   SimpleUserModel,
   VerifyInvitationModel,
+  VerifyPasswordTokenModel,
 } from '@ecdlink/core';
 import {
   AuthenticateUser,

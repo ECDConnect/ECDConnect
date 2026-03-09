@@ -12,6 +12,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Statements
         public Guid? ChildUserId { get; set; }
         public string Description { get; set; }
         public string Notes { get; set; }
+        public bool IsActive {get; set;}
 
         /// <summary>
         /// Payment type, item, money, voucher
@@ -34,6 +35,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Statements
             PayTypeId = income.PayTypeId;
             PhotoProof = income.PhotoProof;
             Description = income.Description;
+            IsActive = income.IsActive;
         }
     }
 }

@@ -77,6 +77,7 @@ class IncomeStatementsService {
               payTypeId
               photoProof
               description
+              isActive
             } 
             expenseItems {
               expenseTypeId
@@ -85,6 +86,7 @@ class IncomeStatementsService {
               amount
               notes
               photoProof
+              isActive
             }    
           }
         }`,

@@ -19,5 +19,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             childService.UpdateChild(input);
             return true;
         }
+
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Delete)]
+        public bool RemoveChild(
+            [Service] IChildService childService,
+            UpdateChildAndCaregiverInput input)
+        {
+            childService.RemoveChild(input);
+            return true;
+        }
     }
 }

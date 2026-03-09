@@ -1,8 +1,11 @@
+using DotLiquid.Tags;
 using EcdLink.Api.CoreApi.GraphApi.Queries;
 using EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart;
+using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.Constants;
+using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Api.CoreApi.Services;
 using ECDLink.Core.Helpers;
 using ECDLink.Core.Services.Interfaces;
@@ -14,6 +17,8 @@ using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
+using ECDLink.EGraphQL.Authorization;
+using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
@@ -28,14 +33,17 @@ using System.Linq;
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
+    
     public class PrincipalMutationExtension
     {
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.Update)]
         public Practitioner AddPractitionerToPrincipal([Service] IHttpContextAccessor contextAccessor,
                                                         [Service] ApplicationUserManager userManager,
                                                         [Service] PersonnelService personnelManager,
                                                         IGenericRepositoryFactory repoFactory,
                                                         [Service] INotificationService notificationService,
                                                         [Service] IPointsEngineService pointsService,
+                                                        [Service] InvitationManager inviteManager,
                                                         AuthenticationDbContext dbContext,
                                                         string firstName,
                                                         string lastName,
@@ -133,14 +141,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                             if (practitioner.Progress >= 0 && practitioner.Progress < 2)
                             {
                                 notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgrammeInvitation, DateTime.Now.Date, user, "", MessageStatusConstants.Amber, replacements);
-                            } else
+                            }
+                            else
                             {
                                 if (practitioner.Progress > 2)
                                 {
                                     notificationService.SendNotificationAsync(null, TemplateTypeConstants.MultipleProgrammeInvitation, DateTime.Now.Date, user, "", MessageStatusConstants.Amber, replacements);
                                 }
                             }
-
+                            inviteManager.CreatePractitionerInvitation(practitioner.User.Id, practitioner.Id, principalUser.Id);
                         } else
                         {
                             // send message to principal if preschool code is available
@@ -177,6 +186,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return string.IsNullOrWhiteSpace(@new) ? original : @new;
         }
 
+        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.Update)]
         public ApplicationUser UpdatePractitionerContactInfo([Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] ApplicationUserManager userManager,
@@ -222,6 +232,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return user;
         }
 
+        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.Delete)]
         public Practitioner DeletePractitionerFromPrincipal([Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             IGenericRepositoryFactory repoFactory,
@@ -250,6 +261,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return practitioner;
         }
 
+        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.Update)]
         public Practitioner RemapPrincipalToPrincipal([Service] IHttpContextAccessor contextAccessor,
      IGenericRepositoryFactory repoFactory,
      string oldPrincipalId, string newPrincipalId)
@@ -278,6 +290,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return newPrincipal;
         }
 
+        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.Update)]
         public bool SwitchPrincipal([Service] PersonnelService personnelManager,
             [Service] ApplicationUserManager userManager,
             string oldPrincipalUserId,
@@ -287,6 +300,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return result != null;
         }
 
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.Update)]
         public Principal PromotePractitionerToPrincipal([Service] PersonnelService personnelManager,
              string userId, bool sendComm = false)
         {
@@ -294,6 +308,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return personnelManager.MapPractitionerToPrincipal(practitionerToPromote);
         }
 
+        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.Update)]
         public Practitioner DemotePractitionerAsPrincipal([Service] PersonnelService personnelManager,
              string userId)
         {
@@ -301,6 +316,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return practitionerToDemote;
         }
 
+        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Update)]
         public PrincipalInvitationStatus UpdatePrincipalInvitation([Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] ISystemSetting<InvitationCutoffDelayOptions> invitationDelay,
@@ -309,8 +325,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             [Service] PersonnelService personnelManager,
             [Service] IClassroomService classroomService,
             [Service] ApplicationUserManager userManager,
-            string practitionerId, 
-            string principalId, 
+            [Service] InvitationManager inviteManager,
+            string practitionerId,
+            string principalId,
             bool accepted)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -318,6 +335,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             Practitioner principal = practitionerRepo.GetByUserId(principalId);
             Practitioner practitioner = practitionerRepo.GetByUserId(practitionerId);
             PrincipalInvitationStatus status = new PrincipalInvitationStatus();
+
+            if (practitioner == null && accepted == false)
+            {
+                inviteManager.RejectUserInvitation(Guid.Parse(practitionerId), principal.Id);
+                status.LeavingDate = DateTime.Now;
+                status.Leaving = true;
+                return status;
+            }
 
             //reassign all practitioners to the new principal
             if (principal == null || practitioner == null)
@@ -334,6 +359,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     //Reassign all classes and programmes back to principal
                     reassignmentService.AddReassignmentForPractitioner(practitioner.UserId.ToString(), principal.UserId.ToString(), "Removing link between Principal and Practitioner", DateTime.Now, uId.ToString(), null, true);
                 }
+                inviteManager.RejectUserInvitation(Guid.Parse(practitionerId), Guid.Parse(principalId));
 
                 status.AcceptedDate = null;
                 int hrsToReassign = int.Parse(invitationDelay.Value.InvitationCutoffDelay);
@@ -403,6 +429,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 status.LeavingDate = null;
                 status.AcceptedDate = DateTime.Now;
                 status.Leaving = false;
+
+                inviteManager.AcceptPractitionerInvitation(Guid.Parse(practitionerId), practitioner.Id, principal.Id);
 
                 //notificationService.ExpireNotificationsTypesForUser(practitioner.UserId.ToString(), TemplateTypeConstants.PrincipalFAAChanged, null, null, practitioner.UserId);
             }

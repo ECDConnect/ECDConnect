@@ -42,6 +42,7 @@ import {
 } from '@ecdlink/graphql';
 import { format } from 'date-fns';
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/outline';
+import * as styles from '../../../../../pages.styles';
 
 export interface ContentViewProps {
   content: any;
@@ -267,7 +268,9 @@ export default function ContentEdit({
   const disbleButtonStyles =
     choosedSectionTitle === ActivitiesTitles.SmallLargeGroupActivities
       ? `bg-secondary ${
-          disableButton?.length > 0 && smallLargeGroupsSkills?.length < 2
+          disableButton?.length > 0 ||
+          !smallLargeGroupsSkills ||
+          smallLargeGroupsSkills.length < 2
             ? 'opacity-25'
             : ''
         } hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`
@@ -547,7 +550,7 @@ export default function ContentEdit({
                 <button
                   type="button"
                   onClick={cancelCompare}
-                  className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex items-center rounded-xl border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                  className={styles.mainButton}
                 >
                   Compare Languages
                   <BookOpenIcon width="20px" className="pl-1" />
@@ -558,7 +561,7 @@ export default function ContentEdit({
                 <button
                   onClick={cancelDialog}
                   type="button"
-                  className="bg-errorBg text-tertiary hover:bg-tertiary ml-2 inline-flex items-center rounded-xl border border-transparent px-4 py-2.5 text-sm font-medium shadow-sm hover:text-white"
+                  className={styles.cancelButton}
                 >
                   Cancel
                   <XIcon width="22px" className="pl-1" />
@@ -581,6 +584,7 @@ export default function ContentEdit({
               handleform={handleform}
               setValue={setValue}
               defaultLanguageId={defaultLanguageId}
+              selectedLanguageId={selectedLanguageId}
               acceptedFileFormats={acceptedFileFormats}
               allowedFileSize={allowedFileSize}
               formType={formType}
@@ -601,8 +605,9 @@ export default function ContentEdit({
               disabled={
                 choosedSectionTitle ===
                 ActivitiesTitles.SmallLargeGroupActivities
-                  ? disableButton?.length > 0 &&
-                    smallLargeGroupsSkills?.length < 2
+                  ? disableButton?.length > 0 ||
+                    !smallLargeGroupsSkills ||
+                    smallLargeGroupsSkills.length < 2
                   : disableButton?.length > 0
               }
             >
@@ -617,7 +622,7 @@ export default function ContentEdit({
                   onClick={
                     content?.isInUse ? cannotDeleteDialog : deleteAndRefresh
                   }
-                  className="hover:bg-tertiary border-tertiary focus:outline-none text-tertiary mt-3 ml-4 inline-flex items-center rounded-2xl border-2 bg-transparent  px-14 py-2.5 text-sm font-medium shadow-sm hover:text-white focus:ring-2 focus:ring-offset-2"
+                  className={styles.deleteButton}
                 >
                   <TrashIcon color="tertiary" className="mr-2 h-6 w-6" />
                   Delete {content?.name}

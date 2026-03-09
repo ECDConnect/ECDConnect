@@ -30,8 +30,9 @@ export const getTableData = ({
       attendance?: any;
       childFullName?: any;
       childIdNumber?: string;
+      classgroupId?: string;
     }) => {
-      const { childFullName, childIdNumber } = item;
+      const { childFullName, childIdNumber, classgroupId } = item;
       const attendance = item.attendance.reduce(
         (obj: { [x: string]: any }, { key, value }: any, i: number) => {
           obj[`day${key}`] = value !== null ? value : '*';
@@ -39,7 +40,12 @@ export const getTableData = ({
         },
         {}
       );
-      return { child: childFullName, id: childIdNumber, ...attendance };
+      return {
+        child: childFullName,
+        id: childIdNumber,
+        classgroupId,
+        ...attendance,
+      };
     }
   );
 
@@ -137,5 +143,6 @@ export const getTableData = ({
     tableStyles,
     tableFootStyles,
     footer,
+    tableHeaders,
   };
 };

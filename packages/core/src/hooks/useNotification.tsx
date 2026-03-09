@@ -22,7 +22,7 @@ export interface Notification {
 
 type OptionalExceptFor<T, TRequired extends keyof T> = Partial<T> &
   Pick<T, TRequired>;
-type AddNotification = OptionalExceptFor<Notification, 'message'>;
+export type AddNotification = OptionalExceptFor<Notification, 'message'>;
 
 const defaultApi = {
   notifications: [] as Notification[],

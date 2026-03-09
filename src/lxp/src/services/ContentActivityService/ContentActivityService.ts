@@ -31,6 +31,7 @@ class ContentActivityService {
               id
               imageUrl
               name
+              imageHexColor
             }
           }
         }

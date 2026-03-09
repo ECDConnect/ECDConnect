@@ -12,6 +12,7 @@ import { LanguageId } from '../../../../constants/language';
 import ContentLoader from '../../../../components/content-loader/content-loader';
 import { NOTIFICATION, useDialog, useNotifications } from '@ecdlink/core';
 import AlertModal from '../../../../components/dialog-alert/dialog-alert';
+import { isValidUrl } from '../../../../utils/url-utils/url-utils';
 
 export const LinksSharedResource = ({
   contentType,
@@ -21,8 +22,6 @@ export const LinksSharedResource = ({
   const [resourcesLinks, setResourcesLinks] = useState<ResourceLink[]>([]);
   const [isSubmitButtonClicked, setIsSubmitButtonClicked] = useState(false);
   const dialog = useDialog();
-  const urlRegex =
-    /^(https?|ftp):\/\/(([a-z\d]([a-z\d-]*[a-z\d])?\.)+[a-z]{2,}|localhost)(\/[-a-z\d%_.~+]*)*(\?[;&a-z\d%_.~+=-]*)?(\#[-a-z\d_]*)?$/i;
   const getAllCall = `GetAll${contentType.name}`;
   const fields =
     contentType.fields?.map((field) => {
@@ -118,7 +117,7 @@ export const LinksSharedResource = ({
       (index < 2 || !!resourcesLinks[index]?.[fieldType]);
 
     if (fieldType === 'link' && resourcesLinks[index].link !== '') {
-      hasEmptyField = !urlRegex.test(resourcesLinks[index].link);
+      hasEmptyField = !isValidUrl(resourcesLinks[index].link);
     }
 
     return hasEmptyField;
@@ -149,8 +148,8 @@ export const LinksSharedResource = ({
         ? !link.title ||
           !link.link ||
           !link.description ||
-          !urlRegex.test(link.link)
-        : link.link && !urlRegex.test(link.link)
+          !isValidUrl(link.link)
+        : link.link && !isValidUrl(link.link)
     );
     if (hasEmptyField) return;
 
@@ -174,13 +173,13 @@ export const LinksSharedResource = ({
     if (index < 2) {
       if (connectItem.link === '') {
         return 'This field is required.';
-      } else if (!urlRegex.test(connectItem.link)) {
+      } else if (!isValidUrl(connectItem.link)) {
         return 'Please add a valid link.';
       }
     } else {
       if (connectItem.link === '') {
         return 'You must add a link for the resource';
-      } else if (!urlRegex.test(connectItem.link)) {
+      } else if (!isValidUrl(connectItem.link)) {
         return 'Please add a valid link.';
       }
     }
@@ -232,7 +231,7 @@ export const LinksSharedResource = ({
           onClick={onCancel}
           className="rounded-xl px-2"
           color="errorBg"
-          textColor="tertiary"
+          textColor="secondary"
           icon="XIcon"
           iconPosition="end"
         />
@@ -324,7 +323,7 @@ export const LinksSharedResource = ({
         isLoading={loading}
         buttonType="submit"
         type="filled"
-        color="secondary"
+        color="quatenary"
         textColor="white"
         text="Save & publish"
         icon="SaveIcon"

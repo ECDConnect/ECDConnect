@@ -35,7 +35,9 @@ export const removePractionerModelSchema = Yup.object().shape({
       'is-valid',
       'Must reasign all classes',
       (reassignedClassrooms) => {
-        return Object.values(reassignedClassrooms).every((x) => !!x && x != '');
+        return Object.values(reassignedClassrooms).every(
+          (x) => !!x && x !== ''
+        );
       }
     ),
   }),

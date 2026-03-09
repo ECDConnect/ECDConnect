@@ -6,6 +6,7 @@ import {
   Button,
   Card,
   renderIcon,
+  SliderPagination,
   StackedList,
   Typography,
 } from '@ecdlink/ui';
@@ -116,6 +117,7 @@ export const ConfirmClasses = ({
           </div>
         </div>
       </div>
+      <SliderPagination totalItems={3} activeIndex={1} className={'p-4'} />
       <div className="pb-8">
         <Typography
           type={'h2'}

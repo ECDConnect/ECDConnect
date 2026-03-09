@@ -1,8 +1,11 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.Abstractrions.Files;
+using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
 using ECDLink.Api.CoreApi.Services;
 using ECDLink.Core.Extensions;
+using ECDLink.EGraphQL.Authorization;
+using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
 using System;
@@ -17,6 +20,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     {
         // Need to find out how/where this is used
         // It is used by the admin portal
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
+
         public async Task<FileModel> MonthlyAttendanceRecordCSV(
           [Service] MonthlyAttendanceReport report,
           [Service] IFileGenerationService fileService,

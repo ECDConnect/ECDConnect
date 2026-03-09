@@ -6,14 +6,17 @@ import { useStoreSetup } from '@hooks/useStoreSetup';
 import ROUTES from '@routes/routes';
 import { TIMEOUTS } from '@/constants/timeouts';
 import { ExclamationCircleIcon } from '@heroicons/react/solid';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 const Loader = ({ loadingMessage = 'Waking up the robots' }) => {
   const history = useHistory();
+  const { isOnline } = useOnlineStatus();
   const { resetAuth, resetAppStore } = useStoreSetup();
 
   const [showIssue, setShowIssue] = useState<boolean>(false);
 
   useEffect(() => {
+    if (!isOnline) return;
     // Ensure compatibility with all browsers
     const connection = (window.navigator as any).connection;
     const connectionType: string = connection?.effectiveType || '4g';
@@ -26,7 +29,7 @@ const Loader = ({ loadingMessage = 'Waking up the robots' }) => {
     }, issueTimeout);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [isOnline]);
 
   return (
     <div
@@ -35,7 +38,9 @@ const Loader = ({ loadingMessage = 'Waking up the robots' }) => {
     >
       <div className="flex flex-col items-center justify-center"></div>
       <div className="flex flex-col items-center justify-center">
-        <img src={RobotHearts} alt="loading rocket" className="h-16 w-16" />
+        {isOnline ? (
+          <img src={RobotHearts} alt="loading rocket" className="h-16 w-16" />
+        ) : null}
         <Typography
           type="h2"
           color="white"

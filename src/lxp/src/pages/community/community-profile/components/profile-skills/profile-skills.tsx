@@ -61,7 +61,7 @@ export const ProfileSkills: React.FC<ProfileSkillsProps> = ({
           <div className="flex items-center justify-between">
             <Typography
               type={'h4'}
-              text={`${userName}'s skills`}
+              text={userName === '' ? 'Skills' : `${userName}'s skills`}
               color={'textDark'}
               className="w-full"
             />

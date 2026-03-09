@@ -132,7 +132,9 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   });
 
   useEffect(() => {
-    appDispatch(getPractitionerTimeline({ userId: practitionerId }));
+    if (practitionerId) {
+      appDispatch(getPractitionerTimeline({ userId: practitionerId }));
+    }
   }, [appDispatch, practitionerId]);
 
   const validAbsenteesDates = practitionerAbsentees?.filter(
@@ -1162,7 +1164,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
           <CreateNote
             userId={practitionerId || ''}
             noteType={NoteTypeEnum.Unknown}
-            titleText={`Add a note to ${practitioner?.user?.firstName} profile`}
+            titleText={`Add a note to ${practitioner?.user?.firstName}'s profile`}
             onBack={() => onCreatePractitionerNoteBack()}
             onCreated={() => onCreatePractitionerNoteBack()}
           />

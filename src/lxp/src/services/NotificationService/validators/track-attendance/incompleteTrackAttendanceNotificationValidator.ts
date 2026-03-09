@@ -9,8 +9,6 @@ import {
   NotificationValidator,
 } from '../../NotificationService.types';
 import { RoleSystemNameEnum } from '@ecdlink/core';
-import { useTenant } from '@/hooks/useTenant';
-
 export class IncompleteTrackAttendanceNotificationValidator
   implements NotificationValidator
 {
@@ -32,7 +30,22 @@ export class IncompleteTrackAttendanceNotificationValidator
       attendanceData: attendanceState,
       practitioner: practitionerState,
       user: userState,
+      tenant: tenantState,
     } = this.store.getState();
+
+    if (!classroomState || !tenantState) return [];
+
+    const appName = tenantState.tenant?.applicationName || 'this application';
+
+    const hasPermission =
+      practitionerState.practitioner?.isPrincipal ||
+      practitionerState.practitioner?.permissions?.some(
+        (permission) =>
+          permission?.permissionName === 'take_attendance' &&
+          permission?.isActive
+      );
+
+    if (!hasPermission) return [];
 
     const isCoach = userState?.user?.roles?.some(
       (role: { systemName: string }) =>
@@ -40,7 +53,6 @@ export class IncompleteTrackAttendanceNotificationValidator
     );
 
     if (isCoach) return [];
-    if (!classroomState) return [];
 
     const hours = getHours(this.currentDate);
     const lastFridayOfMonth = new Date(
@@ -56,11 +68,27 @@ export class IncompleteTrackAttendanceNotificationValidator
     );
     lastFridayOfMonth.setHours(0, 0, 0, 0);
 
-    if (this.currentDate.getDate() <= lastFridayOfMonth.getDate()) {
+    if (this.currentDate.getTime() <= lastFridayOfMonth.getTime()) {
       return [];
     }
     // 4pm
     if (hours < 16) return [];
+
+    const beginningOfMonth = new Date(
+      this.currentDate.getFullYear(),
+      this.currentDate.getMonth(),
+      1
+    );
+
+    const hasAttendance = attendanceState?.attendance?.some(
+      (att) =>
+        att.attendanceDate &&
+        new Date(att.attendanceDate).getTime() > beginningOfMonth.getTime()
+    );
+
+    if (hasAttendance) {
+      return [];
+    }
 
     const classroomGroups =
       classroomState.classroomGroupData.classroomGroups.filter(
@@ -80,14 +108,13 @@ export class IncompleteTrackAttendanceNotificationValidator
 
     if (!missedAttendance.length) return [];
 
-    const tenant = useTenant();
     return [
       {
         reference: `attendance-${getWeek(this.currentDate)}-${getYear(
           this.currentDate
         )}`,
         title: 'Save your attendance registers!',
-        message: `More and more practitioners are saving their attendance registers on ${tenant.tenant?.applicationName} - join them and save yours!`,
+        message: `More and more practitioners are saving their attendance registers on ${appName} - join them and save yours!`,
         dateCreated: this.currentDate.toISOString(),
         priority: NotificationPriority.highest,
         viewOnDashboard: true,
@@ -99,7 +126,7 @@ export class IncompleteTrackAttendanceNotificationValidator
         viewType: 'Both',
         routeConfig: {
           route: '/classroom',
-          params: { activeTabIndex: 0 },
+          params: { activeTabIndex: 1 },
         },
       },
     ];

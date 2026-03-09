@@ -97,7 +97,7 @@ export const CoachNotes: React.FC = () => {
           <CreateNote
             userId={practitioner?.userId || ''}
             noteType={NoteTypeEnum.Child}
-            titleText={`Add a note to ${practitioner?.user?.firstName} profile`}
+            titleText={`Add a note to ${practitioner?.user?.firstName}'s profile`}
             onBack={() => onCreateChildNoteBack()}
             onCreated={() => onNoteCreated()}
           />

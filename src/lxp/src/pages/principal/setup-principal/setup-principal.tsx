@@ -1,9 +1,4 @@
-import {
-  useTheme,
-  useDialog,
-  usePrevious,
-  LocalStorageKeys,
-} from '@ecdlink/core';
+import { useDialog, usePrevious, LocalStorageKeys } from '@ecdlink/core';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { MutationAddPractitionerToPrincipalArgs } from '@ecdlink/graphql';
 import { IonContent } from '@ionic/react';
@@ -53,19 +48,15 @@ import { PrincipalInviteDto } from '@/models/practitioner/PrincipalInvite.dto';
 
 export const SetupPrincipal: React.FC = () => {
   const history = useHistory();
-  const { theme } = useTheme();
   const appDispatch = useAppDispatch();
   const dialog = useDialog();
   const { isOnline } = useOnlineStatus();
   const { syncClassroom } = useStoreSetup();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const tenant = useTenant();
-  const programmeTypes = useSelector(staticDataSelectors.getProgrammeTypes);
   const user = useSelector(userSelectors.getUser);
   const classroom = useSelector(classroomsSelectors?.getClassroom);
-  const classroomSetupPractitioners = useSelector(
-    classroomsSelectors.getSetupClassroomPractitioners
-  );
+
   const [principalClassroom, setPrincipalClassroom] = useState<ClassroomDto>();
   const principalPractitioners = useSelector(
     practitionerSelectors.getPrincipalPractitioners
@@ -256,6 +247,16 @@ export const SetupPrincipal: React.FC = () => {
             progress: 2.0,
           })
         );
+
+        if (
+          !practitioner?.isPrincipal &&
+          !practitioner?.principalHierarchy &&
+          !practitionerPreschoolData?.userId
+        ) {
+          await appDispatch(
+            notificationActions.addNotifications(practitionerNotification)
+          );
+        }
         stopService();
       }
 
@@ -430,9 +431,9 @@ export const SetupPrincipal: React.FC = () => {
       ...classroom,
     } as SimpleClassroomDto;
     classroomInputModel.preschoolCode = '';
-    classroomInputModel.name = `${
-      practitioner?.user?.userName + "'s testing pre-school"
-    }`;
+    classroomInputModel.name = tenant.isOpenAccess
+      ? `${practitioner?.user?.userName + "'s testing pre-school"}`
+      : 'N/A';
     classroomInputModel.isDummySchool = true;
     await appDispatch(classroomsActions.updateClassroom(classroomInputModel));
     // clear linked practitioners and classes
@@ -506,7 +507,7 @@ export const SetupPrincipal: React.FC = () => {
         );
 
       case PractitionerSetupSteps.SELECT_PRACTITIONER_ROLE:
-        return isNotPrincipal ? (
+        return isNotPrincipal && user?.idNumber && user?.firstName ? (
           <PreschoolCodeCheck
             onNext={setPage}
             onPreschoolNext={handlePreschoolData}
@@ -570,6 +571,9 @@ export const SetupPrincipal: React.FC = () => {
               onAllStepsComplete();
             }}
             isLoading={isLoading}
+            showStep={true}
+            stepIndex={isNotPrincipal ? 1 : 2}
+            stepTotal={isNotPrincipal ? 2 : 3}
           />
         );
 

@@ -8,6 +8,8 @@ import {
   DialogPosition,
   renderIcon,
   Card,
+  IMAGE_WIDTH,
+  SliderPagination,
 } from '@ecdlink/ui';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -15,12 +17,17 @@ import { PhotoPrompt } from '../../../../../components/photo-prompt/photo-prompt
 import { useDocuments } from '@hooks/useDocuments';
 import { useAppDispatch } from '@store';
 import { userActions, userSelectors, userThunkActions } from '@/store/user';
-import * as styles from '../../edit-practitioner-profile.styles';
 import { AddPhotoProps } from './add-photo.types';
 import { cloneDeep } from 'lodash';
 import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
 
-export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit, isLoading }) => {
+export const AddPhoto: React.FC<AddPhotoProps> = ({
+  onSubmit,
+  isLoading,
+  stepIndex = 1,
+  stepTotal = 2,
+  showStep = false,
+}) => {
   const user = useSelector(userSelectors.getUser);
   const appDispatch = useAppDispatch();
   const {
@@ -47,17 +54,6 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit, isLoading }) => {
       copy.profilePicIsEmoji = isProfileEmojiPic;
       appDispatch(userActions.updateUser(copy));
     }
-
-    // if (!userProfilePicture) {
-    //   await createNewDocument({
-    //     data: imageBaseString,
-    //     userId: user?.id || '',
-    //     fileType: FileTypeEnum.ProfileImage,
-    //     fileName: `ProfilePicture_${user?.id}.png`,
-    //   });
-    // } else {
-    //   updateDocument(userProfilePicture, imageBaseString);
-    // }
 
     // save details with request updateUser
     const userCopy = cloneDeep(user);
@@ -98,6 +94,13 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit, isLoading }) => {
           </Card>
         </div>
       </div>
+      {showStep && (
+        <SliderPagination
+          totalItems={stepTotal}
+          activeIndex={stepIndex}
+          className={'p-4'}
+        />
+      )}
       <div className={'inline-flex w-full justify-center pt-16 pb-12'}>
         <ProfileAvatar
           dataUrl={userProfilePicture?.file ?? user?.profileImageUrl ?? ''}
@@ -140,8 +143,9 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit, isLoading }) => {
         <div className={'p-4'}>
           <PhotoPrompt
             title="Profile Photo"
-            onClose={displayProfilePicturePrompt}
-            onAction={picturePromtOnAction}
+            resolutionLimit={IMAGE_WIDTH}
+            onClose={() => displayProfilePicturePrompt}
+            onAction={(imageUrl: string) => picturePromtOnAction(imageUrl)}
             onDelete={
               userProfilePicture || user?.profileImageUrl
                 ? handleDelete
@@ -149,7 +153,7 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit, isLoading }) => {
             }
             isProfileEmojis={true}
             showEmojiOption={true}
-          ></PhotoPrompt>
+          />
         </div>
       </Dialog>
     </>

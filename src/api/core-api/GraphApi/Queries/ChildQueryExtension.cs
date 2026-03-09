@@ -23,11 +23,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     [ExtendObjectType(OperationTypeNames.Query)]
     public class ChildQueryExtension
     {
-        // TODO - NEED TO UPDATE ALL PERMISSIONS HERE!!!
 
-        // Registration use, checks for duplicates
-        // Permissions - Add permission for child registration???
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.CHILDREN, GraphActionEnum.View)]
         public async Task<ChildCreatedByDetail> GetChildCreatedByDetailAsync([Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] PersonnelService personnelManager,
@@ -85,12 +82,36 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
 
-        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
+        [Permission(PermissionGroups.CHILDREN, GraphActionEnum.View)]
         public List<Child> GetChildrenForClassroomGroup(
             [Service] IChildService childService,
             Guid classRoomGroupId)
         {
             var children = childService.GetChildrenForClassroomGroup(classRoomGroupId);
+
+            if (children == null)
+            {
+                return null;
+            }
+
+            return children.ToList();
+
+        }
+
+        [Permission(PermissionGroups.CHILDREN, GraphActionEnum.View)]
+        public List<Child> GetChildrenForClassroom(
+            [Service] IChildService childService,
+            [Service] IClassroomService classroomService,
+            Guid userId)
+        {
+            var classroom = classroomService.GetClassroomForUser(userId);
+
+            if (classroom == null)
+            {
+                return null;
+            }
+
+            var children = childService.GetChildrenForClassroom(classroom.Id);
 
             if (children == null)
             {

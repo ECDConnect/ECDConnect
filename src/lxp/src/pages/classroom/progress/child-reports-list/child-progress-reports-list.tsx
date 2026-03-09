@@ -5,12 +5,13 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
 import { ReactComponent as NoProgressEmoticon } from '../../../../assets/ECD_Connect_emoji4.svg';
-import { ReactComponent as ComingSoonIcon } from '../../../../assets/icon/coming_soon.svg';
+import { ReactComponent as BlocksIcon } from '../../../../assets/progress-reports/blocks_1.svg';
 import ROUTES from '@/routes/routes';
 import { useProgressForChild } from '@/hooks/useProgressForChild';
 import { ProgressReportsList } from './reports-list';
 import ProgressWalkthroughWrapper from '../walkthrough/progress-walkthrough-wrapper';
 import { useAppContext } from '@/walkthrougContext';
+import { progressTrackingActions } from '@/store/progress-tracking';
 
 export type ChildProgressReportsListRouteState = {
   childId: string;
@@ -48,6 +49,7 @@ export const ChildProgressReportsList: React.FC = () => {
   }, [isOnline]);
 
   const trackProgress = () => {
+    appDispatch(progressTrackingActions.setLocale({ localeId: 'en-za' }));
     history.push(ROUTES.PROGRESS_OBSERVATIONS_LANDING, {
       childId: routeState?.childId,
     });
@@ -123,18 +125,18 @@ export const ChildProgressReportsList: React.FC = () => {
                 <Typography
                   className="mt-4 text-center"
                   color="textDark"
-                  text="Progress tracking for older children coming soon!"
+                  text="Progress tracking is only available up to 6 and a half years old!"
                   type={'h2'}
                 />
               </div>
               <div className="mt-6 flex w-full justify-center">
-                <ComingSoonIcon className="h-40 w-40" />
+                <BlocksIcon className="h-40 w-40" />
               </div>
               <div>
                 <Typography
                   className="mt-6 text-center"
                   color="textMid"
-                  text="We don't have a progress tracker for children over 5 years old yet!"
+                  text="This child is older than the age range covered by the progress tracker."
                   type={'body'}
                 />
               </div>
@@ -142,7 +144,7 @@ export const ChildProgressReportsList: React.FC = () => {
           )}
         {/* NO REPORTS */}
         {!isWalkthrough &&
-          ((ageInMonths && ageInMonths <= 60) || ageInMonths === 0) &&
+          ((ageInMonths && ageInMonths <= 78) || ageInMonths === 0) &&
           (!reports || reports.length === 0) && (
             <div className="flex h-full w-full flex-col">
               <Typography

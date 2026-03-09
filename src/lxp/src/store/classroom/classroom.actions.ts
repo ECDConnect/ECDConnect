@@ -168,6 +168,23 @@ export const upsertClassroom = createAsyncThunk<
           input.SiteAddressId = addressInput.Id;
         }
 
+        if (
+          classroom!.childProgressReportPeriods?.some((a) => a.synced === false)
+        ) {
+          await new ClassroomService(
+            userAuth?.auth_token
+          ).addChildProgressReportPeriods(
+            classroom!.id,
+            classroom!.childProgressReportPeriods
+              ?.filter((y) => y.synced === false)
+              .map((x) => ({
+                id: x.id,
+                startDate: new Date(x.startDate),
+                endDate: new Date(x.endDate),
+              }))
+          );
+        }
+
         const result = await new ClassroomService(
           userAuth?.auth_token
         ).updateClassroom(classroom.id ?? '', input);
@@ -477,8 +494,6 @@ export const updateClassroomPractitionerPermissions = createAsyncThunk<
     try {
       let promises: Promise<any>[] = [];
       if (!!userAuth && !!userAuth?.auth_token) {
-        console.log('hier is auth');
-
         const service = new PermissionsService(userAuth?.auth_token);
         promises = classroomPractitioners.map(async (e) => {
           return await service.UpdateUserPermission(e);

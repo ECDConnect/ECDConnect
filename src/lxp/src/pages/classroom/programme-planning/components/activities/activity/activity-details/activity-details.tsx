@@ -119,7 +119,7 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
         {currentActivity.image && currentActivity.image?.length > 0 && (
           <img
             src={currentActivity.image}
-            className="mx-auto h-40 w-full rounded-md"
+            className="mx-auto h-40 w-full max-w-[360px] rounded-md object-contain"
             alt=""
           />
         )}

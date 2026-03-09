@@ -37,6 +37,7 @@ import { StoryBookActions } from '@/store/content/story-book/story-book.actions'
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { practitionerSelectors } from '@/store/practitioner';
+import { userGreetingName } from '@/utils/user/user-name-greeting.utils';
 
 const { usePDF } = require('react-to-pdf');
 export interface iSkills {
@@ -160,7 +161,10 @@ export const ProgrammeDashboard: React.FC = () => {
                 <img src={robot} alt="profile" className="mb-4 h-20 w-20" />
               </div>
             }
-            importantText={`Hello, ${user?.firstName}! Start planning your daily routine`}
+            importantText={`${userGreetingName(
+              user!,
+              'Hello'
+            )}! Start planning your daily routine`}
             detailText={
               'Choose a theme and create your own programme for this week'
             }

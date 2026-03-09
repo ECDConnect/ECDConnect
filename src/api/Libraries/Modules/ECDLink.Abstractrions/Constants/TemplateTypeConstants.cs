@@ -11,6 +11,7 @@ namespace ECDLink.Abstractrions.Constants
         public const string SuperadminNotifyEmailChanged = "superadmin-notify-email-changed";
         public const string ForgotPasswordPortal = "forgot-password-portal";
         public const string VerifyCellphoneNumber = "verify-cellphone-number";
+        public const string VerifyPasswordToken = "verify-password-token";
         public const string GenericMessage = "generic-message";
         public const string Invitation = "invitation";
         public const string AdminPortalInvitation = "admin-portal-invitation";
@@ -22,6 +23,8 @@ namespace ECDLink.Abstractrions.Constants
         public const string WelcomeEmailToNewSuperAdmin = "welcome-email-to-new-super-admin";
         // Community to portal notification 
         public const string NotifyAdminOnCoachFeedback = "notify-admin-on-coach-feedback";
+
+        public const string NotifyAdminOnPractitionerRemoved = "notify-admin-on-practitioner-removed";
 
         // sheet
         // https://docs.google.com/spreadsheets/d/1X7dypn21NyxGwYHjnqbDebhmTPokV4x3LY_KjNdPi5g/edit?gid=1532194419#gid=1532194419

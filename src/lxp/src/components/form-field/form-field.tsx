@@ -1,14 +1,16 @@
-import { UseFormRegister } from 'react-hook-form';
+import { UseFormRegister, FieldValues, Path } from 'react-hook-form';
 import { EyeIcon, EyeOffIcon } from '@heroicons/react/solid';
+import { ComponentBaseProps } from '@ecdlink/ui/lib/models';
 
-export interface FormFieldProps {
+export interface FormFieldProps<T extends FieldValues>
+  extends ComponentBaseProps {
   label: string;
   subLabel?: string;
-  nameProp: string;
+  nameProp: Path<T>;
   type?: string;
   error?: string;
   disabled?: boolean;
-  register: UseFormRegister<any>;
+  register: UseFormRegister<T>;
   required?: any;
   validation?: any;
   instructions?: string[];
@@ -19,7 +21,7 @@ export interface FormFieldProps {
   defaultValue?: any;
 }
 
-const FormField: React.FC<FormFieldProps> = ({
+const FormField = <T extends FieldValues>({
   label,
   subLabel,
   nameProp,
@@ -34,7 +36,8 @@ const FormField: React.FC<FormFieldProps> = ({
   togglePasswordVisibility,
   showPassword,
   defaultValue,
-}) => {
+  ...restProps
+}: FormFieldProps<T>) => {
   const checkboxStyle =
     'focus:ring-secondary h-6 w-6 text-secondary border-gray-600 rounded';
   const errorStyle =
@@ -95,6 +98,7 @@ const FormField: React.FC<FormFieldProps> = ({
           })}
           className={error ? errorStyle : getInputTypeStyles()}
           placeholder={placeholder}
+          {...restProps}
         />
 
         {nameProp === 'acceptedTerms' && (

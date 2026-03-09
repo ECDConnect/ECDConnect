@@ -47,7 +47,7 @@ export const TenantContextProvider: React.FC<{}> = ({ children }) => {
     isOpenAccess: true,
     isCHWConnect: false,
   });
-  const tenantState = useSelector(tenantSelectors.getTenant);
+  let tenantState = useSelector(tenantSelectors.getTenant);
 
   useEffect(() => {
     if (tenantState.url !== window.location.host) {

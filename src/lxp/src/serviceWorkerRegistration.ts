@@ -60,6 +60,8 @@ export function register(config: Config): boolean {
         registerValidSW(swUrl, config);
       }
     });
+
+    cacheFiles();
     return true;
   }
 
@@ -152,3 +154,11 @@ export function unregister() {
       });
   }
 }
+
+export const cacheFiles = async () => {
+  await Promise.all([
+    caches.open('images').then((cache) => {
+      cache.addAll(['/assets/icon/favicon.ico', '/assets/icon/icon-192.png']);
+    }),
+  ]);
+};

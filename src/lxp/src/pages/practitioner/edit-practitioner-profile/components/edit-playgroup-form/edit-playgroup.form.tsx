@@ -21,12 +21,7 @@ import {
   canDeleteClassroomGroup,
   Weekdays,
 } from '@utils/practitioner/playgroups-utils';
-import {
-  ClassroomGroupDto,
-  DialogModalOptions,
-  RecursivePartial,
-  useDialog,
-} from '@ecdlink/core';
+import { DialogModalOptions, RecursivePartial, useDialog } from '@ecdlink/core';
 import { ClassroomGroupService } from '@services/ClassroomGroupService';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@store/auth';
@@ -34,6 +29,17 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../../../modals/offline-sync/online-only-modal';
 import { practitionerSelectors } from '@/store/practitioner';
 import { yesNoOptions } from '../edit-programme-form/edit-programme-form.types';
+import { useHistory, useLocation } from 'react-router';
+import { EditPlaygroupsRouteState } from '@/pages/practitioner/save-practitioner-playgroups/save-practitioner-playgroups.types';
+import { useAppDispatch } from '@/store';
+import { newGuid } from '@/utils/common/uuid.utils';
+import {
+  classroomsActions,
+  classroomsSelectors,
+  classroomsThunkActions,
+} from '@/store/classroom';
+import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
+import ROUTES from '@/routes/routes';
 
 export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
   isNew,
@@ -42,11 +48,15 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
   onDelete,
   onSubmit,
 }) => {
+  const appDispatch = useAppDispatch();
+  const history = useHistory();
+  const classroom = useSelector(classroomsSelectors.getClassroom);
   const [selectedDays, setSelectedDays] = useState<Weekdays[]>([]);
   const authUser = useSelector(authSelectors.getAuthUser);
   const [classroomGroup, setClassroomGroup] =
     useState<RecursivePartial<ClassroomGroupDto>>();
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
+  const location = useLocation<EditPlaygroupsRouteState>();
 
   const currentPractitioner = useSelector(
     practitionerSelectors.getPractitioner
@@ -182,6 +192,43 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
       />
     );
   };
+
+  const saveClassData = async () => {
+    const playgroupData = getPlaygroupFormValues();
+    const today = new Date().toISOString();
+    if (playgroupData) {
+      const classroomGroupId = newGuid();
+      const classroomGroupModel: ClassroomGroupDto = {
+        id: classroomGroupId,
+        classroomId: classroom?.id ?? '',
+        name: playgroupData?.name ?? 'Class 1',
+        userId: playgroupData?.userId!,
+        learners: [],
+        classProgrammes: playgroupData.meetingDays.map((x) => {
+          return {
+            id: newGuid(),
+            classroomGroupId: classroomGroupId,
+            meetingDay: x,
+            isActive: true,
+            programmeStartDate: today,
+            isFullDay: playgroupData?.isFullDay || false,
+            synced: false,
+          };
+        }),
+      };
+
+      await appDispatch(
+        classroomsActions.createClassroomGroup(classroomGroupModel)
+      );
+      await appDispatch(classroomsThunkActions.upsertClassroomGroups({}));
+      await appDispatch(
+        classroomsThunkActions.upsertClassroomGroupProgrammes({})
+      );
+    }
+    // redirect to add child
+    history.push(ROUTES?.CHILD_REGISTRATION_LANDING);
+  };
+
   // TODO: refactor this to use the new component: src/lxp/src/components/delete-class
   const confirmDelete = () => {
     let dialogOptionModel: DialogModalOptions = {
@@ -364,16 +411,18 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
           color="quatenary"
           className={'mt-10 w-full'}
           onClick={() => {
-            onSubmit(
-              // isPlaygroup
-              //   ? getPlaygroupFormValues()
-              //   :
-              {
-                ...getPlaygroupFormValues(),
-                isFullDay: undefined,
-                name: !name ? title : name,
-              }
-            );
+            location?.state?.redirectFromBusinessToAddClass
+              ? saveClassData()
+              : onSubmit(
+                  // isPlaygroup
+                  //   ? getPlaygroupFormValues()
+                  //   :
+                  {
+                    ...getPlaygroupFormValues(),
+                    isFullDay: undefined,
+                    name: !name ? title : name,
+                  }
+                );
           }}
           disabled={!isFormValid()}
           icon={isNew ? 'ArrowCircleRightIcon' : 'SaveIcon'}

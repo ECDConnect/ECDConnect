@@ -7,7 +7,7 @@ import {
 } from '@heroicons/react/solid';
 import { Colours, ComponentBaseProps } from '../../models';
 import Typography from '../typography/typography';
-import { classNames } from '../../utils/style-class.utils';
+import { classNames, ellipsisDescription } from '../../utils/style-class.utils';
 import { BannerHeaderSizes } from './models';
 import { StatusChip } from '../../components/status-chip/status-chip';
 import SideMenu from '../side-menu/side-menu';
@@ -44,6 +44,8 @@ export interface BannerWrapperProps extends ComponentBaseProps {
   helpId?: string;
   hasDecoratedBackButton?: boolean;
   children?: any;
+  sidebarOpen?: boolean;
+  setSidebarOpen?: (open: boolean) => void;
 }
 
 export const BannerWrapper = React.forwardRef<
@@ -82,10 +84,23 @@ export const BannerWrapper = React.forwardRef<
     helpId,
     style,
     hasDecoratedBackButton,
+    sidebarOpen: controlledSidebarOpen,
+    setSidebarOpen: controlledSetSidebarOpen,
   } = props;
 
   const showMenu = (menuItems?.length || 0) > 0;
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const [internalSidebarOpen, setInternalSidebarOpen] = useState(false);
+  const isControlled =
+    controlledSidebarOpen !== undefined &&
+    controlledSetSidebarOpen !== undefined;
+
+  const sidebarOpen = isControlled
+    ? controlledSidebarOpen
+    : internalSidebarOpen;
+  const setSidebarOpen = isControlled
+    ? controlledSetSidebarOpen
+    : setInternalSidebarOpen;
 
   return (
     <div
@@ -99,7 +114,7 @@ export const BannerWrapper = React.forwardRef<
     >
       {showBackground && (
         <div className={styles.backgroundImageWrapper(size, color)}>
-          <img className={styles.overlayImage} src={backgroundUrl} />
+          <img alt="logo" className={styles.overlayImage} src={backgroundUrl} />
         </div>
       )}
 
@@ -147,8 +162,9 @@ export const BannerWrapper = React.forwardRef<
                   />
                   <Typography
                     type="help"
-                    text={subTitle}
+                    text={ellipsisDescription(subTitle, 32)}
                     color={'primaryAccent2'}
+                    className="overflow-ellipsis"
                   />
                 </div>
               </div>
@@ -181,13 +197,14 @@ export const BannerWrapper = React.forwardRef<
               width={25}
               height={30}
               onClick={onHelp}
+              style={{ fill: '#1DBADF' }}
             />
           )}
           {calendarRender && (
-            <div className={'mr-5 flex items-center'}>{calendarRender()}</div>
+            <div className={'mr-2 flex items-center'}>{calendarRender()}</div>
           )}
           {notificationRender && (
-            <div className={'mr-5 flex items-center'}>
+            <div className={'mr-2 flex items-center'}>
               {notificationRender()}
             </div>
           )}

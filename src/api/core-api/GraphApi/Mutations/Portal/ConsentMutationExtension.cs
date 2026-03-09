@@ -1,4 +1,7 @@
+using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.ContentManagement.Repositories;
+using ECDLink.EGraphQL.Authorization;
+using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
 using System;
@@ -10,6 +13,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Portal
     public class ConsentMutationExtension
     {
 
+        [Permission(PermissionGroups.PORTAL, GraphActionEnum.Update)]
         public bool BulkUpdateConsentImages(
             [Service] ContentManagementRepository contentRepo,
             int contentId,

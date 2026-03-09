@@ -28,6 +28,10 @@ import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import { ClassDashboardRouteState } from '@/pages/business/business.types';
+import {
+  notificationActions,
+  notificationsSelectors,
+} from '@/store/notifications';
 
 export const EditRegistersAttendanceList = ({
   selectedRegister,
@@ -35,6 +39,10 @@ export const EditRegistersAttendanceList = ({
 }: EditRegistersAttendanceListProps) => {
   const [presentChildrenCount, setPresentChildrenCount] = useState<number>(0);
   const [absentChildrenCount, setAbsentChildrenCount] = useState<number>(0);
+
+  const attendanceNotification = useSelector(
+    notificationsSelectors.getAllNotifications
+  ).find((item) => item?.message?.area?.includes('tracking-attendance'));
 
   const [attendanceGroups, setAttendanceGroups] = useState<AttendanceState[]>();
 
@@ -78,51 +86,56 @@ export const EditRegistersAttendanceList = ({
   };
 
   const handleFormSubmit = async () => {
-    const attendanceGroup = attendanceGroups?.[0];
+    if (attendanceGroups) {
+      for (const element of attendanceGroups) {
+        const attendanceGroupList = element.list;
 
-    if (!attendanceGroup) return;
+        const allAttendedChildren: ChildAttendance[] =
+          attendanceGroupList?.map((x) => ({
+            userId: x.attenendeeId,
+            attended: x.status === AttendanceStatus.Present,
+          })) || [];
 
-    const currentProgramme = getPlaygroup(
-      classProgrammes,
-      attendanceDate,
-      classroomGroupId
-    );
+        const currentProgramme = getPlaygroup(
+          classProgrammes,
+          attendanceDate,
+          element.cacheId
+        );
 
-    if (!currentProgramme) return;
+        if (!currentProgramme) return;
 
-    const attendanceGroupList = attendanceGroup.list;
+        const trackAttendanceInput = mapTrackAttendance(
+          user?.id || '',
+          allAttendedChildren,
+          new Date(
+            attendanceDate.getFullYear(),
+            attendanceDate.getMonth(),
+            attendanceDate.getDate(),
+            12,
+            0,
+            0
+          ).toISOString(),
+          currentProgramme.id ?? ''
+        );
 
-    const allAttendedChildren: ChildAttendance[] =
-      attendanceGroupList?.map((x) => ({
-        userId: x.attenendeeId,
-        attended: x.status === AttendanceStatus.Present,
-      })) || [];
-
-    const trackAttendanceInput = mapTrackAttendance(
-      user?.id || '',
-      allAttendedChildren,
-      new Date(
-        attendanceDate.getFullYear(),
-        attendanceDate.getMonth(),
-        attendanceDate.getDate(),
-        12,
-        0,
-        0
-      ).toISOString(),
-      currentProgramme.id ?? ''
-    );
-
-    appDispatch(attendanceActions.trackAttendance(trackAttendanceInput));
-    appDispatch(
-      attendanceThunkActions.trackAttendanceSync(trackAttendanceInput)
-    );
-
+        appDispatch(attendanceActions.trackAttendance(trackAttendanceInput));
+        appDispatch(
+          attendanceThunkActions.trackAttendanceSync(trackAttendanceInput)
+        );
+      }
+    }
     appDispatch(
       analyticsActions.createEventTracking({
         action: 'Attendance tracking click',
         category: 'Attendance tracking click',
       })
     );
+
+    if (attendanceNotification) {
+      appDispatch(
+        notificationActions.removeNotification(attendanceNotification!)
+      );
+    }
 
     setAttendanceGroups([]);
     showMessage({ message: 'Register saved!', type: 'success' });

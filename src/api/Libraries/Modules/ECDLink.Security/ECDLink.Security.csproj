@@ -9,7 +9,7 @@
     <PackageReference Include="Microsoft.NETCore.Targets" Version="5.0.0" />
     <PackageReference Include="HotChocolate.AspNetCore" Version="12.12.1" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.8.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="9.0.4" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.8.0" />
 	<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.4" />

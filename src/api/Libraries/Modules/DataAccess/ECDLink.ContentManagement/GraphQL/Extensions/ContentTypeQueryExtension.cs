@@ -111,9 +111,9 @@ namespace ECDLink.ContentManagement.GraphQL.Extensions
         }
 
         [Permission(PermissionGroups.GENERAL, GraphActionEnum.View)]
-        public async Task<bool> GetHasContentTypeBeenTranslated([Service] ContentTypeRepository repository, int id, Guid localeId)
+        public async Task<bool> GetHasContentTypeBeenTranslated([Service] ContentTypeRepository repository, int id, int ageGroup, Guid localeId)
         {
-            return await repository.HasTranslations(id, localeId);
+            return await repository.HasTranslations(id, ageGroup, localeId);
         }
     }
 }

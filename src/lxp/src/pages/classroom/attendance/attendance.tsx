@@ -55,7 +55,9 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   const classroom = useSelector(classroomsSelectors.getClassroom);
-  const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
+  const classroomGroups = useSelector(
+    classroomsSelectors.getClassroomGroupsWithLinkedLearnersOnly
+  );
 
   const children = useSelector(childrenSelectors.getChildren);
 
@@ -65,7 +67,9 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
 
   const publicHolidays = useSelector(staticDataSelectors.getHolidays);
   const attendance = useSelector(attendanceSelectors.getAttendance);
-  const learners = useSelector(classroomsSelectors.getClassroomGroupLearners);
+  const learners = useSelector(
+    classroomsSelectors.getClassroomGroupLearnersForAttendance
+  );
   const holidays = useSelector(staticDataSelectors.getHolidays);
   const [currentDate] = useState(new Date());
   const isTrialPeriod = useIsTrialPeriod();
@@ -235,6 +239,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       ...location,
       state: {
         ...location.state,
+        activeTabIndex: 1,
         fromChildAttendanceReport: false,
       },
     });
@@ -249,6 +254,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
             classroom={classroom}
             currentClassroomGroup={userCurrentClassroomGroup}
             classroomGroups={classroomGroups}
+            onTakeAttendance={onCloseCompletedRegisters}
           />
         );
       case 'summary':

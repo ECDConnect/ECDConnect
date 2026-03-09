@@ -92,3 +92,53 @@ export const differenceInMonths = (d1: Date, d2: Date) => {
   months += d2.getMonth();
   return months <= 0 ? 0 : months;
 };
+
+/**
+ * Returns all working days (Mon–Fri) in a given month and year,
+ * excluding specified holidays.
+ *
+ * @param year - The full year (e.g., 2025)
+ * @param month - The month index (0 = January, 11 = December)
+ * @param holidays - Array of holiday dates (as Date objects or ISO strings)
+ * @returns Array of Date objects representing working days
+ */
+
+export function getWorkingDays(
+  year: number,
+  month: number,
+  holidays: HolidayDto[] = []
+): Date[] {
+  // Normalize holidays to ISO date strings for easy comparison
+  const holidaySet = new Set(
+    holidays.map((h) => new Date(h.day).toISOString().split('T')[0])
+  );
+
+  const workingDays: Date[] = [];
+
+  // Get number of days in month
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const date = new Date(year, month, day);
+    const dayOfWeek = date.getDay(); // 0 = Sunday, 6 = Saturday
+
+    // Skip weekends
+    if (dayOfWeek === 0 || dayOfWeek === 6) continue;
+
+    // Skip holidays
+    const isoDate = date.toISOString().split('T')[0];
+    if (holidaySet.has(isoDate)) continue;
+
+    workingDays.push(date);
+  }
+
+  return workingDays;
+}
+
+export function ToUtcDateString(date: Date): string {
+  // Create a new UTC date using the same year, month, and day
+  const utcDate = new Date(
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+  );
+  return utcDate.toISOString(); // e.g. "2025-10-02T00:00:00.000Z"
+}

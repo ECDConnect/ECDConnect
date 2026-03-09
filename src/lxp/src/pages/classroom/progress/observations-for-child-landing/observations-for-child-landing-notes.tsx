@@ -3,6 +3,7 @@ import { useHistory, useLocation } from 'react-router';
 import { useObserveProgressForChild } from '@/hooks/useObserveProgressForChild';
 import ROUTES from '@/routes/routes';
 import { useState } from 'react';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export type ObservationsForChildNotesState = {
   childId: string;
@@ -12,7 +13,7 @@ export const ObservationsForChildNotes: React.FC = () => {
   const history = useHistory();
 
   const { state: routeState } = useLocation<ObservationsForChildNotesState>();
-
+  const { isOnline } = useOnlineStatus();
   const { child, currentReport, updateNotes } = useObserveProgressForChild(
     routeState.childId
   );
@@ -21,10 +22,12 @@ export const ObservationsForChildNotes: React.FC = () => {
 
   return (
     <BannerWrapper
-      size={'small'}
+      size="medium"
+      renderBorder={true}
       onBack={() => history.goBack()}
       title={`Add a note about ${child?.user?.firstName}`}
       renderOverflow
+      displayOffline={!isOnline}
     >
       <div className="flex h-full flex-col px-4 pt-4">
         <Typography type="h2" color="primary" text={'Your notes'} />

@@ -106,6 +106,7 @@ module.exports = {
         pointsCardBarBg: 'var(--pointsCardBarBg)',
         infographicBg: 'var(--infographicBg)',
         secondaryMain: 'var(--secondaryMain)',
+        quinary: 'var(--quinary)',
         warning: '#FFD525',
         warningBg: '#fff6d0',
         blue: {

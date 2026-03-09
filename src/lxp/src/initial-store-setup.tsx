@@ -1,4 +1,4 @@
-import { subMonths, startOfQuarter, lastDayOfQuarter } from 'date-fns';
+import { subMonths } from 'date-fns';
 import React, { useCallback, useEffect, useState } from 'react';
 import Loader from './components/loader/loader';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
@@ -62,15 +62,19 @@ import { activityThunkActions } from '@store/content/activity';
 import { authSelectors } from '@store/auth';
 import { statementsActions, statementsThunkActions } from '@store/statements';
 import { LocalStorageKeys, RoleSystemNameEnum } from '@ecdlink/core';
-import { communityThunkActions } from './store/community';
+import { communityActions, communityThunkActions } from './store/community';
 import { ClassroomService } from './services/ClassroomService';
-import { pointsThunkActions } from './store/points';
+import { pointsActions, pointsThunkActions } from './store/points';
+import { notificationActions } from './store/notifications';
+import { pqaActions } from './store/pqa';
+import { googleLogout } from '@react-oauth/google';
 
 type IntialStoreSetupContextValues = {
-  initloading: boolean;
+  initLoading: boolean;
   initStoreSetup: () => Promise<void>;
   resetAppStore: (showLoading?: boolean, isSync?: boolean) => Promise<void>;
   resetAuth: () => Promise<void>;
+  resetUser: () => Promise<void>;
   getLoadingMessage: () => string;
   syncClassroom: () => Promise<void>;
   refreshClassroom: () => Promise<void>;
@@ -85,7 +89,7 @@ export const IntialStoreSetupContext =
 const InitialStoreSetup: React.FC = ({ children }) => {
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
-  const [initloading, setInitLoading] = useState(false);
+  const [initLoading, setInitLoading] = useState(false);
   const [staticDataLoading, setStaticDataLoading] = useState(false);
   const userData = useSelector(userSelectors.getUser);
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -94,15 +98,22 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   );
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
   const classroomForUser = useSelector(classroomsSelectors.getClassroom);
-  const isPrincipal = practitioner?.isPrincipal;
+  const isPrincipal = userData?.roles?.some(
+    (role) => role.systemName === RoleSystemNameEnum.Principal
+  );
+
   const [otherLoading, setOtherLoading] = useState(false);
 
-  const [shouldSaveStateHash, setShouldSaveStateHash] = useState(false);
-  const quarterStartDate = startOfQuarter(new Date());
-  const quarterLastDay = lastDayOfQuarter(new Date());
-
   const resetAuth = async () => {
+    if (userAuth?.loginType === 'google') {
+      googleLogout();
+    }
+    // not logout for Facebook it appears...
     appDispatch(authActions.resetAuthState());
+  };
+
+  const resetUser = async () => {
+    appDispatch(userActions.resetUserState());
   };
 
   const resetAppStore = async (showLoading = true, isSync = false) => {
@@ -117,49 +128,50 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   };
 
   const resetStaticStoreSetup = async () => {
-    appDispatch(staticDataActions.resetStaticDataState());
-    appDispatch(progressTrackingActions.resetProgressTrackingState());
-    appDispatch(programmeRoutineActions.resetProgrammeRoutineState());
     appDispatch(activityActions.resetActivityState());
-    appDispatch(storyBookActions.resetStoryBookState());
-    appDispatch(programmeThemeActions.resetProgrammeThemeState());
-    appDispatch(contentConsentActions.resetContentConsentState());
-    appDispatch(settingActions.resetSettingsState());
     appDispatch(analyticsActions.resetAnalyticsState());
-    appDispatch(programmeActions.resetProgrammeState());
+    appDispatch(contentConsentActions.resetContentConsentState());
+    appDispatch(programmeRoutineActions.resetProgrammeRoutineState());
+    appDispatch(programmeThemeActions.resetProgrammeThemeState());
+    appDispatch(settingActions.resetSettingsState());
+    appDispatch(staticDataActions.resetHolidayState()); // we only reset the holidays - rest of static data can stay
     appDispatch(statementsActions.resetStatementsStaticState());
+    appDispatch(storyBookActions.resetStoryBookState());
   };
 
   const resetAdditionalStoreSetup = async (isSync?: boolean) => {
     if (!isSync) {
       appDispatch(userActions.resetUserState());
     }
-    appDispatch(notesActions.resetNotesState());
+    appDispatch(attendanceActions.resetAttendanceState());
+    appDispatch(calendarActions.resetCalendarState());
+    appDispatch(caregiverActions.resetCaregiverState());
+    appDispatch(childrenActions.resetChildrenState());
     appDispatch(classroomsActions.resetClassroomState());
     appDispatch(classroomsForCoachActions.resetClassroomState());
     appDispatch(coachActions.resetCoachState());
+    appDispatch(communityActions.resetCommunityConnectState());
+    appDispatch(contentReportActions.resetContentReportState());
+    appDispatch(documentActions.resetDocumentsState());
+    appDispatch(notesActions.resetNotesState());
+    appDispatch(notificationActions.resetNotificationState());
+    appDispatch(notificationActions.resetFrontendNotificationState());
+    appDispatch(pointsActions.resetPointsState());
+    appDispatch(pqaActions.resetPQAState());
     appDispatch(practitionerActions.resetPractitionerState());
     appDispatch(practitionerForCoachActions.resetPractitionerState());
-    appDispatch(childrenActions.resetChildrenState());
-    appDispatch(caregiverActions.resetCaregiverState());
-    appDispatch(documentActions.resetDocumentsState());
-    appDispatch(attendanceActions.resetAttendanceState());
-    appDispatch(contentReportActions.resetContentReportState());
+    appDispatch(programmeActions.resetProgrammeState());
+    appDispatch(progressTrackingActions.resetProgressTrackingState());
     appDispatch(statementsActions.resetStatementsState());
-    appDispatch(calendarActions.resetCalendarState());
   };
 
   const initStoreSetup = useCallback(async () => {
     if (isOnline) {
       setInitLoading(true);
       await initStaticStoreSetup();
-
-      if (!!userData) {
-        await initAdditionalStoreSetup();
-      }
+      await initAdditionalStoreSetup();
       appDispatch(settingActions.setLastDataSync());
       setInitLoading(false);
-      setShouldSaveStateHash(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
@@ -171,7 +183,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     setOtherLoading(true);
 
     const promises: Promise<any>[] = [
-      appDispatch(childrenThunkActions.getChildren({})).unwrap(),
       appDispatch(practitionerThunkActions.getAllPractitioners({})).unwrap(),
       appDispatch(documentThunkActions.getDocuments({})).unwrap(),
       appDispatch(staticDataThunkActions.getRoles({})).unwrap(),
@@ -188,6 +199,17 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       ),
     ];
 
+    if (isPrincipal) {
+      promises.push(
+        appDispatch(
+          childrenThunkActions.getChildrenForClassroom({
+            userId: userData?.id!,
+          })
+        ).unwrap()
+      );
+    } else {
+      promises.push(appDispatch(childrenThunkActions.getChildren({})).unwrap());
+    }
     if (!isCoach) {
       promises.push(
         appDispatch(classroomsThunkActions.getClassroom({})).unwrap()
@@ -346,6 +368,15 @@ const InitialStoreSetup: React.FC = ({ children }) => {
 
   const refreshChildren = async () => {
     appDispatch(settingActions.setLastDataSync());
+    if (isPrincipal) {
+      appDispatch(
+        childrenThunkActions.getChildrenForClassroom({ userId: userData?.id! })
+      ).unwrap();
+    } else {
+      appDispatch(
+        childrenThunkActions.getChildren({ overrideCache: true })
+      ).unwrap();
+    }
     appDispatch(
       childrenThunkActions.getChildren({ overrideCache: true })
     ).unwrap();
@@ -370,9 +401,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     if (isCoach) {
       appDispatch(classroomsForCoachActions.resetClassroomState());
       await appDispatch(
-        classroomsForCoachThunkActions.getClassroomForCoach({
-          id: userData?.id!,
-        })
+        classroomsForCoachThunkActions.getClassroomForCoach({})
       ).unwrap();
       await appDispatch(
         classroomsForCoachThunkActions.getClassroomGroupsForCoach({})
@@ -395,10 +424,11 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   };
 
   const values = {
-    initloading,
+    initLoading,
     initStoreSetup,
     resetAppStore,
     resetAuth,
+    resetUser,
     getLoadingMessage,
     syncClassroom,
     refreshClassroom,
@@ -447,6 +477,27 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     }
   }, [appDispatch, userData, isCoach, isPrincipal]);
 
+  const handleNoClassroomForInvitedUser = useCallback(async () => {
+    const classroom = await new ClassroomService(
+      userAuth?.auth_token!
+    ).getClassroomForUser(practitioner?.principalHierarchy!);
+    if (classroom) {
+      localStorage.setItem(
+        LocalStorageKeys.classroomForInvitedUser,
+        classroom?.name
+      );
+    }
+  }, [practitioner?.principalHierarchy, userAuth?.auth_token]);
+
+  useEffect(() => {
+    if (userData && practitioner?.principalHierarchy && !classroomForUser)
+      handleNoClassroomForInvitedUser();
+  }, [
+    classroomForUser,
+    handleNoClassroomForInvitedUser,
+    practitioner?.principalHierarchy,
+  ]);
+
   useEffect(() => {
     if (userData) {
       if (practitioner?.coachHierarchy) {
@@ -477,9 +528,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
           ).unwrap())();
         (async (id) =>
           await appDispatch(
-            classroomsForCoachThunkActions.getClassroomForCoach({
-              id: userData?.id!,
-            })
+            classroomsForCoachThunkActions.getClassroomForCoach({})
           ).unwrap())();
         (async () =>
           await appDispatch(
@@ -501,31 +550,10 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appDispatch, userData, isCoach]);
 
-  const handleNoClassroomForInvitedUser = useCallback(async () => {
-    const classroom = await new ClassroomService(
-      userAuth?.auth_token!
-    ).getClassroomForUser(practitioner?.principalHierarchy!);
-    if (classroom) {
-      localStorage.setItem(
-        LocalStorageKeys.classroomForInvitedUser,
-        classroom?.name
-      );
-    }
-  }, [practitioner?.principalHierarchy, userAuth?.auth_token]);
-
-  useEffect(() => {
-    if (practitioner?.principalHierarchy && !classroomForUser)
-      handleNoClassroomForInvitedUser();
-  }, [
-    classroomForUser,
-    handleNoClassroomForInvitedUser,
-    practitioner?.principalHierarchy,
-  ]);
-
   return (
     <IntialStoreSetupContext.Provider value={values}>
-      {!initloading && children}
-      {initloading && <Loader loadingMessage={getLoadingMessage()} />}
+      {!initLoading && children}
+      {initLoading && <Loader loadingMessage={getLoadingMessage()} />}
     </IntialStoreSetupContext.Provider>
   );
 };

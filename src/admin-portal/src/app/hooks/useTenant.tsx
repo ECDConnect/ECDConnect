@@ -88,13 +88,7 @@ type TenantThemeProviderProps = {
 export const TenantThemeProvider: React.FC<TenantThemeProviderProps> = (
   props
 ) => {
-  const tenant = useTenant();
-
-  // const themeUrl =
-  //   !!tenant && !!tenant.tenant && !!tenant.tenant.themePath
-  //     ? tenant.tenant.themePath
-  //     : props.defaultThemeUrl;
-
+  // alwyas use default theme url and not client specific
   return (
     <ThemeProvider themeEndPoint={props.defaultThemeUrl} overRideCache={true}>
       {props.children}

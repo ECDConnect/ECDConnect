@@ -11,6 +11,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     public class OpenConsentQueryExtension
     {
         [GraphQLType("[Consent]!")]
+        //Skip this permission - GENERIC permission is on the cms tables.
         public IEnumerable<object> GetOpenConsent(
             [Service] ContentManagementRepository contentRepo,
             [Service] ILocaleService<Language> localeService,

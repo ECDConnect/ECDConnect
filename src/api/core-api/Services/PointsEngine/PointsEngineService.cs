@@ -22,6 +22,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using static EcdLink.Api.CoreApi.Constants;
 
 namespace EcdLink.Api.CoreApi.Services
@@ -110,6 +111,12 @@ namespace EcdLink.Api.CoreApi.Services
             var monthEnd = DateTime.Now.GetEndOfMonth();
 
             var practitioner = _practitionerRepo.GetByUserId(userId);
+
+            if (practitioner == null)
+            {
+                return new PointsToDoItemModel();
+            }
+
             var isPrincipal = practitioner.IsPrincipalOrAdmin();
 
             // 1.Completing profile(ie they are not part of a preschool yet)(see W3)
@@ -1033,33 +1040,27 @@ namespace EcdLink.Api.CoreApi.Services
         /// <summary>
         /// Complete an online training course
         /// 200 points per course completed in the "Training" section
-        /// Max Year 200
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
-        public void CalculateCompleteOnlineTrainingCourse(Guid userId)
+        public async Task CalculateCompleteOnlineTrainingCourse(Guid userId)
         {
             if (TenantExecutionContext.Tenant.Modules != null && TenantExecutionContext.Tenant.Modules.TrainingEnabled)
             {
                 var today = DateTime.Now;
-                var trainingCoursesCount = _userTrainingCourseRepo.GetAll().Where(x => x.IsActive 
-                                                                                    && x.UserId == userId 
-                                                                                    && x.CompletedDate.Year == today.Year
-                                                                                    && x.CompletedDate.Month == today.Month).Count();
+                var trainingCoursesCount = await _userTrainingCourseRepo.GetAll().Where(x => x.IsActive && x.UserId == userId && x.CompletedDate.Year == today.Year)
+                                                                    .Select(x => x.CourseName).Distinct().CountAsync();
+                                                                    
                 if (trainingCoursesCount > 0)
                 {
-                    var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.CompleteOnlineTrainingCourseId);
-                    //var yearPoints = _pointsUserSummaryRepo.GetAll().Where(x =>
-                    //                       x.UserId == userId
-                    //                       && x.PointsActivityId == activity.Id
-                    //                       && x.DateScored.Year >= today.Year).Select(x => x.PointsTotal).Sum();
-                    //var userPoints = yearPoints == 0 ? activity.Points : 0;
+                    var activity = await _pointsActivityRepo.GetAll().SingleAsync(x => x.Id == PointsActivityConstants.CompleteOnlineTrainingCourseId);
                     AddOrUpdatePoints(
                         PointsActivityConstants.CompleteOnlineTrainingCourseId,
                         userId,
-                        activity.Points,
+                        activity.Points * trainingCoursesCount,
                         trainingCoursesCount);
                 }
+                
             }
         }
 

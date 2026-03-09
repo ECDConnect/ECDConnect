@@ -41,9 +41,7 @@ export const SharedPanel: React.FC<SharedPanelProps> = ({
         static
         className="fixed inset-0 z-10 overflow-y-auto"
         open={open}
-        onClose={() =>
-          !!onCancelCallback ? onCancelCallback(onClose) : onClose()
-        }
+        onClose={() => {}} // Prevent closing on overlay click
       >
         {overlay && (
           <div

@@ -38,7 +38,9 @@ export const SliderPagination: React.FC<SliderPaginationProps> = ({
             key={`pagination-item-${index}`}
             data-testid={`pagination-item-${index}`}
             className={
-              index === activeIndex
+              index < activeIndex
+                ? styles.visitedItem
+                : index === activeIndex
                 ? styles.activePaginationItem
                 : styles.paginationItem
             }

@@ -10,7 +10,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
-import { useHistory, useLocation } from 'react-router';
+import { useHistory } from 'react-router';
 import { CompleteProfilePerc } from './components/complete-procile-perc/complete-profile-perc';
 import { ConnectionsCard } from './components/connections-card/connections-card';
 import { DetailsCard } from './components/details-card/details-card';
@@ -25,6 +25,7 @@ import { CommunityBasicInfo } from './components/community-basic-info/community-
 import { BasicInfoItems } from '../community.types';
 import ROUTES from '@/routes/routes';
 import TransparentLayer from '../../../assets/TransparentLayer.png';
+import { userGreetingName } from '@/utils/user/user-name-greeting.utils';
 
 export interface CommunityProfileRouteState {
   isFromAddMoreDetails: boolean;
@@ -36,7 +37,6 @@ export const CommunityProfile = () => {
   const appName = tenant?.tenant?.applicationName;
   const user = useSelector(userSelectors.getUser);
   const communityProfile = useSelector(communitySelectors.getCommunityProfile);
-  const { theme } = useTheme();
   const history = useHistory();
   const [openContactDetails, setOpenContactDetails] = useState(false);
   const [openAboutDescription, setOpenAboutDescription] = useState(false);
@@ -154,7 +154,7 @@ export const CommunityProfile = () => {
             action={setOpenAboutDescription}
           />
           <ProfileSkills
-            userName={user?.firstName!}
+            userName={userGreetingName(user!, '')}
             skills={communityProfile?.profileSkills!}
             action={setOpenEditCommunitySkills}
           />

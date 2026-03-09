@@ -25,7 +25,7 @@ export const getAttendanceReportsForUser = (userId: string) =>
   createSelector(
     (state: RootState) =>
       state.attendanceData.monthlyAttendanceRecordsByUser[userId],
-    (attendanceReports) => attendanceReports?.data
+    (attendanceReports) => attendanceReports?.data || []
   );
 
 export const getClassroomAttendanceOverviewReportByPeriod = (

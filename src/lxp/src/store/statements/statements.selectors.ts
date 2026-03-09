@@ -62,3 +62,33 @@ export const getPreschoolFeesForMonth = (year: number, month: number) =>
       };
     }
   );
+
+export const getPreschoolFeesForChild = (childUserId: string) =>
+  createSelector(
+    (state: RootState) => state.statements.incomeStatements,
+    (statements: IncomeStatementDto[]) =>
+      statements
+        .map((statement) => ({
+          ...statement,
+          incomeItems: statement.incomeItems.filter(
+            (x) =>
+              x.childUserId === childUserId &&
+              x.incomeTypeId === IncomeTypeIds.PRESCHOOL_FEE_ID
+          ),
+        }))
+        .filter((statement) => statement.incomeItems.length > 0)
+  );
+
+export const getTotalPreschoolFeesForChild = (childUserId: string) =>
+  createSelector(
+    (state: RootState) => state.statements.incomeStatements,
+    (statements) =>
+      statements
+        .flatMap((s) => s.incomeItems)
+        .filter(
+          (item) =>
+            item.childUserId === childUserId &&
+            item.incomeTypeId === IncomeTypeIds.PRESCHOOL_FEE_ID
+        )
+        .reduce((sum, item) => sum + item.amount, 0)
+  );

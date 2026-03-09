@@ -1,9 +1,5 @@
-using ECDLink.ContentManagement.Entities.Base;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.Security;
-using ECDLink.Security.Attributes;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ECDLink.ContentManagement.Entities
 {

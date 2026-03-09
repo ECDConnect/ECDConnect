@@ -61,7 +61,6 @@ export const EditClass = ({
   const [practitionersList, setPractitionersList] = useState<
     { label: string; value: any }[]
   >([]);
-  const user = useSelector(userSelectors.getUser);
 
   const { name, meetEveryday, meetingDays, practitionerId, isFullDay } =
     useWatch({

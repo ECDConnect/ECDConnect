@@ -1,4 +1,4 @@
-import { useHistory, useLocation } from 'react-router';
+import { useHistory, useLocation } from 'react-router-dom';
 import { useEffect, useState, useMemo } from 'react';
 import {
   BannerWrapper,
@@ -9,7 +9,7 @@ import {
   Dialog,
   DialogPosition,
 } from '@ecdlink/ui';
-import { NotificationDisplay } from '@ecdlink/graphql';
+import { ClassroomMetricReport, NotificationDisplay } from '@ecdlink/graphql';
 import { PractitionerProfileRouteState } from './coach-practitioner-classroom.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './coach-practitioner-classroom.styles';
@@ -24,7 +24,6 @@ import { authSelectors } from '@/store/auth';
 import { PractitionerService } from '@/services/PractitionerService';
 import { ClassroomGroupService } from '@/services/ClassroomGroupService';
 import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
-import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { ContactPractitioner } from './components/contact-practitioner/contact-practitioner';
 import { WorkflowStatusEnum } from '@ecdlink/graphql';
 import { useStaticData } from '@hooks/useStaticData';
@@ -32,22 +31,21 @@ import { useTenant } from '@/hooks/useTenant';
 import { useTenantModules } from '@/hooks/useTenantModules';
 
 export const CoachPractitionerClassroom: React.FC = () => {
-  const appDispatch = useAppDispatch();
   const history = useHistory();
+  const location = useLocation<PractitionerProfileRouteState>();
   const { isOnline } = useOnlineStatus();
+  const dispatch = useAppDispatch();
+
   const userAuth = useSelector(authSelectors.getAuthUser);
   const tenant = useTenant();
+  const { attendanceEnabled } = useTenantModules();
   const isWhiteLabel = tenant?.isWhiteLabel;
   const isOpenAccess = tenant?.isOpenAccess;
-  const { attendanceEnabled } = useTenantModules();
-
-  const location = useLocation<PractitionerProfileRouteState>();
 
   const { getWorkflowStatusIdByEnum } = useStaticData();
   const activeStatusId = getWorkflowStatusIdByEnum(
     WorkflowStatusEnum.ChildActive
   );
-
   const children = useSelector(
     childrenSelectors.getChildrenByStatus(activeStatusId)
   );
@@ -56,13 +54,11 @@ export const CoachPractitionerClassroom: React.FC = () => {
   const practitioner = useSelector(
     practitionerSelectors.getPractitionerByUserId(practitionerUserId)
   );
-
   const isPrincipal = practitioner?.isPrincipal === true;
 
   const coachClassrooms = useSelector(
     classroomsForCoachSelectors.getClassroomForCoach
   );
-
   const practitionerClassroomGroups = useSelector(
     classroomsForCoachSelectors.getClassroomGroupsForPractitioner(
       practitionerUserId
@@ -72,7 +68,7 @@ export const CoachPractitionerClassroom: React.FC = () => {
   const practitionerClassroom = isPrincipal
     ? coachClassrooms?.find((item) => item?.userId === practitionerUserId)
     : coachClassrooms?.find(
-        (item) => item?.id === practitionerClassroomGroups?.[0].classroomId
+        (item) => item?.id === practitionerClassroomGroups?.[0]?.classroomId
       );
 
   const classroomGroups = useSelector(
@@ -85,22 +81,27 @@ export const CoachPractitionerClassroom: React.FC = () => {
     ? classroomGroups.flatMap((x) => x.learners)
     : practitionerClassroomGroups.flatMap((x) => x.learners);
 
-  const childrenForPractitionerList = children?.filter((el) => {
-    return learnersForPractitioner?.some((f) => {
-      return f.childUserId === el.userId;
-    });
-  });
+  const childrenForPractitionerList = useMemo(() => {
+    return (
+      children?.filter((child) =>
+        learnersForPractitioner?.some(
+          (learner) => learner.childUserId === child.userId
+        )
+      ) ?? []
+    );
+  }, [children, learnersForPractitioner]);
 
-  const [practitionerClassroomsData, setPractitionerClassroomsData] =
-    useState<ClassroomGroupDto[]>();
+  const [classMetrics, setClassMetrics] = useState<ClassroomMetricReport[]>([]);
+  const [actionItems, setActionItems] = useState<NotificationDisplay[]>([]);
+  const [selectedNotification, setSelectedNotification] =
+    useState<NotificationDisplay | null>(null);
+  const [isContactDialogOpen, setIsContactDialogOpen] = useState(false);
 
-  const [classMetrics, setClassMetrics] = useState<any>();
-  const [actionItems, setActionItems] = useState<any>();
-  const [showAttendanceRegisters, setShowAttendanceRegisters] = useState(false);
-  const [showAttendanceRate, setShowAttendanceRate] = useState(false);
-  const [notification, setNotification] = useState<NotificationDisplay>();
+  // Fetch attendance metrics
+  // Fetch attendance metrics
+  useEffect(() => {
+    if (!userAuth?.auth_token || !practitionerUserId) return;
 
-  const classroomsMetrics = async () => {
     const today = new Date();
     const firstDayPrevMonth = new Date(
       today.getFullYear(),
@@ -108,189 +109,166 @@ export const CoachPractitionerClassroom: React.FC = () => {
       1
     );
     const lastDayPrevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
-    const metricsData = await new ClassroomGroupService(
-      userAuth?.auth_token!
-    ).getClassAttendanceMetricsByUser(
-      practitionerUserId,
-      firstDayPrevMonth,
-      lastDayPrevMonth
-    );
-    setClassMetrics(metricsData);
-    return metricsData;
-  };
 
+    new ClassroomGroupService(userAuth.auth_token)
+      .getClassAttendanceMetricsByUser(
+        practitionerUserId,
+        firstDayPrevMonth,
+        lastDayPrevMonth
+      )
+      .then(setClassMetrics);
+  }, [userAuth?.auth_token, practitionerUserId]);
+
+  // Fetch action items
   useEffect(() => {
-    classroomsMetrics();
-  }, [userAuth, practitionerUserId]);
+    if (!userAuth?.auth_token || !practitionerUserId) return;
 
+    new PractitionerService(userAuth.auth_token)
+      .classroomActionItems(practitionerUserId)
+      .then(setActionItems);
+  }, [userAuth?.auth_token, practitionerUserId]);
+
+  // Load children
   useEffect(() => {
-    if (classMetrics) {
-      const practitionerClassroomData = classMetrics?.filter((item: any) => {
-        if (isPrincipal) {
-          return classroomGroups.some((x) => {
-            return item?.classroomId === x.classroomId;
-          });
-        }
-        return practitionerClassroomGroups.some((x) => {
-          return item?.practitionerId === x?.userId;
-        });
-      });
-      setPractitionerClassroomsData(practitionerClassroomData);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classMetrics]);
+    dispatch(childrenThunkActions.getChildren({})).unwrap();
+  }, [dispatch]);
 
-  const getClassroomsActionItems = async () => {
-    const newActionItems = await new PractitionerService(
-      userAuth?.auth_token!
-    ).classroomActionItems(practitionerUserId);
+  // Filter metrics for this practitioner
+  const practitionerClassroomsData = useMemo(() => {
+    if (!classMetrics.length) return [];
 
-    setActionItems(newActionItems);
+    return classMetrics.filter((item) => {
+      if (isPrincipal) {
+        return classroomGroups.some((g) => g.classroomId === item.classroomId);
+      }
+      return practitionerClassroomGroups.some(
+        (g) => g.userId === item.practitionerId
+      );
+    });
+  }, [classMetrics, classroomGroups, practitionerClassroomGroups, isPrincipal]);
 
-    return newActionItems;
-  };
-
-  useEffect(() => {
-    getClassroomsActionItems();
-  }, [practitionerUserId]);
-
-  useEffect(() => {
-    (async () =>
-      // TODO - This might need updates
-      await appDispatch(childrenThunkActions.getChildren({})).unwrap())();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appDispatch, practitionerUserId]);
-
+  // Action item list
   const listItems: MenuListDataItem[] = useMemo(() => {
-    return actionItems?.map((action: NotificationDisplay) => {
+    return actionItems.map((action) => {
+      const isError = action.color === 'Error';
       return {
-        title: action.subject,
+        title: action.subject || '',
+        subTitle: action.message || '',
         titleStyle: 'text-textDark font-semibold text-base leading-snug',
-        subTitle: action.message,
-        subTitleStyle:
-          'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-        menuIcon:
-          action.color === 'Error'
-            ? 'ExclamationIcon'
-            : 'InformationCircleIcon',
-        menuIconClassName:
-          action.color === 'Error'
-            ? 'alertMain text-white'
-            : 'bg-infoMain text-white',
+        subTitleStyle: 'text-sm text-textMid overflow-hidden text-ellipsis',
+        menuIcon: isError ? 'ExclamationIcon' : 'InformationCircleIcon',
+        menuIconClassName: isError
+          ? 'alertMain text-white'
+          : 'text-infoMain h-12 w-12 rounded-full bg-infoBg',
+        iconBackgroundColor: isError ? 'alertMain' : undefined,
         showIcon: true,
-        iconBackgroundColor:
-          action.color === 'Error' ? 'alertMain' : 'bg-infoMain',
-        chipConfig: {
-          colorPalette: {
-            backgroundColour: 'white',
-            borderColour: 'errorMain',
-            textColour: 'errorMain',
-          },
-        },
-        text: '1',
+        chipConfig: isError
+          ? {
+              colorPalette: {
+                backgroundColour: 'white',
+                borderColour: 'errorMain',
+                textColour: 'errorMain',
+              },
+              text: '1',
+            }
+          : undefined,
         onActionClick: () => {
-          onView(action);
+          setSelectedNotification(action);
+          if (action.subject?.includes('progress summary')) {
+            history.push(
+              ROUTES.COACH
+                .COACH_PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP,
+              {
+                practitionerId: practitionerUserId,
+              }
+            );
+          } else {
+            setIsContactDialogOpen(true);
+          }
         },
         classNames: 'bg-uiBg',
       };
     });
   }, [actionItems]);
 
-  const onView = async (action: NotificationDisplay) => {
-    setNotification(action);
-    if (action.subject?.includes('attendance registers not saved')) {
-      setShowAttendanceRegisters(true);
-    }
-    if (action.subject?.includes('attendance rate')) {
-      setShowAttendanceRate(true);
-    }
+  const handleBack = () => {
+    history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
+      practitionerId: practitionerUserId,
+    });
   };
 
   return (
     <>
-      <div className={styles.contentWrapper}>
-        <BannerWrapper
-          title={`Classroom`}
-          subTitle={`${practitioner?.user?.firstName}`}
-          color={'primary'}
-          size="small"
-          renderOverflow={false}
-          onBack={() =>
-            history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
-              practitionerId: practitionerUserId,
-            })
-          }
-          displayOffline={!isOnline}
-        >
-          <div className="flex w-full flex-wrap justify-center">
-            <div className="mx-auto mt-2 flex w-11/12 items-center justify-between">
-              <StackedList
-                className="flex w-full flex-col rounded-2xl"
-                type="MenuList"
-                listItems={actionItems?.length > 0 ? listItems : []}
+      <BannerWrapper
+        title="Classroom"
+        subTitle={practitioner?.user?.firstName || ''}
+        color="primary"
+        size="small"
+        onBack={handleBack}
+        displayOffline={!isOnline}
+        renderOverflow={true}
+      >
+        <div className="flex w-full flex-col items-center px-4 pb-6">
+          {actionItems.length > 0 && (
+            <StackedList
+              className="mt-4 w-11/12 space-y-1"
+              type="MenuList"
+              listItems={listItems}
+            />
+          )}
+
+          <Card
+            className={styles.registeredChildrenCard}
+            borderRaduis="xl"
+            shadowSize="md"
+          >
+            <div className="ml-4 mb-2 mt-1">
+              <Typography
+                type="h1"
+                text={childrenForPractitionerList.length.toString()}
+                color="textDark"
+                className="mb-2"
+              />
+              <Typography
+                text={`Children enrolled at ${
+                  practitionerClassroom?.name || 'this classroom'
+                }`}
+                type="body"
+                color="textMid"
               />
             </div>
-            <>
-              <Card
-                className={styles.registeredChildrenCard}
-                borderRaduis={'xl'}
-                shadowSize={'md'}
-              >
-                <div className="ml-4">
-                  <div className="mt-4 mb-3 text-4xl font-semibold text-black">
-                    {childrenForPractitionerList?.length}
-                  </div>
-                  <Typography
-                    text={`Children enrolled at ${practitionerClassroom?.name}`}
-                    type="body"
-                    className="mb-4"
-                  />
-                </div>
-              </Card>
-              {((attendanceEnabled && isWhiteLabel) || isOpenAccess) && (
-                <ClassroomAttendance
-                  practitionerClassroomGroups={
-                    isPrincipal ? classroomGroups : practitionerClassroomGroups
-                  }
-                  practitionerClassroomsData={practitionerClassroomsData}
-                />
-              )}
-              <div className="w-full">
-                <ChildrenPerAgeGroup
-                  childrenForPractitionerList={childrenForPractitionerList}
-                  practitionerId={practitionerUserId}
-                />
-              </div>
-            </>
+          </Card>
+
+          {((attendanceEnabled && isWhiteLabel) || isOpenAccess) && (
+            <ClassroomAttendance
+              practitionerClassroomGroups={
+                isPrincipal ? classroomGroups : practitionerClassroomGroups
+              }
+              practitionerClassroomsData={practitionerClassroomsData}
+            />
+          )}
+
+          <div className="w-full">
+            <ChildrenPerAgeGroup
+              childrenForPractitionerList={childrenForPractitionerList}
+              practitionerId={practitionerUserId}
+            />
           </div>
-          <Dialog
-            fullScreen={true}
-            visible={showAttendanceRegisters}
-            position={DialogPosition.Full}
-            stretch={true}
-          >
-            <ContactPractitioner
-              setShowAttendanceRegisters={setShowAttendanceRegisters}
-              setShowAttendanceRate={setShowAttendanceRate}
-              practitionerId={practitionerUserId}
-              notification={notification}
-            />
-          </Dialog>
-          <Dialog
-            fullScreen={true}
-            visible={showAttendanceRate}
-            position={DialogPosition.Full}
-            stretch={true}
-          >
-            <ContactPractitioner
-              setShowAttendanceRegisters={setShowAttendanceRegisters}
-              setShowAttendanceRate={setShowAttendanceRate}
-              practitionerId={practitionerUserId}
-              notification={notification}
-            />
-          </Dialog>
-        </BannerWrapper>
-      </div>
+        </div>
+      </BannerWrapper>
+
+      <Dialog
+        visible={isContactDialogOpen}
+        position={DialogPosition.Full}
+        fullScreen
+        stretch
+      >
+        <ContactPractitioner
+          practitionerId={practitionerUserId}
+          notification={selectedNotification}
+          onClose={() => setIsContactDialogOpen(false)}
+        />
+      </Dialog>
     </>
   );
 };

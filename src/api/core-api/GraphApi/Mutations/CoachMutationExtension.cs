@@ -1,6 +1,4 @@
-using EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Notifications;
-using EcdLink.Api.CoreApi.Managers.Visits;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Context;
@@ -25,7 +23,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class CoachMutationExtension
     {
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.COACH, GraphActionEnum.Create)]
         public async Task<bool> SendCoachInviteToApplication(
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           [Service] InvitationNotificationManager notificationManager,
@@ -37,7 +35,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return await invite.SendInviteToApplication(invitationManager, notificationManager, userManager, userId);
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.COACH, GraphActionEnum.Update)]
         public Coach UpdateCoach([Service] IHttpContextAccessor contextAccessor,
           [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
           IGenericRepositoryFactory repoFactory,
@@ -108,6 +106,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return coach;
         }
 
+        [Permission(PermissionGroups.COACH, GraphActionEnum.Create)]
         public Practitioner AddPractitionerToCoach([Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             IGenericRepositoryFactory repoFactory,
@@ -129,6 +128,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             else return new Practitioner();
         }
 
+        [Permission(PermissionGroups.COACH, GraphActionEnum.Delete)]
         public Practitioner DeletePractitionerForCoach([Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             IGenericRepositoryFactory repoFactory,
@@ -151,6 +151,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return practitioner;
         }
 
+        [Permission(PermissionGroups.COACH, GraphActionEnum.Update)]
         public Coach UpdateCoachAboutInfo([Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             string userId, string aboutInfo)
@@ -170,7 +171,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             }
             return coach;
         }
-
+        
+        [Permission(PermissionGroups.COACH, GraphActionEnum.Update)]
         public Coach UpdateCoachCommunityTabStatus(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,

@@ -23,7 +23,7 @@ const LogoutModal: React.FC<LogoutModalProps> = ({ onSubmit, onCancel }) => {
   const dispatch = useAppDispatch();
   const history = useHistory();
   const [unableToSync, setUnableToSync] = useState(false);
-  const { resetAppStore, resetAuth } = useStoreSetup();
+  const { resetAppStore, resetAuth, resetUser } = useStoreSetup();
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   const { status, error, currentAction, currentStep, stepTotal } =
@@ -44,6 +44,7 @@ const LogoutModal: React.FC<LogoutModalProps> = ({ onSubmit, onCancel }) => {
       await sync();
       await resetAppStore();
       await resetAuth();
+      await resetUser();
       history.push('/');
     } else {
       history.push(ROUTES.LOGIN);

@@ -7,7 +7,6 @@ import {
   LoadingSpinner,
   Dialog,
   DialogPosition,
-  renderIcon,
 } from '@ecdlink/ui';
 import { differenceInMinutes, format } from 'date-fns';
 import { useDialog } from '@ecdlink/core';
@@ -18,10 +17,11 @@ import { PractitionerService } from '@/services/PractitionerService';
 import { authSelectors } from '@/store/auth';
 import { useSelector } from 'react-redux';
 import ROUTES from '@/routes/routes';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { HelpForm } from '@/components/help-form/help-form';
 import OnlineOnlyModal from '../../../../../modals/offline-sync/online-only-modal';
 import { useTenant } from '@/hooks/useTenant';
+import { userSelectors } from '@/store/user';
 
 export const CoachPractitionerNotRegistered: React.FC<
   PractitionerNotRegisterProps
@@ -31,13 +31,13 @@ export const CoachPractitionerNotRegistered: React.FC<
   const dialog = useDialog();
   const tenant = useTenant();
   const userAuth = useSelector(authSelectors.getAuthUser);
-  const practitionerId = practitioner?.userId;
   const [showAlert, setShowAlert] = useState(false);
   const [inviteDates, setInviteDates] = useState<Date[]>();
   const [timeSinceLastInvite, setTimeSinceLastInvite] = useState<number>(1000);
   const [isSending, setIsSending] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const user = useSelector(userSelectors.getUser);
 
   const getTimeSinceLastInvite = (invite: Date) => {
     return Math.abs(differenceInMinutes(new Date(invite as Date), new Date()));
@@ -256,7 +256,7 @@ export const CoachPractitionerNotRegistered: React.FC<
           className="w-full"
           stretch
         >
-          <HelpForm closeAction={setShowHelp} />
+          <HelpForm closeAction={setShowHelp} userId={user?.id} />
         </Dialog>
       </BannerWrapper>
     </>

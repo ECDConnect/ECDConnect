@@ -3884,6 +3884,11 @@
     "@swc/helpers" "^0.5.0"
     clsx "^2.0.0"
 
+"@react-oauth/google@^0.12.2":
+  version "0.12.2"
+  resolved "https://registry.yarnpkg.com/@react-oauth/google/-/google-0.12.2.tgz#082086fcfac1309e4e66413e7a30d24f452445e9"
+  integrity sha512-d1GVm2uD4E44EJft2RbKtp8Z1fp/gK8Lb6KHgs3pHlM0PxCXGLaq8LLYQYENnN4xPWO1gkL4apBtlPKzpLvZwg==
+
 "@react-stately/flags@^3.1.2":
   version "3.1.2"
   resolved "https://registry.yarnpkg.com/@react-stately/flags/-/flags-3.1.2.tgz#5c8e5ae416d37d37e2e583d2fcb3a046293504f2"
@@ -16761,6 +16766,11 @@ react-error-overlay@^6.0.9:
   version "6.1.0"
   resolved "https://registry.yarnpkg.com/react-error-overlay/-/react-error-overlay-6.1.0.tgz#22b86256beb1c5856f08a9a228adb8121dd985f2"
   integrity sha512-SN/U6Ytxf1QGkw/9ve5Y+NxBbZM6Ht95tuXNMKs8EJyFa/Vy/+Co3stop3KBHARfn/giv+Lj1uUnTfOJ3moFEQ==
+
+react-facebook@^10.0.1:
+  version "10.0.1"
+  resolved "https://registry.yarnpkg.com/react-facebook/-/react-facebook-10.0.1.tgz#57075dfa2dbf3bd395eb6732495939c4b5351f97"
+  integrity sha512-NjxyjAMeOl9MRSMlEX2Q0fNglFJTVm/oHCB9KaVgNTm41ZhfnTzFJInMrtWZUeFHG4+bVI1cq4Ufagv66+DSZA==
 
 react-fast-compare@^3.0.1, react-fast-compare@^3.1.1:
   version "3.2.2"

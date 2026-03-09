@@ -64,7 +64,8 @@ export class IncompletePractitionerInformationNotificationValidator
         // practitioner assigned to principal, which you need to accept
         if (
           practitionerState?.practitioner?.principalHierarchy &&
-          !practitionerState?.practitioner?.dateAccepted
+          !practitionerState?.practitioner?.dateAccepted &&
+          (classroomState?.classroom || principalClassroom)
         ) {
           return [
             {
@@ -91,7 +92,10 @@ export class IncompletePractitionerInformationNotificationValidator
           ];
         }
 
-        if (practitionerState?.practitioner?.progress === 0) {
+        if (
+          practitionerState?.practitioner?.progress === 0 ||
+          classroomState?.classroom?.isDummySchool
+        ) {
           return [
             {
               reference: `practitioner-profile`,
@@ -115,7 +119,10 @@ export class IncompletePractitionerInformationNotificationValidator
 
         if (
           practitionerState?.practitioner?.progress === 1 ||
-          practitionerState?.practitioner?.progress === 1.0
+          practitionerState?.practitioner?.progress === 1.0 ||
+          (practitionerState?.practitioner?.progress === 2 &&
+            !practitionerState?.practitioner?.principalHierarchy &&
+            !practitionerState.practitioner?.isPrincipal)
         ) {
           return [
             {

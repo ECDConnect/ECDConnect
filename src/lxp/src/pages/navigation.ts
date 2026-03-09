@@ -5,6 +5,7 @@ export const NavigationNames = {
     Account: 'About me',
     Preschool: 'Preschool',
     Journey: 'Journey',
+    Help: 'Get help',
   },
   Classroom: {
     Classroom: 'Classroom',

@@ -140,7 +140,7 @@ export const CreateNote: React.FC<CreateNoteProps> = ({
           />
           <FormInput<CreateNoteFormModel>
             label={'Add some detail'}
-            className={'mt-3 bg-white'}
+            className={'mt-3 mb-3 bg-white'}
             textInputType="textarea"
             register={noteFormRegister}
             nameProp={'body'}
@@ -148,14 +148,11 @@ export const CreateNote: React.FC<CreateNoteProps> = ({
               'E.g. Themba’s mother shared some information about his health.'
             }
           />
-          <div className={'py-4'}>
-            <Divider></Divider>
-          </div>
           <Button
             onClick={() => handleFormSubmit(getNoteFormValues())}
             className="w-full"
             size="small"
-            color="primary"
+            color="quatenary"
             type="filled"
             disabled={!isValid}
           >

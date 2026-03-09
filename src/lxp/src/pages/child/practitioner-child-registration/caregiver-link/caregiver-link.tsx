@@ -10,8 +10,7 @@ import { useState } from 'react';
 import { useHistory, useLocation } from 'react-router';
 import { ChildBasicInfoModel } from '@schemas/child/child-registration/child-basic-info';
 import { useAppDispatch } from '@store';
-import { childrenThunkActions, childrenActions } from '@store/children';
-import { useStaticData } from '@hooks/useStaticData';
+import { childrenThunkActions } from '@store/children';
 import {
   ChildRegistrationRouteState,
   ChildRegistrationSteps,
@@ -161,7 +160,7 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
           <CaregiverChildRegistrationModal
             onSubmit={whatsapp}
             onCancel={onCancel}
-            childDetails={childDetails}
+            firstName={childDetails.firstName}
             caregiverUrl={childRegistrationDetails.caregiverRegistrationUrl}
             couldCopyToClipboard={linkCopied}
           />

@@ -1,5 +1,4 @@
 import { Redirect, Route, Switch, useLocation } from 'react-router-dom';
-import { Login } from '@auth-p/login/login';
 import { NewPassword } from '@auth-p/new-password/new-password';
 import PasswordReset from '@auth-p/password-reset/password-reset';
 import { SignUp } from '@auth-p/sign-up/sign-up';
@@ -13,6 +12,7 @@ import { ContactCaregivers } from '@child-p/contact-caregivers/contact-caregiver
 import { ContactChildCaregiver } from '@child-p/contact-child-caregiver/contact-child-caregiver';
 import { EditChildInformation } from '@child-p/edit-child-information/edit-child-information';
 import RemoveChild from '@child-p/remove-child/remove-child';
+import PreschoolFees from '@/pages/child/child-preschool-fees/preschool-fees';
 import { ClassDashboard } from '@classroom-p/class-dashboard/class-dashboard';
 import ProgrammeTutorial from '@programme-planning-p/programme-planning-information/programme-tutorial/programme-tutorial';
 import ProgrammePlanningDailyRoutine from '@programme-planning-p/programme-planning-information/sub-pages/programme-planning-daily-routine/programme-planning-daily-routine';
@@ -25,6 +25,7 @@ import { Training } from '@/pages/training/training';
 import { Messages } from '@messages-p/messages';
 import { EditPractitionerProfile } from '@practitioner-p/edit-practitioner-profile/edit-practitioner-profile';
 import { PractitionerAbout } from '@practitioner-p/practitioner-about/practitioner-about';
+import { PractitionerHelp } from '@practitioner-p/practitioner-help/practitioner-help';
 import PractitionerAccount from '@practitioner-p/practitioner-account/practitioner-account';
 import { PractitionerProfile } from '@practitioner-p/practitioner-profile/practitioner-profile';
 import { PractitionerProgrammeInformation } from '@practitioner-p/practitioner-programme-information/practitioner-programme-information';
@@ -109,14 +110,13 @@ import { ProgressReportingPeriods } from '@/pages/classroom/progress/reporting-p
 import { ObservationsForChild } from '@/pages/classroom/progress/observations-for-child/observations-for-child';
 import { ObservationsForChildNotes } from '@/pages/classroom/progress/observations-for-child-landing/observations-for-child-landing-notes';
 import { ObservationsForChildLanding } from '@/pages/classroom/progress/observations-for-child-landing/observations-for-child-landing';
+import { HelpForm } from '@/components/help-form/help-form';
+import { CoachProgressViewReportsSummarySelectClassroomGroupAndAgeGroup } from '@pages/coach/coach-practitioner-classroom/components/view-reports-summary/view-reports-summary-select-class-and-age-group';
+import { CoachProgressViewReportsSummary } from '@pages/coach/coach-practitioner-classroom/components/view-reports-summary/view-reports-summary';
 
 const PublicRoutes: React.FC = () => {
   const tenant = useTenant();
   const isOpenAccessUrl = tenant?.isOpenAccess;
-  //const url = window.location?.hostname;
-  // const isOpenAccessUrl =
-  //   url === 'ecdconnect-develop-app.azurewebsites.net' ||
-  //   url === 'ecdconnect-develop-app';
 
   return (
     <Switch>
@@ -143,6 +143,11 @@ const PublicRoutes: React.FC = () => {
       <Route
         path={ROUTES.PASSWORD_RESET}
         component={PasswordReset}
+        exact={true}
+      />
+      <Route
+        path={ROUTES.HELP}
+        component={isOpenAccessUrl ? PractitionerHelp : HelpForm}
         exact={true}
       />
       <Route path={ROUTES.NEW_PASSWORD} component={NewPassword} exact={true} />
@@ -182,13 +187,14 @@ const AuthRoutes: React.FC = () => {
       {(!isOnline ||
         (location.pathname === ROUTES.LOGIN &&
           previousLocation?.pathname === ROUTES.LOGIN)) && (
-        <Route path={ROUTES.LOGIN} component={Login} exact={true} />
+        <Route path={ROUTES.LOGIN} component={OaLogin} exact={true} />
       )}
       <Route
         path={ROUTES.PASSWORD_RESET}
         component={PasswordReset}
         exact={true}
       />
+      <Route path={ROUTES.HELP} component={HelpForm} exact={true} />
       <Route path={ROUTES.NEW_PASSWORD} component={NewPassword} exact={true} />
       <Route path={ROUTES.SIGN_UP} component={SignUp} exact={true} />
       <Route
@@ -268,6 +274,11 @@ const AuthRoutes: React.FC = () => {
         exact
         path={ROUTES.PRACTITIONER.ABOUT.ROOT}
         component={PractitionerAbout}
+      />
+      <Route
+        exact
+        path={ROUTES.PRACTITIONER.HELP.ROOT}
+        component={PractitionerHelp}
       />
       <Route
         exact
@@ -409,6 +420,7 @@ const AuthRoutes: React.FC = () => {
         component={ChildAttendanceReportPage}
       />
       <Route path={ROUTES.REMOVE_CHILD} component={RemoveChild} />
+      <Route path={ROUTES.CHILD_PRESCHOOL_FEES} component={PreschoolFees} />
 
       <Route
         path={ROUTES.PROGRESS_SETUP_REPORTING_PERIODS}
@@ -579,6 +591,20 @@ const AuthRoutes: React.FC = () => {
         path={ROUTES.COACH.PRACTITIONER_BUSINESS.STATEMENT_DETAILS}
         component={PractitionerMonthStatements}
       />
+      <Route
+        path={
+          ROUTES.COACH
+            .COACH_PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP
+        }
+        component={
+          CoachProgressViewReportsSummarySelectClassroomGroupAndAgeGroup
+        }
+      />
+      <Route
+        path={ROUTES.COACH.COACH_PROGRESS_VIEW_REPORTS_SUMMARY}
+        component={CoachProgressViewReportsSummary}
+      />
+
       <Route render={() => <Redirect to={ROUTES.DASHBOARD} />} />
     </Switch>
   );

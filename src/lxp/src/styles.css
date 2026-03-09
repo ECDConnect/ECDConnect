@@ -21,6 +21,7 @@ body,
 
 input[type='number'] {
   -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 input::-webkit-outer-spin-button,
@@ -74,7 +75,7 @@ ion-content {
 .bg-bannerx2 {
   background-repeat: no-repeat !important;
   background-size: contain !important;
-  background-position: center;
+  background-position: left;
 }
 
 .bg-logo {
@@ -85,4 +86,11 @@ ion-content {
 
 .mirrored {
   transform: scaleX(-1);
+}
+
+.react-datepicker--large-calendar {
+  font-size: 1rem !important;  /* Makes everything ~15% bigger */
+  border-radius: 0.75rem !important;
+  overflow: hidden;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Editor from '../../../../../../components/form-markdown-editor/form-markdown-editor';
 import {
   DynamicFormTemplate,
@@ -16,6 +16,8 @@ import {
 } from '@ecdlink/ui';
 import { useWatch } from 'react-hook-form';
 import { LanguageId } from '../../../../../../constants/language';
+import { isValidUrl } from '../../../../../../utils/url-utils/url-utils';
+import ContentLoader from '../../../../../../components/content-loader/content-loader';
 
 export interface CreateResourceFormProps {
   template: DynamicFormTemplate;
@@ -26,7 +28,6 @@ export interface CreateResourceFormProps {
   formType?: string;
   choosedSectionTitle: string;
   getValues?: any;
-  urlRegex: any;
 }
 
 const contentWrapper = '';
@@ -65,17 +66,34 @@ const CreateResourceForm: React.FC<CreateResourceFormProps> = ({
   selectedLanguageId,
   choosedSectionTitle,
   getValues,
-  urlRegex,
 }) => {
   const { register, control, errors } = handleform;
   const formValues = getValues();
   const [selectedResourceType, setSelectedResourceType] = useState<string>();
+  const [isLoading, setIsLoading] = useState(true);
 
   const [fields, setFields] = useState<any>();
   const showEditableFields = selectedLanguageId === LanguageId.enZa;
   const watchFields = useWatch({ control });
 
   const initialValues = getValues();
+
+  const isEdit = useMemo(
+    () => template?.fields?.some((f) => !!f.contentValue),
+    [template?.fields]
+  );
+
+  useEffect(() => {
+    if (isEdit) {
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 2500);
+      // Cleanup function to clear the timeout if the component unmounts
+      return () => clearTimeout(timer);
+    } else {
+      setIsLoading(false);
+    }
+  }, [isEdit]);
 
   useEffect(() => {
     if (template && watchFields) {
@@ -126,7 +144,7 @@ const CreateResourceForm: React.FC<CreateResourceFormProps> = ({
                     <ButtonGroup<string>
                       color="tertiary"
                       textColor="tertiary"
-                      notSelectedColor="tertiaryAccent2"
+                      notSelectedColor="errorBg"
                       type={ButtonGroupTypes.Button}
                       options={dataFreeOptions}
                       onOptionSelected={(value) => {
@@ -310,7 +328,7 @@ const CreateResourceForm: React.FC<CreateResourceFormProps> = ({
                 />
 
                 {formValues[propName] !== '' &&
-                  !urlRegex.test(formValues[propName]) && (
+                  !isValidUrl(formValues[propName]) && (
                     <Typography
                       type="help"
                       color="errorMain"
@@ -368,7 +386,15 @@ const CreateResourceForm: React.FC<CreateResourceFormProps> = ({
 
   return (
     <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-1">
-      {fields}
+      {isLoading ? (
+        <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-white">
+          <div className="flex flex-col items-center">
+            <ContentLoader />
+          </div>
+        </div>
+      ) : (
+        fields
+      )}
     </div>
   );
 };

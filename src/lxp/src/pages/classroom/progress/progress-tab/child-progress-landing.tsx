@@ -30,7 +30,10 @@ import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router';
 import { useProgressForChildren } from '@/hooks/useProgressForChildren';
 import { ProgressCaregiverReportPdf } from '../caregiver-report-pdf/caregiver-report-pdf';
-import { ReactComponent as Balloons } from '@/assets/balloons.svg';
+import { ReactComponent as CompleteImage } from '@/assets/celebrateIcon.svg';
+import { ProgressTabReportPeriodsCompleted } from './progress-tab-report-periods-completed';
+import { progressTrackingActions } from '@/store/progress-tracking';
+import { useAppDispatch } from '@/store';
 
 export type ChildProgressLandingRouteState = {
   childId: string;
@@ -45,7 +48,9 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
 }) => {
   const history = useHistory();
   const dialog = useDialog();
+  const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
+  const [isReportReady, setIsReportReady] = useState(false);
 
   const {
     hasPermissionToManageChildren,
@@ -61,7 +66,8 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
     percentageObservationsCompleted,
     isAllObservationsComplete,
     isAllReportsComplete,
-  } = useProgressForChildren();
+    isAfterLastReport,
+  } = useProgressForChildren(true);
 
   const [generatedReports, setGeneratedReports] = useState<{
     [reportId: string]: boolean;
@@ -127,6 +133,9 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
                 colour: 'quatenary',
                 type: 'filled',
                 onClick: () => {
+                  appDispatch(
+                    progressTrackingActions.setLocale({ localeId: 'en-za' })
+                  );
                   history.push(ROUTES.PROGRESS_SELECT_CHILD_TO_TRACK);
                   submit();
                 },
@@ -138,6 +147,9 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
                 colour: 'quatenary',
                 type: 'outlined',
                 onClick: () => {
+                  appDispatch(
+                    progressTrackingActions.setLocale({ localeId: 'en-za' })
+                  );
                   submit();
                   history.push(ROUTES.PROGRESS_SELECT_CATEGORY_TO_TRACK);
                 },
@@ -206,10 +218,10 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
   }
 
   const childrenUnder5Years = children.filter(
-    (x) => !x.ageInMonths || x.ageInMonths <= 60
+    (x) => x.ageInMonths && x.ageInMonths <= 78
   );
   const childrenOver5Years = children.filter(
-    (x) => !x.ageInMonths || x.ageInMonths > 60
+    (x) => x.ageInMonths && x.ageInMonths > 78
   );
 
   const progressBarColour: Colours = hasPermissionToCreateProgressReports
@@ -221,13 +233,18 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
     ? 'successMain'
     : 'alertMain';
 
-  const showBalloon: boolean = hasPermissionToCreateProgressReports
+  const showCompleteImage: boolean = hasPermissionToCreateProgressReports
     ? (isWithinReportPeriod && percentageReportsCompleted === 100) ||
       (!isWithinReportPeriod && percentageObservationsCompleted === 100)
     : percentageObservationsCompleted === 100;
 
   return (
     <>
+      {/* Report period set, all reports completed && current period undefined */}
+      {isAllReportsComplete && isReportWindowSet && isAfterLastReport && (
+        <ProgressTabReportPeriodsCompleted />
+      )}
+
       {/* No report periods defined and principal */}
       {!isReportWindowSet && !!practitioner?.isPrincipal && (
         <ProgressTabNoReportPeriodAndPrincipal
@@ -252,6 +269,7 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
       {isReportWindowSet &&
         !!children.length &&
         !!childrenUnder5Years.length &&
+        !isAfterLastReport &&
         childReports.every((x) => x.isNotStarted) && (
           <ProgressTabNoReports
             trackProgress={handleContinueTrackingProgress}
@@ -305,35 +323,40 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
             )}
             {/* Show progress bar  */}
             <Card className="bg-uiBg mb-4 mt-4 flex rounded-2xl p-4">
-              <div className="flex w-full justify-center">
-                {showBalloon && (
-                  <div className="mt-6 mr-6 flex justify-center">
-                    <Balloons className="h-20 w-20" />
+              <div className="flex w-full flex-col justify-center">
+                {showCompleteImage && (
+                  <div className="mt-6 flex justify-center">
+                    <CompleteImage className="h-20 w-20" />
                   </div>
                 )}
-                <ProgressBar
-                  label={`${
-                    hasPermissionToCreateProgressReports && isWithinReportPeriod
-                      ? percentageReportsCompleted
-                      : percentageObservationsCompleted
-                  }%`}
-                  hint={
-                    hasPermissionToCreateProgressReports && isWithinReportPeriod
-                      ? 'Reports completed'
-                      : 'Observations completed'
-                  }
-                  subLabel=""
-                  isHiddenSubLabel={true}
-                  value={
-                    hasPermissionToCreateProgressReports && isWithinReportPeriod
-                      ? percentageReportsCompleted
-                      : percentageObservationsCompleted
-                  }
-                  primaryColour={progressBarColour}
-                  secondaryColour="textLight"
-                  textColour="textDark"
-                  className="w-full"
-                />
+                <div className="mt-6 flex justify-center">
+                  <ProgressBar
+                    label={`${
+                      hasPermissionToCreateProgressReports &&
+                      isWithinReportPeriod
+                        ? percentageReportsCompleted
+                        : percentageObservationsCompleted
+                    }%`}
+                    hint={
+                      hasPermissionToCreateProgressReports &&
+                      isWithinReportPeriod
+                        ? 'Reports completed'
+                        : 'Observations completed'
+                    }
+                    subLabel=""
+                    isHiddenSubLabel={true}
+                    value={
+                      hasPermissionToCreateProgressReports &&
+                      isWithinReportPeriod
+                        ? percentageReportsCompleted
+                        : percentageObservationsCompleted
+                    }
+                    primaryColour={progressBarColour}
+                    secondaryColour="textLight"
+                    textColour="textDark"
+                    className="w-full"
+                  />
+                </div>
               </div>
             </Card>
 
@@ -355,59 +378,59 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
                   !hasPermissionToCreateProgressReports && (
                     <ProgressTabObservationsSummary />
                   )}
+              </>
+            )}
 
-                {isAllObservationsComplete &&
-                  !isAllReportsComplete &&
-                  !hasPermissionToCreateProgressReports &&
-                  !practitioner?.isPrincipal && (
-                    <>
-                      <Alert
-                        type="success"
-                        title="Well done!"
-                        message="You can keep observing children and change your responses."
-                        className="mt-4"
-                      />
-                      <Button
-                        onClick={handleContinueTrackingProgress}
-                        className="mt-4 w-full"
-                        size="small"
-                        color="quatenary"
-                        textColor="white"
-                        type="filled"
-                        icon={'PresentationChartBarIcon'}
-                        text={'Continue tracking progress'}
-                      />
-                    </>
-                  )}
-                {isAllReportsComplete && (
-                  <>
-                    <Button
-                      onClick={() => generateAllReports()}
-                      className="mt-auto w-full"
-                      size="small"
-                      color="quatenary"
-                      textColor="white"
-                      type="filled"
-                      icon={generatingReports ? undefined : 'DownloadIcon'}
-                      text={generateButtonLabel()}
-                      disabled={generatingReports || !isOnline}
-                    />
-                    <Button
-                      onClick={() =>
-                        history.replace(
-                          ROUTES.PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP
-                        )
-                      }
-                      className="mt-4 w-full"
-                      size="small"
-                      color="quatenary"
-                      textColor="quatenary"
-                      type="outlined"
-                      icon={'EyeIcon'}
-                      text={'See Summary'}
-                    />
-                  </>
-                )}
+            {isAllObservationsComplete &&
+              !isAllReportsComplete &&
+              !hasPermissionToCreateProgressReports &&
+              !practitioner?.isPrincipal && (
+                <>
+                  <Alert
+                    type="success"
+                    title="Well done!"
+                    message="You can keep observing children and change your responses."
+                    className="mt-4"
+                  />
+                  <Button
+                    onClick={handleContinueTrackingProgress}
+                    className="mt-4 w-full"
+                    size="small"
+                    color="quatenary"
+                    textColor="white"
+                    type="filled"
+                    icon={'PresentationChartBarIcon'}
+                    text={'Continue tracking progress'}
+                  />
+                </>
+              )}
+            {isAllReportsComplete && (
+              <>
+                <Button
+                  onClick={() => generateAllReports()}
+                  className="mt-auto w-full"
+                  size="small"
+                  color="quatenary"
+                  textColor="white"
+                  type="filled"
+                  icon={generatingReports ? undefined : 'DownloadIcon'}
+                  text={generateButtonLabel()}
+                  disabled={generatingReports || !isOnline}
+                />
+                <Button
+                  onClick={() =>
+                    history.replace(
+                      ROUTES.PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP
+                    )
+                  }
+                  className="mt-4 w-full"
+                  size="small"
+                  color="quatenary"
+                  textColor="quatenary"
+                  type="outlined"
+                  icon={'EyeIcon'}
+                  text={'See Summary'}
+                />
               </>
             )}
           </div>
@@ -421,6 +444,7 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
                   <ProgressCaregiverReportPdf
                     childId={report.childId}
                     reportId={report.report.id as string}
+                    onRendered={() => setIsReportReady(true)}
                   />
                 </div>
               ) : null

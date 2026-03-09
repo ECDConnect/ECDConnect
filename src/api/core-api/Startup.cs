@@ -47,6 +47,8 @@ namespace EcdLink.Api.CoreApi
 {
     using EcdLink.Api.CoreApi.GraphApi.Models;
     using EcdLink.Api.CoreApi.Middleware;
+    using Microsoft.ApplicationInsights;
+    using Microsoft.ApplicationInsights.Extensibility;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Http;
     using System;
@@ -109,7 +111,7 @@ namespace EcdLink.Api.CoreApi
         public void ConfigureServices(IServiceCollection services)
         {
             ConfigureAuthContext(services, Configuration);
-            SetIdentityUser(services);
+            SetIdentityUser(services, Configuration);
             ConfigureTenancy(services);
 
             services.AddHttpContextAccessor();
@@ -197,6 +199,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<SecurityNotificationManager>();
             services.AddTransient<InvitationNotificationManager>();
             services.AddTransient<CaregiverManager>();
+            services.AddTransient<InvitationManager>();
             services.AddTransient<VisitManager>();
             services.AddTransient<VisitDataManager>();
             services.AddTransient<VisitDataStatusManager>();
@@ -223,6 +226,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<INotificationTasksService, NotificationTasksService>();
             services.AddTransient<IClassroomService, ClassroomService>();
             services.AddTransient<ICommunityService, CommunityService>();
+            services.AddTransient<IJourneyService, JourneyService>();
             services.AddTransient<IChildProgressReportService, ChildProgressReportService>();
             services.AddTransient<IAbsenteeService, AbsenteeService>();
             services.AddTransient<IPointsEngineService, PointsEngineService>();
@@ -241,7 +245,22 @@ namespace EcdLink.Api.CoreApi
 
             services.AddControllers();
 
-            if (TelemtryEnabled()) services.AddApplicationInsightsTelemetry();
+            if (TelemetryEnabled())
+            {
+                services.AddApplicationInsightsTelemetry();
+                services.AddSingleton<TelemetryClient>();
+                services.AddSingleton<ITelemetryService, Telemetry.TelemetryService>(serviceProvider =>
+                {
+                    return new Telemetry.TelemetryService(serviceProvider.GetService<TelemetryClient>());
+                });
+                services.AddSingleton<ITelemetryInitializer, Telemetry.TelemetryInitializer>();
+            }
+            else
+            {
+                services.AddSingleton<ITelemetryService, Telemetry.TelemetryService>(serviceProvider => {
+                    return new Telemetry.TelemetryService(null);
+                });
+            }
 
             ECDLink.AutomatedJobs.AutomatedJobsStartup.ConfigureServices(services, Configuration);
         }
@@ -256,8 +275,6 @@ namespace EcdLink.Api.CoreApi
                 app.UseDeveloperExceptionPage();
             }
 
-            //app.UseHttpLogging();
-            //app.MaintainCorsHeadersOnError();
             app.UseCors("CorsPolicy");
             app.UseCookiePolicy();
             app.UseRouting();
@@ -265,16 +282,13 @@ namespace EcdLink.Api.CoreApi
             app.UseAuthorization();
             app.UseTenancy();
             app.UseUserActivity();
-
-            if (TelemtryEnabled()) app.UseMiddleware<CoreApi.Telemetry.TelemetryMiddleware>();
-            // TODO: Can't upload images through CKEditor without bypassing Json sanitizer, update or replace.
-            //app.UseInputSanitizer();
+            if (TelemetryEnabled()) app.UseMiddleware<CoreApi.Telemetry.TelemetryMiddleware>();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
-              name: "default",
-              pattern: "{controller}/{action}/{id?}");
+                name: "default",
+                pattern: "{controller}/{action}/{id?}");
             });
 
             SecurityStartup.AddSecurityConfiguration(app);
@@ -284,7 +298,7 @@ namespace EcdLink.Api.CoreApi
             MoodleStartup.AddMoodleConfiguration(app, env);
         }
 
-        bool TelemtryEnabled()
+        bool TelemetryEnabled()
         {
             var aiConnString = System.Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING");
             if (!string.IsNullOrEmpty(aiConnString)) return true;

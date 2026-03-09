@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { useMutation } from '@apollo/client';
-import { useTenant } from '../../hooks/useTenant';
-import { useTheme } from '../../../../node_modules/@ecdlink/core';
+
 import {
   Alert,
   ActionModal,
@@ -22,16 +21,16 @@ import {
   UpdateTheme,
 } from '@ecdlink/graphql';
 import {
+  useTheme,
   NOTIFICATION,
   useNotifications,
-  applyTheme,
   DefaultTheme,
-  WhiteLabelTheme,
   ThemeModel,
 } from '@ecdlink/core';
 import { SettingsTheme } from './sub-pages/theme/settings-theme';
 import { ArrowSmLeftIcon } from '@heroicons/react/outline';
 import ContentLoader from '../../components/content-loader/content-loader';
+import { useTenant } from '../../hooks/useTenant';
 
 export interface SettingsRouteState {
   overrideDefaultUrl?: string;
@@ -40,7 +39,10 @@ export interface SettingsRouteState {
 const adminSchema = yup.object().shape({
   organisationName: yup.string().required('Organisation name is required'),
   applicationName: yup.string().required('Application name is required'),
-  organisationEmail: yup.string().email().required('Email address is required'),
+  organisationEmail: yup
+    .string()
+    .email('Invalid email')
+    .required('Email address is required'),
 });
 
 export function Settings() {
@@ -53,22 +55,17 @@ export function Settings() {
   const [handleRevertModal, setHandleRevertModal] = useState(false);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const {
-    register,
-    setValue: adminDetailSetValue,
-    formState: adminDetailFormState,
-    getValues: adminDetailGetValues,
-    handleSubmit: handleSubmitAdminDetails,
-    control,
-  } = useForm({
+  const { register, setValue, formState, getValues, handleSubmit } = useForm({
     resolver: yupResolver(adminSchema),
     mode: 'onChange',
   });
 
+  const { errors, isValid } = formState;
+
   const getData = async () => {
     const themeAddress = tenant?.tenant?.blobStorageAddress
       ? tenant?.tenant?.blobStorageAddress + '/theme/ecdconnect.json'
-      : 'https://localhost:5001/storage/theme/ecdconnect.json';
+      : 'https://ecdconnectstoragedev.blob.core.windows.net/theme/ecdconnect.json';
     const data = await fetch(themeAddress, { cache: 'no-store' }).then(
       function (res) {
         return res.json();
@@ -80,9 +77,9 @@ export function Settings() {
   const resetTheme = async () => {
     setLoading(true);
     const data = await getData();
-    if (data && data.colors && data.images) {
+    if (data?.colors && data.images) {
       const themeInputModel: ThemeModel = {
-        version: theme && theme.version ? theme.version : 1,
+        version: theme?.version ? theme.version : 1,
         colors: {
           primary: data.colors.primary,
           primaryAccent1: data.colors.primaryAccent1,
@@ -136,7 +133,6 @@ export function Settings() {
         },
       };
       const themeString = JSON.stringify(themeInputModel);
-      console.log(themeString);
       updateTheme({
         variables: {
           input: themeString,
@@ -160,31 +156,25 @@ export function Settings() {
     setHandleRevertModal(false);
   };
 
-  const { errors: adminDetailFormErrors, isValid: isAdminDetailValid } =
-    adminDetailFormState;
-
   const [updateTenant] = useMutation(UpdateTenantInfo);
 
   useEffect(() => {
-    adminDetailSetValue('organisationName', tenant?.tenant?.organisationName, {
+    setValue('organisationName', tenant?.tenant?.organisationName, {
       shouldValidate: true,
     });
-    adminDetailSetValue('applicationName', tenant?.tenant?.applicationName, {
+    setValue('applicationName', tenant?.tenant?.applicationName, {
       shouldValidate: true,
     });
-    adminDetailSetValue(
-      'organisationEmail',
-      tenant?.tenant?.organisationEmail,
-      {
-        shouldValidate: true,
-      }
-    );
+    setValue('organisationEmail', tenant?.tenant?.organisationEmail, {
+      shouldValidate: true,
+    });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenant]);
 
   const onSave = async () => {
-    const adminDataForm = adminDetailGetValues();
+    setLoading(true);
+    const adminDataForm = getValues();
 
     const tenantInput: TenantInfoInputModelInput = {
       organisationName: adminDataForm.organisationName,
@@ -192,29 +182,28 @@ export function Settings() {
       applicationName: adminDataForm.applicationName,
     };
 
-    await updateTenant({
-      variables: {
-        id: tenant?.tenant?.id,
-        input: tenantInput,
-      },
-    })
-      .then(() => {
-        setNotification({
-          title: 'Successfully Updated Tenant!',
-          variant: NOTIFICATION.SUCCESS,
-        });
-        tenant.refresh();
-      })
-      .catch((err) => {
-        setNotification({
-          title: 'Failed to update Tenant',
-          variant: NOTIFICATION.ERROR,
-        });
+    try {
+      await updateTenant({
+        variables: {
+          id: tenant?.tenant?.id,
+          input: tenantInput,
+        },
       });
-
-    setEditActive(!editActive);
+      await tenant.refresh();
+      setNotification({
+        title: 'Successfully Updated Tenant!',
+        variant: NOTIFICATION.SUCCESS,
+      });
+      setEditActive(false);
+    } catch (err) {
+      setNotification({
+        title: 'Failed to update Tenant',
+        variant: NOTIFICATION.ERROR,
+      });
+    } finally {
+      setLoading(false);
+    }
   };
-
   if (!loading) {
     return (
       <div className="text-textDark">
@@ -265,9 +254,7 @@ export function Settings() {
                             label={'Organisation name *'}
                             nameProp={'organisationName'}
                             register={register}
-                            error={
-                              adminDetailFormErrors.organisationName?.message
-                            }
+                            error={errors.organisationName?.message}
                           />
                         </div>
                         <div className="my-4 w-6/12 sm:col-span-3">
@@ -275,9 +262,7 @@ export function Settings() {
                             label={'App name *'}
                             nameProp={'applicationName'}
                             register={register}
-                            error={
-                              adminDetailFormErrors.applicationName?.message
-                            }
+                            error={errors.applicationName?.message}
                           />
                         </div>
                         <div className="my-4 w-6/12 sm:col-span-3">
@@ -288,9 +273,14 @@ export function Settings() {
                             }
                             nameProp={'organisationEmail'}
                             register={register}
-                            error={
-                              adminDetailFormErrors.organisationEmail?.message
-                            }
+                            error={errors.organisationEmail?.message}
+                            onChange={async (event) => {
+                              console.log('On change');
+                              const newEmail = event.target.value;
+                              setValue('organisationEmail', newEmail, {
+                                shouldValidate: true,
+                              });
+                            }}
                           />
                         </div>
                       </div>
@@ -299,8 +289,8 @@ export function Settings() {
                       className={' w-4/12 rounded-md '}
                       type="filled"
                       color="quatenary"
-                      disabled={!isAdminDetailValid}
-                      onClick={handleSubmitAdminDetails(onSave)}
+                      disabled={!isValid}
+                      onClick={handleSubmit(onSave)}
                     >
                       <SaveIcon color="white" className="mr-6 h-6 w-6">
                         {' '}

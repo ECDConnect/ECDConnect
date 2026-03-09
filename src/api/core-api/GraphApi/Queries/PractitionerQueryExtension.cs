@@ -42,7 +42,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     [ExtendObjectType(OperationTypeNames.Query)]
     public class PractitionerQueryExtension
     {
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.View)]
         public PractitionerModel GetPractitionerByUserId(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -59,7 +59,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return null;
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.View)]
         public PractitionerModel GetPractitionerPermissions(
           [Service] IHttpContextAccessor contextAccessor,
           IGenericRepositoryFactory repoFactory,
@@ -80,6 +80,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return null;
         }
 
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.View)]
         public PractitionerModel GetPractitionerById(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -96,6 +97,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return null;
         }
 
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.View)]
         public PractitionerUserAndNote GetPractitionerByIdNumber(
             [Service] IHttpContextAccessor contextAccessor,
             AuthenticationDbContext dbContext,
@@ -151,13 +153,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                                 AppUser = practitioner.User, 
                                 IsRegistered = practitioner.IsRegistered, 
                                 BelongsToPreschool = hasPreschool, 
-                                Note = hasPreschool ? "This practitioner is linked to a different SmartStart programme" : null };
+                                Note = hasPreschool ? "This practitioner is linked to a different programme" : null };
                         }
                         else
                         {
                             return new PractitionerUserAndNote() { 
                                 AppUser = practitioner.User, 
-                                Note = "This practitioner is linked to a different SmartStart programme", 
+                                Note = "This practitioner is linked to a different programme", 
                                 IsRegistered = classroom != null };
                         }
                     }
@@ -173,7 +175,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             }
             return null;
         }
-
+        
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.View)]
         public ApplicationUser GetPractitionerByIdNumberInternal(
             [Service] IHttpContextAccessor contextAccessor,
             AuthenticationDbContext dbContext,
@@ -195,6 +198,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return default;
         }
 
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.Create)]
         public async Task<FileModel> PractitionerExcelTemplateGenerator(
           [Service] IFileGenerationService fileService,
           IGenericRepositoryFactory repoFactory)
@@ -230,6 +234,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
 
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
         // This needs to be removed, data should already be available on FE
         public PractitionerReportDetails GetReportDetailsForPractitioner(
             [Service] IHttpContextAccessor contextAccessor,
@@ -263,6 +268,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return details;
         }
 
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
         public List<PractitionerColleagues> GetPractitionerColleagues([Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             string userId)
@@ -336,42 +342,50 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return practitionerColleagues;
         }
 
-        public int GetPractitionerInviteCount(
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.View)]
+        public async Task<int> GetPractitionerInviteCount(
             [Service] ShortUrlManager shortUrlManager,
             string userId)
         {
-            return shortUrlManager.GetMessageCountForUser(Guid.Parse(userId), TemplateTypeConstants.Invitation);
+            return await shortUrlManager.GetMessageCountForUser(Guid.Parse(userId), TemplateTypeConstants.Invitation);
         }
 
-        public string GetLastPractitionerInviteDate(
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.View)]
+        public async Task<string> GetLastPractitionerInviteDate(
             [Service] ShortUrlManager shortUrlManager,
             string userId)
         {
-            return shortUrlManager.GetLastMessageDateForUser(Guid.Parse(userId), TemplateTypeConstants.Invitation);
+            return await shortUrlManager.GetLastMessageDateForUser(Guid.Parse(userId), TemplateTypeConstants.Invitation);
         }
 
-        public List<System.DateTime> GetAllPractitionerInvites(
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.View)]
+        public async Task<List<DateTime>> GetAllPractitionerInvites(
             [Service] ShortUrlManager shortUrlManager,
             string userId)
         {
-            return shortUrlManager.GetAllMessageInvitesForUser(Guid.Parse(userId), TemplateTypeConstants.Invitation);
+            return await shortUrlManager.GetAllMessageInvitesForUser(Guid.Parse(userId), TemplateTypeConstants.Invitation);
         }
 
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.View)]
         public List<Visit> GetPractitionerVisits([Service] VisitManager visitManager, string userId)
         {
             return visitManager.GetVisitsForClient(userId, Constants.SSSettings.client_practitioner);
 
         }
+
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.View)]
         public PractitionerTimeline GetPractitionerTimeline([Service] PersonnelService personnelService, string userId)
         {
             return personnelService.GetPractitionerTimeline(userId);
         }
 
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.View)]
         public List<PractitionerNotes> GetVisitNotesForPractitioner([Service] VisitDataManager visitDataManager, string userId)
         {
             return visitDataManager.GetVisitNotesForPractitioner(userId);
         }
 
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.View)]
         public PractitionerRemovalHistory GetRemovalDetailsForPractitioner(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -391,6 +405,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             return result;
         }
+
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.View)]
         public List<PractitionerRemovalHistory> GetRemovalDetailsForPractitioners(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -405,14 +421,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             return result;
         }
+
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.View)]
         public List<PractitionerModel> GetAllPractitioners([Service] PersonnelService personnelService)
         {
             return personnelService.GetAllPractitioners();
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        
         [UseFiltering]
         [UseSorting]
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.View)]
         public List<PortalPractitionerModel> GetAllPortalPractitioners(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -479,8 +498,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 .OrderByDescending(x => x.InsertedDate)
                 .GroupBy(x => x.UserId);
 
-            var invitationDates = invitations.ToDictionary(x => x.Key, x => x.Last().InsertedDate);
-            var invitationNotifications = invitations.ToDictionary(x => x.Key, x => x.Last().NotificationResult);
+            var invitationDates = invitations.ToDictionary(x => x.Key, x => x.First().InsertedDate);
+            var invitationNotifications = invitations.ToDictionary(x => x.Key, x => x.First().NotificationResult);
 
             var practitionerModels = practitionerQuery
                .Select(item => new PortalPractitionerModel
@@ -544,7 +563,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return connectUsageSearch.Any() ? filteredUsers.DistinctBy(x => x.Id).ToList() : practitionerModels;
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.Create)]
         public async Task<FileModel> PractitionerTemplateGenerator(
           [Service] IFileGenerationService fileService,
           [Service] IHttpContextAccessor contextAccessor,
@@ -601,7 +620,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return await fileService.DictionaryToExcelTemplate(spreadSheets, fileName);
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.View)]
         public PractitionerStatsModel GetPractitionerStats(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,

@@ -273,6 +273,7 @@ export const SubmitIncomeStatements: React.FC = () => {
                         type="body"
                         color={'textDark'}
                         align={'center'}
+                        className="truncate whitespace-nowrap"
                       />
                     </td>
                   </tr>
@@ -291,6 +292,7 @@ export const SubmitIncomeStatements: React.FC = () => {
                         type="body"
                         color={'textDark'}
                         align={'center'}
+                        className="truncate whitespace-nowrap"
                       />
                     </td>
                     <td className="w-1/3">
@@ -299,6 +301,7 @@ export const SubmitIncomeStatements: React.FC = () => {
                         type="body"
                         color={'textDark'}
                         align={'center'}
+                        className="truncate whitespace-nowrap"
                       />
                     </td>
                   </tr>
@@ -325,6 +328,7 @@ export const SubmitIncomeStatements: React.FC = () => {
                             : 'secondary'
                         }
                         align={'center'}
+                        className="truncate whitespace-nowrap"
                       />
                     </td>
                     <td className="w-1/3">
@@ -339,6 +343,7 @@ export const SubmitIncomeStatements: React.FC = () => {
                             : 'secondary'
                         }
                         align={'center'}
+                        className="truncate whitespace-nowrap"
                       />
                     </td>
                   </tr>

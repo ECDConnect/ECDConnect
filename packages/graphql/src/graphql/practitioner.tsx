@@ -222,6 +222,7 @@ export const ValidatePractitionerImportSheet = gql`
         errorDescription
         __typename
       }
+      createdUsers
     }
   }
 `;

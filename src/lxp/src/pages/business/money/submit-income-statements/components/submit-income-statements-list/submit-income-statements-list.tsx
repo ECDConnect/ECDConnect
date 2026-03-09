@@ -326,7 +326,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
     >
       <div className="flex flex-col justify-center p-4">
         <Typography
-          className="truncate"
+          className="truncate whitespace-nowrap"
           type="h2"
           weight="bold"
           color="textDark"
@@ -351,7 +351,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
             text={`R ${formatCurrency(0)}`}
             color={'white'}
             type="h4"
-            className="mr-12 w-4/12 text-right"
+            className="mr-12 w-4/12 whitespace-nowrap text-right"
           />
         </Card>
         <StackedList
@@ -373,7 +373,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
             text={`R ${formatCurrency(0)}`}
             color={'white'}
             type="h4"
-            className="mr-12 w-4/12 text-right"
+            className="mr-12 w-4/12 whitespace-nowrap text-right"
           />
         </Card>
         <Card

@@ -99,8 +99,11 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
                     return (
                       <RoundIcon
                         key={subCat.id}
+                        iconSize={{ w: '9', h: '9' }}
                         imageUrl={subCat.imageUrl}
-                        hexBackgroundColor={category?.color || getAvatarColor()}
+                        hexBackgroundColor={
+                          subCat.imageHexColor || getAvatarColor()
+                        }
                         className={`transform text-white ${
                           idx % 2 !== 0 ? '-translate-x-4' : 'relative z-10'
                         } border-quatenaryBg border-2 border-solid`}

@@ -1,12 +1,12 @@
 import { jsPDFOptions } from 'jspdf';
 import { UserOptions } from 'jspdf-autotable';
 import { Typography, Button, renderIcon } from '@ecdlink/ui';
-import { useGeneratePdfReport } from '@/hooks/useGeneratePdfReport';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 import { useDialog } from '@ecdlink/core';
 import { DialogPosition } from '@ecdlink/ui';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+import { useGenerateAttendancePdf } from '@/hooks/useGenerateAttendancePdf';
 
 export interface GeneratePdfReportButtonProps {
   isLoading?: boolean;
@@ -25,6 +25,8 @@ export interface GeneratePdfReportButtonProps {
   downloadDate: string;
   numberOfChildren: number;
   onClick?: () => void;
+  tableHeaders?: any[];
+  logo?: string;
 }
 
 const GeneratePdfReportButton = ({
@@ -44,9 +46,11 @@ const GeneratePdfReportButton = ({
   downloadDate,
   numberOfChildren,
   onClick,
+  tableHeaders,
+  logo,
 }: GeneratePdfReportButtonProps) => {
   const { isOnline } = useOnlineStatus();
-  const { generateReport } = useGeneratePdfReport();
+  const { generateReport } = useGenerateAttendancePdf();
 
   const dialog = useDialog();
 
@@ -78,16 +82,15 @@ const GeneratePdfReportButton = ({
                 tableData ?? [],
                 signature,
                 downloadDate,
-                numberOfChildren,
                 tableHeadStyles,
                 content,
                 tableBottomContent,
-                outputName,
-                component,
                 tableStyles,
-                [tableFooter],
                 tableFootStyles,
-                pageOriantations
+                pageOriantations,
+                tableHeaders,
+                outputName,
+                logo
               );
             }
       }

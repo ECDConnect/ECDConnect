@@ -26,6 +26,8 @@ import { statementsActions } from '@/store/statements';
 import { authSelectors } from '@/store/auth';
 import { ExpenseItemDto } from '@ecdlink/core';
 import { BusinessTabItems } from '../../business.types';
+import { useRemoveNotifications } from '@/hooks/useRemoveNotifications';
+import { notificationTagConfig } from '@/constants/notifications';
 
 export const AddExpense: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -48,6 +50,10 @@ export const AddExpense: React.FC = () => {
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
   const [type, setType] = useState('');
 
+  const removeNotifications = useRemoveNotifications({
+    cta: notificationTagConfig?.TrackIncome?.cta ?? '',
+  });
+
   useEffect(() => {
     if (user) {
       setNewStackListItems();
@@ -56,6 +62,7 @@ export const AddExpense: React.FC = () => {
 
   const onSubmit = useCallback(
     (expenseItem: ExpenseItemDto) => {
+      removeNotifications();
       appDispatch(statementsActions.addExpenseItem(expenseItem));
       history.push(ROUTES.BUSINESS, {
         activeTabIndex: BusinessTabItems.MONEY,
@@ -185,7 +192,7 @@ export const AddExpense: React.FC = () => {
   return (
     <div className={styles.container}>
       {type ? (
-        <div>{incomeType(type)}</div>
+        <>{incomeType(type)}</>
       ) : (
         <BannerWrapper
           showBackground={false}

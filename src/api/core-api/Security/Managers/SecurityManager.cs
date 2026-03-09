@@ -58,18 +58,22 @@ namespace EcdLink.Api.CoreApi.Security.Managers
 
         public async Task<ApplicationUser> LogInWithPhoneNumberAsync(string phoneNumber, string password)
         {
-            var userToVerify = _userManager.Users.FirstOrDefault(user => user.PhoneNumber == phoneNumber
+            var userToVerify = await _userManager.Users.FirstOrDefaultAsync(user => user.PhoneNumber == phoneNumber
                                 && (user.TenantId == TenantExecutionContext.Tenant.Id || user.TenantId == null));
+            if (userToVerify == null)
+                return default;
+
+            if (userToVerify.TenantId != TenantExecutionContext.Tenant.Id && userToVerify.TenantId != null)
+                return default;
 
             if (!await _passwordManager.IsPasswordValidAsync(userToVerify, password))
             {
-                return default(ApplicationUser);
+                await _userManager.AccessFailedAsync(userToVerify).ConfigureAwait(false);
+                return default;
             }
 
-            if (userToVerify.TenantId != TenantExecutionContext.Tenant.Id && userToVerify.TenantId != null)
-            {
-                return default(ApplicationUser);
-            }
+            if ((await _userManager.ResetAccessFailedCountAsync(userToVerify)) != IdentityResult.Success)
+                return default;
 
             return userToVerify;
         }
@@ -77,15 +81,20 @@ namespace EcdLink.Api.CoreApi.Security.Managers
         public async Task<ApplicationUser> GetUsernameAsync(string username, string password)
         {
             // get the user to verifty
-            var userToVerify = _dbContext.Users.FirstOrDefault(user => string.Equals(user.UserName, username));
+            var userToVerify = await _dbContext.Users.FirstOrDefaultAsync(user => string.Equals(user.UserName, username));
+            userToVerify ??= await _userManager.Users.FirstOrDefaultAsync(user => user.Email == username);
+            if (userToVerify == null)
+                return default;
 
-            userToVerify ??= _userManager.Users.FirstOrDefault(user => user.Email == username);
-
-            if (!await _passwordManager.IsPasswordValidAsync(userToVerify, password))
+            if (!await _passwordManager.IsPasswordValidAsync(userToVerify, password).ConfigureAwait(false))
             {
-                return default(ApplicationUser);
+                await _userManager.AccessFailedAsync(userToVerify).ConfigureAwait(false);
+                return default;
             }
-            
+
+            if ((await _userManager.ResetAccessFailedCountAsync(userToVerify)) != IdentityResult.Success)
+                return default;
+
             return userToVerify;
         }
 
@@ -93,31 +102,50 @@ namespace EcdLink.Api.CoreApi.Security.Managers
         public async Task<ApplicationUser> LogInWithUsernameAsync(string username, string password)
         {
             // get the user to verify
-            var userToVerify = _userManager.Users.FirstOrDefault(user => string.Equals(user.UserName, username)
+            var userToVerify = await _userManager.Users.FirstOrDefaultAsync(user => string.Equals(user.UserName, username)
                     && (user.TenantId == TenantExecutionContext.Tenant.Id || user.TenantId == null));
 
-            if (userToVerify == null)
-            {
-                userToVerify = _userManager.Users.FirstOrDefault(user => user.Email == username
-                    && (user.TenantId == TenantExecutionContext.Tenant.Id || user.TenantId == null));
-            }
+            userToVerify ??= await _userManager.Users.FirstOrDefaultAsync(user => user.Email == username
+                && (user.TenantId == TenantExecutionContext.Tenant.Id || user.TenantId == null));
 
             if (userToVerify == null)
-            {
                 return null;
-            }
+
+            if (userToVerify.TenantId != TenantExecutionContext.Tenant.Id && userToVerify.TenantId != null)
+                return default;
 
             if (!await _passwordManager.IsPasswordValidAsync(userToVerify, password))
             {
-                return default(ApplicationUser);
+                await _userManager.AccessFailedAsync(userToVerify).ConfigureAwait(false);
+                return default;
             }
 
-            if (userToVerify.TenantId != TenantExecutionContext.Tenant.Id && userToVerify.TenantId != null)
-            {
-                return default(ApplicationUser);
-            }
+            if ((await _userManager.ResetAccessFailedCountAsync(userToVerify)) != IdentityResult.Success)
+                return default;
 
             return userToVerify;
+        }
+
+        public async Task<bool> IsPasswordValidAsync(ApplicationUser user, string password)
+        {
+            if (!await _passwordManager.IsPasswordValidAsync(user, password))
+            {
+                await _userManager.AccessFailedAsync(user).ConfigureAwait(false);
+                return false;
+            }
+
+            if ((await _userManager.ResetAccessFailedCountAsync(user)) != IdentityResult.Success)
+                return false;
+
+            return true;
+        }
+
+        public async Task<ApplicationUser> GetUserByIdAsync(Guid id)
+        {
+            return await (from u in _dbContext.Users
+                    where u.Id == id
+                        && u.TenantId == TenantExecutionContext.Tenant.Id
+                    select u).FirstOrDefaultAsync();
         }
 
         public async Task<ApplicationUser> GetUserByNameAsync(string username)
@@ -136,10 +164,10 @@ namespace EcdLink.Api.CoreApi.Security.Managers
             {
                 return default;
             }
+
             var tenantId = TenantExecutionContext.Tenant.Id;
-            // TODO: Make the user email and tenantId unique
             var firstUserWithThatEmail = await _userManager.Users.FirstOrDefaultAsync(
-                user => user.IsActive == true
+                user => user.IsActive
                     && user.Email == email
                     && user.TenantId == tenantId);
             return firstUserWithThatEmail;
@@ -152,10 +180,12 @@ namespace EcdLink.Api.CoreApi.Security.Managers
                 return default;
             }
             var tenantId = TenantExecutionContext.Tenant.Id;
-            var user = await _userManager.Users.FirstOrDefaultAsync(
-                user => user.IsActive == true
-                    && user.PhoneNumber == phoneNumber
-                    && user.TenantId == tenantId);
+            var user = await _userManager.Users
+                        .Where(u => u.IsActive 
+                            && u.PhoneNumber == phoneNumber 
+                            && u.TenantId == tenantId)
+                        .OrderByDescending(u => u.InsertedDate)
+                        .FirstOrDefaultAsync();
             return user;
         }
 
@@ -217,7 +247,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers
                 return false;
             }
 
-            _shortUrlManager.RemoveShortUrl(user.Id, TemplateTypeConstants.ForgotPassword);
+            await _shortUrlManager.RemoveShortUrl(user.Id, TemplateTypeConstants.ForgotPassword);
 
             return true;
         }
@@ -285,7 +315,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers
                 user.PendingPhoneNumber = "";
                 user.PhoneNumberConfirmed = true;
                 await _userManager.UpdateAsync(user);
-                _shortUrlManager.RemoveShortUrl(user.Id, TemplateTypeConstants.VerifyCellphoneNumber);
+                await _shortUrlManager.RemoveShortUrl(user.Id, TemplateTypeConstants.VerifyCellphoneNumber);
             }
 
             return cellphoneNumberChangeRequest.Succeeded;

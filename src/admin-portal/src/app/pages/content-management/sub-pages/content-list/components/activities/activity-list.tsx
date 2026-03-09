@@ -110,7 +110,7 @@ export default function ActivityList({
   `;
 
   const { data: themeData } = useQuery(query, {
-    fetchPolicy: 'network-only',
+    fetchPolicy: 'cache-first',
     variables: {
       localeId: LanguageId.enZa,
     },
@@ -658,11 +658,15 @@ export default function ActivityList({
     return 'No entries found';
   }, [isFilterActive]);
 
+  const selectedActivityIds = selectedActivities
+    ?.filter((item) => item?.isInUse === false && item?.id)
+    .map((item) => item.id);
+
   const [deactivateActivities, { loading: deactivating }] = useMutation(
     DeleteMultipleActivities,
     {
       variables: {
-        contentIds: selectedActivities?.map((item) => item?.id),
+        contentIds: selectedActivityIds,
       },
       fetchPolicy: 'network-only',
     }
@@ -671,9 +675,9 @@ export default function ActivityList({
   const deactivateRecords = useCallback(() => {
     deactivateActivities({
       variables: {
-        contentIds: selectedActivities?.map(
-          (item) => item?.id && item?.isInUse === false
-        ), // exclude ids which is in use
+        contentIds: selectedActivities
+          ?.filter((item) => item?.isInUse === false && item?.id)
+          .map((item) => item.id), // exclude ids which is in use
       },
     })
       .then((res) => {
@@ -797,7 +801,10 @@ export default function ActivityList({
                 ? [
                     {
                       type: 'search-dropdown',
-                      menuItemClassName: 'ml-20 w-11/12',
+                      menuItemClassName: 'w-11/12 left-4',
+                      className: 'h-11 mb-2 border-2 border-transparent',
+                      color: 'quatenary',
+                      bgColor: 'white',
                       options: sortBySubTypeOptions,
                       selectedOptions: subTypesFilter,
                       onChange: setSubTypesFilter,
@@ -807,7 +814,10 @@ export default function ActivityList({
                     },
                     {
                       type: 'search-dropdown',
-                      menuItemClassName: 'ml-20 w-11/12',
+                      menuItemClassName: 'w-11/12 left-4',
+                      className: 'h-11 mb-2 border-2 border-transparent',
+                      color: 'quatenary',
+                      bgColor: 'white',
                       options: sortByThemeOptions,
                       selectedOptions: themesFilter,
                       onChange: setThemesFilter,
@@ -817,7 +827,10 @@ export default function ActivityList({
                     },
                     {
                       type: 'search-dropdown',
-                      menuItemClassName: 'ml-20 w-11/12',
+                      menuItemClassName: 'w-11/12 left-4',
+                      className: 'h-11 mb-2 border-2 border-transparent',
+                      color: 'quatenary',
+                      bgColor: 'white',
                       options: sortByLanguageOptions,
                       selectedOptions: languageFilter,
                       onChange: setLanguageFilter,
@@ -827,7 +840,10 @@ export default function ActivityList({
                     },
                     {
                       type: 'search-dropdown',
-                      menuItemClassName: 'ml-20 w-11/12',
+                      menuItemClassName: 'w-11/12 left-4',
+                      className: 'h-11 mb-2 border-2 border-transparent',
+                      color: 'quatenary',
+                      bgColor: 'white',
                       options: sortByShareOptions,
                       selectedOptions: shareFilter,
                       onChange: setShareFilter,
@@ -857,7 +873,10 @@ export default function ActivityList({
                 : [
                     {
                       type: 'search-dropdown',
-                      menuItemClassName: 'ml-20 w-11/12',
+                      menuItemClassName: 'w-11/12 left-4',
+                      className: 'h-11 mb-2 border-2 border-transparent',
+                      color: 'quatenary',
+                      bgColor: 'white',
                       options: sortByTypeOptions,
                       selectedOptions: typesFilter,
                       onChange: setTypesFilter,
@@ -867,7 +886,10 @@ export default function ActivityList({
                     },
                     {
                       type: 'search-dropdown',
-                      menuItemClassName: 'ml-20 w-11/12',
+                      menuItemClassName: 'w-11/12 left-4',
+                      className: 'h-11 mb-2 border-2 border-transparent',
+                      color: 'quatenary',
+                      bgColor: 'white',
                       options: sortByThemeOptions,
                       selectedOptions: themesFilter,
                       onChange: setThemesFilter,
@@ -877,7 +899,10 @@ export default function ActivityList({
                     },
                     {
                       type: 'search-dropdown',
-                      menuItemClassName: 'ml-20 w-11/12',
+                      menuItemClassName: 'w-11/12 left-4',
+                      className: 'h-11 mb-2 border-2 border-transparent',
+                      color: 'quatenary',
+                      bgColor: 'white',
                       options: sortByLanguageOptions,
                       selectedOptions: languageFilter,
                       onChange: setLanguageFilter,
@@ -887,7 +912,10 @@ export default function ActivityList({
                     },
                     {
                       type: 'search-dropdown',
-                      menuItemClassName: 'ml-20 w-11/12',
+                      menuItemClassName: 'w-11/12 left-4',
+                      className: 'h-11 mb-2 border-2 border-transparent',
+                      color: 'quatenary',
+                      bgColor: 'white',
                       options: sortBySkillOptions,
                       selectedOptions: skillsFilter,
                       onChange: setSkillsFilter,
@@ -897,7 +925,10 @@ export default function ActivityList({
                     },
                     {
                       type: 'search-dropdown',
-                      menuItemClassName: 'ml-20 w-11/12',
+                      menuItemClassName: 'w-11/12 left-4',
+                      className: 'h-11 mb-2 border-2 border-transparent',
+                      color: 'quatenary',
+                      bgColor: 'white',
                       options: sortByShareOptions,
                       selectedOptions: shareFilter,
                       onChange: setShareFilter,

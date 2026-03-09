@@ -5,6 +5,8 @@ import {
   StackedList,
   Typography,
   Alert,
+  DialogPosition,
+  ActionModal,
 } from '@ecdlink/ui';
 import { useCallback, useState } from 'react';
 import { useHistory } from 'react-router-dom';
@@ -18,32 +20,39 @@ import OtherIncome from './components/other-income/other-income';
 import StatementsWrapper from '../../money/submit-income-statements/components/walkthrough-statements-wrapper/StatementsWrapper';
 import { useAppContext } from '@/walkthrougContext';
 import { statementsActions } from '@/store/statements';
-import { IncomeItemDto } from '@ecdlink/core';
+import { IncomeItemDto, useDialog } from '@ecdlink/core';
 import DbeSubsidy from './components/dbe-subsidy/dbe-subsidy';
 import { BusinessTabItems } from '../../business.types';
+import { notificationTagConfig } from '@/constants/notifications';
+import { useRemoveNotifications } from '@/hooks/useRemoveNotifications';
+import { useSelector } from 'react-redux';
+import { childrenSelectors } from '@/store/children';
+import { staticDataSelectors } from '@/store/static-data';
+import { WorkflowStatusEnum } from '@ecdlink/graphql';
 
 export const AddIncome: React.FC = () => {
   const history = useHistory();
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
-
-  // useEffect(() => {
-  //   if (!isOnline) {
-  //     appDispatch(
-  //       analyticsActions.createViewTracking({
-  //         pageView: window.location.pathname,
-  //         title: 'Practitioner About',
-  //       })
-  //     );
-  //   }
-  // }, [appDispatch, isOnline]);
-
   const [type, setType] = useState('');
+  const dialog = useDialog();
+
+  const removeNotifications = useRemoveNotifications({
+    cta: notificationTagConfig?.TrackIncome?.cta ?? '',
+  });
+
+  const activeWorkflowStatus = useSelector(
+    staticDataSelectors.getWorkflowStatuses
+  ).find((x) => x.enumId === WorkflowStatusEnum.ChildActive);
+  const activeLinkedChildren = useSelector(
+    childrenSelectors.getChildren
+  )?.filter((x) => x.workflowStatusId === activeWorkflowStatus?.id);
 
   const onSubmit = useCallback((incomeItem: IncomeItemDto) => {
     appDispatch(
       statementsActions.addOrUpdateIncomeItems({ incomeItems: [incomeItem] })
     );
+    removeNotifications();
     history.push(ROUTES.BUSINESS, {
       activeTabIndex: BusinessTabItems.MONEY,
     });
@@ -66,6 +75,47 @@ export const AddIncome: React.FC = () => {
     }
   };
 
+  const handleNoChildren = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      blocking: true,
+      color: 'bg-white',
+      render: (onClose) => {
+        return (
+          <ActionModal
+            title={`Oops!  You need to add children first!`}
+            detailText={`You need to register children before adding fees.  Tap below or go to Classroom > choose/add a class > See children > Add a child.`}
+            icon={'ExclamationCircleIcon'}
+            iconColor="alertMain"
+            iconSize={20}
+            className={'mx-4'}
+            actionButtons={[
+              {
+                text: 'Add a child',
+                textColour: 'white',
+                colour: 'quatenary',
+                type: 'filled',
+                onClick: () => {
+                  history.push(ROUTES?.CHILD_REGISTRATION_LANDING);
+                  onClose();
+                },
+                leadingIcon: 'PlusCircleIcon',
+              },
+              {
+                text: 'Close',
+                textColour: 'quatenary',
+                colour: 'quatenary',
+                type: 'outlined',
+                onClick: onClose,
+                leadingIcon: 'XIcon',
+              },
+            ]}
+          />
+        );
+      },
+    });
+  };
+
   const statementsListItems: ActionListDataItem[] = [
     {
       title: 'Preschool fees',
@@ -78,7 +128,11 @@ export const AddIncome: React.FC = () => {
       buttonColor: 'quatenary',
       textColor: 'white',
       onActionClick: () => {
-        return state?.stepIndex === 4 ? null : setType('PreschoolFees');
+        if (activeLinkedChildren?.length === 0) {
+          handleNoChildren();
+        } else {
+          return state?.stepIndex === 4 ? null : setType('PreschoolFees');
+        }
       },
     },
     {

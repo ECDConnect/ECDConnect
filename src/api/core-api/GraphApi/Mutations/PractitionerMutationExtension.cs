@@ -1,7 +1,5 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Managers.Notifications;
-using EcdLink.Api.CoreApi.Managers.Users;
-using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
@@ -32,7 +30,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class PractitionerMutationExtension
     {
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.Update)]
         public Practitioner UpdatePractitioner([Service] IHttpContextAccessor contextAccessor,
           IGenericRepositoryFactory repoFactory,
           Guid? id,
@@ -56,10 +54,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     practitioner.IsActive = input.IsActive;
                     if (input.AttendanceRegisterLink != null) practitioner.AttendanceRegisterLink = input.AttendanceRegisterLink;
                     if (input.IsPrincipal != null) practitioner.IsPrincipal = input.IsPrincipal;
-                    if (input.PrincipalHierarchy != null) practitioner.PrincipalHierarchy = input.PrincipalHierarchy;                    
+                    if (input.PrincipalHierarchy != null) practitioner.PrincipalHierarchy = input.PrincipalHierarchy;
                     if (input.SigningSignature != null) practitioner.SigningSignature = input.SigningSignature;
                     if (input.StartDate != null) practitioner.StartDate = input.StartDate;
-             
+
                     if (input.SiteAddress != null && input.SiteAddressId.HasValue)
                     {
                         var addressRepo = repoFactory.CreateGenericRepository<SiteAddress>(userContext: uId);
@@ -122,6 +120,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
         }
 
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.Update)]
         public bool UpdatePractitionerShareInfo([Service] IHttpContextAccessor contextAccessor, [Service] INotificationService notificationService,
             IGenericRepositoryFactory repoFactory,
             string practitionerId)
@@ -146,6 +145,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return bReturn;
         }
 
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.Update)]
         public bool UpdatePractitionerRegistered(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -172,6 +172,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return status;
         }
 
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.Update)]
         public decimal UpdatePractitionerProgress([Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             string practitionerId, decimal progress)
@@ -192,7 +193,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return 0;
         }
 
-
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.Update)]
         public string UpdatePractitionerUsePhotoInReport([Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             string practitionerId, string usePhotoInReport)
@@ -213,10 +214,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return null;
         }
 
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.Update)]
         public bool UpdatePractitionerEmergencyContact([Service] IHttpContextAccessor contextAccessor,
-    IGenericRepositoryFactory repoFactory,
-    [Service] ApplicationUserManager userManager,
-    string userId, string firstname, string surname, string contactno)
+            IGenericRepositoryFactory repoFactory,
+            [Service] ApplicationUserManager userManager,
+            string userId, string firstname, string surname, string contactno)
 
         {
             var user = userManager.FindByIdAsync(userId).Result;
@@ -228,6 +230,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return userUpdateResult.Succeeded;
         }
 
+        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.Update)]
         public async Task<bool> SendPractitionerInviteToApplication(
          [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
          [Service] InvitationNotificationManager notificationManager,
@@ -235,7 +238,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
          [Service] ShortUrlManager shortUrlManager,
          string userId)
         {
-            var inviteCount = shortUrlManager.GetMessageCountForUser(Guid.Parse(userId), TemplateTypeConstants.Invitation);
+            var inviteCount = await shortUrlManager.GetMessageCountForUser(Guid.Parse(userId), TemplateTypeConstants.Invitation);
 
             // TODO: Do we need this arbitrary check?
             if (inviteCount < 6)
@@ -248,17 +251,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return false;
         }
 
-
+        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.Update)]
         public async Task<bool> RemovePractitioner(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] IReassignmentService reassignmentService,
             [Service] PersonnelService personnelService,
             ApplicationUserManager userManager,
-            string practitionerUserId, 
-            string reasonForPractitionerLeavingId, 
-            string reasonDetails, 
-            string newPrincipalId, 
+            string practitionerUserId,
+            string reasonForPractitionerLeavingId,
+            string reasonDetails,
+            string newPrincipalId,
             List<ClassroomGroupReassignments> classroomGroupReassignments)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -276,28 +279,31 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 if (reassignment.ClassroomGroupId != null || reassignment.PractitionerId != null)
                 {
                     reassignmentService.AddReassignmentForPractitioner(practitioner.UserId.ToString(), reassignment.PractitionerId, "Practitioner removed by coach", DateTime.Now, uId.ToString(), reassignment.ClassroomGroupId, true);
-                }               
+                }
             }
-           
+
             return await personnelService.DeActivatePractitionerAsync(practitionerUserId, "Practitioner removed by coach", reasonForPractitionerLeavingId, reasonDetails);
         }
 
+        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.Update)]
         public async Task<bool> DeActivatePractitioner([Service] PersonnelService personnelService,
             string userId, string leavingComment, string reasonForPractitionerLeavingId, string reasonDetails)
         {
             return await personnelService.DeActivatePractitionerAsync(userId, leavingComment, reasonForPractitionerLeavingId, reasonDetails);
         }
+
+        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.Update)]
         public bool RemoveFromProgramme(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] IAbsenteeService absenteeService,
             [Service] INotificationService notificationService,
             ApplicationUserManager userManager,
-            string practitionerUserId, 
-            string classroomId, 
-            string reasonForPractitionerLeavingProgrammeId, 
-            string reasonDetails, 
-            DateTime dateOfRemoval, 
+            string practitionerUserId,
+            string classroomId,
+            string reasonForPractitionerLeavingProgrammeId,
+            string reasonDetails,
+            DateTime dateOfRemoval,
             List<ClassroomGroupReassignments> classroomGroupReassignments)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -350,7 +356,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerRemovedFromProgramme, DateTime.Now.Date, principalUser, "", MessageStatusConstants.Red, new List<TagsReplacements>() { new TagsReplacements() { FindValue = "PractitionerName", ReplacementValue = userToSend.FirstName } }, DateTime.Now.AddDays(7), false, true, null,
                         relatedEntities: new List<RelatedEntity> { new RelatedEntity(Guid.Parse(practitionerUserId), "ApplicationUser") });
                 }
-                notificationService.SendNotificationAsync(null, TemplateTypeConstants.RemovedFromProgramme, dateOfRemoval.Date, userToSend, "", MessageStatusConstants.Red, replacements, dateOfRemoval.AddDays(7), false,true,null,
+                notificationService.SendNotificationAsync(null, TemplateTypeConstants.RemovedFromProgramme, dateOfRemoval.Date, userToSend, "", MessageStatusConstants.Red, replacements, dateOfRemoval.AddDays(7), false, true, null,
                     relatedEntities: new List<RelatedEntity> { new RelatedEntity(Guid.Parse(practitionerUserId), "ApplicationUser") });
             }
 
@@ -358,6 +364,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             return true;
         }
+
+        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.Update)]
         public bool UpdateRemovalFromProgramme(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -383,9 +391,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     return false;
                 }
 
-                if(reassignment.Id == null)
+                if (reassignment.Id == null)
                 {
-                    absenteeService.AddAbsenteeForPractitioner(removal.UserId.ToString(), reassignment.PractitionerId, "Practitioner removed from programme", dateOfRemoval, uId.ToString(), reassignment.ClassroomGroupId, null, false,null,null,null, removal.Id);
+                    absenteeService.AddAbsenteeForPractitioner(removal.UserId.ToString(), reassignment.PractitionerId, "Practitioner removed from programme", dateOfRemoval, uId.ToString(), reassignment.ClassroomGroupId, null, false, null, null, null, removal.Id);
                 }
                 else
                 {
@@ -400,6 +408,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return true;
         }
 
+        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.Update)]
         public bool CancelRemovalFromProgramme(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -427,33 +436,26 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return true;
         }
 
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.Update)]
         public bool UpdatePractitionerBusinessWalkthrough([Service] PersonnelService personnelService, string userId)
         {
             return personnelService.UpdatePractitionerBusinessWalkthrough(userId);
         }
 
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.Update)]
         public bool UpdatePractitionerProgressWalkthrough([Service] PersonnelService personnelService, string userId)
         {
             personnelService.UpdatePractitioneProgressWalkthrough(userId);
             return true;
         }
 
+        // For some reason beyond my understanding, this permission does not work!!!???
+       //[Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.Update)]
         public Practitioner UpdatePractitionerCommunityTabStatus(
-            [Service] IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory,
+            [Service] PersonnelService personnelService,
             Guid practitionerUserId)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
-            var practitioner = practitionerRepo.GetByUserId(practitionerUserId);
-            if (practitioner != null)
-            {
-                practitioner.ClickedCommunityTab = true;
-                practitioner.UpdatedDate = DateTime.Now;
-                practitioner.UpdatedBy = uId.ToString();
-                return practitionerRepo.Update(practitioner);
-            }
-            return null;
+            return personnelService.UpdatePractitionerCommunityTabStatus(practitionerUserId.ToString());
         }
 
     }

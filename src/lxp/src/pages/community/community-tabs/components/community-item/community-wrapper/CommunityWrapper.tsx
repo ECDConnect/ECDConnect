@@ -4,7 +4,7 @@ import Joyride, {
   Step as StepType,
 } from 'react-joyride';
 import { Button, Card, SliderPagination, Typography } from '@ecdlink/ui';
-import robot from '../../../../../../assets/iconRobot.svg';
+import robot from '../../../../../../assets/iconRobotBlueBg.svg';
 import { useTranslation } from 'react-i18next';
 import { useAppContext } from '@/walkthrougContext';
 
@@ -53,9 +53,15 @@ export default function CommunityWrapper() {
               </div>
             )}
           </div>
-          <div className="mt-4 flex items-center justify-between gap-4 pl-20">
-            <SliderPagination totalItems={0} activeIndex={index} />
-            <div {...primaryProps} className={'flex w-full justify-end'}>
+          <div className="mt-4 flex items-center justify-between">
+            <div className="flex justify-start">
+              <SliderPagination
+                totalItems={0}
+                activeIndex={index}
+                className="p-4"
+              />
+            </div>
+            <div {...primaryProps}>
               <Button
                 type="filled"
                 color="quatenary"
@@ -102,7 +108,7 @@ export default function CommunityWrapper() {
           spotlight: {
             borderWidth: 4,
             borderRadius: 20,
-            borderColor: '#FF2180',
+            borderColor: '#ED145B',
             borderStyle: 'solid',
           },
         }}

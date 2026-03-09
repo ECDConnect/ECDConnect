@@ -5,10 +5,10 @@ import { useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { communitySelectors } from '@/store/community';
 import { CommunityDashboard } from '../community-dashboard/community-dashboard';
-import { useDialog } from '@ecdlink/core';
 import { practitionerSelectors } from '@/store/practitioner';
 import CommunityWrapper from './community-wrapper/CommunityWrapper';
 import { useAppContext } from '@/walkthrougContext';
+import { LocalStorageKeys } from '@ecdlink/core';
 
 export const CommunityItem = ({
   setJoinCommunity,
@@ -24,10 +24,17 @@ export const CommunityItem = ({
   const isFirstTimeInCommunity = !practitioner?.clickedCommunityTab;
   const { setState } = useAppContext();
   const screenHeight = window.innerHeight;
+  const hasClickedOnCommunityWalkThrough =
+    localStorage.getItem(LocalStorageKeys.hasClickedOnCommunityWalkThrough) ||
+    false;
 
   useEffect(() => {
-    if (notJoining || isFirstTimeInCommunity) {
+    if (!hasClickedOnCommunityWalkThrough) {
       setState({ run: true, tourActive: true, stepIndex: 0 });
+      localStorage.setItem(
+        LocalStorageKeys.hasClickedOnCommunityWalkThrough,
+        'true'
+      );
     }
   }, [notJoining, isFirstTimeInCommunity, setState]);
 

@@ -23,7 +23,7 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import ROUTES from '@/routes/routes';
 import { useAppDispatch } from '@/store';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
-import { useDialog } from '@ecdlink/core';
+import { ellipsisDescription, useDialog } from '@ecdlink/core';
 import { ProgrammeTimingRouteState } from '../../programme-timing/programme-timing.types';
 import { ProgrammeThemeRouteState } from '../../programme-theme/programme-theme.types';
 import { useAppContext } from '@/walkthrougContext';
@@ -330,7 +330,11 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
   return (
     <div>
       <div className="flex items-center justify-between">
-        <Typography type="h2" color="textDark" text={classroomGroup?.name} />
+        <Typography
+          type="h2"
+          color="textDark"
+          text={ellipsisDescription(classroomGroup?.name || '', 32)}
+        />
         {!weekSummary && (
           <div className="flex items-center gap-4">
             <Dropdown
@@ -380,7 +384,7 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
             color="secondaryAccent2"
             textColor="secondary"
             text="Next"
-            icon="ChevronRightIcon"
+            icon="ArrowCircleRightIcon"
             iconPosition="end"
             onClick={addDay}
           />

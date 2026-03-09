@@ -27,7 +27,6 @@ import { useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 import { newGuid } from '@/utils/common/uuid.utils';
 import { practitionerSelectors } from '@/store/practitioner';
-import { isFullDayOptions } from '../../edit-practitioner-profile.types';
 
 // TODO: Refactor this into add-class component
 export const EditClass = ({
