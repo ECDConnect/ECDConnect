@@ -424,8 +424,7 @@ BEGIN
             (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId1, page_6_name, tenant_id::uuid, now(), now()),
             (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId2, page_6_description, tenant_id::uuid, now(), now()),
             (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId3, page_6_step, tenant_id::uuid, now(), now()),
-			(nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId4, page_6_questions, tenant_id::uuid, now(), now()),
-          	(nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId8, 'true', tenant_id::uuid, now(), now());
+			(nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId4, page_6_questions, tenant_id::uuid, now(), now());
 		---------
 
     END LOOP;
