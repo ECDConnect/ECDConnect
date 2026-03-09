@@ -11,7 +11,7 @@ export const ProgressTabReportSummary: React.FC = () => {
 
   const [showDetails, setShowDetails] = useState(false);
 
-  const { childReports } = useProgressForChildren(true);
+  const { childReports } = useProgressForChildren();
 
   const { hasPermissionToCreateProgressReports } = useUserPermissions();
 

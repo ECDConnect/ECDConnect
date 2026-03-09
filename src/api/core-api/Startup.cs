@@ -45,13 +45,17 @@ using System.Reflection;
 
 namespace EcdLink.Api.CoreApi
 {
-    using EcdLink.Api.CoreApi.GraphApi.Models;
+  using EcdLink.Api.CoreApi.Configuration;
+  using EcdLink.Api.CoreApi.GraphApi.Models;
     using EcdLink.Api.CoreApi.Middleware;
     using Microsoft.ApplicationInsights;
     using Microsoft.ApplicationInsights.Extensibility;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Http;
-    using System;
+    using Microsoft.AspNetCore.ResponseCompression;
+  using Microsoft.Extensions.Options;
+  using System;
+    using System.IO;
     using System.Threading.Tasks;
 
     public static class MaintainCorsExtension
@@ -263,6 +267,32 @@ namespace EcdLink.Api.CoreApi
             }
 
             ECDLink.AutomatedJobs.AutomatedJobsStartup.ConfigureServices(services, Configuration);
+
+            // Bind custom compression settings
+            services.Configure<ResponseCompressionSettings>(Configuration.GetSection("ResponseCompression"));
+
+            var compressionSettings = services.BuildServiceProvider().GetRequiredService<IOptions<ResponseCompressionSettings>>().Value; // Temp resolve for config
+            if (compressionSettings.Enabled)
+            {
+                services.AddResponseCompression(options =>
+                {
+                    options.EnableForHttps = true;
+                    options.ExcludedMimeTypes = compressionSettings.ExcludeMimeTypes;
+                    options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(compressionSettings.MimeTypes);
+                    options.Providers.Add<BrotliCompressionProvider>();
+                    options.Providers.Add<GzipCompressionProvider>();
+                });
+                // Configure compression levels
+                services.Configure<GzipCompressionProviderOptions>(options =>
+                {
+                    options.Level = System.IO.Compression.CompressionLevel.Optimal;
+                });
+
+                services.Configure<BrotliCompressionProviderOptions>(options =>
+                {
+                    options.Level = System.IO.Compression.CompressionLevel.Optimal;
+                });
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -273,6 +303,55 @@ namespace EcdLink.Api.CoreApi
                 DiagnosticListener.AllListeners.Subscribe(new DiagnosticObserver());
 
                 app.UseDeveloperExceptionPage();
+            }
+
+            // SSRF + long-path protection (blocks the 127.0.0.1 attack immediately)
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Method == "POST")
+                {
+                    var path = context.Request.Path.Value?.ToLowerInvariant() ?? "";
+
+                    // Adjust these if your create endpoint is /api/shorten, /create, /new, etc.
+                    if (path == "/" ||
+                        path.Contains("shorten") ||
+                        path.Contains("create") ||
+                        path.Contains("new") ||
+                        path.Contains("url"))
+                    {
+                        context.Request.EnableBuffering();
+                        using var reader = new StreamReader(context.Request.Body, leaveOpen: true);
+                        var body = await reader.ReadToEndAsync();
+                        context.Request.Body.Position = 0;
+
+                        if (body.Length > 50_000 ||
+                            body.Contains("127.0.0.1", StringComparison.OrdinalIgnoreCase) ||
+                            body.Contains("localhost", StringComparison.OrdinalIgnoreCase) ||
+                            body.Contains("169.254.169.254"))
+                        {
+                            context.Response.StatusCode = 400;
+                            await context.Response.WriteAsync("Invalid request");
+                            return;
+                        }
+                    }
+                }
+
+                // Global protection against the huge /?/?/?... paths
+                if ((context.Request.Path.Value?.Length ?? 0) > 2000 ||
+                    (context.Request.QueryString.Value?.Length ?? 0) > 8000)
+                {
+                    context.Response.StatusCode = 400;
+                    await context.Response.WriteAsync("Request too large");
+                    return;
+                }
+
+                await next();
+            });
+
+            var compressionSettings = app.ApplicationServices.GetRequiredService<IOptions<ResponseCompressionSettings>>().Value;
+            if (compressionSettings.Enabled)
+            {
+                app.UseResponseCompression();
             }
 
             app.UseCors("CorsPolicy");

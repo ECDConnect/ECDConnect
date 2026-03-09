@@ -136,41 +136,54 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
   };
 
   const stackedListItems: ActionListDataItem[] = practitioner?.isPrincipal
-    ? [
-        practitioner,
-        ...(practitioners || []),
-        ...(invites || []).map((invite) => ({
-          id: null,
-          user: {
-            id: invite.id,
-            firstName: formatPhonenumberLocal(invite.user?.phoneNumber!!),
-            userName: formatPhonenumberLocal(invite.user?.phoneNumber!!),
+    ? (() => {
+        const existingUserIds = new Set(
+          [practitioner, ...(practitioners || [])]
+            .map((p) => p?.userId)
+            .filter(Boolean)
+        );
+
+        const uniqueInvites = (invites || []).filter(
+          (invite) => !existingUserIds.has(invite.practitionerId)
+        );
+
+        const rawItems = [
+          practitioner,
+          ...(practitioners || []),
+          ...uniqueInvites.map((invite) => ({
+            id: null,
+            user: {
+              id: invite.id,
+              firstName: formatPhonenumberLocal(invite.user?.phoneNumber ?? ''),
+              userName: formatPhonenumberLocal(invite.user?.phoneNumber ?? ''),
+            },
+            dateLinked: null,
+            isPrincipal: false,
+          })),
+        ];
+
+        return rawItems.map((item) => ({
+          title: item?.user?.firstName || item?.user?.userName || '',
+          subTitle: item?.isPrincipal
+            ? 'Principal'
+            : item.dateLinked === null
+            ? 'Practitioner - invited'
+            : 'Practitioner',
+          switchTextStyles: false,
+          actionName: 'Edit',
+          buttonColor: 'quatenary',
+          textColor: 'white',
+          actionIcon: item.isPrincipal ? 'PencilIcon' : 'EyeIcon',
+          buttonType: practitioners?.length ? 'filled' : 'ghost',
+          onActionClick: () => {
+            if (item.dateLinked === null && item.id === null) {
+              handleInvitedPractitioner(item.user?.id);
+            } else {
+              handleEditPractitioner(item.id);
+            }
           },
-          dateLinked: null,
-          isPrincipal: false,
-        })),
-      ].map((item) => ({
-        title: item?.user?.firstName || item?.user?.userName || '',
-        subTitle: item?.isPrincipal
-          ? 'Principal'
-          : item.dateLinked === null
-          ? 'Practitioner - invited'
-          : 'Practitioner',
-        switchTextStyles: false,
-        actionName: 'Edit',
-        buttonColor: 'quatenary',
-        textColor: 'white',
-        actionIcon: isPrincipal ? 'PencilIcon' : 'EyeIcon',
-        buttonType:
-          !!practitioners && practitioners.length ? 'filled' : 'ghost',
-        onActionClick: () => {
-          if (item.dateLinked === null && item?.id === null) {
-            handleInvitedPractitioner(item?.user?.id);
-          } else {
-            handleEditPractitioner(item?.id);
-          }
-        },
-      }))
+        }));
+      })()
     : otherColleaguesFiltered?.map((item: any) => ({
         title: item?.name,
         subTitle: item?.title,
@@ -189,7 +202,7 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
             nickName: item?.nickName,
           });
         },
-      }));
+      })) ?? [];
 
   return (
     <>

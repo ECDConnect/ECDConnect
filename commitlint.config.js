@@ -1,12 +1,11 @@
 module.exports = {
   rules: {
     'body-leading-blank': [1, 'always'],
-    'body-max-line-length': [2, 'always', 100],
+    'body-max-line-length': [2, 'always', Infinity],
     'footer-leading-blank': [1, 'always'],
-    'footer-max-line-length': [2, 'always', 100],
-    'header-max-length': [2, 'always', 100],
-    'scope-empty': [2, 'never'],
-    'scope-case': [2, 'always', ['lower-case']],
+    'footer-max-line-length': [2, 'always', Infinity],
+    'header-max-length': [2, 'always', 72],
+    'scope-case': [2, 'always', 'lower-case'],
     'subject-case': [
       2,
       'never',
@@ -27,6 +26,7 @@ module.exports = {
         'docs',
         'feat',
         'fix',
+        'merge',
         'perf',
         'refactor',
         'revert',

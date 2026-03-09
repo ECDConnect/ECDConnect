@@ -1,5 +1,6 @@
 import {
   AppErrorHandler,
+  Config,
   DialogServiceProvider,
   SnackbarProvider,
   useDialog,
@@ -21,9 +22,7 @@ import InitialNotificationSetup from './initial-notifications-setup';
 import InitialStoreSetup from './initial-store-setup';
 import { LoginModal } from './pages/auth/login-modal/login-modal';
 import { authSelectors } from './store/auth';
-import { settingActions } from './store/settings';
 import { differenceInHours, isSameDay } from 'date-fns';
-import { syncThunkActions } from './store/sync';
 import { useAppDispatch } from './store';
 import { practitionerSelectors } from './store/practitioner';
 import { stopReportingRuntimeErrors } from 'react-error-overlay';
@@ -44,7 +43,6 @@ const App: React.FC = () => {
   const dispatch = useAppDispatch();
   const user = useSelector(authSelectors.getAuthUser);
   const userExpired = useSelector(authSelectors.getUserExpired);
-  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const [freeMemory, setFreeMemory] = useState(0);
   const [errorMessage, setErrorMessage] = useState(false);
 
@@ -173,7 +171,6 @@ const App: React.FC = () => {
     );
 
     if (!isSameDayItem || differenceInHoursBetweenItems > 6) {
-      handleSync();
       localStorage.setItem('appFocus', JSON.stringify(new Date()));
     }
   };
@@ -325,16 +322,6 @@ const App: React.FC = () => {
     };
   }, [dialog]);
 
-  const handleSync = async () => {
-    if (practitioner?.isPrincipal === true) {
-      await dispatch(syncThunkActions.syncOfflineData({}));
-      dispatch(settingActions.setLastDataSync());
-    } else {
-      dispatch(syncThunkActions.syncOfflineDataForPractitioner({}));
-    }
-    dispatch(settingActions.setLastDataSync());
-  };
-
   const routerContent = (
     <IonReactRouter>
       <AppErrorHandler>
@@ -366,10 +353,8 @@ const App: React.FC = () => {
     </IonApp>
   );
 
-  const googleLogin = process.env.REACT_APP_GOOGLE_CLIENT_ID ? (
-    <GoogleOAuthProvider
-      clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID || ''}
-    >
+  const googleLogin = Config.googleClientId ? (
+    <GoogleOAuthProvider clientId={Config.googleClientId}>
       {appShell}
     </GoogleOAuthProvider>
   ) : (
@@ -377,8 +362,8 @@ const App: React.FC = () => {
   );
 
   const facebookLogin =
-    process.env.REACT_APP_FACEBOOK_APP_ID && isSslEnabled ? (
-      <FacebookProvider appId={process.env.REACT_APP_FACEBOOK_APP_ID}>
+    Config.facebookAppId && isSslEnabled ? (
+      <FacebookProvider appId={Config.facebookAppId}>
         {googleLogin}
       </FacebookProvider>
     ) : (

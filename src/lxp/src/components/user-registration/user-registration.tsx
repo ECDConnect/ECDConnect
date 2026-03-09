@@ -8,7 +8,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CreateUserForm } from './components/create-user-form/create-user-form';
 import { useHistory, useLocation } from 'react-router';
 import TransparentLayer from '../../assets/TransparentLayer.png';
@@ -20,7 +20,7 @@ import {
   CreateUserInfo,
   CreateUserResult,
 } from '@/utils/user/user-registration.utils';
-import { NOTIFICATION, useNotifications } from '@ecdlink/core';
+import { Config, NOTIFICATION, useNotifications } from '@ecdlink/core';
 import ROUTES from '@/routes/routes';
 import { Login as FacebookLogin } from 'react-facebook';
 import { LoginResponse } from '@/types/facebook';
@@ -138,6 +138,16 @@ export const UserRegistration: React.FC<UserRegistrationProps> = ({}) => {
     console.log('Facebook login failed', error);
   };
 
+  useEffect(() => {
+    if (
+      (!!userId && !!token) ||
+      (shareInfoPartners !== undefined && !!phoneNumber)
+    ) {
+      return;
+    }
+    history.push(ROUTES.ROOT);
+  });
+
   return (
     <BannerWrapper
       size="small"
@@ -155,10 +165,10 @@ export const UserRegistration: React.FC<UserRegistrationProps> = ({}) => {
           color={'textDark'}
         />
         {isOnline &&
-          (!!process.env.REACT_APP_GOOGLE_CLIENT_ID ||
-            (!!process.env.REACT_APP_FACEBOOK_APP_ID && isSslEnabled)) && (
+          (!!Config.googleClientId ||
+            (!!Config.facebookAppId && isSslEnabled)) && (
             <div className="mb-6 mt-6">
-              {!!process.env.REACT_APP_GOOGLE_CLIENT_ID && (
+              {!!Config.googleClientId && (
                 <div className="mb-6 flex justify-center">
                   <GoogleLogin
                     onSuccess={(credentialResponse) =>
@@ -173,7 +183,7 @@ export const UserRegistration: React.FC<UserRegistrationProps> = ({}) => {
                   />
                 </div>
               )}
-              {!!process.env.REACT_APP_FACEBOOK_APP_ID && isSslEnabled && (
+              {!!Config.facebookAppId && isSslEnabled && (
                 <div className="mb-6 flex justify-center">
                   <FacebookLogin
                     onSuccess={(response: any) =>
