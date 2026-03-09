@@ -157,6 +157,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<Holiday> Holidays { get; set; }
         public DbSet<Invite> Invite { get; set; }
 
+        public DbSet<AppLog> AppLog { get; set; }
         public AuthenticationDbContext(DbContextOptions<AuthenticationDbContext> options)
                : base(options)
         {
@@ -237,6 +238,10 @@ namespace ECDLink.DataAccessLayer.Context
             builder.Entity<MessageLogRelatedTo>(x =>
             {
                 x.HasKey(e => new { e.MessageLogId, e.RelatedEntityId });
+            });
+             builder.Entity<AppLog>(entity =>
+            {
+                entity.HasKey(e => e.Id);
             });
         }
     }

@@ -89,6 +89,10 @@ import {
   resourceReducer,
   resourcesPersistConfig,
 } from '../resources/resources';
+import {
+  queryErrorReducer,
+  queryErrorsPersistConfig,
+} from '../queryErrors/queryErrors';
 import { invitesPersistConfig, invitesReducer } from '../invites/invites';
 
 const persistedReducers = {
@@ -129,6 +133,7 @@ const persistedReducers = {
     progressTrackingPersistConfig,
     progressTrackingReducer
   ),
+  queryErrors: persistReducer(queryErrorsPersistConfig, queryErrorReducer),
   settings: persistReducer(settingPersistConfig, settingReducer),
   statements: persistReducer(statementsPersistConfig, statementsReducer),
   staticData: persistReducer(staticDataPersistConfig, staticDataReducer),
