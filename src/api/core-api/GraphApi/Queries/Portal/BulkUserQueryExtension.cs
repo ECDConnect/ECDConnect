@@ -29,7 +29,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
     public class BulkUserQueryExtension
     {
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.PORTAL, GraphActionEnum.Create)]
         public UserImportModel ValidatePractitionerImportSheet(
           [Service] IHttpContextAccessor httpContextAccessor,
           ApplicationUserManager userManager,
@@ -53,6 +53,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
             var headerRow = sheet.GetRow(0);
             var coachRoleName = TenantExecutionContext.Tenant.Modules.CoachRoleName;
             var idPassportDuplications = ValidateIdPassportDuplications(sheet);
+            List<string> createdUsers = new List<string>();
+            var validUser = false;
 
             // Skip header row by starting at 1.
             for (var row = 1; row <= sheet.LastRowNum; row++)
@@ -63,6 +65,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                 {
                     break;
                 }
+                validUser = true; 
                 var idOrPassport = ExcelHelper.GetCellValue(currentRow.GetCell(0));
                 var id = UserHelper.CoerceValidSAID(ExcelHelper.GetCellValue(currentRow.GetCell(1)));
                 var passport = ExcelHelper.GetCellValue(currentRow.GetCell(2));
@@ -89,6 +92,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     {
                         rowErrors.Add(duplicateError.Errors.GetItemByIndex(0).ToString());
                     }
+                    validUser = false;
                 }
 
                 if (rowErrors.Any() || validationErrors.Any())
@@ -97,16 +101,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     {
                         validationErrors.Add(new InputValidationError(row, rowErrors, $"Errors on row {row}."));
                     }
+                    validUser = false;
                 }
 
                 if (TenantExecutionContext.Tenant.Modules != null && TenantExecutionContext.Tenant.Modules.CoachRoleEnabled && !string.IsNullOrEmpty(coachIdOrPassport))
                 {
                     var coachUser = dbContext.Users.Where(user => user.IdNumber == coachIdOrPassport && user.TenantId == TenantExecutionContext.Tenant.Id).FirstOrDefault();
 
-                    if (coachUser == null)
+                    if (coachUser == null) {
                         validationErrors.Add(
                             new InputValidationError(row, new List<string> { }, $"{coachRoleName} does not exist for id/passport {coachIdOrPassport}")
                         );
+                        validUser = false;
+                    }    
+
                 }
                 var userIdNumberPassport = idOrPassport?.ToLowerInvariant() == "id" ? id : passport;
                 var userExists = dbContext.Users.Where(x => x.UserName == userIdNumberPassport || (x.IdNumber == userIdNumberPassport && x.TenantId == TenantExecutionContext.Tenant.Id)).FirstOrDefault();
@@ -115,16 +123,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     validationErrors.Add(
                        new InputValidationError(row, new List<string> { }, $"User already exists: {userIdNumberPassport}")
                        );
+                    validUser = false;   
                 }
+                if (validUser) createdUsers.Add(userIdNumberPassport);
             }
 
             return new UserImportModel()
             {
-                ValidationErrors = validationErrors
+                ValidationErrors = validationErrors,
+                CreatedUsers = createdUsers,
             };
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.PORTAL, GraphActionEnum.View)]
         public UserImportModel ValidateCoachImportSheet(
           [Service] IHttpContextAccessor httpContextAccessor,
           AuthenticationDbContext dbContext,

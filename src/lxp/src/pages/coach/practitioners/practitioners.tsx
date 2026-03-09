@@ -198,7 +198,9 @@ export const Practitioners: React.FC = () => {
     return {
       id: practitioner?.id,
       profileDataUrl: practitioner?.user?.profileImageUrl,
-      title: `${practitioner?.user?.firstName} ${practitioner?.user?.surname}`,
+      title: `${practitioner?.user?.firstName} ${
+        practitioner?.user?.surname || ''
+      }`,
       profileText: `${
         practitioner?.user?.firstName && practitioner?.user?.firstName[0]
       }${practitioner?.user?.surname && practitioner?.user?.surname[0]}`,

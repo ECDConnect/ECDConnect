@@ -95,26 +95,25 @@ export default function ChildWrapper() {
               </div>
             )}
           </div>
-          <div className="mt-4 flex items-center justify-end gap-4">
-            <SliderPagination
-              totalItems={5}
-              activeIndex={index}
-              className={'p-4'}
-            />
+          <div className="mt-4 flex items-center justify-between">
+            <div className="flex justify-start">
+              <SliderPagination
+                totalItems={5}
+                activeIndex={index}
+                className={'p-4'}
+              />
+            </div>
 
-            <div {...primaryProps} className={'w-full'}>
+            <div {...primaryProps}>
               <Button
                 type="filled"
                 color="primary"
                 className={'ml-10 w-6/12'}
                 onClick={() => {}}
-              >
-                <Typography
-                  type="body"
-                  color="white"
-                  text={isLastStep ? 'Close' : 'Next'}
-                />
-              </Button>
+                icon={isLastStep ? 'XIcon' : 'ArrowCircleRightIcon'}
+                text={isLastStep ? 'Close' : 'Next'}
+                textColor="white"
+              />
             </div>
           </div>
         </Card>

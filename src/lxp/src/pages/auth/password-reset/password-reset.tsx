@@ -23,11 +23,10 @@ import {
 import AuthService from '@services/AuthService/AuthService';
 import ROUTES from '@routes/routes';
 import { HelpForm } from '@/components/help-form/help-form';
+import { useTenant } from '@/hooks/useTenant';
+import { getLogo, LogoSvgs } from '@/utils/common/svg.utils';
 
 export const PasswordReset: React.FC = () => {
-  const [userPhoneNumberEnding, setUserPhoneNumberEnding] =
-    useState<string>('XXXX');
-  const [displayError, setDisplayError] = useState<boolean>(false);
   const [displaySuccess, setDisplaySuccess] = useState<boolean>(false);
   const [sendLinkButtonDisabled, setSendLinkButtonDisabled] =
     useState<boolean>(true);
@@ -38,6 +37,7 @@ export const PasswordReset: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const history = useHistory();
   const [openHelp, setOpenHelp] = useState(false);
+  const tenant = useTenant();
 
   const {
     register: resetPasswordRegister,
@@ -54,35 +54,24 @@ export const PasswordReset: React.FC = () => {
   });
   const { isValid, errors } = resetPasswordFormState;
 
+  const whatsapp = () => {
+    window.open(
+      `https://wa.me/${tenant.tenant?.organisationHelpWhatsAppNumber}`
+    );
+  };
+
   const submitForm = async (formValues: ResetPasswordModel) => {
     setHasSubmitted(true);
-    if (true) {
-      setIsLoading(true);
-      setSendLinkButtonDisabled(true);
+    setIsLoading(true);
+    setSendLinkButtonDisabled(true);
 
-      const requestSentResponse =
-        await new AuthService().SendForgotPasswordRequest({
-          phoneNumber: phoneNumber,
-        });
-      if (requestSentResponse.valid) {
-        setUserPhoneNumberEnding(
-          requestSentResponse.phoneNumber
-            ? requestSentResponse.phoneNumber.substring(
-                requestSentResponse.phoneNumber.length - 4,
-                requestSentResponse.phoneNumber.length
-              )
-            : 'XXXX'
-        );
-        setDisplaySuccess(true);
-        setIsLoading(false);
-        setResendLinkButtonDisabled(true);
-        timeoutResendLinkButton();
-      } else {
-        setDisplayError(true);
-        setIsLoading(false);
-        setSendLinkButtonDisabled(false);
-      }
-    }
+    await new AuthService().SendForgotPasswordRequest({
+      phoneNumber: phoneNumber,
+    });
+    setDisplaySuccess(true);
+    setIsLoading(false);
+    setResendLinkButtonDisabled(true);
+    timeoutResendLinkButton();
   };
 
   const timeoutResendLinkButton = () => {
@@ -95,26 +84,12 @@ export const PasswordReset: React.FC = () => {
     setIsLoading(true);
     setResendLinkButtonDisabled(true);
 
-    const requestSentResponse =
-      await new AuthService().SendForgotPasswordRequest({
-        phoneNumber: formValues.phoneNumber,
-      });
-    if (requestSentResponse.valid) {
-      setUserPhoneNumberEnding(
-        requestSentResponse.phoneNumber
-          ? requestSentResponse.phoneNumber.substring(
-              requestSentResponse.phoneNumber.length - 4,
-              requestSentResponse.phoneNumber.length
-            )
-          : 'XXXX'
-      );
-      setDisplaySuccess(true);
-      setIsLoading(false);
-      timeoutResendLinkButton();
-    } else {
-      setIsLoading(false);
-      setResendLinkButtonDisabled(false);
-    }
+    await new AuthService().SendForgotPasswordRequest({
+      phoneNumber: formValues.phoneNumber,
+    });
+    setDisplaySuccess(true);
+    setIsLoading(false);
+    timeoutResendLinkButton();
   };
 
   useEffect(() => {
@@ -132,13 +107,22 @@ export const PasswordReset: React.FC = () => {
     history.push(ROUTES.LOGIN);
   };
 
+  const onClickGetHelp = () => {
+    if (tenant.isOpenAccess) {
+      whatsapp();
+    } else {
+      setOpenHelp(true);
+    }
+  };
+
   return (
     <div className={styles.container}>
       <BannerWrapper
         color="primary"
-        size="normal"
+        size="small"
         renderBorder={true}
         onBack={goBack}
+        title="Reset password"
       >
         <div className={styles.pResetContainer}>
           {!displaySuccess && (
@@ -146,7 +130,7 @@ export const PasswordReset: React.FC = () => {
               <Typography
                 type="h4"
                 color="textDark"
-                text={`Enter your cellphone number. If we find an account linked to this cellphone, we'll send an SMS with a password reset link.`}
+                text={`Enter your cellphone number. If we find an account linked to this cellphone, we'll send an SMS with your username and a password reset link.`}
               ></Typography>
               <div className={'mt-4'}>
                 <form>
@@ -159,13 +143,6 @@ export const PasswordReset: React.FC = () => {
                     className="my-4"
                     error={errors?.phoneNumber}
                   />
-                  {displayError && (
-                    <Alert
-                      className={styles.errorDisplay}
-                      title={'Cellphone number not recognised'}
-                      type={'error'}
-                    />
-                  )}
                   <Button
                     className={styles.submitButton}
                     type="filled"
@@ -226,7 +203,9 @@ export const PasswordReset: React.FC = () => {
                 </Button>
               </div>
               <div className={styles.getHelpContainer}>
-                {renderIcon('QuestionMarkCircleIcon', styles.buttonIcon)}
+                {!tenant.isOpenAccess
+                  ? renderIcon('QuestionMarkCircleIcon', styles.buttonIcon)
+                  : null}
                 <Typography
                   type="unspecified"
                   fontSize="14"
@@ -239,13 +218,20 @@ export const PasswordReset: React.FC = () => {
                   color="secondaryAccent2"
                   background="transparent"
                   size="small"
-                  onClick={() => setOpenHelp(true)}
+                  onClick={onClickGetHelp}
                 >
                   <Typography
                     type="help"
                     color="secondary"
                     text={'Get help'}
                   ></Typography>
+                  {tenant.isOpenAccess
+                    ? renderIcon(
+                        getLogo(LogoSvgs.whatsapp),
+                        styles.buttonIcon,
+                        'img'
+                      )
+                    : null}
                 </Button>
               </div>
             </div>

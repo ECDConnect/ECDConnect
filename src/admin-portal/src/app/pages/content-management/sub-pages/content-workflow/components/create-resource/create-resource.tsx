@@ -28,6 +28,8 @@ import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
 import CreateResourceForm from './create-resource-form';
 import { GetResources, UpdateResourceTypesAndDataFree } from '@ecdlink/graphql';
 import { LanguageId } from '../../../../../../constants/language';
+import { isValidUrl } from '../../../../../../utils/url-utils/url-utils';
+import * as styles from '../../../../../pages.styles';
 
 export interface ContentViewProps {
   content: any;
@@ -64,9 +66,6 @@ export default function CreateResource({
   };
 
   const { type: formType } = useWatch({ control });
-
-  const urlRegex =
-    /^(https?|ftp):\/\/(([a-z\d]([a-z\d-]*[a-z\d])?\.)+[a-z]{2,}|localhost)(\/[-a-z\d%_.~+]*)*(\?[;&a-z\d%_.~+=-]*)?(\#[-a-z\d_]*)?$/i;
 
   const updateMutationName = `update${contentType?.name}`;
   const creationMutationName = `create${contentType?.name}`;
@@ -285,13 +284,13 @@ export default function CreateResource({
         !formValues?.shortDescription ||
         !formValues?.longDescription ||
         !formValues?.link ||
-        !urlRegex.test(formValues?.link) ||
+        !isValidUrl(formValues?.link) ||
         !formValues?.dataFree
       : !formValues?.title ||
         !formValues?.shortDescription ||
         !formValues?.longDescription ||
         !formValues?.link ||
-        !urlRegex.test(formValues?.link);
+        !isValidUrl(formValues?.link);
 
   const disbleButtonStyles = `bg-secondary ${
     disableForm ? 'opacity-25' : ''
@@ -330,7 +329,7 @@ export default function CreateResource({
               <button
                 type="button"
                 onClick={cancelCompare}
-                className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex items-center rounded-xl border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                className={styles.mainButton}
               >
                 Compare Languages
                 <BookOpenIcon width="20px" className="pl-1" />
@@ -340,7 +339,7 @@ export default function CreateResource({
               <button
                 onClick={cancelDialog}
                 type="button"
-                className="bg-errorBg text-tertiary hover:bg-tertiary ml-2 inline-flex items-center rounded-xl border border-transparent px-4 py-2.5 text-sm font-medium shadow-sm hover:text-white"
+                className={styles.cancelButton}
               >
                 Cancel
                 <XIcon width="22px" className="pl-1" />
@@ -359,7 +358,6 @@ export default function CreateResource({
             choosedSectionTitle={choosedSectionTitle}
             formType={formType}
             getValues={getValues}
-            urlRegex={urlRegex}
           />
         </div>
 
@@ -375,10 +373,7 @@ export default function CreateResource({
           </button>
 
           {content?.id && (
-            <button
-              onClick={deleteAndRefresh}
-              className="hover:bg-tertiary border-tertiary focus:outline-none text-tertiary mt-3 ml-4 inline-flex items-center rounded-2xl border-2 bg-transparent  px-14 py-2.5 text-sm font-medium shadow-sm hover:text-white focus:ring-2 focus:ring-offset-2"
-            >
+            <button onClick={deleteAndRefresh} className={styles.deleteButton}>
               <TrashIcon color="tertiary" className="mr-2 h-6 w-6" />
               Delete {content?.name}
             </button>

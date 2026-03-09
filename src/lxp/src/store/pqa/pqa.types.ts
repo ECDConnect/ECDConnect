@@ -1,5 +1,11 @@
 import {
+  AssessmentFormDto,
+  AssessmentReportDto,
+} from '@/models/journey/Journey.dto';
+import {
+  AssessmentForm,
   CmsVisitDataInputModelInput,
+  JourneyTimeline,
   Maybe,
   PqaRating,
   PractitionerTimeline,
@@ -9,6 +15,11 @@ import {
 export interface PractitionerTimelineState {
   practitionerId: string;
   timeline: PractitionerTimeline;
+}
+
+export interface JourneyTimelineState {
+  userId: string;
+  timeline: JourneyTimeline[];
 }
 
 export type MergedCmsVisitDataInputModelInput = CmsVisitDataInputModelInput & {
@@ -47,6 +58,10 @@ export type PQAState = {
   reAccreditationFollowUpVisitFormData?: FormData[];
   selfAssessmentFormData?: FormData[];
   selfAssessmentPreviousFormData?: PreviousFormData[];
+  journeyTimeline?: JourneyTimelineState[];
+  journeyPublishedAssessmentForms?: AssessmentFormDto[];
+  journeyAssessmentFormData?: AssessmentFormDto;
+  journeyAssessmentReport?: AssessmentReportDto[];
 };
 
 export type FollowUpType = 'pqa_visit_follow_up' | 're_accreditation_follow_up';

@@ -104,7 +104,7 @@ export default function StoryBookList({
   `;
 
   const { data: themeData } = useQuery(query, {
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: 'cache-first',
     variables: {
       localeId: LanguageId.enZa,
     },
@@ -643,7 +643,10 @@ export default function StoryBookList({
             filters={[
               {
                 type: 'search-dropdown',
-                menuItemClassName: 'ml-20 w-11/12',
+                menuItemClassName: 'w-11/12 left-4',
+                className: 'h-11 mb-2 border-2 border-transparent',
+                color: 'quatenary',
+                bgColor: 'white',
                 options: sortByTypeOptions,
                 selectedOptions: typesFilter,
                 onChange: setTypesFilter,
@@ -653,7 +656,10 @@ export default function StoryBookList({
               },
               {
                 type: 'search-dropdown',
-                menuItemClassName: 'ml-20 w-11/12',
+                menuItemClassName: 'w-11/12 left-4',
+                className: 'h-11 mb-2 border-2 border-transparent',
+                color: 'quatenary',
+                bgColor: 'white',
                 options: sortByThemeOptions,
                 selectedOptions: themesFilter,
                 onChange: setThemesFilter,
@@ -663,7 +669,10 @@ export default function StoryBookList({
               },
               {
                 type: 'search-dropdown',
-                menuItemClassName: 'ml-20 w-11/12',
+                menuItemClassName: 'w-11/12 left-4',
+                className: 'h-11 mb-2 border-2 border-transparent',
+                color: 'quatenary',
+                bgColor: 'white',
                 options: sortByLanguageOptions,
                 selectedOptions: languageFilter,
                 onChange: setLanguageFilter,
@@ -673,7 +682,10 @@ export default function StoryBookList({
               },
               {
                 type: 'search-dropdown',
-                menuItemClassName: 'ml-20 w-11/12',
+                menuItemClassName: 'w-11/12 left-4',
+                className: 'h-11 mb-2 border-2 border-transparent',
+                color: 'quatenary',
+                bgColor: 'white',
                 options: sortByShareOptions,
                 selectedOptions: shareFilter,
                 onChange: setShareFilter,

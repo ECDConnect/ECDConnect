@@ -1,3 +1,5 @@
+export type LoginType = 'google' | 'facebook' | 'username';
+
 export interface LoginRequestModel {
   username?: string;
   email?: string;
@@ -6,6 +8,10 @@ export interface LoginRequestModel {
   preferId?: boolean;
   passportField?: string;
   idField?: string;
+  googleToken?: string;
+  googleCode?: string;
+  facebookToken?: string;
+  loginType?: LoginType;
 }
 
 export interface AuthUser {
@@ -13,6 +19,9 @@ export interface AuthUser {
   expires_in: string;
   id: string;
   resetData: boolean;
+  userMustConfirmAuthCode: boolean;
+  loginType: LoginType;
+  userName: string;
 }
 
 export interface RegisterRequestModel {
@@ -24,6 +33,8 @@ export interface RegisterRequestModel {
   idField?: string | undefined;
   preferId?: boolean | undefined;
   phoneNumber?: string;
-  registerType?: string;
+  registerType?: LoginType;
   shareInfoPartners?: boolean;
+  googleToken?: string;
+  facebookToken?: string;
 }

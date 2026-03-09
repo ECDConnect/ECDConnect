@@ -40,18 +40,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
 
             //retrieve only groups the user is allowed to see
             var classroomGroups = _attendanceService.GetUserClassroomGroups(userId);
-            //var validClassDays = GetDayRangeWithoutHolidays(startMonth, endMonth);
 
             foreach (var classroomGroup in classroomGroups.Where(x => classroomGroups.Select(y => y.UserId).Contains(x.UserId)))
             {
                 var learners = _attendanceService.GetAllLearnerGroupInstances(classroomGroup.Id);
                 //get all children the user is allowed to see and run against hierarchy
                 var children = _attendanceService.GetChildrenForUser(userId);
+                var programmeIds = classroomGroup.ClassProgrammes.Select(x => x.Id).ToList();
                 if (learners.Any())
                 {
                     foreach (var learner in learners.Where(x => children.Any(y => y.UserId == x.UserId)))
                     {
-                        var attendanceForPeriod = _attendanceService.GetAttendanceRecordsForPeriod(learner, userId, startMonth, endMonth);
+
+                        var attendanceForPeriod = _attendanceService.GetAttendanceRecordsForPeriodAndGroup(learner, programmeIds, startMonth, endMonth);
                         var allAttendance = new List<List<Tuple<int, int>>>();
                         var monthlyAttendance = new Dictionary<DateTime, List<Tuple<int, int>>>();
 
@@ -59,15 +60,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
                         for (DateTime dt = startMonth; dt <= endMonth; dt = dt.AddMonths(1))
                         {
                             var attendance = new List<Tuple<int, int>>();
-                            foreach (var programme in learner.ClassroomGroup.ClassProgrammes)
+                            foreach (var programme in classroomGroup.ClassProgrammes)
                             {
-                                //var daysOfClass = CalculateDaysOfClassForMonth(dt, (int)programme.MeetingDay, validClassDays, programme.ProgrammeStartDate.Date, endMonth.Date);
                                 var daysOfClass = attendanceForPeriod.Where(x => x.UserId == learner.UserId
                                              && x.ClassroomProgrammeId == programme.Id
                                              && x.MonthOfYear == dt.Month
                                              && x.Year == dt.Year);
 
-                                if (daysOfClass.Count() > 0)
+                                if (daysOfClass.Any())
                                 {
                                     var attendedClasses = attendanceForPeriod
                                                             .Where(x => x.UserId == learner.UserId
@@ -113,18 +113,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
                                 var totalAttendance = attendanceDays.Copy();
 
                                 // TODO - We should not need to hit the DB again here, we have already fetched attendance above
-                                var attendances = _dbContext.Attendances.Where(c => c.UserId == learner.UserId && keyDays.Contains(c.AttendanceDate.Day) && c.AttendanceDate.Date >= startMonth.Date && c.AttendanceDate.Date <= endMonth.Date).OrderBy(p => p.AttendanceDate).ToList();
+                                var attendances = _dbContext.Attendances.Where(c => c.UserId == learner.UserId && keyDays.Contains(c.AttendanceDate.Day) && c.AttendanceDate.Date >= startMonth.Date && c.AttendanceDate.Date <= endMonth.Date && programmeIds.Contains(c.ClassroomProgrammeId)).OrderBy(p => p.AttendanceDate).ToList();
 
                                 foreach (var attendance in attendances)
                                 {
                                     totalAttendance[attendance.AttendanceDate.Day] = (attendance.Attended ? 1 : 0);
                                 }
 
-                                if (classReports.Where(x => x.ChildUserId == learner.UserId.ToString() && x.Month == report.MonthNumber && x.Year == report.Year).FirstOrDefault() != null)
+                                //append to existing report and not add if child already exists in report list based on different classes child may be in
+                                var existingReport = classReports.Where(x => x.ChildUserId == learner.UserId.ToString() && x.Month == report.MonthNumber && x.Year == report.Year && x.ClassgroupId == learner.ClassroomGroupId).FirstOrDefault();
+
+                                if (existingReport != null)
                                 {
-                                    //append to existing report and not add if child already exists in report list based on different classes child may be in
-                                    var existingReport = classReports.Where(x => x.ChildUserId == learner.UserId.ToString() && x.Month == report.MonthNumber && x.Year == report.Year).FirstOrDefault();
-                                    
                                     existingReport.TotalActualAttendance = existingReport.TotalActualAttendance + report.ActualAttendance;
                                     existingReport.TotalExpectedAttendance = existingReport.TotalExpectedAttendance + report.ExpectedAttendance;
 

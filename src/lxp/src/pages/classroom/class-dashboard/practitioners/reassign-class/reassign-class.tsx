@@ -35,7 +35,7 @@ import { userSelectors } from '@store/user';
 import { classroomsSelectors } from '@/store/classroom';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useAppDispatch } from '@/store';
-import { TabsItems } from '../../class-dashboard.types';
+import { PractitionerDto } from '@ecdlink/core';
 
 const absentInfo = [
   {
@@ -121,8 +121,6 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   const hasAbsenteeClasses =
     allAbsenteeClasses && allAbsenteeClasses?.length > 0;
 
-  // const isLoggedInUser = practitionerUser?.userId === practitionerId;
-
   const [selectedLeaveDate, setSelectedLeave] = useState<Date>();
   const currentDate = selectedLeaveDate ? selectedLeaveDate : new Date();
 
@@ -142,7 +140,6 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
     resolver: yupResolver(reassignClassSchema),
     mode: 'onChange',
     defaultValues: {
-      date: new Date().toString(),
       practitioner: practitionerId ? practitionerId : '',
     },
   });
@@ -233,9 +230,10 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
     !selectedDate ||
     !reason ||
     (practitionerClassroomGroups?.length > 0 &&
+      practitionersUsers &&
+      practitionersUsers?.length > 0 &&
       reassignedClassroomGroups?.length !==
         practitionerClassroomGroups?.length);
-
   const reasonPayload = reason === 'Other' ? otherReason : reason;
 
   const onBack = () => {
@@ -265,6 +263,17 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
       }
     }
   }, [routeState?.practitionerId]);
+
+  // make sure the list are populate when coming from profile
+  useEffect(() => {
+    if (routeState?.isFromPrincipalPractitionerProfile) {
+      setPractitionersTeachList(
+        availablePractitioners.filter(
+          (prac) => prac.value !== routeState?.practitionerId
+        )
+      );
+    }
+  }, []);
 
   useEffect(() => {
     if (hasAbsenteeClasses) {
@@ -321,36 +330,43 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
     });
   }, [practitioner, practitionerUser, practitioners]);
 
-  const practitionerPresent = useMemo(() => {
-    if (practitionerUser?.userId === practitioner) {
-      return practitionerUser;
-    }
-
-    return practitioners?.find((item) => {
-      if (item?.userId === practitioner2) {
-        return item?.user?.fullName;
-      } else return null;
+  const isPractitionerAvailableDuringPeriod = (
+    p: PractitionerDto,
+    leaveStart: Date,
+    leaveEnd: Date
+  ) => {
+    if (!p.absentees?.length) return true;
+    return !p.absentees.some((abs) => {
+      const absStart = abs.absentDate ? new Date(abs.absentDate) : new Date();
+      const absEnd = abs.absentDateEnd ? new Date(abs.absentDateEnd) : absStart;
+      return !(absEnd < leaveStart || absStart > leaveEnd);
     });
-  }, [practitioner2, practitioners]);
+  };
 
-  useEffect(() => {
-    const _list =
-      [...(practitioners ?? []), practitionerUser]
-        ?.filter((p) => !!p?.user?.firstName)
-        ?.map(
-          (p): DropDownOption<string> =>
-            ({
-              label: `${p?.user?.firstName} ${p?.user?.surname ?? ''}`,
-              value: p?.userId!,
-            } as DropDownOption<string>)
-        ) ?? [];
+  const availablePractitioners = useMemo(() => {
+    let leaveStart = selectedDate ? new Date(selectedDate) : new Date();
+    let leaveEnd = endDate ?? leaveStart;
 
-    setPractitionersList(_list);
-    setPractitionersTeachList(
-      _list?.filter((item) => item?.value !== String(practitionerId))
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [practitioners]);
+    return [...(practitioners ?? []), practitionerUser]
+      .filter(
+        (p) =>
+          !!p?.user?.firstName &&
+          isPractitionerAvailableDuringPeriod(
+            p,
+            new Date(leaveStart.setHours(0, 0, 0, 0)),
+            new Date(leaveEnd.setHours(23, 59, 59, 999))
+          )
+      )
+      .map((p) => ({
+        label: `${p?.user?.firstName ?? ''} ${p?.user?.surname ?? ''}`.trim(),
+        value: p?.userId!,
+      }));
+  }, [practitioners, practitionerUser, selectedDate, endDate]);
+
+  const teachablePractitioners = useMemo(
+    () => availablePractitioners.filter((p) => p.value !== practitioner),
+    [availablePractitioners, practitioner]
+  );
 
   useEffect(() => {
     const _list = absentInfo?.map((item) => {
@@ -407,7 +423,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
         const absenteeDate = absentee.absentDateEnd
           ? new Date(absentee.absentDateEnd)
           : new Date();
-        return absenteeDate.toDateString() === currentDate.toDateString();
+        return absenteeDate.getTime() > currentDate.getTime();
       });
     })
     .map((practitioner) => ({
@@ -530,7 +546,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
         <Typography type="h2" color="textMid" text={'Record absence/leave'} />
         <Dropdown<string>
           placeholder={'Select practitioner'}
-          list={practitionersList || []}
+          list={availablePractitioners || []}
           fillType="clear"
           label={'Which practitioner is taking leave'}
           fullWidth
@@ -540,7 +556,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
             setPracOnLeaveId(item);
             setReassignClassValue('practitioner', item);
             setPractitionersTeachList(
-              practitionersList.filter((prac) => prac.value !== item)
+              availablePractitioners.filter((prac) => prac.value !== item)
             );
           }}
           disabled={
@@ -727,12 +743,13 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                         key={index}
                         placeholder={'Select practitioner'}
                         list={
-                          filteredPractitioners.filter(
+                          teachablePractitioners.filter(
                             (practitioner: any) =>
                               practitioner.value !== pracOnLeaveId
                           ) ?? []
                         }
                         fillType="clear"
+                        disabled={!selectedDate}
                         label={`Who will teach the ${item?.name} class instead?`}
                         fullWidth
                         className={'mt-3 w-full'}
@@ -746,7 +763,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                             reassignedData
                           );
                           setPractitionersTeachList(
-                            practitionersList.filter(
+                            teachablePractitioners.filter(
                               (prac) => practitioner.value !== item
                             )
                           );

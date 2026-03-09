@@ -1,5 +1,5 @@
 import { differenceInMilliseconds } from 'date-fns';
-import { EnhancedStore } from '@reduxjs/toolkit';
+import { current, EnhancedStore } from '@reduxjs/toolkit';
 import { ChildDocumentsNotificationValidator } from './validators/child-documents/childDocumentsNotificationValidator';
 import { ChildProgressReportNotificationValidator } from './validators/child-progess-report/childProgressReportNotificationValidator';
 import { IncompleteChildRegistrationNotificationValidator } from './validators/child-registration/incompleteChildRegistrationNotificationValidator';
@@ -14,6 +14,7 @@ import { RoleSystemNameEnum, UserDto } from '@ecdlink/core';
 import { BackendNotificationsValidator } from './validators/backend-notifications/backendNotificationsValidador';
 import { PointsNotificationValidator } from './validators/points/pointsNotificationValidator';
 import { PractitionerNotificationValidator } from './validators/practitionerNotificationsValidator.ts/practitionerNotificationsValidator';
+import { PreschoolNotificationValidator } from './validators/preschool/preschoolNotificationValidator';
 
 export class NotificationService {
   interval: number;
@@ -56,9 +57,6 @@ export class NotificationService {
       this.user
     );
 
-    const backendNotifications = await backendValidator.getNotifications();
-    notifications.push(...(backendNotifications ?? []));
-
     for (let validator of this.validators) {
       const differenceInMs = differenceInMilliseconds(
         new Date(),
@@ -73,12 +71,15 @@ export class NotificationService {
       validator.lastCheckTimestamp = new Date().valueOf();
     }
 
+    const backendNotifications = await backendValidator.getNotifications();
+    notifications.push(...(backendNotifications ?? []));
+
     return notifications;
   };
 
   registerValidators = (
     store: EnhancedStore<RootState, any>,
-    applicationName: String
+    applicationName: string
   ) => {
     const isCoach = this.user?.roles?.some(
       (role) => role.systemName === RoleSystemNameEnum.Coach
@@ -99,6 +100,7 @@ export class NotificationService {
       ),
       new PointsNotificationValidator(store, currentDate),
       new PractitionerNotificationValidator(store, currentDate),
+      new PreschoolNotificationValidator(store, currentDate),
     ];
   };
 }

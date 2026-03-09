@@ -318,17 +318,17 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const [editPermissionsVisible, setEditPermissionsVisible] =
     useState<boolean>(false);
 
+  // If not accepted yet
+  if (!!practitioner?.dateLinked && !practitioner.dateAccepted) {
+    return <PractitionerNotAccepted practitioner={practitioner} />;
+  }
+
   // Not registered yet
   if (
     practitioner?.isRegistered === null ||
     practitioner?.isRegistered === false
   ) {
     return <PractitionerNotRegistered practitioner={practitioner} />;
-  }
-
-  // If not accepted yet
-  if (!!practitioner?.dateLinked && !practitioner.dateAccepted) {
-    return <PractitionerNotAccepted practitioner={practitioner} />;
   }
 
   return (
@@ -486,7 +486,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
             )}
           {!existingRemoval && (
             <AbsenceCard
-              className="mx-4 mt-6 w-full"
+              className={styles.absentCard}
               practitioner={practitioner!}
               handleReassignClass={handleReassignClass}
               practitionerUserId={practitionerUserId}
@@ -698,7 +698,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                 <CreateNote
                   userId={practitionerUserId || ''}
                   noteType={NoteTypeEnum.Unknown}
-                  titleText={`Add a note to ${practitioner?.user?.firstName} profile`}
+                  titleText={`Add a note to ${practitioner?.user?.firstName}'s profile`}
                   onBack={() => onCreatePractitionerNoteBack()}
                   onCreated={() => onCreatePractitionerNoteBack()}
                 />

@@ -173,36 +173,46 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
   const smallGroupOptions: SearchDropDownOption<any>[] =
     storyActivitiesData?.GetAllActivity?.filter(
       (activity) => activity?.type === 'Small group'
-    )?.map((item) => ({
-      id: item?.id,
-      label: item?.name,
-      value: item?.id,
-    }));
+    )
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((item) => ({
+        id: item?.id,
+        label: item?.name,
+        value: item?.id,
+      }));
 
   const largeGroupOptions: SearchDropDownOption<string>[] =
     storyActivitiesData?.GetAllActivity?.filter(
       (activity) => activity?.type === 'Large group'
-    )?.map((item) => ({
-      id: item?.id,
-      label: item?.name,
-      value: item?.id,
-    }));
+    )
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((item) => ({
+        id: item?.id,
+        label: item?.name,
+        value: item?.id,
+      }));
 
   const storyTimeOptions: SearchDropDownOption<string>[] =
     storyActivitiesData?.GetAllActivity?.filter(
       (activity) => activity?.type === 'Story time'
-    )?.map((item) => ({
-      id: item?.id,
-      label: item?.name,
-      value: item?.id,
-    }));
+    )
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((item) => ({
+        id: item?.id,
+        label: item?.name,
+        value: item?.id,
+      }));
 
   const storyBookOptions: SearchDropDownOption<string>[] =
-    storyBookActivitiesData?.GetAllStoryBook?.map((item) => ({
-      id: item?.id,
-      label: item?.name,
-      value: item?.id,
-    }));
+    storyBookActivitiesData?.GetAllStoryBook?.filter(
+      (story) => story?.name !== null
+    )
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((item) => ({
+        id: item?.id,
+        label: item?.name,
+        value: item?.id,
+      }));
 
   const [displayFields, setDisplayFields] = useState<string[]>();
 

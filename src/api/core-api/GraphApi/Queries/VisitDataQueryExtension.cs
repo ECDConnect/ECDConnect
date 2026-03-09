@@ -18,7 +18,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     [ExtendObjectType(OperationTypeNames.Query)]
     public class VisitDataQueryExtension
     {
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.VISITS, GraphActionEnum.View)]
         public List<VisitData> GetVisitDataForVisit(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -32,13 +32,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return visitData;
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.VISITS, GraphActionEnum.View)]
         public List<string> GetCompletedVisitsForVisitId([Service] VisitDataManager visitDataManager, string visitId)
         {
             return visitDataManager.GetCompletedVisitsForVisitId(visitId);
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.VISITS, GraphActionEnum.View)]
         public List<VisitData> GetVisitDataForVisitId([Service] VisitDataManager visitDataManager, string visitId)
         {
             return visitDataManager.GetVisitDataForVisitId(visitId);

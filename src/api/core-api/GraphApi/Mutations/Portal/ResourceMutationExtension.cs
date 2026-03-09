@@ -20,7 +20,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class ResourcesMutationExtension
     {
-        [Permission(PermissionGroups.SYSTEM, GraphActionEnum.Update)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.Update)]
         public bool UpdateCaregiverResourceLink(
             [Service] ContentManagementRepository contentRepo,
             List<CMSResourceLinkModel> input,
@@ -49,7 +49,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return true;
         }
 
-        [Permission(PermissionGroups.SYSTEM, GraphActionEnum.Update)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.Update)]
         public bool UpdateResourceConnectItem(
             [Service] ContentManagementRepository contentRepo,
             List<CMSConnectItemModel> input,
@@ -79,7 +79,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         }
 
 
-        [Permission(PermissionGroups.SYSTEM, GraphActionEnum.Delete)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.Delete)]
         public BulkDeactivateResult DeleteBulkResources(
             [Service] ContentManagementRepository contentRepo,
             [Service] ILocaleService<Language> localeService,
@@ -109,7 +109,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return new BulkDeactivateResult() { Failed = failed, Success = success };
         }
 
-        [Permission(PermissionGroups.SYSTEM, GraphActionEnum.Update)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.Update)]
         public bool UpdateResourceTypesAndDataFree(
             [Service] ContentManagementRepository contentRepo,
             int contentId,
@@ -141,7 +141,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         }
 
 
-        [Permission(PermissionGroups.SYSTEM, GraphActionEnum.Update)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.Update)]
         public bool UpdateResourceLikes(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,

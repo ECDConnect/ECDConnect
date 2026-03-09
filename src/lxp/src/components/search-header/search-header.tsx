@@ -46,7 +46,9 @@ const SearchHeader = <T extends {}>({
     <>
       <Menu
         as="div"
-        className={classNames(styles.quickSearchWrapper, className)}
+        className={
+          className ? className : classNames(styles.quickSearchWrapper)
+        }
       >
         <div className={styles.searchIconWrapper} onClick={onSearchButtonClick}>
           <SearchIcon className={styles.iconFill} />

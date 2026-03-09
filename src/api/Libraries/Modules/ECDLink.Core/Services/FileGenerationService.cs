@@ -155,22 +155,37 @@ namespace ECDLink.Core.Services
         {
             using MemoryStream stream = new MemoryStream();
             var workbook = new XSSFWorkbook();
-            
+
+            var textCellStyle = workbook.CreateCellStyle();
+            var textFormat = workbook.CreateDataFormat();
+            textCellStyle.DataFormat = textFormat.GetFormat("@");
+
             foreach (var newSheet in sheetDefinitions)
             {
                 var sheet = workbook.CreateSheet(newSheet.Key);
 
                 int rowNumber = 0;
-                foreach (var columns in newSheet.Value) { 
+                int maxColumns = 0; // Track the maximum number of columns in the sheet
+                foreach (var columns in newSheet.Value)
+                {
                     var row = sheet.CreateRow(rowNumber);
                     int colNumber = 0;
-                    foreach (var collumn in columns)
+                    foreach (var column in columns)
                     {
                         var cell = row.CreateCell(colNumber);
-                        cell.SetCellValue(collumn);
+                        cell.SetCellValue(column);
+                        cell.CellStyle = textCellStyle; 
                         colNumber++;
                     }
+                    maxColumns = Math.Max(maxColumns, colNumber); 
                     rowNumber++;
+                }
+
+                // Apply text style to all columns
+                for (int col = 0; col < maxColumns; col++)
+                {
+                    sheet.SetDefaultColumnStyle(col, textCellStyle);
+                    sheet.AutoSizeColumn(col); 
                 }
             }
 
@@ -188,4 +203,4 @@ namespace ECDLink.Core.Services
             };
         }
     }
-}
+    }

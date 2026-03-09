@@ -2,7 +2,9 @@ import {
   ActionModal,
   BannerWrapper,
   Button,
+  Dialog,
   DialogPosition,
+  ProfileAvatar,
   Typography,
 } from '@ecdlink/ui';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
@@ -10,7 +12,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { ProgressReportingPeriodsNumber } from './progress-reporting-periods-number';
 import { useHistory, useLocation } from 'react-router';
 import { useAppDispatch } from '@/store';
-import { classroomsSelectors, classroomsThunkActions } from '@/store/classroom';
+import {
+  classroomsActions,
+  classroomsSelectors,
+  classroomsThunkActions,
+} from '@/store/classroom';
 import { useSelector } from 'react-redux';
 import { useDialog, useSnackbar } from '@ecdlink/core';
 import { ReactComponent as RobotIcon } from '@/assets/iconRobot.svg';
@@ -22,6 +28,8 @@ import ROUTES from '@/routes/routes';
 import { TabsItems } from '../../class-dashboard/class-dashboard.types';
 import { getAllNotifications } from '@/store/notifications/notifications.selectors';
 import { notificationActions } from '@/store/notifications';
+import { disableBackendNotification } from '@/store/notifications/notifications.actions';
+import { EditLogo } from '@/pages/practitioner/practitioner-programme-information/edit-logo/edit-logo';
 
 export type ProgressReportingPeriodsRouteState = {
   messageReference: string;
@@ -36,6 +44,7 @@ export const ProgressReportingPeriods: React.FC = () => {
   const location = useLocation<ProgressReportingPeriodsRouteState>();
   const messageReference = location?.state?.messageReference;
   const notifications = useSelector(getAllNotifications);
+  const [showEditLogo, setShowEditLogo] = useState(false);
 
   const lastYearsReportingPeriods = useSelector(
     classroomsSelectors.getPreviousYearsReportingPeriods()
@@ -93,37 +102,62 @@ export const ProgressReportingPeriods: React.FC = () => {
   const classroom = useSelector(classroomsSelectors.getClassroom);
 
   const onSubmit = () => {
-    const save = async () =>
-      appDispatch(
-        await classroomsThunkActions.addChildProgressReportPeriods({
-          classroomId: classroom!.id,
-          childProgressReportPeriods: reportingPeriods.map((x) => ({
-            id: x.id,
-            startDate: new Date(x.startDate),
-            endDate: new Date(x.endDate),
-          })),
-        })
+    const save = async () => {
+      if (isOnline) {
+        appDispatch(
+          await classroomsThunkActions.addChildProgressReportPeriods({
+            classroomId: classroom!.id,
+            childProgressReportPeriods: reportingPeriods.map((x) => ({
+              id: x.id,
+              startDate: new Date(x.startDate),
+              endDate: new Date(x.endDate),
+            })),
+          })
+        );
+      } else {
+        appDispatch(
+          await classroomsActions.addChildProgressReportPeriod({
+            childProgressReportPeriods: reportingPeriods.map((x) => ({
+              id: x.id,
+              startDate: new Date(x.startDate).toISOString(),
+              endDate: new Date(x.endDate).toISOString(),
+            })),
+          })
+        );
+      }
+
+      const notificationsToRemove = notifications?.filter(
+        (item) => item?.message?.reference === messageReference
       );
 
-    const hasNotification = notifications?.find(
-      (item) => item?.message?.reference === messageReference
-    );
-
-    if (hasNotification) {
-      appDispatch(notificationActions.removeNotification(hasNotification!));
-    }
-
+      if (notificationsToRemove && notificationsToRemove?.length > 0) {
+        notificationsToRemove.map((notification) => {
+          if (notification.message?.isFromBackend && isOnline) {
+            appDispatch(
+              disableBackendNotification({
+                notificationId: notification.message.reference ?? '',
+              })
+            );
+          }
+          appDispatch(notificationActions.removeNotification(notification!));
+        });
+      }
+    };
     save();
     showMessage({
       message: 'Reporting dates added!',
     });
-    handleGoBack();
   };
 
   const handleGoBack = () => {
     history.push(ROUTES.CLASSROOM.ROOT, {
       activeTabIndex: TabsItems.PROGRESS,
     });
+  };
+
+  const handleLogoUpdate = () => {
+    setShowEditLogo(false);
+    handleGoBack();
   };
 
   const confirmDialog = useCallback(() => {
@@ -166,7 +200,9 @@ export const ProgressReportingPeriods: React.FC = () => {
               type: 'filled',
               onClick: () => {
                 onSubmit();
-                submit();
+                !!classroom?.classroomImageUrl
+                  ? confirmLogoDialog()
+                  : confirmNewLogoDialog();
               },
               leadingIcon: 'CheckCircleIcon',
             },
@@ -186,11 +222,99 @@ export const ProgressReportingPeriods: React.FC = () => {
     });
   }, [dialog, reportingPeriods]);
 
+  const confirmLogoDialog = useCallback(() => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (submit, cancel) => (
+        <ActionModal
+          className="bg-white"
+          customIcon={
+            <div className={'inline-flex w-full justify-center pt-8'}>
+              <ProfileAvatar
+                dataUrl={classroom?.classroomImageUrl || ''}
+                size={'header'}
+                onPressed={() => {}}
+                hasConsent={true}
+                isPreschoolImage={true}
+                canChangeImage={false}
+              />
+            </div>
+          }
+          importantText={'Your preschool logo will appear on child reports'}
+          detailText={`This logo will be shown on all reports for this reporting period. Make sure it’s correct.`}
+          actionButtons={[
+            {
+              text: 'Yes, this logo is correct!',
+              textColour: 'white',
+              colour: 'quatenary',
+              type: 'filled',
+              onClick: () => {
+                handleGoBack();
+                submit();
+              },
+              leadingIcon: 'CheckCircleIcon',
+            },
+            {
+              text: 'Change logo',
+              textColour: 'quatenary',
+              colour: 'quatenary',
+              type: 'outlined',
+              onClick: () => {
+                setShowEditLogo(true);
+                cancel();
+              },
+              leadingIcon: 'RefreshIcon',
+            },
+          ]}
+        />
+      ),
+    });
+  }, [dialog, reportingPeriods]);
+
+  const confirmNewLogoDialog = useCallback(() => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (submit, cancel) => (
+        <ActionModal
+          className="bg-white"
+          customIcon={<RobotIcon />}
+          importantText={'Would you like to add a preschool logo?'}
+          detailText={`The logo you upload will be shown on all reports for this reporting period.`}
+          actionButtons={[
+            {
+              text: 'Yes, I want to add a logo',
+              textColour: 'white',
+              colour: 'quatenary',
+              type: 'filled',
+              onClick: () => {
+                setShowEditLogo(true);
+                submit();
+              },
+              leadingIcon: 'CheckCircleIcon',
+            },
+            {
+              text: 'No, I don’t want to add a logo',
+              textColour: 'quatenary',
+              colour: 'quatenary',
+              type: 'outlined',
+              onClick: () => {
+                handleGoBack();
+                cancel();
+              },
+              leadingIcon: 'XIcon',
+            },
+          ]}
+        />
+      ),
+    });
+  }, [dialog, reportingPeriods]);
+
   return (
     <BannerWrapper
       title={'Child progress reporting periods'}
       color={'primary'}
-      size="small"
+      size="medium"
+      renderBorder={true}
       onBack={() => (currentStep === 1 ? handleGoBack() : setCurrentStep(1))}
       displayOffline={!isOnline}
     >
@@ -209,9 +333,11 @@ export const ProgressReportingPeriods: React.FC = () => {
         )}
         <Button
           onClick={() => {
-            currentStep === 2
-              ? confirmDialog()
-              : setCurrentStep(currentStep + 1);
+            if (currentStep === 2) {
+              confirmDialog();
+            } else {
+              setCurrentStep(currentStep + 1);
+            }
           }}
           disabled={
             currentStep === 2
@@ -227,6 +353,9 @@ export const ProgressReportingPeriods: React.FC = () => {
           text={currentStep === 2 ? 'Save' : 'Next'}
         />
       </div>
+      <Dialog fullScreen visible={showEditLogo} position={DialogPosition.Full}>
+        <EditLogo setShowEditLogo={handleLogoUpdate} />
+      </Dialog>
     </BannerWrapper>
   );
 };

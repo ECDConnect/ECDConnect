@@ -6,7 +6,6 @@ import {
   BannerWrapper,
   Button,
   CheckboxGroup,
-  FormInput,
   Typography,
   renderIcon,
 } from '@ecdlink/ui';
@@ -28,10 +27,7 @@ export const EditCommunitySkills: React.FC<AboutDescriptionProps> = ({
   const dispatch = useAppDispatch();
   const { showMessage } = useSnackbar();
   const communityProfile = useSelector(communitySelectors.getCommunityProfile);
-  const user = useSelector(userSelectors.getUser);
-  const communityUser = communityProfile?.communityUser;
   const [aboutLong, setAboutLong] = useState(communityProfile?.aboutLong);
-  const skillIds = communityProfile?.profileSkills?.map((item) => item?.id);
   const [isLoading, setIsLoading] = useState(false);
   const communitySkills = useSelector(staticDataSelectors.getCommunitySkills);
   const [communitySkillsAdded, setCommunitySkillsAdded] = useState<string[]>(

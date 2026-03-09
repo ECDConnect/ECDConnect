@@ -10,7 +10,6 @@ import * as styles from './form-input.style';
 export type FormFieldType = 'text' | 'number' | 'password';
 export type TextInputType = 'input' | 'textarea' | 'date' | 'moneyInput';
 import CurrencyInput from 'react-currency-input-field';
-import Typography from '../../typography/typography';
 
 export interface FormFieldProps<T extends FieldValues>
   extends ComponentBaseProps {
@@ -62,6 +61,7 @@ export const FormInput = <T extends FieldValues>({
   sufficIconColor = 'black',
   suffixIconAction,
   register,
+  onKeyDown,
   value,
   hint,
   maxLength,
@@ -220,6 +220,7 @@ export const FormInput = <T extends FieldValues>({
                   ? `var(--${color})`
                   : 'bg-uiBg',
               }}
+              onKeyDown={onKeyDown}
               {...restProps}
             />
           );
@@ -241,6 +242,7 @@ export const FormInput = <T extends FieldValues>({
                 paddingLeft: prefixIcon ? 20 : startIcon ? 50 : 16,
                 backgroundColor: color ? `var(--${color})` : 'bg-uiBg',
               }}
+              onKeyDown={onKeyDown}
               {...restProps}
             />
           );

@@ -25,6 +25,10 @@ namespace ECDLink.Tenancy.Model
         public string OrganisationEmail { get; set; }
         public string DefaultSystemSettings { get; set; }
         public string BlobStorageAddress { get; set; }
+        public string OrganisationHelpPhoneNumber { get; set; }
+        public string OrganisationHelpWhatsAppNumber { get; set; }
+
+        public bool IsHost { get { return this.TestSiteAddress == "localhost:5001";  } }
 
         public string GetClaimString()
         {

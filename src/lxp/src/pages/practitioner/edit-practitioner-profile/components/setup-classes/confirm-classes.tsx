@@ -118,16 +118,13 @@ export const ConfirmClasses = ({
             />
           </div>
         ) : (
-          <>
-            <Typography
-              type={'help'}
-              text={`You must add at least 1 class to ${classroomName}.`}
-              color={'primary'}
-              className={'mt-3'}
-            />
-          </>
+          <Typography
+            type={'help'}
+            text={`You must add at least 1 class to ${classroomName}.`}
+            color={'primary'}
+            className={'mt-3'}
+          />
         )}
-
         <Button
           className="mt-4"
           color="primary"

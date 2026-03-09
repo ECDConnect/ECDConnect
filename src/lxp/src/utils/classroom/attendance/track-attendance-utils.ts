@@ -200,11 +200,15 @@ export const getMissedClassAttendance = (
 
   if (last30DaysProgrammes)
     for (const day of last30DaysProgrammes) {
-      const programme = day.programme!;
+      const programme = day.programme;
       const missedDayDate = new Date(day.date.setHours(0, 0, 0, 0));
 
       const classGroups = classroomGroups.filter((x) => {
         return x.id === programme?.classroomGroupId;
+      });
+
+      const programmeAttendance = attendance.filter((x) => {
+        return x.classroomProgrammeId === programme.id;
       });
       const classLearners = classGroups
         .flatMap((x) => x.learners)
@@ -214,18 +218,35 @@ export const getMissedClassAttendance = (
             isValidAttendableDate(missedDayDate, meetingDays || [], []) &&
             checkEndOfDay.getTime() >= new Date(x.startedAttendance).getTime();
 
-          return isValidDay && !Boolean(x.stoppedAttendance);
+          return (
+            isValidDay &&
+            (!x.stoppedAttendance ||
+              new Date(x.stoppedAttendance).getTime() >=
+                checkEndOfDay.getTime())
+          );
         });
-      if (classLearners && classLearners.length && classLearners.length > 0) {
-        if (
-          !attendance.some(
-            (att) =>
-              att.attendanceDate &&
-              att.classroomProgrammeId === programme.id &&
-              missedDayDate.getTime() ===
+
+      if (classLearners?.length > 0) {
+        const hasNoLearnerAttendance = !classLearners.every((learner) => {
+          const hasAttendance = programmeAttendance.some((att) => {
+            if (att.attendanceDate && att.userId === learner.childUserId) {
+              const isMatch =
+                missedDayDate.getTime() ===
                 new Date(
                   new Date(att.attendanceDate).setHours(0, 0, 0, 0)
-                ).getTime()
+                ).getTime();
+              return isMatch;
+            } else {
+              return false;
+            }
+          });
+          return hasAttendance;
+        });
+
+        if (
+          hasNoLearnerAttendance &&
+          !returnProgrammes.some(
+            (p) => p.id === programme.id && p.missedDate === missedDayDate
           )
         ) {
           returnProgrammes.push({ ...programme, missedDate: missedDayDate });
@@ -542,6 +563,22 @@ export const getPlaygroup = (
   }
 };
 
+export const getPlaygroups = (
+  classProgrammes: ClassProgrammeDto[],
+  date: Date,
+  selectedClassroomGroupIds?: string[]
+) => {
+  if (!selectedClassroomGroupIds || selectedClassroomGroupIds.length === 0) {
+    return classProgrammes?.filter((x) => x.meetingDay === getDay(date));
+  } else {
+    return classProgrammes?.filter(
+      (x) =>
+        x.meetingDay === getDay(date) &&
+        selectedClassroomGroupIds.includes(x.classroomGroupId)
+    );
+  }
+};
+
 export const getDistinctMeetingDays = (attendance: AttendanceDto[]) => {
   return attendance.reduce((prev, curr) => {
     const attendanceDate = new Date(curr.attendanceDate ?? '');
@@ -595,7 +632,7 @@ interface MergedClassProgramme {
   items: Omit<ClassProgrammeDto, 'classroomGroupId'>[];
 }
 
-interface MergedChildAttendanceOverallReportModel {
+export interface MergedChildAttendanceOverallReportModel {
   classroomGroup?: ClassroomGroupDto;
   classroomGroupId: string;
   items: Omit<ChildAttendanceOverallReportModel, 'classgroupId'>[];
@@ -654,3 +691,56 @@ export const mergeMonthlyAttendanceReportWithSameClassroomGroupId = (
 
   return Object.values(mergedObjects);
 };
+
+export function calculateDaysOfClassForMonth(
+  month: Date,
+  day: number, // 0 = Sunday, 6 = Saturday
+  validClassDays: Date[],
+  startBound?: Date,
+  endBound?: Date
+): Date[] {
+  const isInSameMonth = (d1: Date, d2: Date) =>
+    d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth();
+
+  const endOfM = new Date(month.getFullYear(), month.getMonth() + 1, 0);
+  const endOfDay = (d: Date) =>
+    new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
+
+  const today = new Date();
+
+  let actualStart = new Date(month);
+  let actualEnd = endOfM;
+
+  // Apply start bound
+  if (startBound && startBound > actualStart) {
+    if (isInSameMonth(actualStart, startBound)) {
+      actualStart = startBound;
+    } else {
+      return [];
+    }
+  }
+
+  // Apply end bound
+  if (endBound && endBound < actualEnd) {
+    if (isInSameMonth(actualEnd, endBound)) {
+      actualEnd = endBound;
+    } else {
+      return [];
+    }
+  }
+
+  // ✅ Ensure we never count dates beyond today
+  if (actualEnd > today) {
+    if (isInSameMonth(actualEnd, today)) {
+      actualEnd = today;
+    } else if (today < actualStart) {
+      // If today is before the current month, no valid days
+      return [];
+    }
+  }
+
+  // Filter only valid days within actualStart–actualEnd
+  return validClassDays
+    .filter((d) => d >= actualStart && d <= endOfDay(actualEnd))
+    .filter((d) => d.getDay() === day);
+}

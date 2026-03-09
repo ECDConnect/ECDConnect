@@ -63,7 +63,7 @@ export const AnnualMaintenance: React.FC<AddExpenseState> = ({
   const [photoActionBarVisible, setPhotoActionBarVisible] =
     useState<boolean>(false);
   const [registrationFormPhotoUrl, setRegistrationFormPhotoUrl] =
-    useState<string>();
+    useState<string>(expenseItem?.photoProof!);
 
   const acceptedFormats = ['jpg', 'jpeg'];
 
@@ -85,7 +85,7 @@ export const AnnualMaintenance: React.FC<AddExpenseState> = ({
     setPhotoActionBarVisible(false);
   };
 
-  const sendExpenseUpdate = async () => {
+  const sendExpenseUpdate = async (activeStatus: boolean) => {
     const expensesInput = {
       id: !!expenseItem ? expenseItem.id : newGuid(),
       datePaid: datePaid!,
@@ -93,6 +93,7 @@ export const AnnualMaintenance: React.FC<AddExpenseState> = ({
       amount: !!amount ? Number(moneyInputFormat(amount)) : 0,
       expenseTypeId: ExpenseTypeIds.MAINTENANCE_ID,
       photoProof: photoProof,
+      isActive: activeStatus,
     };
 
     onSubmit(expensesInput);
@@ -229,7 +230,7 @@ export const AnnualMaintenance: React.FC<AddExpenseState> = ({
               registrationFormPhotoUrl
                 ? () => {
                     setFormValue('photoProof', '');
-                    setRegistrationFormPhotoUrl(undefined);
+                    setRegistrationFormPhotoUrl('');
                     setPhotoActionBarVisible(false);
                   }
                 : undefined
@@ -237,21 +238,38 @@ export const AnnualMaintenance: React.FC<AddExpenseState> = ({
           />
         </Dialog>
         {!disabled && (
-          <Button
-            type="filled"
-            color="quatenary"
-            className={'mx-auto mt-8 w-full rounded-2xl'}
-            onClick={sendExpenseUpdate}
-            disabled={!isValid}
-          >
-            {renderIcon('SaveIcon', styles.buttonIcon)}
-            <Typography
-              type="help"
-              className="mr-2"
-              color="white"
-              text={'Save'}
-            ></Typography>
-          </Button>
+          <>
+            <Button
+              type="filled"
+              color="quatenary"
+              className={'mx-auto mt-8 w-full rounded-2xl'}
+              onClick={() => {
+                sendExpenseUpdate(true);
+              }}
+              disabled={!isValid}
+            >
+              {renderIcon('SaveIcon', styles.buttonIcon)}
+              <Typography
+                type="help"
+                className="mr-2"
+                color="white"
+                text={'Save'}
+              ></Typography>
+            </Button>
+            {!!expenseItem?.id && (
+              <Button
+                icon="TrashIcon"
+                type={'outlined'}
+                color={'quatenary'}
+                textColor="quatenary"
+                text="Delete"
+                className="mt-4 w-full"
+                onClick={() => {
+                  sendExpenseUpdate(false);
+                }}
+              />
+            )}
+          </>
         )}
         {disabled && (
           <Button

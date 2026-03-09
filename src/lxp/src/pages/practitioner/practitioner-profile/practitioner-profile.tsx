@@ -16,12 +16,10 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { LogoutModal } from '../../../modals';
 import { useAppDispatch } from '@store';
 import { classroomsSelectors } from '@store/classroom';
-import { settingSelectors } from '@store/settings';
 import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import ROUTES from '@routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
-import { PractitionerJourney } from './practitioner-journey';
 import { usePrevious } from 'react-use';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
@@ -30,12 +28,14 @@ import { NavigationNames } from '@/pages/navigation';
 import { JoinOrAddPreschoolModal } from '@/components/join-or-add-preschool-modal/join-or-add-preschool-modal';
 import { useTenant } from '@/hooks/useTenant';
 import { ReassignClassPageState } from '@/pages/classroom/class-dashboard/practitioners/reassign-class/reassign-class.types';
-import { usePractitionerAbsentees } from '@/hooks/usePractitionerAbsentees';
 import { AbsenceCard } from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-profile/components/absence-card/absence-card';
+import { JourneyTimeline } from './practitioner-journey/journey-timeline-index';
+import { PublishedFormsList } from './practitioner-journey/published-forms';
+import { ViewPublishedForm } from './practitioner-journey/published-forms/published-form-view';
 
 export const PractitionerProfile: React.FC = () => {
-  const [isJourneyFormOpen, setJourneyFormOpen] = useState(false);
-  // const { resetAuth, resetAppStore } = useStoreSetup();
+  const [isJourneyFormOpen, setIsJourneyFormOpen] = useState(false);
+  const [isJourneyReportOpen, setIsJourneyReportOpen] = useState(false);
   const user = useSelector(userSelectors.getUser);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const isPrincipal = practitioner?.isPrincipal;
@@ -56,12 +56,9 @@ export const PractitionerProfile: React.FC = () => {
   const isOpenAccess = tenant?.isOpenAccess;
   const location = useLocation<PractitionerProfileRouteState>();
 
-  const wasJourneyFormOpen = usePrevious(isJourneyFormOpen);
-
-  const selectedTab =
-    wasJourneyFormOpen && !isJourneyFormOpen
-      ? 1
-      : location.state?.tabIndex || undefined;
+  const [selectedTabIndex, setSelectedTabIndex] = useState<number>(
+    location.state?.tabIndex !== undefined ? location.state?.tabIndex : 0
+  );
 
   useEffect(() => {
     if (!isOnline) {
@@ -144,6 +141,24 @@ export const PractitionerProfile: React.FC = () => {
         },
       },
       {
+        title: 'Get help',
+        titleStyle,
+        subTitle: 'Help videos & chat support',
+        subTitleStyle,
+        menuIcon: 'QuestionMarkCircleIcon',
+        showIcon: true,
+        iconBackgroundColor: 'warning',
+        iconColor: 'white',
+        backgroundColor: 'warningBg',
+        onActionClick: () => {
+          if (isOnline) {
+            history.push(ROUTES.PRACTITIONER.HELP.ROOT);
+          } else {
+            showOnlineOnly();
+          }
+        },
+      },
+      {
         title: NavigationNames.Logout,
         titleStyle,
         subTitleStyle,
@@ -205,7 +220,9 @@ export const PractitionerProfile: React.FC = () => {
       },
     });
 
-    return stackedMenuList;
+    return stackedMenuList.filter(
+      (item) => item.title !== 'Get help' || isOpenAccess
+    );
   };
 
   const tabItem: TabItem[] = [
@@ -225,12 +242,31 @@ export const PractitionerProfile: React.FC = () => {
     {
       title: 'Journey',
       initActive: false,
-      child: <PractitionerJourney onIsDisplayFormChange={setJourneyFormOpen} />,
+      child: (
+        <JourneyTimeline
+          onIsDisplayFormChange={setIsJourneyFormOpen}
+          onIsDisplayReportChange={setIsJourneyReportOpen}
+          tenantName={tenant.tenant?.applicationName || ''}
+        />
+      ),
     },
   ];
 
+  const handleOnBack = useCallback(() => {
+    setIsJourneyFormOpen(false);
+    setIsJourneyReportOpen(false);
+  }, []);
+
+  const setTabSelected = (tabIndex: number) => {
+    setSelectedTabIndex(tabIndex);
+  };
+
   if (isJourneyFormOpen) {
-    return <PractitionerJourney onIsDisplayFormChange={setJourneyFormOpen} />;
+    return <PublishedFormsList onBack={handleOnBack} />;
+  }
+
+  if (isJourneyReportOpen) {
+    return <ViewPublishedForm onBack={handleOnBack} />;
   }
 
   return (
@@ -248,7 +284,8 @@ export const PractitionerProfile: React.FC = () => {
       <TabList
         className="bg-uiBg mb-1 bg-white"
         tabItems={tabItem}
-        setSelectedIndex={selectedTab}
+        setSelectedIndex={selectedTabIndex}
+        tabSelected={(_, tabIndex: number) => setTabSelected(tabIndex)}
       />
       {displayError && (
         <Alert
@@ -257,9 +294,9 @@ export const PractitionerProfile: React.FC = () => {
           type={'error'}
         />
       )}
-      {practitioner?.isPrincipal && (
+      {practitioner?.isPrincipal && selectedTabIndex === 0 && (
         <AbsenceCard
-          className="ml-4 mt-5 w-11/12 shadow"
+          className="w-12/12 ml-4 mr-4 mt-5 shadow"
           practitioner={practitioner!}
           handleReassignClass={handleReassignClass}
           practitionerUserId={practitioner?.userId!}

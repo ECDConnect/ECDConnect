@@ -52,12 +52,13 @@ export const AbsenceCard: React.FC<AbsenceCardProps> = ({
     handleReassignClass(practitionerUserId);
   };
 
-  if (practitioner && !!allAbsentees?.length) {
+  if (practitioner && practitioner.isPrincipal && !!allAbsentees?.length) {
     return (
       <>
         {allAbsentees?.map((absentee) => {
           return (
             <LeaveCard
+              key={absentee.id}
               className={className}
               absentee={absentee}
               practitioner={practitioner}
@@ -72,7 +73,7 @@ export const AbsenceCard: React.FC<AbsenceCardProps> = ({
   return (
     <Card className={classNames(className, 'bg-uiBg rounded-xl p-4')}>
       <Typography
-        type={'h1'}
+        type={'h2'}
         color="textDark"
         text={
           practitioner?.isPrincipal

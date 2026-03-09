@@ -1,5 +1,9 @@
 overwrite: true
-schema: 'http://localhost:5000/graphql'
+schema:
+  'http://localhost:5000/graphql?sdl':
+    handleAsSDL: true
+debug: true
+verbose: true
 generates:
   packages/graphql/src/graphql/generatedGraphql.tsx:
     plugins:

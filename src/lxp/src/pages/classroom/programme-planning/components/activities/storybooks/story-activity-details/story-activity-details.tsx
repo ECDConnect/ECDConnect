@@ -173,7 +173,11 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
   const onBookLocationClicked = (bookLocation: string) => {
     const _strippedHtml = stripPTag(bookLocation);
     if (_strippedHtml.match(URL)) {
-      window.open(_strippedHtml, '_blank');
+      if (!_strippedHtml.startsWith('http')) {
+        window.open('https://' + _strippedHtml, '_blank')?.focus();
+        return;
+      }
+      window.open(_strippedHtml, '_blank')?.focus();
     }
   };
 
@@ -301,18 +305,23 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
                   type={'h4'}
                   color="textDark"
                 />
-                <ul className={'text-textMid ml-4 mt-4 list-disc'}>
-                  <li>
-                    <Typography
-                      text={currentStoryBook.bookLocation}
-                      type={'body'}
-                      color="textMid"
-                      onClick={() => {
-                        onBookLocationClicked(currentStoryBook.bookLocation);
-                      }}
-                    />
-                  </li>
-                </ul>
+                <div className="pt-2">
+                  <Typography
+                    text={currentStoryBook.bookLocation}
+                    type="span"
+                    underline={true}
+                    autoLink={true}
+                    onClick={() => {
+                      onBookLocationClicked(currentStoryBook.bookLocationLink);
+                    }}
+                    fontSize={'14'}
+                    className={
+                      stripPTag(currentStoryBook.bookLocationLink).match(URL)
+                        ? `decoration-2 decoration-blue-500 cursor-pointer text-blue-600 underline`
+                        : `decoration-2 primary cursor-pointer underline`
+                    }
+                  />
+                </div>
                 <Divider dividerType="dashed" className="my-4" />
                 {currentStoryBook.author && (
                   <Typography
@@ -362,25 +371,23 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
                   }
                   type={'unspecified'}
                 />
-                <ul className={'ml-4 mt-4 list-disc'}>
-                  <li>
-                    <Typography
-                      text={currentStoryBook.bookLocation}
-                      type={'unspecified'}
-                      underline
-                      hasMarkup
-                      color={
-                        stripPTag(currentStoryBook.bookLocation).match(URL)
-                          ? 'primary'
-                          : 'black'
-                      }
-                      onClick={() => {
-                        onBookLocationClicked(currentStoryBook.bookLocation);
-                      }}
-                      fontSize={'14'}
-                    />
-                  </li>
-                </ul>
+                <div className="pt-2 pb-3">
+                  <Typography
+                    text={currentStoryBook.bookLocation}
+                    type="span"
+                    underline={true}
+                    autoLink={true}
+                    onClick={() => {
+                      onBookLocationClicked(currentStoryBook.bookLocationLink);
+                    }}
+                    fontSize={'14'}
+                    className={
+                      stripPTag(currentStoryBook.bookLocationLink).match(URL)
+                        ? `decoration-2 decoration-blue-500 cursor-pointer text-blue-600 underline`
+                        : `decoration-2 primary cursor-pointer underline`
+                    }
+                  />
+                </div>
               </>
             )}
           </div>
@@ -563,16 +570,18 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
                       className={'mt-2 flex flex-row items-start'}
                       key={question.id}
                     >
-                      <div
-                        className={'mr-4 flex w-1/12 flex-row justify-center'}
-                      >
-                        <RoundIcon
-                          size={{ h: '8', w: '8' }}
-                          icon={'PhotographIcon'}
-                          iconSize={{ h: '5', w: '5' }}
-                          className={'bg-primary text-white'}
-                        />
-                      </div>
+                      {question.question && (
+                        <div
+                          className={'mr-4 flex w-1/12 flex-row justify-center'}
+                        >
+                          <RoundIcon
+                            size={{ h: '8', w: '8' }}
+                            icon={'PhotographIcon'}
+                            iconSize={{ h: '5', w: '5' }}
+                            className={'bg-primary text-white'}
+                          />
+                        </div>
+                      )}
                       <div className={'flex w-11/12 flex-col'}>
                         <Typography
                           type={'unspecified'}

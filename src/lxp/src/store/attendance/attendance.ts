@@ -1,5 +1,13 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { getWeek, getYear, isSameDay, parseISO } from 'date-fns';
+import {
+  getWeek,
+  getYear,
+  getMonth,
+  isSameDay,
+  parseISO,
+  format,
+  compareAsc,
+} from 'date-fns';
 import localForage from 'localforage';
 import {
   getAttendance,
@@ -10,6 +18,7 @@ import {
 } from './attendance.actions';
 import { AttendanceState, TrackAttendanceModelInput } from './attendance.types';
 import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
+import { ToUtcDateString } from '@/utils/common/date.utils';
 
 const initialState: AttendanceState = {
   attendance: undefined,
@@ -39,23 +48,25 @@ const attendanceSlice = createSlice({
       const attendanceDate = new Date(action.payload.attendanceDate);
 
       if (action.payload.attendees) {
-        const week = getWeek(attendanceDate);
+        const week = getWeek(attendanceDate) + 1;
         const year = getYear(attendanceDate);
+        const month = attendanceDate.getUTCMonth() + 1;
 
         for (const attendee of action.payload.attendees) {
           const existingIndex = state.attendance?.findIndex(
             (x) =>
               x.userId === attendee.userId &&
-              x.weekOfYear === week &&
-              x.year === year &&
+              x.attendanceDate?.toString().slice(0, 10) ===
+                action.payload.attendanceDate.toString().slice(0, 10) &&
               x.classroomProgrammeId === action.payload.classroomProgrammeId
           );
 
           const input = {
             classroomProgrammeId: action.payload.classroomProgrammeId,
-            attendanceDate: new Date(attendanceDate.setHours(0, 0, 0, 0)),
+            attendanceDate: ToUtcDateString(attendanceDate as Date),
             attended: attendee.attended,
             userId: attendee.userId,
+            monthOfYear: month,
             weekOfYear: week,
             year: year,
           };

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import DateRangePickerCalendar from './DateRangePickerCalendar'; // Custom calendar component
 import { format } from 'date-fns';
+import * as styles from '../../pages/pages.styles';
 
 function CustomDateRangePicker(props: any) {
   const [showCalendar, setShowCalendar] = useState(false);
@@ -15,10 +16,7 @@ function CustomDateRangePicker(props: any) {
 
   return (
     <div>
-      <button
-        className="border-secondary hover:bg-secondary text-secondary flex flex-row rounded border-2 py-2 px-4 font-bold hover:text-white"
-        onClick={toggleCalendar}
-      >
+      <button className={styles.mainButton} onClick={toggleCalendar}>
         {props?.selectedRange?.length > 0 ? (
           <>
             {formatDate(props?.selectedRange?.[0])} -{' '}

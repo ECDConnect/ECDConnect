@@ -1,4 +1,4 @@
-import { useHistory } from 'react-router';
+import { useHistory, useLocation } from 'react-router';
 import {
   Alert,
   BannerWrapper,
@@ -15,17 +15,20 @@ import { useSelector } from 'react-redux';
 import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
 import { coachSelectors } from '@/store/coach';
 import * as styles from './coach-contact-details.styles';
-import { useTheme } from '@ecdlink/core';
 import { CoachFeedback } from '@/pages/community/community-tabs/components/community-dashboard/components/community-coach-profile/components/coach-feedback/coach-feedback';
 import { useState } from 'react';
 import TransparentLayer from '../../../assets/TransparentLayer.png';
+import { CoachProfileRouteState } from './coach-contact-details.types';
+import ROUTES from '@/routes/routes';
 
 export const CoachContactDetails: React.FC = () => {
   const history = useHistory();
-  const { theme } = useTheme();
   const { isOnline } = useOnlineStatus();
   const coach = useSelector(coachSelectors.getCoach);
   const [openCoachFeedback, setOpenCoachFeedback] = useState(false);
+  const location = useLocation<CoachProfileRouteState>();
+
+  const redirectToJourney = location.state.comingFromJourneyTab ?? false;
 
   const call = () => {
     window.open(`tel:${coach?.user?.phoneNumber}`);
@@ -50,7 +53,14 @@ export const CoachContactDetails: React.FC = () => {
         size="medium"
         renderBorder={true}
         renderOverflow={false}
-        onBack={() => history.goBack()}
+        onBack={() =>
+          redirectToJourney
+            ? history.push(ROUTES.PRACTITIONER.PROFILE.ROOT, {
+                tabIndex: 1,
+                visitId: '',
+              })
+            : history.goBack()
+        }
         displayOffline={!isOnline}
       >
         <div className={styles.avatarWrapper}>

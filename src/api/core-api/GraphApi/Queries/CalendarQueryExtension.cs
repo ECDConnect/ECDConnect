@@ -22,7 +22,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.CALENDAR, GraphActionEnum.View)]
         public List<CalendarEvent> GetUserCalendarEvents(
           IGenericRepositoryFactory repoFactory,
           [Service] IHttpContextAccessor httpContextAccessor,

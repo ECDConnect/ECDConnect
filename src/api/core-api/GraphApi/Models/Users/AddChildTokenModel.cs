@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models.Users
 {
@@ -38,6 +39,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Users
         public Guid? WorkflowStatusId { get; set; }
 
         public string InsertedBy { get; set; }
+        public string OtherLanguages { get; set; }
+        public List<Guid> HomeLanguageIds { get; set; }
     }
 
     public class AddChildSiteAddressTokenModel
@@ -87,6 +90,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Users
         public bool JoinReferencePanel { get; set; }
 
         public bool Contribution { get; set; }
+
+        public List<Guid> GrantIds { get; set; }
     }
 
     public class AddChildRegistrationTokenModel

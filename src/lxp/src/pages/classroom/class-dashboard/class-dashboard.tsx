@@ -30,7 +30,7 @@ import * as styles from './class-dashboard.styles';
 import { ClassDashboardRouteState, TabsItems } from './class-dashboard.types';
 import ROUTES from '@routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
-import walkthroughImage from '../../../assets/walktroughImage.png';
+import robot from '@/assets/iconRobot.svg';
 import { childrenSelectors } from '@/store/children';
 import { userSelectors } from '@/store/user';
 import {
@@ -166,6 +166,14 @@ export const ClassDashboard: React.FC = () => {
     [messageReference]
   );
 
+  // setting the current tab to display question mark for walk through
+  useEffect(() => {
+    if (selectedTabIndex !== undefined && selectedTabIndex >= 0) {
+      setCurrentTab(tabItems[selectedTabIndex]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTabIndex]);
+
   const setTabSelected = (tab: TabItem, tabIndex: number) => {
     setPreviousTabIndex(selectedTabIndex);
     setSelectedTabIndex(tabIndex);
@@ -217,9 +225,9 @@ export const ClassDashboard: React.FC = () => {
         <ActionModal
           customIcon={
             <div className="flex">
-              <img src={walkthroughImage} alt="profile" className="mb-2" />
+              <img src={robot} alt="profile" className="mb-2" />
               <Typography
-                text="Ok, you can always get  help by tapping the question mark at the top of the screen!"
+                text="Ok, you can always get help by tapping the question mark at the top of the screen!"
                 type={'body'}
                 color={'textDark'}
                 align="center"
@@ -229,6 +237,7 @@ export const ClassDashboard: React.FC = () => {
           }
           iconColor="alertMain"
           iconBorderColor="alertBg"
+          className=" bg-white"
           actionButtons={[
             {
               text: 'Close',

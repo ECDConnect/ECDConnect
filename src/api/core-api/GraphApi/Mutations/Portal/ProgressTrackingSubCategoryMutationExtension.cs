@@ -1,5 +1,8 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.ContentManagement.Repositories;
+using ECDLink.EGraphQL.Authorization;
+using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
 using System;
@@ -10,6 +13,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class ProgressTrackingSubCategoryMutationExtension
     {
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.Update)]
         public bool BulkUpdateProgressTrackingSubCategoryImages(
             [Service] ContentManagementRepository contentRepo,
             int contentId,
@@ -40,6 +44,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return true;
         }
 
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.Update)]
         public bool UpdateSubCategorySkills(
             [Service] ContentManagementRepository contentRepo,
             List<ProgressSubCategoryModel> subCategories,

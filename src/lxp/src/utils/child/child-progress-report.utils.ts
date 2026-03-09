@@ -98,6 +98,31 @@ export const mapProgressReportDetails = (
     }
   );
 
+  const skillsToWorkOn = (childReport?.skillsToWorkOn || []).map(
+    (skillsToWorkOn) => {
+      const skill = allSkills?.find((x) => x.id === skillsToWorkOn.skillId);
+      return {
+        ...skillsToWorkOn,
+        skillName: replaceSkillText(skill?.name || '', childFirstName),
+        skillDescription: skill?.description,
+        subCategoryId: skill?.subCategory.id || 0,
+        categoryId: skill?.subCategory.category.id || 0,
+        isPositive:
+          !!skillsToWorkOn.howToSupport &&
+          ((!skill?.isReverseScored &&
+            skillsToWorkOn.howToSupport === ProgressSkillValues.Yes) ||
+            (!!skill?.isReverseScored &&
+              skillsToWorkOn.howToSupport === ProgressSkillValues.No)),
+        isNegative:
+          !!skillsToWorkOn.howToSupport &&
+          ((!skill?.isReverseScored &&
+            skillsToWorkOn.howToSupport === ProgressSkillValues.No) ||
+            (!!skill?.isReverseScored &&
+              skillsToWorkOn.howToSupport === ProgressSkillValues.Yes)),
+      };
+    }
+  );
+
   return {
     isNotStarted: !childReport,
     isInProgress: !!childReport?.skillObservations.length,
@@ -105,6 +130,7 @@ export const mapProgressReportDetails = (
     report: {
       ...childReport,
       skillObservations: mappedSkills,
+      skillsToWorkOn: skillsToWorkOn,
     },
   };
 };

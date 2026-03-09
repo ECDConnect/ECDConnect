@@ -28,7 +28,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class NotificationMutationExtension
     {
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Create)]
         public async Task<bool> SendNotificationToUser(
           [Service] ApplicationUserManager userManager,
           [Service] INotificationService notificationService,
@@ -48,26 +48,31 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
         }
 
+        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Update)]
         public async Task<bool> DisableNotification([Service] INotificationService notificationService, string notificationId)
         {
             return await notificationService.DisableNotification(notificationId);
         }
 
+        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Update)]
         public async Task<bool> MarkAsReadNotification([Service] INotificationService notificationService, string notificationId)
         {
             return await notificationService.MarkAsReadNotification(notificationId);
         }
+
+        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Update)]
         public async Task<bool> ExpireNotification([Service] INotificationService notificationService, string notificationId)
         {
             return await notificationService.ExpireNotification(notificationId);
         }
 
+        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Update)]
         public async Task<bool> ExpireNotificationsTypesForUser([Service] INotificationService notificationService, string userId, string templateType, string searchCriteria = null)
         {
             return await notificationService.ExpireNotificationsTypesForUser(userId, templateType, searchCriteria);
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Create)]
         public async Task<BulkInvitationResult> SendNotificationToUser(
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           [Service] InvitationNotificationManager notificationManager,
@@ -117,21 +122,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return result;
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Update)]
         public async Task<bool> SaveBulkMessagesForAdmin(
-            [Service] IDbContextFactory<AuthenticationDbContext> dbContextFactory,
+            [Service] AuthenticationDbContext dbContext,
             [Service] IHttpContextAccessor contextAccessor,
             [Service] INotificationService notificationService,
             [Service] ApplicationUserManager userManager,
             IGenericRepositoryFactory repoFactory,
             MessageLogModel input)
         {
-            AuthenticationDbContext context = dbContextFactory.CreateDbContext();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
             var messageTemplateRepo = repoFactory.CreateGenericRepository<MessageTemplate>(userContext: uId);
-            var messageLogRepo = repoFactory.CreateGenericRepository<MessageLog>(userContext: uId);
 
             if (input.RoleIds.Count == 0)
             {
@@ -139,80 +142,100 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             List<Guid> userIds = new List<Guid>();
-            List<Practitioner> practitioners = new List<Practitioner>();
-            List<Coach> coaches = new List<Coach>();
             List<Guid> messageUserIds = new List<Guid>();
 
             var isPrincipal = input.RoleIds.FindIndex(x => x == "practitioners_principals") != -1;
             var isNonPractitioner = input.RoleIds.FindIndex(x => x == "practitioners_non_principals") != -1;
             var isCoach = input.RoleIds.FindIndex(x => x == "coaches") != -1;
 
-            if (isPrincipal || isNonPractitioner)
-            {
-                practitioners = practitionerRepo.GetAll().Where(x => x.IsActive == true).ToList();
-            }
+            var practitioners = isPrincipal || isNonPractitioner
+                ? await practitionerRepo.GetAll()
+                    .Where(x => x.IsActive && ((isPrincipal && isNonPractitioner) || (isPrincipal && !isNonPractitioner && x.IsPrincipal == true) || (!isPrincipal && isNonPractitioner && x.IsPrincipal == false)))
+                    .Include(x => x.SiteAddress)
+                    .Select(x => new
+                    {
+                        UserId = x.UserId.Value,
+                        x.IsPrincipal,
+                        x.SiteAddress
+                    })
+                    .Distinct()
+                    .ToListAsync()
+                : null;
+
             if (isPrincipal)
             {
-                userIds.AddRange(practitioners.Where(x => x.IsActive == true && x.IsPrincipal == true).Select(x => x.UserId.Value).Distinct().ToList());
+                userIds.AddRange(practitioners.Where(x => x.IsPrincipal == true).Select(x => x.UserId));
             }
             if (isNonPractitioner)
             {
-                userIds.AddRange(practitioners.Where(x => x.IsActive == true && x.IsPrincipal == false).Select(x => x.UserId.Value).Distinct().ToList());
+                userIds.AddRange(practitioners.Where(x => x.IsPrincipal == false).Select(x => x.UserId));
             }
+
+            var coaches = isCoach
+                ? await coachRepo.GetAll()
+                    .Where(x => x.IsActive)
+                    .Include(x => x.SiteAddress)
+                    .Select(x => new
+                    {
+                        UserId = x.UserId.Value,
+                        x.SiteAddress
+                    })
+                    .ToListAsync()
+                : null;
             if (isCoach)
             {
-                coaches = coachRepo.GetAll().Where(x => x.IsActive == true).ToList();
-                userIds.AddRange(coaches.Select(x => x.UserId.Value).Distinct().ToList());
+                userIds.AddRange(coaches.Select(x => x.UserId));
             }
+            
             // Finding users for criteria
             if (input.ProvinceId != "" || input.WardName != "")
             {
-
+                Guid? provinceGuid = input.ProvinceId != "" ? Guid.Parse(input.ProvinceId) : null;
                 if (isPrincipal || isNonPractitioner)
                 {
-                    if (input.ProvinceId != "" && input.WardName == "")
+                    if (provinceGuid.HasValue && input.WardName == "")
                     {
                         messageUserIds.AddRange(practitioners
-                            .Where(x => userIds.Contains(x.UserId.Value) && x.IsActive == true && x.SiteAddress?.ProvinceId.ToString() == input.ProvinceId)
-                            .Select(x => x.UserId.Value)
+                            .Where(x => userIds.Contains(x.UserId) && x.SiteAddress?.ProvinceId == provinceGuid.Value)
+                            .Select(x => x.UserId)
                             .Distinct().ToList());
                     }
                     else if (input.ProvinceId == "" && input.WardName != "")
                     {
                         messageUserIds.AddRange(practitioners
-                            .Where(x => userIds.Contains(x.UserId.Value) && x.IsActive == true && x.SiteAddress?.Ward == input.WardName)
-                            .Select(x => x.UserId.Value)
+                            .Where(x => userIds.Contains(x.UserId) && x.SiteAddress?.Ward == input.WardName)
+                            .Select(x => x.UserId)
                             .Distinct().ToList());
                     }
                     else
                     {
                         messageUserIds.AddRange(practitioners
-                            .Where(x => userIds.Contains(x.UserId.Value) && x.IsActive == true && x.SiteAddress?.ProvinceId.ToString() == input.ProvinceId && x.SiteAddress?.Ward == input.WardName)
-                            .Select(x => x.UserId.Value)
+                            .Where(x => userIds.Contains(x.UserId) && x.SiteAddress?.ProvinceId == provinceGuid.Value && x.SiteAddress?.Ward == input.WardName)
+                            .Select(x => x.UserId)
                             .Distinct().ToList());
                     }
                 }
                 if (isCoach)
                 {
-                    if (input.ProvinceId != "" && input.WardName == "")
+                    if (provinceGuid.HasValue && input.WardName == "")
                     {
                         messageUserIds.AddRange(coaches
-                            .Where(x => userIds.Contains(x.UserId.Value) && x.IsActive == true && x.SiteAddress?.ProvinceId.ToString() == input.ProvinceId)
-                            .Select(x => x.UserId.Value)
+                            .Where(x => userIds.Contains(x.UserId) && x.SiteAddress?.ProvinceId == provinceGuid.Value)
+                            .Select(x => x.UserId)
                             .Distinct().ToList());
                     }
                     else if (input.ProvinceId == "" && input.WardName != "")
                     {
                         messageUserIds.AddRange(coaches
-                            .Where(x => userIds.Contains(x.UserId.Value) && x.IsActive == true && x.SiteAddress?.Ward == input.WardName)
-                            .Select(x => x.UserId.Value)
+                            .Where(x => userIds.Contains(x.UserId) && x.SiteAddress?.Ward == input.WardName)
+                            .Select(x => x.UserId)
                             .Distinct().ToList());
                     }
                     else
                     {
                         messageUserIds.AddRange(coaches
-                            .Where(x => userIds.Contains(x.UserId.Value) && x.IsActive == true && x.SiteAddress?.ProvinceId.ToString() == input.ProvinceId && x.SiteAddress?.Ward == input.WardName)
-                            .Select(x => x.UserId.Value)
+                            .Where(x => userIds.Contains(x.UserId) && x.SiteAddress?.ProvinceId == provinceGuid.Value && x.SiteAddress?.Ward == input.WardName)
+                            .Select(x => x.UserId)
                             .Distinct().ToList());
                     }
                 }
@@ -224,25 +247,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             if (messageUserIds.Count > 0)
             {
-                MessageTemplate template = messageTemplateRepo.GetAll().Where(x => x.Protocol == "push" && x.TemplateType == "generic-message" && x.IsActive).FirstOrDefault();
-                List<TagsReplacements> replacements = new List<TagsReplacements>();
+                MessageTemplate template = await messageTemplateRepo.GetAll().Where(x => x.Protocol == "push" && x.TemplateType == "generic-message" && x.IsActive).FirstOrDefaultAsync();
 
                 if (input.IsEdit)
                 {
                     // first delete current records for edit functionality and then create again.
-                    foreach (var logId in input.MessageLogIds)
-                    {
-                        messageLogRepo.Delete(logId);
-                    }
+                    await dbContext.MessageLogs.Where(x => input.MessageLogIds.Contains(x.Id)).ExecuteDeleteAsync();
                 }
-                var timeItems = input.MessageTime.Split(":");
-                int hour = Int32.Parse(timeItems[0]);
-                int minutes = Int32.Parse(timeItems[1]);
-                var timeSpan = new TimeSpan(hour, minutes, 0);
-                DateTime messageDate = new DateTime(input.MessageDate.Year, input.MessageDate.Month, input.MessageDate.Day).Add(timeSpan);
+                // ignore the input.MessageTime.  Time is part of the input.MessageDate.
+                //var timeItems = input.MessageTime.Split(":");
+                //int hour = Int32.Parse(timeItems[0]);
+                //int minutes = Int32.Parse(timeItems[1]);
+                //var timeSpan = new TimeSpan(hour, minutes, 0);
+                //DateTime messageDate = new DateTime(input.MessageDate.Year, input.MessageDate.Month, input.MessageDate.Day).Add(timeSpan);
+                DateTime messageDate = input.MessageDate.ToLocalTime();
                 foreach (var userId in messageUserIds)
                 {
-                    var userToSend = await userManager.FindByIdAsync(userId.ToString());
                     await notificationService.SendGenericMessage(userId.ToString(), input.ToGroups, input.Message, input.Subject, messageDate, template, null);
                 }
             }

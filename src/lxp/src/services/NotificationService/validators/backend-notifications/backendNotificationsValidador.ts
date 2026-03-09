@@ -120,11 +120,13 @@ export class BackendNotificationsValidator implements NotificationValidator {
     input: QueryAllNotificationsArgs
   ): Promise<Notification[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<{
-      data: { allNotifications: Notification[] };
-      errors?: {};
-    }>(``, {
-      query: `
+
+    if (navigator.onLine) {
+      const response = await apiInstance.post<{
+        data: { allNotifications: Notification[] };
+        errors?: {};
+      }>(``, {
+        query: `
         query allNotifications($userId: String) {
           allNotifications(userId: $userId) {
             id
@@ -158,14 +160,17 @@ export class BackendNotificationsValidator implements NotificationValidator {
         }
 
       `,
-      variables: {
-        ...input,
-      },
-    });
+        variables: {
+          ...input,
+        },
+      });
 
-    if (response.status !== 200 || response.data.errors) {
+      if (response.status !== 200 || response.data.errors) {
+        return [];
+      }
+      return response.data.data.allNotifications;
+    } else {
       return [];
     }
-    return response.data.data.allNotifications;
   }
 }

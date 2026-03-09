@@ -133,11 +133,11 @@ namespace EcdLink.Api.CoreApi.Services
             _notificationService = notificationService;
 
             _contextUserId = contextAccessor.HttpContext.GetUser().Id;
-            _childRepo = repoFactory.CreateRepository<Child>(userContext: _contextUserId);
+            _childRepo = repoFactory.CreateGenericRepository<Child>(userContext: _contextUserId);
             _childProgressReportRepo = repoFactory.CreateRepository<ChildProgressReport>(userContext: _contextUserId);
             _childProgressReportPeriodRepo = repoFactory.CreateRepository<ChildProgressReportPeriod>(userContext: _contextUserId);
             _practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: _contextUserId);
-            _learnerRepo = repoFactory.CreateRepository<Learner>(userContext: _contextUserId);
+            _learnerRepo = repoFactory.CreateGenericRepository<Learner>(userContext: _contextUserId);
             _classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: _contextUserId);
             _documentRepo = repoFactory.CreateRepository<Document>();
         }
@@ -281,12 +281,11 @@ namespace EcdLink.Api.CoreApi.Services
                                        .Select(x => x.Id)
                                        .FirstOrDefault();
 
-
             var reports = _childProgressReportRepo.GetAll().Where(x => childIds.Contains(x.ChildId) && allPeriodIds.Contains(x.ChildProgressReportPeriodId)).AsNoTracking().ToList();
             var allReports = new List<ChildProgressReport>();
 
             allReports.AddRange(reports.Where(x => x.ChildProgressReportPeriodId == activeReportPeriodId)); // current period report
-            allReports.AddRange(reports.Where(x => x.DateCompleted.HasValue)); // completed
+            allReports.AddRange(reports.Where(x => x.DateCompleted.HasValue || x.ObservationsCompleteDate.HasValue)); // completed
 
             foreach (var report in allReports.Distinct()) 
             {

@@ -30,6 +30,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using static EcdLink.Api.CoreApi.Constants;
@@ -48,6 +49,7 @@ namespace ECDLink.Api.CoreApi.Services
         private IGenericRepository<SiteAddress, Guid> _addressRepo;
         private IGenericRepository<Coach, Guid> _coachGenericRepo;
         private IGenericRepository<PQARating, Guid> _pqaRatingRepo;
+        private IGenericRepository<ReasonForPractitionerLeaving, Guid> _reasonForLeaving;
         private AuthenticationDbContext _dbContext;
         private VisitDataManager _visitDataManager;
         private VisitManager _visitManager;
@@ -84,6 +86,7 @@ namespace ECDLink.Api.CoreApi.Services
             _addressRepo = _repoFactory.CreateGenericRepository<SiteAddress>(userContext: _applicationUserId);
             _coachGenericRepo = _repoFactory.CreateGenericRepository<Coach>(userContext: _applicationUserId);
             _pqaRatingRepo = _repoFactory.CreateGenericRepository<PQARating>(userContext: _applicationUserId);
+            _reasonForLeaving = _repoFactory.CreateGenericRepository<ReasonForPractitionerLeaving>(userContext: _applicationUserId);
             _dbContext = dbContext;
 
             _visitDataManager = visitDataManager;
@@ -307,6 +310,7 @@ namespace ECDLink.Api.CoreApi.Services
                 {
                     classroomName = classroom.Name;
                     classroom.UserId = practitionerToPromote.UserId;
+                    classroom.Hierarchy = practitionerToPromote.Hierarchy;
                     _classRepo.Update(classroom);
                 }
 
@@ -578,6 +582,9 @@ namespace ECDLink.Api.CoreApi.Services
 
             if (practitioner != null && user != null)
             {
+
+                var coachToSend = _userManager.FindByIdAsync(practitioner.CoachHierarchy).Result;
+
                 practitioner.CoachHierarchy = null;
                 practitioner.PrincipalHierarchy = null;
                 practitioner.DateToBeRemoved = DateTime.Now;
@@ -603,8 +610,8 @@ namespace ECDLink.Api.CoreApi.Services
                     var result = _userManager.RemoveFromRoleAsync(user, role).Result;
                 }
 
-                // Use dbContext to get signup
                 var oaSiteAddress = _dbContext.Tenants.Where(x => x.TenantTypeId == ECDLink.Tenancy.Enums.TenantType.OpenAccess).Select(x => x.SiteAddress).FirstOrDefault();
+
                 // Send notification to practitioner
                 var replacements = new List<TagsReplacements>
                  {
@@ -620,6 +627,44 @@ namespace ECDLink.Api.CoreApi.Services
                      }
                  };
                 await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachRemovePractitioner, DateTime.Now.Date, user, "", "", replacements, null, false, false, null);
+
+                //send notification to admins
+                var adminUsers = _userManager.GetUsersInRoleAsync(Roles.ADMINISTRATOR).Result;
+                var reasonForLeaving = _reasonForLeaving.GetAll().Where(x => x.Id == Guid.Parse(reasonForPractitionerLeavingId)).FirstOrDefault();
+                    List<TagsReplacements> adminReplacements = new List<TagsReplacements>()
+                {
+                    new TagsReplacements()
+                    {
+                        FindValue = "PractitionerName",
+                        ReplacementValue = user.FullName
+                    },
+                    new TagsReplacements()
+                    {
+                        FindValue = "CoachName",
+                        ReplacementValue = coachToSend.FullName
+                    },
+                    new TagsReplacements()
+                    {
+                        FindValue = "Date",
+                        ReplacementValue = DateTime.Now.ToString("dd", CultureInfo.InvariantCulture) + " " + DateTime.Now.ToString("MMMM", CultureInfo.InvariantCulture) + " " + DateTime.Now.ToString("yyyy", CultureInfo.InvariantCulture),
+                    },
+                    new TagsReplacements()
+                    {
+                        FindValue = "Reason",
+                        ReplacementValue = reasonForLeaving.Description
+                    },
+
+                    new TagsReplacements()
+                    {
+                        FindValue = "AppName",
+                        ReplacementValue = TenantExecutionContext.Tenant.OrganisationName
+                    }
+                };
+                foreach (var adminUser in adminUsers)
+                {
+                    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.NotifyAdminOnPractitionerRemoved, DateTime.Now.Date, adminUser, "", MessageStatusConstants.Red, adminReplacements, null, false, true, null,
+                           relatedEntities: new List<RelatedEntity> { new RelatedEntity(Guid.Parse(userId), "ApplicationUser") });
+                }
 
                 return userResult?.Succeeded ?? false;
             }
@@ -641,6 +686,13 @@ namespace ECDLink.Api.CoreApi.Services
             var practitioner = _practiGenericRepo.GetByUserId(userId);
             practitioner.ProgressWalkthroughComplete = true;
             _practiGenericRepo.Update(practitioner);
+        }
+
+        public Practitioner UpdatePractitionerCommunityTabStatus(string userId)
+        {
+            var practitioner = _practiGenericRepo.GetByUserId(userId);
+            practitioner.ClickedCommunityTab = true;
+            return _practiGenericRepo.Update(practitioner);
         }
 
         #endregion
@@ -695,7 +747,7 @@ namespace ECDLink.Api.CoreApi.Services
             return true;
         }
 
-        public Practitioner AddOAPractitioner(Guid userId, string userName)
+        public Practitioner AddOAPractitioner(Guid userId, string userName, Guid? principalId)
         {
             var practitioner = _practiRepo.Insert(
                 new Practitioner
@@ -706,20 +758,26 @@ namespace ECDLink.Api.CoreApi.Services
                     InsertedDate = DateTime.Now,
                     UpdatedDate = DateTime.Now,
                     UpdatedBy = _applicationUserId.ToString(),
+                    PrincipalHierarchy = principalId,
+                    StartDate = DateTime.Now,
+                    DateLinked = DateTime.Now
                 });
 
-            // also create a dummy pre-school (classroom) for practitioner to test with
-            _classRepo.Insert(new Classroom
+            if (!principalId.HasValue)
             {
-                Id = Guid.NewGuid(),
-                Name = userName + "'s testing pre-school",
-                UserId = userId,
-                NumberPractitioners = 0,
-                NumberOfAssistants = 0,
-                NumberOfOtherAssistants = 0,
-                IsDummySchool = true,
-                Hierarchy = practitioner.Hierarchy
-            });
+                // also create a dummy pre-school (classroom) for practitioner to test with
+                _classRepo.Insert(new Classroom
+                {
+                    Id = Guid.NewGuid(),
+                    Name = userName + "'s testing pre-school",
+                    UserId = userId,
+                    NumberPractitioners = 0,
+                    NumberOfAssistants = 0,
+                    NumberOfOtherAssistants = 0,
+                    IsDummySchool = true,
+                    Hierarchy = practitioner.Hierarchy
+                });
+            }
 
             return practitioner;
         }

@@ -43,6 +43,7 @@ The platform is built as a Progressive Web Application with offline first capabi
 -   Multi-Language Content Management
 -   Document Management
 -   Send messages via WhatsApp
+-   Optional Facebook and/or Google Single Sign-On (SSO)
 
 ## Reporting
 
@@ -111,7 +112,8 @@ The system can be hosted on-prem using PostgreSQL, IIS or Apache, and file syste
 
 The app has a training module that can display Moodle training courses within an iframe.  
 In order to enable this functionality, the requirements are:
--   Moodle 4.0 or later
+-   Moodle 4.5
+-   PHP 8.3 or later (compatible with Moodle 4.5)
 -   Cohort enrolment enabled
 -   The Moodle database must be on PostgreSQL 13 or later
 -   The Moodle database must be accessible from the backend with read/insert/delete permission
@@ -125,6 +127,16 @@ Configuration of the backend for Moodle is discussed [below](#moodle-optional).
 If further assistance for setup of Moodle is required consider contacting a Moodle partner, e.g. [Limina Education Services](https://limina.co.za)
 
 Training courses have been developed for the ECD Connect Open Access offering.  Email open@ecdconnect.org.za to find out more.
+
+## Facebook SSO
+Facebook SSO can be enabled by configuring the Facebook App Id in the settings.json files in src\lxp and in the appsettings.json files in src\api.
+The only information required from Facebook is 'public_profile'.
+Fore more information on creating a Facebook App to use with ECD Connect go to https://developers.facebook.com.
+
+## Google SSO
+Google SSO can be enabled by configuring the Google Client Id in the settings.json files in src\lxp and in the appsettings.json files in src\api.
+
+
 
 ## Project Requirements
 

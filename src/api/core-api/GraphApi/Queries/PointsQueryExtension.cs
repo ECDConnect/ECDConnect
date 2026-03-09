@@ -1,5 +1,4 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models;
-using EcdLink.Api.CoreApi.GraphApi.Models.Points;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models.Points;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
@@ -19,7 +18,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.POINTS, GraphActionEnum.View)]
         public List<PointsUserSummary> GetPointsSummaryForUser(
             [Service] IPointsEngineService pointsService,
             string userId,
@@ -29,13 +28,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return pointsService.GetSummaryUserPoints(Guid.Parse(userId), startDate, endDate);
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.POINTS, GraphActionEnum.View)]
         public List<PointsActivity> GetPointActivities([Service] IPointsEngineService pointsService)
         {
             return pointsService.GetPointActivities();
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.POINTS, GraphActionEnum.View)]
         public PointsToDoItemModel GetPointsTodoItems(
             [Service] IPointsEngineService pointsService,
             Guid userId)
@@ -43,7 +42,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return pointsService.GetPointsTodoItems(userId);
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.POINTS, GraphActionEnum.View)]
         public PointsUserYearMonthSummary GetYearPointsView(
             [Service] IPointsEngineService pointsService,
             Guid userId)
@@ -51,7 +50,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return pointsService.GetYearPointsView(userId);
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.POINTS, GraphActionEnum.View)]
         public PointsUserDateSummary GetSharedData(
             [Service] IPointsEngineService pointsService,
             Guid userId,

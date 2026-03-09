@@ -8,9 +8,10 @@ export interface ChildInformationFormModel {
   childIdField?: string;
   dobDay: number;
   dobMonth: number;
-  dobYear: number;
+  dobYear: number | undefined;
   dob?: Date;
   dobValid?: boolean;
+  homeLanguageIds?: string[];
 }
 
 export const childInformationFormSchema = Yup.object().shape({

@@ -39,7 +39,7 @@ export const HeaderSlider: React.FC<HeaderSliderProps> = ({
       case 1:
         return 'Available now';
       case 2:
-        return 'Comning soon';
+        return 'Comming soon';
       default:
         return '';
     }
@@ -102,6 +102,9 @@ export const HeaderSlider: React.FC<HeaderSliderProps> = ({
       autoPlay={autoPlay}
       renderIndicator={renderIndicator}
       showIndicators={isSetupComponent ? false : true}
+      showThumbs={false}
+      showStatus={false}
+      showArrows={false}
       {...(transitionTime && { transitionTime })}
     >
       {slides.map((slide, idx) => {
@@ -114,7 +117,7 @@ export const HeaderSlider: React.FC<HeaderSliderProps> = ({
             <div
               data-testid={`header-slide-${idx}`}
               className={styles.card}
-              style={{ width: width - MARGIN }}
+              style={{ width: width < 768 ? width - MARGIN : '100%' }}
             >
               <div
                 className={
@@ -124,6 +127,11 @@ export const HeaderSlider: React.FC<HeaderSliderProps> = ({
                 }
               >
                 <img src={slide.image} className={styles.cardBanner} />
+                {slide?.overlayText && (
+                  <div className={styles.imageOverlayText}>
+                    {slide.overlayText}
+                  </div>
+                )}
               </div>
               {(slide?.title || slide?.text) && (
                 <div className={styles.cardInformation}>

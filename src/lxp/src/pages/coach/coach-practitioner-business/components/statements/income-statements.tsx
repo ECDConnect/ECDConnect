@@ -91,7 +91,7 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
                 )}`}
                 color={'white'}
                 type="h1"
-                className="w-8/12 text-right"
+                className="w-8/12 whitespace-nowrap text-right"
               />
             </Card>
             <table className="mt-4">

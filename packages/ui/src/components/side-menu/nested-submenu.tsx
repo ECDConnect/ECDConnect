@@ -28,9 +28,23 @@ export default function NestedSubMenu({ item, onNavigation }) {
               'flex h-full cursor-pointer flex-row items-center rounded-lg p-2.5 text-base font-medium'
             )}
           >
-            <div className={'mr-4 w-1/12 items-center justify-center '}>
-              {item.icon && renderIcon(item.icon, 'flex-shrink-0 h-6 w-6')}
-            </div>
+            {item && item.icon && item.icon.startsWith('data:image/') ? (
+              <img
+                src={item.icon}
+                alt=""
+                style={{
+                  width: '24px',
+                  height: '24px',
+                  display: 'block',
+                  objectFit: 'contain',
+                  marginRight: '14px',
+                }}
+              />
+            ) : (
+              <div className={'mr-4 w-1/12 items-center justify-center '}>
+                {item.icon && renderIcon(item.icon, 'flex-shrink-0 h-6 w-6')}
+              </div>
+            )}
             <Typography
               type={'h4'}
               color={openSubMenu ? 'primary' : 'textDark'}

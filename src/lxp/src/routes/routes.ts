@@ -11,6 +11,7 @@ const ROUTES = {
   SIGN_UP: '/sign-up',
   CREATE_USERNAME: '/create-username',
   VERIFY_PHONE: '/verify-phone',
+  HELP: '/help',
   CHILD_REGISTRATION_LANDING: '/child-registration-landing',
   PROGRAMMES: addPrefix('/programmes', {
     THEME: '/theme',
@@ -91,6 +92,11 @@ const ROUTES = {
       YEAR: '/year',
     }),
     CONTACT_COACH: '/contact-coach',
+    HELP: addPrefix('/help', {
+      VIDEOS: '/videos',
+      DOWNLOAD: '/download',
+      CHAT: '/chat',
+    }),
   }),
   CHILD_NOTES: '/child-notes',
   CHILD_PROFILE: '/child-profile',
@@ -98,6 +104,7 @@ const ROUTES = {
   CHILD_ATTENDANCE_CAREGIVER: '/child-attendance-caregiver',
   CHILD_ATTENDANCE_REPORT: '/child-attendance-report',
   REMOVE_CHILD: '/remove-child',
+  CHILD_PRESCHOOL_FEES: '/preschool-fees',
   MESSAGES: '/messages',
   PROGRESS_TRACKING_CATEGORY: '/progress-tracking-category',
   PROGRESS_SETUP_REPORTING_PERIODS: '/setup-progress-reporting-period',
@@ -143,6 +150,9 @@ const ROUTES = {
     PROFILE: addPrefix('/profile', {
       EDIT: '/edit',
     }),
+    COACH_PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP:
+      '/coach-progress-view-reports-summary-select',
+    COACH_PROGRESS_VIEW_REPORTS_SUMMARY: '/coach-progress-view-reports-summary',
   }),
 };
 

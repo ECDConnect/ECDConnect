@@ -65,23 +65,22 @@ export class PointsNotificationValidator implements NotificationValidator {
           pointsConstants.practitionerMonthlyMax &&
         lessThen10Days <= 10)
     ) {
-      // EC-3687 hide notification for now
-      // notifications.push({
-      //   reference: referenceNames.points10DaysBeforeLastDayOfMonth,
-      //   title: `Less than 2 weeks to earn points!`,
-      //   message: `More and more practitioners on ${tenantState?.tenant?.applicationName} are earning points. Start earning points to join them!`,
-      //   dateCreated: new Date().toISOString(),
-      //   priority: 36,
-      //   viewOnDashboard: true,
-      //   area: 'points',
-      //   icon: 'SwitchVerticalIcon',
-      //   color: 'primary',
-      //   viewType: 'Both',
-      //   actionText: 'Learn more',
-      //   routeConfig: {
-      //     route: ROUTES.PRACTITIONER.POINTS.SUMMARY,
-      //   },
-      // });
+      notifications.push({
+        reference: referenceNames.points10DaysBeforeLastDayOfMonth,
+        title: `Less than 2 weeks to earn points!`,
+        message: `More and more practitioners on ${tenantState?.tenant?.applicationName} are earning points. Start earning points to join them!`,
+        dateCreated: new Date().toISOString(),
+        priority: 36,
+        viewOnDashboard: true,
+        area: 'points',
+        icon: 'SwitchVerticalIcon',
+        color: 'primary',
+        viewType: 'Both',
+        actionText: 'Learn more',
+        routeConfig: {
+          route: ROUTES.PRACTITIONER.POINTS.SUMMARY,
+        },
+      });
     } else if (
       today === firstDecDayDate &&
       yearpointsTotal &&

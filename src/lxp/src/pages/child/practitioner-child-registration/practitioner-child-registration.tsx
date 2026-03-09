@@ -4,10 +4,8 @@ import { useState } from 'react';
 import { useHistory } from 'react-router';
 import { ChildBasicInfoModel } from '@schemas/child/child-registration/child-basic-info';
 import { ChildBasicInfo } from './child-basic-info/child-basic-info';
-import { CaregiverLink } from './caregiver-link/caregiver-link';
 import { StepViewer } from '../../../components/step-viewer/step-viewer';
 import { Step } from '../../../components/step-viewer/components/step';
-import { useOnlineStatus } from '@hooks/useOnlineStatus';
 enum PractitionerChildRegistrationSteps {
   childBasicDetails = 1,
   caregiverLink = 2,
@@ -16,7 +14,6 @@ enum PractitionerChildRegistrationSteps {
 export const PractitionerChildRegistration: React.FC = () => {
   const dialog = useDialog();
   const history = useHistory();
-  const { isOnline } = useOnlineStatus();
   const [childDetails, setChildDetails] = useState<ChildBasicInfoModel>();
 
   const { activeStepKey, canGoBack, goBackOneStep, goToStep } =
@@ -26,7 +23,6 @@ export const PractitionerChildRegistration: React.FC = () => {
     basicDetails: ChildBasicInfoModel
   ) => {
     setChildDetails(basicDetails);
-    goToStep(PractitionerChildRegistrationSteps.caregiverLink);
   };
 
   const exitRegistrationPrompt = () => {
@@ -65,10 +61,6 @@ export const PractitionerChildRegistration: React.FC = () => {
     });
   };
 
-  const onNewChild = () => {
-    goBackOneStep();
-  };
-
   return (
     <StepViewer
       title="Add a child"
@@ -81,7 +73,6 @@ export const PractitionerChildRegistration: React.FC = () => {
       }}
       activeStep={activeStepKey}
       onClose={exitRegistrationPrompt}
-      isOnline={isOnline}
     >
       <Step
         stepKey={PractitionerChildRegistrationSteps.childBasicDetails}
@@ -89,14 +80,14 @@ export const PractitionerChildRegistration: React.FC = () => {
       >
         <ChildBasicInfo onSubmit={onBasicChildInfoSubmitted} />
       </Step>
-      <Step
+      {/* <Step
         stepKey={PractitionerChildRegistrationSteps.caregiverLink}
         viewBannerWapper={true}
       >
         {childDetails && (
           <CaregiverLink onNewChild={onNewChild} childDetails={childDetails} />
         )}
-      </Step>
+      </Step> */}
     </StepViewer>
   );
 };

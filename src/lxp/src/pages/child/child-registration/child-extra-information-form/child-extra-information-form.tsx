@@ -49,7 +49,7 @@ export const ChildExtraInformationForm: React.FC<
   useEffect(() => {
     if (childExtraInformation) {
       setChildGender(childExtraInformation.genderId);
-      setSelectedLanguages(childExtraInformation.homeLanguages || []);
+      setSelectedLanguages(childExtraInformation.homeLanguageIds || []);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [childExtraInformation]);
@@ -73,7 +73,7 @@ export const ChildExtraInformationForm: React.FC<
 
   const handleLanguageSelection = (selectedLanguages: string[]) => {
     setSelectedLanguages(selectedLanguages);
-    setChildExtraInformationFormValue('homeLanguages', selectedLanguages);
+    setChildExtraInformationFormValue('homeLanguageIds', selectedLanguages);
 
     const languageOther = languagesList.find((x) => x.text === 'Other');
 

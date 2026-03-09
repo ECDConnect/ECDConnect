@@ -4,6 +4,7 @@ import { RootState } from '@store/types';
 import {
   NotificationValidator,
   NotificationIntervals,
+  NotificationPriority,
 } from '../../NotificationService.types';
 import {
   ChildDto,
@@ -104,7 +105,7 @@ export class ChildProgressReportNotificationValidator
       ) || [];
     const learners = classroomGroups.flatMap((cg) => cg.learners);
     const children = childrenState.childData.children.filter((c) =>
-      learners.some((l) => c.userId === l.childUserId)
+      learners.some((l) => c.userId === l.childUserId && l.isActive)
     );
 
     return children;
@@ -240,16 +241,18 @@ export class ChildProgressReportNotificationValidator
     const currentUser = userState.user;
 
     const reference = `${currentUser?.id}-${currentMonth}-${currentYear}-report-periods`;
+    const reportingPeriods =
+      classroomState?.classroom?.childProgressReportPeriods!;
 
     if (
       today === februaryFirstDay &&
-      !classroomState?.classroom?.childProgressReportPeriods
+      (!reportingPeriods || reportingPeriods.length === 0)
     ) {
       notifications?.push({
         reference,
         title: `Get started with ${currentYear} progress reports`,
         message: `Choose progress reporting periods for ${currentYear} to start tracking child progress.`,
-        priority: 21,
+        priority: NotificationPriority.higher,
         actionText: 'Get summary',
         area: 'progress-report',
         color: 'alertMain',

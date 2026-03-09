@@ -6,8 +6,6 @@ import { differenceInDays } from 'date-fns';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
 import { ChildProgressReportsStatus } from '@ecdlink/graphql';
 import { CoachService } from '@/services/CoachService';
-import { ClassroomGroupDto as SimpleClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
-import { OverrideCache } from '@/models/sync/override-cache';
 
 export const PractitionersForCoachActions = {
   GET_CHILD_PROGRESS_REPORTS_STATUS: 'getChildProgressReportsStatus',

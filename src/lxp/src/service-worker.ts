@@ -19,10 +19,14 @@ log('Installing');
 
 clientsClaim();
 
-var wb_manifest = [
+const wb_manifest = [
+  // {
+  //   revision: null as any as string,
+  //   url: '/settings.json',
+  // } as PrecacheEntry,
   {
     revision: null as any as string,
-    url: '/settings.json',
+    url: '/manifest.json',
   } as PrecacheEntry,
   ...self.__WB_MANIFEST,
 ];
@@ -39,7 +43,9 @@ registerRoute(({ request, url }) => {
 registerRoute(
   ({ url, request }) => {
     const cache =
-      url.pathname.endsWith('.png') || url.pathname.endsWith('.ico');
+      url.pathname.endsWith('.png') ||
+      url.pathname.endsWith('.ico') ||
+      url.pathname.endsWith('.svg');
     // log(
     //   `[ServiceWorker] Checking image: ${url.href}, cache: ${
     //     cache ? 'Y' : 'N'

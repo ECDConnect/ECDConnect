@@ -21,7 +21,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class ProgrammeMutationExtension
     {
-        [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
+
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Update)]
         public bool UpdateProgrammes([Service] IHttpContextAccessor contextAccessor,
          [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
          [Service] IPointsEngineService pointsService,
@@ -147,7 +148,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return false;
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Update)]
         public Programme UpdateProgramme([Service] IHttpContextAccessor contextAccessor,
           [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
           [Service] IPointsEngineService pointsService,
@@ -191,7 +192,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Update)]
         public DailyProgramme UpdateDailyProgramme([Service] IHttpContextAccessor contextAccessor,
              [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
              [Service] IPointsEngineService pointsService,

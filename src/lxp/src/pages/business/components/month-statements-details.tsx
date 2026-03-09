@@ -53,36 +53,40 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
   const [showSalaryDetails, setShowSalaryDetails] = useState(false);
 
   // Totals
-  const totalIncome = sumIncomeOrExpenseItems(statement.incomeItems);
-  const totalExpenses = sumIncomeOrExpenseItems(statement.expenseItems);
+  const totalIncome = sumIncomeOrExpenseItems(
+    statement.incomeItems.filter((x) => x.isActive)
+  );
+  const totalExpenses = sumIncomeOrExpenseItems(
+    statement.expenseItems.filter((x) => x.isActive)
+  );
   const totalBalance = totalIncome - totalExpenses;
 
   // Income values
   const preschoolFees = useMemo(
     () =>
       statement.incomeItems.filter(
-        (x) => x.incomeTypeId === IncomeTypeIds.PRESCHOOL_FEE_ID
+        (x) => x.incomeTypeId === IncomeTypeIds.PRESCHOOL_FEE_ID && x.isActive
       ) || [],
     [statement]
   );
   const donationsOrVouchers = useMemo(
     () =>
       statement.incomeItems.filter(
-        (x) => x.incomeTypeId === IncomeTypeIds.DONATION_ID
+        (x) => x.incomeTypeId === IncomeTypeIds.DONATION_ID && x.isActive
       ) || [],
     [statement]
   );
   const dbeSubsidy = useMemo(
     () =>
       statement.incomeItems.filter(
-        (x) => x.incomeTypeId === IncomeTypeIds.DBE_SUBSIDY_ID
+        (x) => x.incomeTypeId === IncomeTypeIds.DBE_SUBSIDY_ID && x.isActive
       ) || [],
     [statement]
   );
   const otherIncomeValues = useMemo(
     () =>
       statement.incomeItems.filter(
-        (x) => x.incomeTypeId === IncomeTypeIds.OTHER_INCOME_ID
+        (x) => x.incomeTypeId === IncomeTypeIds.OTHER_INCOME_ID && x.isActive
       ) || [],
     [statement]
   );
@@ -91,49 +95,52 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
   const rent = useMemo(
     () =>
       statement.expenseItems.filter(
-        (x) => x.expenseTypeId === ExpenseTypeIds.RENT_EXPENSE_ID
+        (x) => x.expenseTypeId === ExpenseTypeIds.RENT_EXPENSE_ID && x.isActive
       ) || [],
     [statement]
   );
   const food = useMemo(
     () =>
       statement.expenseItems.filter(
-        (x) => x.expenseTypeId === ExpenseTypeIds.FOOD_EXPENSE_ID
+        (x) => x.expenseTypeId === ExpenseTypeIds.FOOD_EXPENSE_ID && x.isActive
       ) || [],
     [statement]
   );
   const learningMaterials = useMemo(
     () =>
       statement.expenseItems.filter(
-        (x) => x.expenseTypeId === ExpenseTypeIds.LEARNING_MATERIALS_ID
+        (x) =>
+          x.expenseTypeId === ExpenseTypeIds.LEARNING_MATERIALS_ID && x.isActive
       ) || [],
     [statement]
   );
   const maintenance = useMemo(
     () =>
       statement.expenseItems.filter(
-        (x) => x.expenseTypeId === ExpenseTypeIds.MAINTENANCE_ID
+        (x) => x.expenseTypeId === ExpenseTypeIds.MAINTENANCE_ID && x.isActive
       ) || [],
     [statement]
   );
   const otherExpenseValues = useMemo(
     () =>
       statement.expenseItems.filter(
-        (x) => x.expenseTypeId === ExpenseTypeIds.OTHER_EXPENSE_ID
+        (x) => x.expenseTypeId === ExpenseTypeIds.OTHER_EXPENSE_ID && x.isActive
       ) || [],
     [statement]
   );
   const utilities = useMemo(
     () =>
       statement.expenseItems.filter(
-        (x) => x.expenseTypeId === ExpenseTypeIds.UTILITIES_EXPENSE_ID
+        (x) =>
+          x.expenseTypeId === ExpenseTypeIds.UTILITIES_EXPENSE_ID && x.isActive
       ) || [],
     [statement]
   );
   const salary = useMemo(
     () =>
       statement.expenseItems.filter(
-        (x) => x.expenseTypeId === ExpenseTypeIds.SALARY_EXPENSE_ID
+        (x) =>
+          x.expenseTypeId === ExpenseTypeIds.SALARY_EXPENSE_ID && x.isActive
       ) || [],
     [statement]
   );
@@ -338,7 +345,7 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
                 text={`R ${formatCurrency(totalIncome)}`}
                 color={'white'}
                 type="h4"
-                className="mr-12 w-4/12 text-right"
+                className="mr-12 w-4/12 whitespace-nowrap text-right"
               />
             </Card>
           </>
@@ -392,13 +399,13 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
                 text={'Total expenses'}
                 type="body"
                 color={'white'}
-                className="w-9/12"
+                className="w-6/12"
               />
               <Typography
                 text={`R ${formatCurrency(totalExpenses)}`}
                 color={'white'}
                 type="h4"
-                className="mr-12 w-4/12 text-right"
+                className="w-8/12 whitespace-nowrap text-right"
               />
             </Card>
           </>
@@ -418,7 +425,7 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
             text={`R ${formatCurrency(totalBalance)}`}
             color={'white'}
             type="h1"
-            className="w-8/12 text-right"
+            className="w-8/12 whitespace-nowrap text-right"
           />
         </Card>
       </div>

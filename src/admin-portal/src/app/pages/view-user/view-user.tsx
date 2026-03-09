@@ -39,7 +39,7 @@ import { PractitionerSummary } from './components/practitioner-summary/practitio
 import { PractitionerIssuesAndHighlights } from './components/practitioner-issues/practitioner-issues-and-highlights';
 import { CoachSummary } from './components/coach-summary/coach-summary';
 import { CoachIssuesAndHighlights } from './components/coach-issues-and-highlights/coach-issues-and-highlights';
-import { pluralize } from '../pages.utils';
+import { pluralize } from '../../utils/string-utils/pages.utils';
 import { ResetUserPassword } from './components/reset-password/reset-password';
 import { ConnectUsage } from '../users/user.types';
 

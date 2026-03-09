@@ -11,3 +11,10 @@ export const getProgrammeRoutineById = (programmeRoutineId: number) =>
     (programmeRoutines: ProgrammeRoutineDto[]) =>
       programmeRoutines.find((routine) => routine.id === programmeRoutineId)
   );
+
+export const getProgrammeRoutineItem = () =>
+  createSelector(
+    (state: RootState) => state.programmeRoutineData.programmeRoutines || [],
+    (programmeRoutines: ProgrammeRoutineDto[]) =>
+      programmeRoutines.find((routine) => routine.name === 'The daily routine')
+  );

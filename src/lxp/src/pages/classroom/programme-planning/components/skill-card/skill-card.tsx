@@ -15,6 +15,7 @@ const SkillCard: React.FC<SkillCardProps> = ({
   return (
     <div className="flex items-center gap-2 p-3">
       <RoundIcon
+        iconSize={{ w: '12', h: '12' }}
         imageUrl={icon}
         hexBackgroundColor={hexBackgroundColor}
         className={`mr-4 ${!hexBackgroundColor ? 'bg-primary' : ''} text-white`}

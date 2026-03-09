@@ -39,7 +39,6 @@ import {
   useNotifications,
 } from '@ecdlink/core';
 import AlertModal from '../../components/dialog-alert/dialog-alert';
-import CustomDateRangePicker from '../../components/date-picker/index';
 import {
   DeleteUser,
   GetUserById,
@@ -56,6 +55,7 @@ import zxcvbn from 'zxcvbn-typescript';
 import { PasswordInput } from '../../components/password-input/password-input';
 import { subDays } from 'date-fns';
 import { useTenant } from '../../hooks/useTenant';
+import * as styles from '../pages.styles';
 
 const chwSchema = yup.object().shape({
   idNumber: yup
@@ -471,7 +471,8 @@ export function ViewUser(props: any) {
                 setEditActive(!editActive);
               }}
               id="dropdownHoverButton"
-              className="bg-secondary focus:border-secondary w-1/ focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg py-2.5 px-12 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
+              //className="bg-secondary focus:border-secondary w-1/ focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg py-2.5 px-12 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
+              className={styles.mainButton}
               type="button"
             >
               {' '}

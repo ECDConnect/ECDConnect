@@ -150,7 +150,6 @@ export default function ChildPanelCreate(props: UserPanelCreateProps) {
       Allergies: childForm.allergies,
       Disabilities: childForm.disabilities,
       OtherHealthConditions: childForm.otherHealthConditions,
-      LanguageId: childForm.languageId && +childForm.languageId,
       IsActive: true,
     };
 

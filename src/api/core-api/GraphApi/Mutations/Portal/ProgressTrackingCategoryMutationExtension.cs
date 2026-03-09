@@ -1,4 +1,7 @@
+using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.ContentManagement.Repositories;
+using ECDLink.EGraphQL.Authorization;
+using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
 using System;
@@ -10,6 +13,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     public class ProgressTrackingCategoryMutationExtension
     {
 
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.Update)]
         public bool BulkUpdateProgressTrackingCategoryImages(
             [Service] ContentManagementRepository contentRepo,
             int contentId,

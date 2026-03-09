@@ -3,7 +3,6 @@ using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.ContentManagement.Constants;
 using ECDLink.ContentManagement.Repositories;
-using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.EGraphQL.Authorization;
@@ -21,7 +20,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
     [ExtendObjectType(OperationTypeNames.Query)]
     public class ProgrammeQueryExtension
     {
-        [Permission(PermissionGroups.SYSTEM, GraphActionEnum.View)]
+
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.View)]
         public List<StoryBookViewModel> GetStoryBookRecords(
            [Service] ContentManagementRepository contentRepo,
            AuthenticationDbContext dbContext,
@@ -33,7 +33,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
            List<string> shareContent = null,
            PagedQueryInput pagingInput = null,
            DateTime? startDate = null,
-           DateTime? endDate= null)
+           DateTime? endDate = null)
         {
             if (cancellationToken.IsCancellationRequested)
             {
@@ -194,23 +194,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
             }
             return records
                     .OrderByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Year : d.InsertedDate.Value.Year)
-                    .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
-                    .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
+                    .ThenByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
+                    .ThenByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
                     .ToList();
         }
 
-        [Permission(PermissionGroups.SYSTEM, GraphActionEnum.View)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.View)]
         public List<StoryBookPartModel> GetStoryBookPartQuestions(
-            [Service] ContentManagementRepository contentRepo, 
-            Guid localeId) {
+            [Service] ContentManagementRepository contentRepo,
+            Guid localeId)
+        {
 
             return contentRepo.GetAll(ContentTypeConstants.StoryBookPartQuestionId, localeId).Select(x => new StoryBookPartModel(x)).ToList();
         }
 
-        [Permission(PermissionGroups.SYSTEM, GraphActionEnum.View)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.View)]
         public List<ActivityViewModel> GetActivityRecords(
            [Service] ContentManagementRepository contentRepo,
-           AuthenticationDbContext dbContext,
            CancellationToken cancellationToken,
            bool isStoryActivity,
            string search = null,
@@ -252,10 +252,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
             {
                 foreach (var localeId in languageSearch)
                 {
-                    if (isStoryActivity) {
+                    if (isStoryActivity)
+                    {
                         records.AddRange(contentRepo.GetByValueKey(ContentTypeConstants.Activity, "type", ContentTypeConstants.ActivityStoryTime, localeId)
                         .Select(x => new ActivityViewModel(x, localeId, new List<SubCategoryViewModel>(), storyActivityRecords, themeRecords)).ToList());
-                    } else {
+                    }
+                    else
+                    {
                         records.AddRange(contentRepo.GetByValueKey(ContentTypeConstants.Activity, "type", ContentTypeConstants.SmallGroup, localeId)
                         .Select(x => new ActivityViewModel(x, localeId, subCategories, smallActivityRecords, themeRecords)).ToList());
                         records.AddRange(contentRepo.GetByValueKey(ContentTypeConstants.Activity, "type", ContentTypeConstants.LargeGroup, localeId)
@@ -265,10 +268,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
             }
             else
             {
-                if (isStoryActivity) {
+                if (isStoryActivity)
+                {
                     records = contentRepo.GetByValueKey(ContentTypeConstants.Activity, "type", ContentTypeConstants.ActivityStoryTime, englishId)
                     .Select(x => new ActivityViewModel(x, englishId, new List<SubCategoryViewModel>(), storyActivityRecords, themeRecords)).ToList();
-                } else {
+                }
+                else
+                {
                     records.AddRange(contentRepo.GetByValueKey(ContentTypeConstants.Activity, "type", ContentTypeConstants.SmallGroup, englishId)
                     .Select(x => new ActivityViewModel(x, englishId, subCategories, smallActivityRecords, themeRecords)).ToList());
                     records.AddRange(contentRepo.GetByValueKey(ContentTypeConstants.Activity, "type", ContentTypeConstants.LargeGroup, englishId)
@@ -289,8 +295,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                 {
                     return records
                             .OrderByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Year : d.InsertedDate.Value.Year)
-                            .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
-                            .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
+                            .ThenByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
+                            .ThenByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
                             .ToList();
                 }
                 else
@@ -328,8 +334,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     {
                         foreach (var record in records)
                         {
-                            if (record.SubTypeItems.Count > 0) {
-                                foreach (var subTypeItem in record.SubTypeItems) {
+                            if (record.SubTypeItems.Count > 0)
+                            {
+                                foreach (var subTypeItem in record.SubTypeItems)
+                                {
                                     if (subTypesSearch.Contains(subTypeItem))
                                     {
                                         filteredRecords.Add(record);
@@ -352,8 +360,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     {
                         foreach (var record in records)
                         {
-                            if (record.SubCategoryItems.Count > 0) {
-                                foreach (var subCat in record.SubCategoryItems) {
+                            if (record.SubCategoryItems.Count > 0)
+                            {
+                                foreach (var subCat in record.SubCategoryItems)
+                                {
                                     if (skillSearch.Contains(Int32.Parse(subCat.Id)))
                                     {
                                         filteredRecords.Add(record);
@@ -368,11 +378,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                         {
                             filteredRecords.AddRange(records.Where(x => x.Themes == "").ToList());
                         }
-                        
+
                         foreach (var record in records)
                         {
-                            if (record.ThemeItems.Count > 0) {
-                                foreach (var theme in record.ThemeItems) {
+                            if (record.ThemeItems.Count > 0)
+                            {
+                                foreach (var theme in record.ThemeItems)
+                                {
                                     if (themesSearch.Contains(theme))
                                     {
                                         filteredRecords.Add(record);
@@ -423,35 +435,58 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     }
                     return filteredRecords
                             .OrderByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Year : d.InsertedDate.Value.Year)
-                            .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
-                            .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
+                            .ThenByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
+                            .ThenByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
                             .ToList();
                 }
             }
             return records
                     .OrderByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Year : d.InsertedDate.Value.Year)
-                    .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
-                    .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
+                    .ThenByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
+                    .ThenByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
                     .ToList();
         }
 
-        [Permission(PermissionGroups.SYSTEM, GraphActionEnum.View)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.View)]
         public List<ThemeViewModel> GetThemeRecords(
-           [Service] ContentManagementRepository contentRepo,
-           [Service] ILocaleService<Language> localeService,
-           CancellationToken cancellationToken,
-           string search = null,
-           List<string> shareContent = null,
-           PagedQueryInput pagingInput = null,
-           DateTime? startDate = null,
-           DateTime? endDate= null)
+            [Service] ContentManagementRepository contentRepo,
+            [Service] ThemeRepository themeRepo,
+            CancellationToken cancellationToken,
+            string search = null,
+            List<string> shareContent = null,
+            PagedQueryInput pagingInput = null,
+            DateTime? startDate = null,
+            DateTime? endDate = null)
         {
             if (cancellationToken.IsCancellationRequested)
             {
                 return null;
             }
-
             var englishId = new Guid("9688cd08-adef-408c-9d34-5d75ae5c44df");
+            var oaTenantId = new Guid("258a15e6-3736-45ea-875c-48d9377de4c8");
+
+            // validate to see if tenant has nature default template
+            var natureContentForTenant = contentRepo.ValidateDefaultTemplateByContentTypeId(ContentTypeConstants.ThemeId, englishId, "DefaultNature", TenantExecutionContext.Tenant.Id);
+            if (natureContentForTenant == null)
+            {
+                var natureOADefaultContent = contentRepo.ValidateDefaultTemplateByContentTypeId(ContentTypeConstants.ThemeId, englishId, "DefaultNature", oaTenantId);
+                if (natureOADefaultContent != null)
+                {
+                    themeRepo.CreateDefaultNatureTheme(englishId, oaTenantId, natureOADefaultContent.ContentId);
+                }
+             }
+             
+             // validate to see if tenant has nature default template
+            var animalContentForTenant = contentRepo.ValidateDefaultTemplateByContentTypeId(ContentTypeConstants.ThemeId, englishId, "DefaultAnimal", TenantExecutionContext.Tenant.Id);
+            if (animalContentForTenant == null)
+            {
+                var animalOADefaultContent = contentRepo.ValidateDefaultTemplateByContentTypeId(ContentTypeConstants.ThemeId, englishId, "DefaultAnimal", oaTenantId);
+                if (animalOADefaultContent != null)
+                {
+                    themeRepo.CreateDefaultAnimalTheme(englishId, oaTenantId, animalOADefaultContent.ContentId);
+                }
+             }
+
             var records = contentRepo.GetAll(ContentTypeConstants.ThemeId, englishId)
                                      .Select(x => new ThemeViewModel(x, englishId))
                                      .Where(x => x.TenantId.ToString() == TenantExecutionContext.Tenant.Id.ToString())
@@ -460,14 +495,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
             if (records.Any())
             {
                 if (string.IsNullOrEmpty(search)
-                    && startDate == null 
+                    && startDate == null
                     && endDate == null
                     && shareContent.Count == 0)
                 {
                     return records
                         .OrderByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Year : d.InsertedDate.Value.Year)
-                        .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
-                        .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
+                        .ThenByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
+                        .ThenByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
                         .ToList();
                 }
                 else
@@ -543,17 +578,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     }
                     return filteredRecords
                             .OrderByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Year : d.InsertedDate.Value.Year)
-                            .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
-                            .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
+                            .ThenByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
+                            .ThenByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
                             .ToList();
                 }
             }
-           return records
-                    .OrderByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Year : d.InsertedDate.Value.Year)
-                    .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
-                    .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
-                    .ToList();
+            return records
+                     .OrderByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Year : d.InsertedDate.Value.Year)
+                     .ThenByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
+                     .ThenByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
+                     .ToList();
         }
+
 
     }
 }

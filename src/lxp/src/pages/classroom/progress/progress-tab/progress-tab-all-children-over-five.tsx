@@ -24,7 +24,7 @@ export const ProgressTabAllChildrenOverFive: React.FC<{
       <Typography
         className="mt-4 text-center"
         color="textDark"
-        text="You don't have any children under 5 years old!"
+        text="You don't have any children under 6.5 years old!"
         type={'h3'}
       />
       <Typography

@@ -1,5 +1,6 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.GraphApi.Models.Users;
+using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Security.Managers;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using EcdLink.Api.CoreApi.Security.Models;
@@ -13,6 +14,7 @@ using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
+using ECDLink.Security.Api.Constants;
 using ECDLink.Security.Extensions;
 using ECDLink.Security.Helpers;
 using ECDLink.Security.JwtSecurity.Enums;
@@ -21,6 +23,7 @@ using ECDLink.UrlShortner.Managers;
 using HotChocolate;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
@@ -38,6 +41,7 @@ namespace ECDLink.Security.Api
         private readonly IPasswordManager<ApplicationUser> _passwordManager;
         private readonly ShortUrlManager _shortUrlManager;
         private readonly SecurityNotificationManager _notificationManager;
+        private readonly InvitationNotificationManager _invitationNotificationManager;
         private readonly SecurityManager _securityManager;
         private readonly ApplicationUserManager _userManager;
         private readonly PersonnelService _personnelService;
@@ -54,6 +58,7 @@ namespace ECDLink.Security.Api
           IPasswordManager<ApplicationUser> passwordManager,
           ShortUrlManager shortUrlManager,
           SecurityNotificationManager notificationManager,
+          InvitationNotificationManager invitationNotificationManager,
           SecurityManager securityManager,
           ApplicationUserManager userManager,
           PersonnelService personnelService,
@@ -66,6 +71,7 @@ namespace ECDLink.Security.Api
             _passwordManager = passwordManager;
             _shortUrlManager = shortUrlManager;
             _notificationManager = notificationManager;
+            _invitationNotificationManager = invitationNotificationManager;
             _securityManager = securityManager;
             _userManager = userManager;
             _personnelService = personnelService;
@@ -103,7 +109,7 @@ namespace ECDLink.Security.Api
                 await _securityManager.ChangePasswordAsync(user, invitationModel.Password);
             }
 
-            _shortUrlManager.RemoveShortUrl(user.Id, TemplateTypeConstants.Invitation);
+            await _shortUrlManager.RemoveShortUrl(user.Id, TemplateTypeConstants.Invitation);
 
             return Ok();
         }
@@ -132,7 +138,7 @@ namespace ECDLink.Security.Api
             var userIsAdmin = await _userManager.IsInRoleAsync(user, Roles.ADMINISTRATOR);
             if (userIsAdmin)
             {
-                _shortUrlManager.RemoveShortUrl(user.Id, TemplateTypeConstants.AdminPortalInvitation);
+                await _shortUrlManager.RemoveShortUrl(user.Id, TemplateTypeConstants.AdminPortalInvitation);
                 return Ok(true);
             }
 
@@ -145,15 +151,24 @@ namespace ECDLink.Security.Api
         public async Task<IActionResult> VerifyInvitation([FromBody] VerifyInvitationModel verifyModel)
         {
             var decodedToken = TokenHelper.DecodeToken(verifyModel.Token);
-
             var user = await _invitationManager.GetValidUserWithTokenAsync(verifyModel.Username, decodedToken);
 
             if (user == null)
             {
+                var userWithId = await _userManager.FindByNameAsync(verifyModel.Username);
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 3,
+                    Error = userWithId.Id.ToString()
+                }); 
+            }
+
+            if (!string.Equals(verifyModel.Username, user.UserName))
+            {
                 return BadRequest(new FailedVerificationModel
                 {
                     ErrorCode = 1,
-                    Error = "Invalid Id Number"
+                    Error = "Invalid Idnumber"
                 });
             }
 
@@ -375,7 +390,7 @@ namespace ECDLink.Security.Api
                 });
             }
 
-            var user = _userManager.FindByIdAsync(input.UserId).Result;
+            var user = await _userManager.FindByIdAsync(input.UserId);
             if (user == null)
             {
                 return BadRequest(new FailedVerificationModel
@@ -398,11 +413,12 @@ namespace ECDLink.Security.Api
                 });
             }
             // Mark invitation as clicked
-            _shortUrlManager.RemoveShortUrl(user.Id, TemplateTypeConstants.Invitation);
+            await _shortUrlManager.RemoveShortUrl(user.Id, TemplateTypeConstants.Invitation);
             
             // Update user with new username
             user.UserName = input.UserName;
             user.UpdatedDate = DateTime.Now;
+            user.RegisterType = string.IsNullOrEmpty(input.RegisterType) ? RegisterTypeConstants.USERNAME : input.RegisterType;
             var updateResult = _userManager.UpdateAsync(user).Result;
             if (!updateResult.Succeeded)
             {
@@ -477,5 +493,27 @@ namespace ECDLink.Security.Api
             return Ok(tokenModel);
         }
 
+        [Route("send-new-invitation")]
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> SendNewInvitation([FromBody] AuthCodeModel authModel)
+        {
+            var user = await _userManager.FindByNameAsync(authModel.Username);  
+
+            if (user == null)
+            {
+                return BadRequest();
+            }
+
+            var token = await _invitationManager.GenerateTokenAsync(user);
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return BadRequest();
+            }
+
+            await _invitationNotificationManager.SendInvitationAsync(user, token);
+
+           return Ok();
+        }
     }
 }

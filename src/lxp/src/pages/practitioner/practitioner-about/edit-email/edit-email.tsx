@@ -104,6 +104,7 @@ export const EditEmail: React.FC<EditEmailProps> = ({ setEditEmail, user }) => {
                 nameProp={'email'}
                 className="w-full"
                 register={practitionerInfoFormRegister}
+                placeholder="e.g. myname@email.com"
                 error={!!errors.email ? errors.email : undefined}
               />
             </div>

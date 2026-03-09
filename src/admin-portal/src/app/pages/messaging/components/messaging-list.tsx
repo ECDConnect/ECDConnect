@@ -2,16 +2,17 @@ import { useEffect, useState } from 'react';
 import { LocalStorageKeys, AuthUser, MessageLogDto } from '@ecdlink/core';
 import { MailIcon, SearchIcon } from '@heroicons/react/solid';
 import debounce from 'lodash.debounce';
+import { format, subDays } from 'date-fns';
 
 import { GetAllMessageLogsForAdmin } from '@ecdlink/graphql';
 import { useLazyQuery } from '@apollo/client';
 import { SearchDropDown, SearchDropDownOption, Dropdown } from '@ecdlink/ui';
-import { subDays } from 'date-fns';
 import CustomDateRangePicker from '../../../components/date-picker';
 import NavigationTable from '../../../components/navigation-table';
 import { useHistory } from 'react-router';
 import { MessageRoleDto, ssRoles } from './message';
 import { useTenant } from '../../../hooks/useTenant';
+import * as styles from '../../pages.styles';
 
 export default function MessageList() {
   const history = useHistory();
@@ -19,7 +20,7 @@ export default function MessageList() {
   const [tableData, setTableData] = useState<any[]>([]);
   const [authenticatedUser, setAuthenticatedUser] = useState<AuthUser>();
   const [searchValue, setSearchValue] = useState('');
-  const [roleData, setRoleData] = useState<MessageRoleDto[]>([]);
+  const [roleData] = useState<MessageRoleDto[]>([]);
   const [showFilter, setShowFilter] = useState(false);
   const [statusFilter, setStatusFilter] = useState('');
   const [selectedRoles, setSelectedRoles] = useState<MessageRoleDto[]>(ssRoles);
@@ -30,6 +31,7 @@ export default function MessageList() {
   const currentDate = new Date();
   const startDate = subDays(currentDate, 30);
   const endDate = currentDate;
+  const now = new Date();
 
   const [selectedRange, setSelectedRange] = useState<Date[]>([
     startDate,
@@ -62,34 +64,35 @@ export default function MessageList() {
     }
   }, [messages, getAllMessageLogsForAdmin]);
 
-  const getFormattedDate = (mDate: Date) => {
-    const date = new Date(mDate);
-    return new Date(date.toISOString());
+  const getMessageFormattedDateString = (
+    messageDate: string | null | undefined
+  ): string => {
+    if (!messageDate) return '';
+    const date = new Date(messageDate);
+    return format(date, 'yyyy-MM-dd HH:mm');
   };
 
-  const getFormattedDateString = (mDate: Date) => {
-    const date = new Date(mDate).toISOString();
-    const dateItems = date.split('T');
-    return dateItems[0] + '  ' + dateItems[1].slice(0, 5);
+  const getMessageStatus = (messageDate: string | null | undefined): string => {
+    if (!messageDate) return '';
+    const date = new Date(messageDate);
+    return date > now ? 'Scheduled' : 'Sent';
   };
 
   useEffect(() => {
     if (messages) {
       const copyItems = messages.allMessageLogsForAdmin.map(
-        (item: MessageLogDto, index: number) => ({
-          ...item,
-          message: item.message,
-          subject: item.subject,
-          messageDate:
-            item.messageDate !== null
-              ? getFormattedDateString(item.messageDate)
-              : '',
-          status:
-            getFormattedDate(item.messageDate) > new Date()
-              ? 'Scheduled'
-              : 'Sent',
-          id: index.toString(),
-        })
+        (item: MessageLogDto, index: number) => {
+          return {
+            ...item,
+            message: item.message,
+            subject: item.subject,
+            messageDate: getMessageFormattedDateString(
+              item.messageDate as any as string
+            ),
+            status: getMessageStatus(item.messageDate as any as string),
+            id: index.toString(),
+          };
+        }
       );
       setTableData(copyItems);
     }
@@ -154,7 +157,7 @@ export default function MessageList() {
                 <button
                   onClick={() => setShowFilter(!showFilter)}
                   id="dropdownHoverButton"
-                  className="bg-secondary focus:border-secondary focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
+                  className={styles.filterButton}
                   type="button"
                 >
                   Filter
@@ -181,7 +184,7 @@ export default function MessageList() {
               <button
                 onClick={() => displayMessagePanel(null)}
                 type="button"
-                className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                className={styles.mainButton}
               >
                 <MailIcon className="mr-4 h-5 w-5"></MailIcon> Send a new
                 message
@@ -194,10 +197,10 @@ export default function MessageList() {
           <div className="mb-3 flex w-full flex-row flex-wrap items-center">
             <div className="relative inline-block pr-2 text-left">
               <SearchDropDown<any>
-                displayMenuOverlay
-                overlayTopOffset={'14'}
-                className={'mr-1 ml-2'}
-                menuItemClassName={'w-42 left-2'}
+                menuItemClassName="w-11/12 left-4"
+                className="mb-2 h-11 border-2 border-transparent"
+                color="quatenary"
+                bgColor="white"
                 options={
                   roleData.map((x) => {
                     return {
@@ -211,7 +214,6 @@ export default function MessageList() {
                 onChange={(value) => onRoleFilterItemsChanges(value)}
                 placeholder={'Role'}
                 pluralSelectionText={'Roles'}
-                color={'secondary'}
                 multiple
                 selectedOptions={selectedRoles.map((x) => {
                   return {
@@ -226,22 +228,25 @@ export default function MessageList() {
               />
             </div>
             <div className="relative inline-block pr-2 text-left">
-              <Dropdown
-                fillType="filled"
-                textColor="white"
-                fillColor="secondary"
-                placeholder="Status"
-                labelColor="white"
-                selectedValue={statusFilter}
-                list={[
-                  { label: 'Scheduled', value: 'scheduled' },
-                  { label: 'Sent', value: 'sent' },
+              <SearchDropDown<string>
+                // displayMenuOverlay
+                menuItemClassName="w-11/12 left-4"
+                className="mb-2 h-11 border-2 border-transparent"
+                color="quatenary"
+                bgColor="white"
+                options={[
+                  { id: '1', label: 'Scheduled', value: 'scheduled' },
+                  { id: '2', label: 'Sent', value: 'sent' },
                 ]}
                 onChange={(item) => {
-                  setStatusFilter(item);
+                  setStatusFilter(item[0].value);
                   getAllMessageLogsForAdmin();
                 }}
-                className="w-38"
+                placeholder={'Status'}
+                pluralSelectionText={'Status'}
+                info={{
+                  name: `Filter by: Status`,
+                }}
               />
             </div>
             <div>
@@ -251,11 +256,11 @@ export default function MessageList() {
               />
             </div>
 
-            <div className=" flex-end flex">
+            <div className="flex-end flex p-4">
               <button
                 onClick={clearFilters}
                 type="button"
-                className="text-secondary hover:bg-secondary outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium hover:text-white "
+                className={styles.clearButton}
               >
                 Clear All
               </button>

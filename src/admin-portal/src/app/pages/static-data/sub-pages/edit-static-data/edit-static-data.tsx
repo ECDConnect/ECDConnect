@@ -151,6 +151,8 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
   const [displayFormIsDirty, setDisplayFormIsDirty] = useState(false);
   const [displaySaveForm, setDisplaySaveForm] = useState(false);
 
+  const canEdit = query === 'GetAllLanguage';
+
   const findQuery = (query) => {
     switch (query) {
       case 'GetAllGender':
@@ -378,10 +380,8 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
         ? dataValues?.filter((o1) => {
             return data?.[key].every(
               (o2) =>
-                (o2.description !== o1.description &&
-                  o1?.description !== '' &&
-                  o2.locale !== o1.locale &&
-                  o1?.locale !== '') ||
+                (o2.description !== o1.description && o1?.description !== '') ||
+                (o2.locale !== o1.locale && o1?.locale !== '') ||
                 (o1?.description === '' && o1?.id)
             );
           })
@@ -544,13 +544,12 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
         dataValues?.map((item, idx: number) => {
           if (query === 'GetAllLanguage') {
             return (
-              <div>
-                <div className="flex items-center gap-2" key={idx}>
+              <div key={item}>
+                <div className="flex items-center gap-2" key={item?.id}>
                   <FormInput
-                    className="bg-adminPortalBg my-4 w-9/12"
                     id={item?.id}
+                    className="w-9/12"
                     value={item?.reason || item?.description}
-                    // disabled={isViewAnswers}
                     onChange={(e) => onChange(e, idx)}
                     textInputType="input"
                     placeholder={'Add a response...'}
@@ -559,17 +558,18 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
                         ? 'This field is required'
                         : ('' as any)
                     }
+                    maxCharacters={24}
                     maxLength={24}
                   />
 
                   <FormInput
-                    className="bg-adminPortalBg my-4 w-3/12"
+                    className="w-9/12"
                     id={item?.id}
                     value={item?.locale}
-                    // disabled={isViewAnswers}
                     onChange={(e) => onLocaleChange(e, idx)}
                     textInputType="input"
                     placeholder={'Add a code...'}
+                    maxCharacters={24}
                     maxLength={24}
                   />
                 </div>
@@ -584,13 +584,13 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
             );
           }
           return (
-            <div>
+            <div key={item}>
               <FormInput
-                key={idx}
-                className="bg-adminPortalBg my-4"
+                key={item?.id}
+                className="w-9/12"
                 id={item?.id}
                 value={item?.reason || item?.description}
-                // disabled={isViewAnswers}
+                disabled={!canEdit}
                 onChange={(e) => onChange(e, idx)}
                 textInputType="input"
                 placeholder={'Add a response...'}
@@ -611,23 +611,24 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
             </div>
           );
         })}
-      <Button
-        type="filled"
-        color="secondary"
-        className={'mx-auto mt-8 w-full rounded-2xl'}
-        onClick={() => setDisplaySaveForm(true)}
-        disabled={disabled}
-        isLoading={isLoading}
-      >
-        {renderIcon('SaveIcon', 'h-4 w-4 text-white mr-2')}
-        <Typography
-          type="help"
-          className="mr-2"
-          color="white"
-          text={'Save'}
-        ></Typography>
-      </Button>
-
+      {canEdit && (
+        <Button
+          type="filled"
+          color="secondary"
+          className={'mx-auto mt-8 w-full rounded-2xl'}
+          onClick={() => setDisplaySaveForm(true)}
+          disabled={disabled}
+          isLoading={isLoading}
+        >
+          {renderIcon('SaveIcon', 'h-4 w-4 text-white mr-2')}
+          <Typography
+            type="help"
+            className="mr-2"
+            color="white"
+            text={'Save'}
+          ></Typography>
+        </Button>
+      )}
       <Dialog
         className="px-60"
         stretch

@@ -150,6 +150,12 @@ thead{
   background-color: red !important;
 }
 
+.bg-bannerx2 {
+  background-repeat: no-repeat !important;
+  background-size: contain !important;
+  background-position: center;
+}
+
 .bg-logo {
   background-repeat: no-repeat !important;
 }

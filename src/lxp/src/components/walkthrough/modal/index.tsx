@@ -63,7 +63,7 @@ export const WalkthroughModal = ({
     >
       <Dropdown
         className="w-full"
-        fillColor="tertiaryAccent2"
+        // fillColor="quatenary"
         textColor="textDark"
         fullWidth
         fillType="filled"

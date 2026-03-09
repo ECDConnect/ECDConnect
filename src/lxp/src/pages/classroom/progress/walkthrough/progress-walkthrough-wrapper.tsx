@@ -4,7 +4,7 @@ import Joyride, {
   Step as StepType,
 } from 'react-joyride';
 import { Button, Card, SliderPagination, Typography } from '@ecdlink/ui';
-import WalktroughImage from '../../../../assets/walktroughImage.png';
+import WalktroughImage from '../../../../assets/iconRobot.svg';
 import { useAppContext } from '@/walkthrougContext';
 import {
   practitionerSelectors,
@@ -107,7 +107,7 @@ export default function ProgressWalkthroughWrapper() {
       target: '#skill-0',
       content:
         translations[language][
-          "Great!\n\n If you are not sure if Temba can do something, you can choose “Dont't know”"
+          "Great!\n\n If you are not sure if Temba can do something, you can choose “Don't know”"
         ],
       placement: 'bottom-end',
       offset: 10,
@@ -201,14 +201,16 @@ export default function ProgressWalkthroughWrapper() {
               </div>
             )}
           </div>
-          <div className="mt-4 flex items-center justify-end gap-4">
-            <SliderPagination
-              totalItems={10}
-              activeIndex={index}
-              className={'p-4'}
-            />
+          <div className="mt-4 flex items-center justify-between">
+            <div className="flex justify-start">
+              <SliderPagination
+                totalItems={11}
+                activeIndex={index}
+                className={'p-4'}
+              />
+            </div>
             {!disableNextButton && (
-              <div {...primaryProps} className={'w-full'}>
+              <div {...primaryProps}>
                 <Button
                   size="small"
                   type="filled"
@@ -273,11 +275,13 @@ export default function ProgressWalkthroughWrapper() {
           },
           spotlight:
             stepIndex === 10
-              ? {}
+              ? {
+                  background: 'transparent',
+                }
               : {
                   borderWidth: 4,
                   borderRadius: 20,
-                  borderColor: '#FF2180',
+                  borderColor: '#ED145B',
                   borderStyle: 'solid',
                 },
         }}

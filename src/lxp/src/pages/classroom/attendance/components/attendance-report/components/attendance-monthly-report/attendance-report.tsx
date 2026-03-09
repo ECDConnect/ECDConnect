@@ -37,6 +37,8 @@ import {
   ClassDashboardRouteState,
   TabsItems,
 } from '@/pages/classroom/class-dashboard/class-dashboard.types';
+import { useMonthlyAttendanceReport } from '@/hooks/useMonthlyAttendanceReport';
+import { useHolidays } from '@/hooks/useHolidays';
 
 export interface ChildAttendanceReportState {
   childId: string;
@@ -52,7 +54,7 @@ export const MonthlyAttendanceReport = () => {
   const dialog = useDialog();
 
   const location = useLocation<MonthlyAttendanceReportRouteState>();
-
+  const classroom = useSelector(classroomsSelectors.getClassroom);
   const selectedMonth = location.state?.selectedMonth;
 
   const errorDialog = useCallback(
@@ -90,6 +92,17 @@ export const MonthlyAttendanceReport = () => {
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const children = useSelector(childrenSelectors.getChildren);
+  const holiday = useHolidays();
+
+  // for offline purposes, get the attendance data for current month
+  const attendanceData = useSelector(attendanceSelectors.getAttendance);
+
+  const { currentMonthAttendanceReport } = useMonthlyAttendanceReport(
+    attendanceData ?? [],
+    classroomGroups,
+    children ?? [],
+    holiday.holidays
+  );
 
   const { hasPermissionToTakeAttendance } = useUserPermissions();
   const isTrialPeriod = useIsTrialPeriod();
@@ -140,15 +153,20 @@ export const MonthlyAttendanceReport = () => {
       classroomGroups
     );
 
+  const tableData =
+    Number(selectedMonth.monthOfYear) === today.getUTCMonth() + 1
+      ? currentMonthAttendanceReport
+      : reportDataWithClassroomGroup;
+
   const {
     attendanceSum,
-    finalTableData,
     tableBottomContent,
     tableFootStyles,
     tableHeadStyles,
     tableStyles,
     tableTopContent,
     footer,
+    tableHeaders,
   } = getTableData({
     selectedMonth,
     monthlyReport,
@@ -157,15 +175,16 @@ export const MonthlyAttendanceReport = () => {
   });
 
   useEffect(() => {
-    appDispatch(
-      attendanceThunkActions.getClassroomAttendanceReport({
-        userId: userAuth?.id ?? '',
-        startDate: startDate,
-        endDate: endDate,
-      })
-    );
+    if (isOnline)
+      appDispatch(
+        attendanceThunkActions.getClassroomAttendanceReport({
+          userId: userAuth?.id ?? '',
+          startDate: startDate,
+          endDate: endDate,
+        })
+      );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isOnline]);
 
   useEffect(() => {
     if (!isOnline) return;
@@ -261,7 +280,7 @@ export const MonthlyAttendanceReport = () => {
         text={`Tap a child’s name to see their attendance record.`}
       />
       <Divider className="mt-4" dividerType="dashed" />
-      {reportDataWithClassroomGroup?.map((classroomGroupReport) => (
+      {tableData?.map((classroomGroupReport) => (
         <Fragment key={classroomGroupReport.classroomGroupId}>
           <Typography
             type="h2"
@@ -269,12 +288,18 @@ export const MonthlyAttendanceReport = () => {
             text={classroomGroupReport.classroomGroup?.name ?? ''}
             className="mt-6 mb-5"
           />
-          <table className="text-textDark text-left">
-            <tbody>
+          <table className="text-textDark w-full table-fixed text-left">
+            <colgroup>
+              <col style={{ width: '80%' }} />
+              <col style={{ width: '20%' }} />
+            </colgroup>
+            <thead>
               <tr className="bg-uiBg border-quatenary border-b">
                 <th className="py-3 pl-4">CHILD</th>
                 <th>% PRESENT</th>
               </tr>
+            </thead>
+            <tbody>
               {classroomGroupReport.items?.map((report, idx) => {
                 const reportItemColor = getColor(report?.attendancePercentage);
                 const reportItemShape = getShape(report?.attendancePercentage);
@@ -283,7 +308,7 @@ export const MonthlyAttendanceReport = () => {
                   <tr
                     className={`${
                       (idx + 1) % 2 === 0 ? 'bg-uiBg' : 'bg-white'
-                    }`}
+                    } cursor-pointer`}
                     key={`child-attendance-report-month-${idx}`}
                     onClick={() => {
                       history.push(ROUTES.CHILD_ATTENDANCE_REPORT, {
@@ -297,19 +322,27 @@ export const MonthlyAttendanceReport = () => {
                       } as ChildAttendanceReportState);
                     }}
                   >
-                    <td className="py-3 pl-4">{report.childFullName}</td>
-                    <td className="flex items-center gap-2 py-3">
-                      <div
-                        className={getShapeClass(
-                          reportItemShape,
-                          reportItemColor
-                        )}
-                      />
-                      <Typography
-                        type="body"
-                        color={reportItemColor}
-                        text={`${report?.attendancePercentage} %`}
-                      />
+                    <td className="py-3 pl-4">
+                      {report?.childFullName ?? 'N/A'}
+                    </td>
+                    <td className="py-3">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={getShapeClass(
+                            reportItemShape,
+                            reportItemColor
+                          )}
+                        />
+                        <Typography
+                          type="body"
+                          color={reportItemColor}
+                          text={
+                            report?.attendancePercentage != null
+                              ? `${report.attendancePercentage} %`
+                              : 'N/A'
+                          }
+                        />
+                      </div>
                     </td>
                   </tr>
                 );
@@ -341,7 +374,7 @@ export const MonthlyAttendanceReport = () => {
           isLoading={isOnline && isLoadingReportDetails}
           title="Download Register"
           outputName={`${selectedMonth.month}-attendance-report.pdf`}
-          tableData={finalTableData}
+          tableData={reportDataWithClassroomGroup}
           tableFooter={footer}
           content={tableTopContent}
           tableBottomContent={tableBottomContent}
@@ -351,6 +384,8 @@ export const MonthlyAttendanceReport = () => {
           signature={practitioner?.signingSignature ?? ''}
           downloadDate={today.toDateString()}
           numberOfChildren={attendanceSum}
+          tableHeaders={tableHeaders}
+          logo={classroom?.classroomImageUrl}
         />
       </div>
     </BannerWrapper>

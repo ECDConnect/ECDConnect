@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   StackedList,
   UserAlertListDataItem,
@@ -9,6 +9,8 @@ import {
   LoadingSpinner,
   RoundIcon,
   DialogPosition,
+  Dialog,
+  Alert,
 } from '@ecdlink/ui';
 import { getAvatarColor, useDialog } from '@ecdlink/core';
 import { useHistory } from 'react-router-dom';
@@ -28,6 +30,14 @@ import { PractitionerActions } from '@/store/practitioner/practitioner.actions';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { JoinOrAddPreschoolModal } from '@/components/join-or-add-preschool-modal/join-or-add-preschool-modal';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+import { InviteDto } from '@ecdlink/core/src/models/dto/Invite/invite.dto';
+import { InviteService } from '@/services/InviteService';
+import { authSelectors } from '@/store/auth';
+import { userSelectors } from '@/store/user';
+import { InvitedPractitioner } from '@/pages/practitioner/practitioner-programme-information/practitioner-list/invited-practitioner/invited-practitioner';
+import { formatPhonenumberLocal } from '@utils/common/contact-details.utils';
+import { useTenant } from '@/hooks/useTenant';
+import { AlertSeverityType } from '@ecdlink/ui';
 
 export const PractitionersList: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -36,12 +46,18 @@ export const PractitionersList: React.FC = () => {
   const dialog = useDialog();
   const { errorDialog } = useRequestResponseDialog();
   const { isOnline } = useOnlineStatus();
-
+  const user = useSelector(userSelectors.getUser);
+  const [invites, setInvites] = useState<InviteDto[]>([]);
+  const userAuth = useSelector(authSelectors.getAuthUser);
+  const [selectedInvite, setSelectedInvite] = useState<InviteDto>();
+  const [practitionerInviteModal, setPractitionerInviteModal] = useState(false);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const practitionersList = practitioners?.filter(
     (item) => item.userId !== practitioner?.userId
   );
+  const tenant = useTenant();
+  const isOpenAccess = tenant?.isOpenAccess;
 
   const { isLoading, isRejected: isGetPractitionerRejected } =
     useThunkFetchCall(
@@ -55,10 +71,6 @@ export const PractitionersList: React.FC = () => {
     }
   }, [errorDialog, isGetPractitionerRejected]);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [practitionerListData, setPractitionerListData] =
-    useState<UserAlertListDataItem[]>();
-
   const [practitionersMessages, setPractitionersMessages] = useState<any[]>();
 
   const handleClick = (practitionerId: string) => {
@@ -67,61 +79,28 @@ export const PractitionersList: React.FC = () => {
     });
   };
 
-  useEffect(() => {
-    if (isOnline) {
-      (async () =>
-        await appDispatch(
-          practitionerThunkActions.getAllPractitioners({})
-        ).unwrap())();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }
-  }, []);
+  const handleInvitedPractitioner = useCallback(
+    (id?: string) => {
+      const selected = invites?.find((item) => item?.id === id);
+      setSelectedInvite(selected);
+      setPractitionerInviteModal(true);
+    },
+    [invites]
+  );
 
-  useEffect(() => {
-    if (
-      (isOnline &&
-        !!practitionersList?.length &&
-        !!practitionersMessages?.length) ||
-      (!isOnline && !!practitionersList?.length)
-    ) {
-      const practitionerListItem: UserAlertListDataItem[] = [];
-      for (const practitioner of practitionersList) {
-        practitionerListItem.push(mapUserListDataItem(practitioner));
-      }
-      setPractitionerListData(practitionerListItem);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [practitionersList?.length, practitionersMessages]);
-
-  const classroomsDetailsForPractitioner = async () => {
-    if (isOnline) {
-      const practitionersMessageData = await appDispatch(
-        practitionerThunkActions.getPractitionerDisplayMetrics({})
+  const getPractitionerColleagues = async () => {
+    if (userAuth && isOnline) {
+      await appDispatch(
+        practitionerThunkActions.getAllPractitioners({})
       ).unwrap();
-
-      setPractitionersMessages(practitionersMessageData);
-      return practitionersMessageData;
-    }
-  };
-
-  useEffect(() => {
-    classroomsDetailsForPractitioner();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const showTrialPeriodCompleteProfileBlockingDialog = () => {
-    dialog({
-      blocking: true,
-      position: DialogPosition.Middle,
-      render: (onSubmit, onCancel) => {
-        return (
-          <JoinOrAddPreschoolModal
-            onSubmit={onSubmit}
-            isTrialPeriod={!!isTrialPeriod}
-          />
+      if (isOpenAccess) {
+        setInvites(
+          await new InviteService(userAuth?.auth_token).getInvitesByPrincipalId(
+            user?.id!
+          )
         );
-      },
-    });
+      }
+    }
   };
 
   const mapUserListDataItem = (
@@ -161,6 +140,80 @@ export const PractitionersList: React.FC = () => {
     };
   };
 
+  useEffect(() => {
+    getPractitionerColleagues();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const practitionerListData = useMemo<
+    UserAlertListDataItem[] | undefined
+  >(() => {
+    if (!invites && !practitionersList?.length) return undefined;
+
+    const existingUserIds = new Set(
+      (practitionersList || []).map((p) => p?.user?.id).filter(Boolean)
+    );
+
+    const inviteItems = (invites || [])
+      .filter((invite) => {
+        const userId = invite.user?.id;
+        return userId && !existingUserIds.has(userId);
+      })
+      .map((invite) => ({
+        id: invite.id,
+        profileDataUrl: undefined,
+        title: formatPhonenumberLocal(invite.user?.phoneNumber ?? ''),
+        subTitle: 'Not on ECD Connect',
+        profileText: formatPhonenumberLocal(invite.user?.phoneNumber ?? ''),
+        alertSeverity: 'error' as AlertSeverityType,
+        avatarColor: getAvatarColor() || '',
+        onActionClick: () => handleInvitedPractitioner(invite.id || ''),
+      }));
+
+    const practitionerItems = (practitionersList || []).map((p) =>
+      mapUserListDataItem(p)
+    );
+
+    return [...inviteItems, ...practitionerItems];
+  }, [
+    invites,
+    practitionersList,
+    practitionersMessages,
+    handleInvitedPractitioner,
+  ]);
+
+  const classroomsDetailsForPractitioner = async () => {
+    if (isOnline) {
+      const practitionersMessageData = await appDispatch(
+        practitionerThunkActions.getPractitionerDisplayMetrics({})
+      ).unwrap();
+
+      setPractitionersMessages(practitionersMessageData);
+      return practitionersMessageData;
+    }
+  };
+
+  useEffect(() => {
+    classroomsDetailsForPractitioner();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const showTrialPeriodCompleteProfileBlockingDialog = () => {
+    dialog({
+      blocking: true,
+      position: DialogPosition.Middle,
+      render: (onSubmit, onCancel) => {
+        return (
+          <JoinOrAddPreschoolModal
+            onSubmit={onSubmit}
+            isTrialPeriod={!!isTrialPeriod}
+          />
+        );
+      },
+    });
+  };
+
   const handleReassignClass = () => {
     if (!isOnline) {
       return dialog({
@@ -175,6 +228,19 @@ export const PractitionersList: React.FC = () => {
     history.push('principal/practitioner-reassign-class');
   };
 
+  const offlineDialog = () => {
+    if (!isOnline) {
+      return dialog({
+        color: 'bg-white',
+        position: DialogPosition.Middle,
+        blocking: true,
+        render: (onSubmit) => {
+          return <OnlineOnlyModal onSubmit={onSubmit} />;
+        },
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <LoadingSpinner
@@ -186,7 +252,7 @@ export const PractitionersList: React.FC = () => {
     );
   }
 
-  if (!practitionersList || !practitionersList.length) {
+  if (!practitionerListData || !practitionerListData.length) {
     return (
       <div className="pt-50 flex w-full flex-col items-center justify-center gap-4 p-12">
         <RoundIcon
@@ -205,11 +271,15 @@ export const PractitionersList: React.FC = () => {
           type="filled"
           color="quatenary"
           className={'mb-6 w-full'}
-          onClick={
-            isTrialPeriod
-              ? () => showTrialPeriodCompleteProfileBlockingDialog()
-              : () => history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST)
-          }
+          onClick={() => {
+            if (!isOnline) {
+              offlineDialog();
+            } else if (isTrialPeriod) {
+              showTrialPeriodCompleteProfileBlockingDialog();
+            } else {
+              history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST);
+            }
+          }}
         >
           {renderIcon('PlusCircleIcon', 'w-5 h-5 color-white text-white mr-2')}
           <Typography
@@ -244,7 +314,9 @@ export const PractitionersList: React.FC = () => {
             <Typography
               type={'body'}
               color="textMid"
-              text={'Keep track of practitioner absenteeism and leave.'}
+              text={
+                'Keep track of practitioner absenteeism and leave, and record your own leave.'
+              }
               className={styles.absentCardSubTitle}
             />
             <div className="flex justify-center">
@@ -288,6 +360,19 @@ export const PractitionersList: React.FC = () => {
           </Button>
         </div>
       </div>
+      <Dialog
+        fullScreen
+        visible={practitionerInviteModal}
+        position={DialogPosition.Top}
+      >
+        <InvitedPractitioner
+          setPractitionerInviteModal={setPractitionerInviteModal}
+          userId={selectedInvite?.user.id || ''}
+          phoneNumber={selectedInvite?.user.phoneNumber || ''}
+          dateInvited={selectedInvite?.insertedDate}
+          setInvites={setInvites}
+        />
+      </Dialog>
     </>
   );
 };

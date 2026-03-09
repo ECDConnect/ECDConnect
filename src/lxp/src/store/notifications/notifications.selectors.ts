@@ -37,7 +37,8 @@ export const getAllNotifications = createSelector(
 
       return (
         expiryDate.getTime() >= currentDate.getTime() &&
-        dateCreated.getTime() <= currentDate.getTime() &&
+        new Date(notification?.message?.dateCreated).getTime() <=
+          currentDate.getTime() &&
         isCtaOk
       );
     });

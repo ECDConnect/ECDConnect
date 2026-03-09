@@ -13,6 +13,8 @@ import {
   AuthCodeModel,
   ResendAuthCodeModel,
   VerifyPrincipalInvitationModel,
+  VerifySignupCellPhoneNumberModel,
+  VerifyPasswordTokenModel,
 } from '@ecdlink/core';
 import { NewPasswordRequest } from '@models/auth/login/NewPasswordRequest';
 import { PasswordResetRequestReceived } from '@models/auth/login/PasswordResetRequestReceived';
@@ -42,6 +44,26 @@ class AuthService {
 
     if (response.status !== 200) {
       throw new Error('Login failed - Server connection error');
+    }
+
+    return response.data;
+  }
+
+  async VerifyPasswordToken(
+    baseEndPoint: string,
+    body: VerifyPasswordTokenModel
+  ) {
+    const apiInstance = api(baseEndPoint);
+    const response = await apiInstance.post(
+      APIs.verifyPasswordToken,
+      JSON.stringify(body),
+      {
+        headers: headers,
+      }
+    );
+
+    if (response.status !== 200) {
+      throw new Error('VerifyPasswordToken failed - Server connection error');
     }
 
     return response.data;
@@ -147,6 +169,23 @@ class AuthService {
     return true;
   }
 
+  async SendNewInvitation(username: string, token: string): Promise<boolean> {
+    const BASE_URL = Config.authApi;
+    const response = await api(BASE_URL).post(
+      APIs.sendNewInvitation,
+      JSON.stringify({
+        token,
+        username,
+      })
+    );
+
+    const dataResponse = getDataResponse<boolean>(response);
+
+    if (dataResponse.dataError) return false;
+
+    return true;
+  }
+
   async RefreshToken(currentToken: string): Promise<AuthUser | undefined> {
     const BASE_URL = Config.authApi;
 
@@ -171,11 +210,8 @@ class AuthService {
     );
   }
 
-  async RegisterOpenAccessUser(
-    baseEndPoint: string,
-    body: RegisterRequestModel
-  ) {
-    return await api(baseEndPoint).post(
+  async RegisterOpenAccessUser(body: RegisterRequestModel) {
+    return await api(Config.authApi).post(
       APIs.addOAPractitioner,
       JSON.stringify(body),
       {
@@ -184,11 +220,8 @@ class AuthService {
     );
   }
 
-  async CheckUsernamePhoneNumber(
-    baseEndPoint: string,
-    body: CheckUsernamePhoneNumberModel
-  ) {
-    return await api(baseEndPoint).post(
+  async CheckUsernamePhoneNumber(body: CheckUsernamePhoneNumberModel) {
+    return await api(Config.authApi).post(
       APIs.checkUsernamePhoneNumber,
       JSON.stringify(body),
       {
@@ -197,8 +230,8 @@ class AuthService {
     );
   }
 
-  async UpdateUsername(baseEndPoint: string, body: UpdateUsernameModel) {
-    return await api(baseEndPoint).post(
+  async UpdateUsername(body: UpdateUsernameModel) {
+    return await api(Config.authApi).post(
       APIs.updateUsernamePassword,
       JSON.stringify(body),
       {
@@ -269,8 +302,8 @@ class AuthService {
     return dataResponse?.data;
   }
 
-  async UpdateOaPractitioner(baseEndPoint: string, body: RegisterRequestModel) {
-    const response = await api(baseEndPoint).post(
+  async UpdateOaPractitioner(body: RegisterRequestModel) {
+    const response = await api(Config.authApi).post(
       APIs.updateOAPractitioner,
       JSON.stringify(body),
       {
@@ -282,6 +315,19 @@ class AuthService {
 
     if (dataResponse.dataError) return false;
 
+    return dataResponse?.data;
+  }
+
+  async VerifySignupCellPhoneNumber(body: VerifySignupCellPhoneNumberModel) {
+    const response = await api(Config.authApi).post(
+      APIs.verifySignupCellPhoneNumber,
+      JSON.stringify(body),
+      {
+        headers: headers,
+      }
+    );
+    const dataResponse = getDataResponse<string>(response);
+    if (dataResponse.dataError) return undefined;
     return dataResponse?.data;
   }
 }

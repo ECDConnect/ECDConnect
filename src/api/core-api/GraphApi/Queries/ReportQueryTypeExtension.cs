@@ -27,6 +27,7 @@ using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
+using HotChocolate.Data.Sorting.Expressions;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -192,7 +193,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return metrics;
         }
 
-
+        [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public List<ClassroomMetricReport> GetClassAttendanceByUser(
                     [Service] AttendanceTrackingRepository attendanceRepo,
                     [Service] AttendanceService attendanceService,
@@ -280,7 +281,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     {
                         foreach (Learner learner in learners)
                         {
-                            if (learner.StartedAttendance >= fromDate)
+                            if (learner.StartedAttendance <= toDate)
                             {
                                 childCount++;
                                 var attendanceData = attendanceRepo.GetAllByDateRangeByClassroom(fromDate, toDate, group.Id, learner.UserId.ToString());
@@ -381,10 +382,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var user = contextAccessor.HttpContext.GetUser();
             var uId = user?.Id ?? throw new ArgumentNullException("User.Id");
 
-            var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
+            var childRepo = repoFactory.CreateGenericRepository<Child>(userContext: uId);
             var practRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
             var classroomGroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
             var classReassignmentHistoryRepo = repoFactory.CreateGenericRepository<ClassReassignmentHistory>();
+            var childProgressReportPeriodRepo = repoFactory.CreateRepository<ChildProgressReportPeriod>(userContext: uId);
+            var childProgressReportRepo = repoFactory.CreateRepository<ChildProgressReport>(userContext: uId);
+            var coachContactRepo = repoFactory.CreateRepository<CoachContact>(userContext: uId); 
 
             var notifications = new List<NotificationDisplay>();
 
@@ -401,11 +405,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             DateTime previousMonthStart = currentDate.GetStartOfPreviousMonth();
             DateTime previousMonthEnd = currentDate.GetEndOfPreviousMonth();
 
+            var coachContacts = coachContactRepo.GetAll().Where(c => c.PractitionerId == practitioner.Id 
+            && c.Period >= currentMonthStart 
+            && c.Period <= currentMonthEnd 
+            && c.UserId == uId).ToList(); 
 
-            // Get Missing Attendance
-            // Todo: move to service
-            var classProgrammeRepo = repoFactory.CreateGenericRepository<ClassProgramme>();
-            var programmeRepo = repoFactory.CreateGenericRepository<Programme>();
             var dailyProgrammeRepo = repoFactory.CreateGenericRepository<DailyProgramme>();
             var missingRegisterDayCount = await GetMissingAttendanceReportsAsync(
                 holidayService,
@@ -414,11 +418,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 previousMonthEnd,
                 practitioner);
 
-            if (missingRegisterDayCount > 0)
+            if (missingRegisterDayCount > 0 && coachContacts.Count(c => c.ActionItemType == ActionItemType.AttendanceRegistersNotSaved) == 0)
             {
                 notifications.Add(new NotificationDisplay()
                 {
-                    Subject = $"{missingRegisterDayCount} attendance registers not saved",
+                    Subject = $"{missingRegisterDayCount} Attendance registers not saved",
                     Icon = MetricsIconEnum.Error.ToString(),
                     Color = MetricsColorEnum.Error.ToString(),
                     Message = previousMonthStart.ToString("MMMM yyyy"),
@@ -435,7 +439,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
                 if (monthlyReport != null)
                 {
-                    if (monthlyReport.TotalScheduledSessions > 0)
+                    if (monthlyReport.TotalScheduledSessions > 0  && coachContacts.Count(c => c.ActionItemType == ActionItemType.AttendanceRate) == 0)
                     {
                         var attendancePercentage = monthlyReport.PercentageAttendance;
                         if (attendancePercentage < 50)
@@ -456,55 +460,51 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 }
             }
 
+            var classroom = classroomService.GetClassroomForUser(practitioner.User.Id);
+            if (classroom != null)
+            {
+                ChildProgressReportPeriod mostRecentCompletedPeriod = childProgressReportPeriodRepo.GetAll()
+                    .Where(p => p.IsActive &&
+                    p.ClassroomId == classroom.Id &&
+                    p.EndDate < DateTime.Today)
+                    .OrderByDescending(p => p.EndDate)
+                    .FirstOrDefault();
 
-            //// TODO: Need to refactor dates for reporting periods
-            //// Get Due/Overdue Reports
-            //// Get Children not progressed
-            //var isPeriod1 = previousMonthStart.Month <= 7;
-            //DateTime reportPeriodStart = ChildProgressReportService.GetReportPeriodStart(previousMonthStart.Year, isPeriod1);
-            //DateTime reportPeriodEnd = ChildProgressReportService.GetReportPeriodEnd(previousMonthStart.Year, isPeriod1);
+                var childCount = childRepo.GetAll().Count(c => c.IsActive == true && c.Hierarchy.StartsWith(practitioner.Hierarchy));
 
-            //DateTime reportDueStart = ChildProgressReportService.GetReportDueStart(previousMonthStart.Year, isPeriod1);
-            //DateTime reportDueEnd = ChildProgressReportService.GetReportDueEnd(previousMonthStart.Year, isPeriod1);
-
-            //var reportOverDueStart = ChildProgressReportService.GetReportOverDueStart(previousMonthStart.Year, isPeriod1);
-            //var reportOverDueEnd = ChildProgressReportService.GetReportOverDueEnd(previousMonthStart.Year, isPeriod1);
-
-            //// Notifications for child progress reports
-            //var reportCounts = childProgressReportService.GetChildProgressReportStatusCountsForPractitioner(practitioner.Hierarchy, classroomGroups.Select(x => x.Id).ToList());
-            //var childCount = reportCounts.reportsSubmittedOnTime + reportCounts.reportsSubmittedOverdue;
-
-            //// If any children did not get a report submitted
-            //if (practitioner?.IsPrincipal == true && reportCounts.reportsMissingOrIncomplete > 0
-            //    && currentDate >= reportOverDueEnd)
-            //{
-            //    notifications.Add(new NotificationDisplay()
-            //    {
-            //        Subject = $"{reportCounts.reportsMissingOrIncomplete} missed progress reports",
-            //        Icon = MetricsIconEnum.Error.ToString(),
-            //        Color = MetricsColorEnum.Error.ToString(),
-            //        Message = $"{reportPeriodStart.ToString("MMMM yyyy")} - {reportPeriodEnd.ToString("MMMM yyyy")}",
-            //        Notes = "",
-            //        UserId = Guid.Parse(practitionerId),
-            //        UserType = "practitioner"
-            //    });
-            //}
-
-            //// If any reports were submitted in the overdue period (2nd month of the submission window
-            //if (reportCounts.reportsSubmittedOverdue > 0 && currentDate >= reportOverDueEnd)
-            //{
-            //    notifications.Add(new NotificationDisplay()
-            //    {
-            //        Subject = $"See progress summary",
-            //        // TODO: Warnings or errors?
-            //        Icon = MetricsIconEnum.None.ToString(),
-            //        Color = MetricsColorEnum.None.ToString(),
-            //        Message = $"{childCount} children",
-            //        Notes = "",
-            //        UserId = Guid.Parse(practitionerId),
-            //        UserType = "practitioner"
-            //    });
-            //}
+                if (mostRecentCompletedPeriod != null)
+                {
+                    var reports = childProgressReportRepo.GetAll().Where(x => x.ChildProgressReportPeriodId == mostRecentCompletedPeriod.Id && x.DateCompleted.HasValue).AsNoTracking().ToList();
+                    var missedReports = childCount - reports.Count;
+                    if (missedReports > 0 && coachContacts.Count(c => c.ActionItemType == ActionItemType.MissedProgressReports) == 0)
+                    {
+                        notifications.Add(new NotificationDisplay()
+                        {
+                            Subject = $"{missedReports} Missed progress reports",
+                            Icon = MetricsIconEnum.Error.ToString(),
+                            Color = MetricsColorEnum.Error.ToString(),
+                            Message = $"{mostRecentCompletedPeriod.StartDate.ToString("MMMM yyyy")} - {mostRecentCompletedPeriod.EndDate.ToString("MMMM yyyy")}",
+                            Notes = "",
+                            UserId = Guid.Parse(practitionerId),
+                            UserType = "practitioner"
+                        });
+                    }
+                    if (DateTime.Today > mostRecentCompletedPeriod.EndDate && coachContacts.Count(c => c.ActionItemType == ActionItemType.ProgressSummary) == 0)
+                    {
+                        notifications.Add(new NotificationDisplay()
+                        {
+                            Subject = $"See progress summary",
+                            Icon = MetricsIconEnum.None.ToString(),
+                            Color = MetricsColorEnum.None.ToString(),
+                            Message = $"{childCount} children",
+                            Notes = "",
+                            UserId = Guid.Parse(practitionerId),
+                            UserType = "practitioner"
+                        });
+                    }
+                }
+               
+            }
 
             return notifications;
         }
@@ -950,6 +950,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return missingRegisterDayCount;
         }
 
+        [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public IEnumerable<DateTime> RemoveHolidays(IEnumerable<DateTime> days, List<Holiday> holidays)
         {
             var holidayDates = holidays.Select(x => x.Day);
@@ -957,6 +958,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return days.Except(holidayDates);
         }
 
+        [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public IEnumerable<DateTime> RemoveWeekendDays(IEnumerable<DateTime> days)
         {
             var weekendDays = new List<DayOfWeek>() { DayOfWeek.Saturday, DayOfWeek.Sunday };
@@ -965,6 +967,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         // TODO: Move to ChildProgressReportQuery
+        [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public ChildProgressReportsStatus GetChildProgressReportsStatus(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -1313,57 +1316,57 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     #endregion
                 }
 
-                    var monthlyReport = monthlyAttendanceReportService.GenerateMonthlyAttendanceReport(practitioner.UserId.ToString(), previousMonthStart, previousMonthEnd).SingleOrDefault();
+                var monthlyReport = monthlyAttendanceReportService.GenerateMonthlyAttendanceReport(practitioner.UserId.ToString(), previousMonthStart, previousMonthEnd).SingleOrDefault();
 
-                    if (monthlyReport != null)
+                if (monthlyReport != null)
+                {
+                    if (monthlyReport.TotalScheduledSessions > 0)
                     {
-                        if (monthlyReport.TotalScheduledSessions > 0)
+                        var attendancePercentage = monthlyReport.PercentageAttendance;
+                        #region 60% CHILD ATTENDANCE
+                        if (attendancePercentage < 60)
                         {
-                            var attendancePercentage = monthlyReport.PercentageAttendance;
-                            #region 60% CHILD ATTENDANCE
-                            if (attendancePercentage < 60)
-                            {
-                                notification.Subject = $"{attendancePercentage}% child attendance in {previousMonthStart.ToString("MMM")}";
-                                notification.Icon = MetricsIconEnum.Error.ToString();
-                                notification.Color = MetricsColorEnum.Error.ToString();
-                                notification.Message = "";
-                                notification.Notes = "Improve attendance";
-                                notification.GroupingName = "60% child attendance last month";
-                                yield return notification;
-                                continue;
-                            }
-                            #endregion
-
-                            #region 70% CHILD ATTENDENCE
-                            if (attendancePercentage >= 60 && attendancePercentage < 80)
-                            {
-                                notification.Subject = $"{attendancePercentage}% child attendance in {previousMonthStart.ToString("MMM")}";
-                                notification.Icon = MetricsIconEnum.Warning.ToString();
-                                notification.Color = MetricsColorEnum.Warning.ToString();
-                                notification.Message = "";
-                                notification.Notes = "Improve attendance";
-                                notification.GroupingName = "Less than 80% child attendance last month";
-                                yield return notification;
-                                continue;
-                            }
-                            #endregion
-
-                            #region 80% CHILD ATTENDANCE
-                            if (attendancePercentage >= 80)
-                            {
-                                notification.Subject = $"{attendancePercentage}% child attendance in {previousMonthStart.ToString("MMM")}";
-                                notification.Icon = MetricsIconEnum.Success.ToString();
-                                notification.Color = MetricsColorEnum.Success.ToString();
-                                notification.Message = "";
-                                notification.Notes = "";
-                                notification.GroupingName = "80% child attendance last month";
-                                yield return notification;
-                                continue;
-                            }
-                            #endregion
+                            notification.Subject = $"{attendancePercentage}% child attendance in {previousMonthStart.ToString("MMM")}";
+                            notification.Icon = MetricsIconEnum.Error.ToString();
+                            notification.Color = MetricsColorEnum.Error.ToString();
+                            notification.Message = "";
+                            notification.Notes = "Improve attendance";
+                            notification.GroupingName = "60% child attendance last month";
+                            yield return notification;
+                            continue;
                         }
+                        #endregion
+
+                        #region 70% CHILD ATTENDENCE
+                        if (attendancePercentage >= 60 && attendancePercentage < 80)
+                        {
+                            notification.Subject = $"{attendancePercentage}% child attendance in {previousMonthStart.ToString("MMM")}";
+                            notification.Icon = MetricsIconEnum.Warning.ToString();
+                            notification.Color = MetricsColorEnum.Warning.ToString();
+                            notification.Message = "";
+                            notification.Notes = "Improve attendance";
+                            notification.GroupingName = "Less than 80% child attendance last month";
+                            yield return notification;
+                            continue;
+                        }
+                        #endregion
+
+                        #region 80% CHILD ATTENDANCE
+                        if (attendancePercentage >= 80)
+                        {
+                            notification.Subject = $"{attendancePercentage}% child attendance in {previousMonthStart.ToString("MMM")}";
+                            notification.Icon = MetricsIconEnum.Success.ToString();
+                            notification.Color = MetricsColorEnum.Success.ToString();
+                            notification.Message = "";
+                            notification.Notes = "";
+                            notification.GroupingName = "80% child attendance last month";
+                            yield return notification;
+                            continue;
+                        }
+                        #endregion
                     }
-                
+                }
+
 
                 notification.Subject = "";
                 notification.Icon = MetricsIconEnum.None.ToString();
@@ -1454,7 +1457,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 #region NOT REGISTERED ON APP
                 if (!practitioner.IsRegistered.HasValue || !practitioner.IsRegistered.Value)
                 {
-                    notification.Subject = $"Not registered on {applicationName}";
+                    notification.Subject = "Has not joined preschool";
                     notification.Icon = MetricsIconEnum.Error.ToString();
                     notification.Color = MetricsColorEnum.Error.ToString();
                     notification.Message = "";

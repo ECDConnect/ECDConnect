@@ -25,6 +25,8 @@ namespace ECDLink.Api.CoreApi.Services
         
         private IGenericRepository<Practitioner, Guid> _practiRepo;
         private IGenericRepository<ClassroomGroup, Guid> _classGroupRepo;
+
+        private IGenericRepository<ClassProgramme, Guid> _classProgrammeRepo;
         private IGenericRepository<Child, Guid> _childRepo;
 
         public AttendanceService(IDbContextFactory<AuthenticationDbContext> dbFactory,
@@ -42,6 +44,7 @@ namespace ECDLink.Api.CoreApi.Services
 
             _practiRepo = _repoFactory.CreateRepository<Practitioner>(userContext: _applicationUserId);
             _classGroupRepo = _repoFactory.CreateRepository<ClassroomGroup>(userContext: _applicationUserId);
+            _classProgrammeRepo = _repoFactory.CreateGenericRepository<ClassProgramme>(userContext: _applicationUserId);
             _childRepo = _repoFactory.CreateRepository<Child>(userContext: _applicationUserId);
         }
 
@@ -67,7 +70,7 @@ namespace ECDLink.Api.CoreApi.Services
         {
             var learners = from learner in _dbContext.Learners
                            join child in _dbContext.Children on learner.UserId equals child.UserId
-                           where learner.IsActive && child.IsActive && learner.ClassroomGroupId == classgroupId
+                           where child.IsActive && learner.ClassroomGroupId == classgroupId
                            select learner;
 
             return learners
@@ -178,6 +181,11 @@ namespace ECDLink.Api.CoreApi.Services
             return GetAttendanceRecordsForPeriodByProgramme(programmeIds, learner.UserId.ToString(), startMonth, endMonth);
         }
 
+       public List<Attendance> GetAttendanceRecordsForPeriodAndGroup(Learner learner, List<Guid> programmeIds, DateTime startMonth, DateTime endMonth)
+        { 
+            return GetAttendanceRecordsForPeriodByProgramme(programmeIds, learner.UserId.ToString(), startMonth, endMonth);
+        }
+
 
         #endregion
 
@@ -185,7 +193,7 @@ namespace ECDLink.Api.CoreApi.Services
 
         public ChildAttendanceReportModel GetChildAttendance(Guid classgroupId, string userId, DateTime startMonth, DateTime endMonth)
         {
-            var learners = GetAllLearnerInstances(userId, classgroupId);
+            var learners = GetAllLearnerInstances(userId, default(Guid));
 
             if (!learners.Any())
             {
@@ -216,7 +224,7 @@ namespace ECDLink.Api.CoreApi.Services
                                               && x.ClassroomProgrammeId == programme.Id
                                               && x.MonthOfYear == dt.Month
                                               && x.Year == dt.Year
-                                              && x.Attended == true);              
+                                              && x.Attended == true);
 
                         attendance.Add(Tuple.Create(daysOfClass.Count(), (attendedClasses != null ? (daysOfClass.Count() > 0 ? attendedClasses.Count() : 0) : 0))); //limit attendance if there is no actual day of class, to not add a day that isnt allowed
 

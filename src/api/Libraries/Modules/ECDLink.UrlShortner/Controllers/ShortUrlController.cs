@@ -1,10 +1,11 @@
 using ECDLink.UrlShortner.Managers;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Threading.Tasks;
 
 namespace ECDLink.UrlShortner.Controllers
 {
-    [ApiController]
+    [ApiController, Route("/")]
     public class ShortUrlController : ControllerBase
     {
         private readonly ShortUrlManager _manager;
@@ -14,27 +15,19 @@ namespace ECDLink.UrlShortner.Controllers
             _manager = manager;
         }
 
-        [HttpGet, Route("/{chunk}")]
-        public IActionResult ShortenRedirect([FromRoute] string chunk)
+        [HttpGet, Route("{chunk}")]
+        public async Task<IActionResult> ShortenRedirect([FromRoute] string chunk)
         {
-            ShortUrlManager.REDIRECT_STATUS redirectStatus;
-            var url = _manager.GetRedirectFromChunk(chunk, out redirectStatus);
-            if (redirectStatus == ShortUrlManager.REDIRECT_STATUS.OK)
+            var redirect = await _manager.GetRedirectFromChunk(chunk);
+            if (redirect.Status == ShortUrlManager.REDIRECT_STATUS.OK)
             {
-                return Redirect(url);
+                return Redirect(redirect.Url);
             }
             
-            var id = _manager.GetId(chunk);
-            if (redirectStatus == ShortUrlManager.REDIRECT_STATUS.USED)
+            if (redirect.Status == ShortUrlManager.REDIRECT_STATUS.USED)
             {
-                Console.WriteLine("ShortenRedirect: {0}: {1} used before - redirect to {2}", chunk, id, url);
-                return Redirect(url);
+                return Redirect(redirect.Url);
             }
-
-            if (redirectStatus == ShortUrlManager.REDIRECT_STATUS.UNKNOWN) Console.WriteLine("ShortenRedirect: {0}: {1} unknown - return BadRequest (400)", chunk, id);
-            
-            if (redirectStatus == ShortUrlManager.REDIRECT_STATUS.INVALID) Console.WriteLine("ShortenRedirect: {0}: invalid - return BadRequest (400)", chunk);
-            //return BadRequest();
 
             return GetUnknownPage();
         }

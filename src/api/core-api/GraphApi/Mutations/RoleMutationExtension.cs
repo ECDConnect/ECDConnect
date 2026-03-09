@@ -14,7 +14,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class RoleMutationExtension
     {
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.ROLES, GraphActionEnum.Create)]
         public ApplicationIdentityRole AddRole(
             [Service] ApplicationRoleManager roleManager,
              string name,
@@ -40,7 +40,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return newRole;
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
+        [Permission(PermissionGroups.ROLES, GraphActionEnum.Update)]
         public ApplicationIdentityRole UpdateRole(
             [Service] ApplicationRoleManager roleManager,
              string id,
@@ -68,7 +68,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return roleToUpdate;
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Delete)]
+        [Permission(PermissionGroups.ROLES, GraphActionEnum.Delete)]
         public bool DeleteRole(
             [Service] ApplicationRoleManager roleManager,
             string id)

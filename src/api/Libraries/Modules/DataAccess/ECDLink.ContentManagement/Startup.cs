@@ -18,6 +18,7 @@ namespace ECDLink.ContentManagement
             services.AddTransient<ContentDefinitionRepository>();
             services.AddTransient<ContentManagementRepository>();
             services.AddTransient<ContentTypeRepository>();
+            services.AddTransient<ThemeRepository>();
             services.AddTransient<IDynamicTypeDefinitionService, DynamicTypeDefinitionService>();
             services.AddTransient<IDynamicQueryResolver, QueryResolvers>();
             services.AddTransient<IDynamicMutationResolver, MutationResolver>();

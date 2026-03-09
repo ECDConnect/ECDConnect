@@ -27,7 +27,7 @@ export const getButtonStyles = (
   touched: boolean
 ) => {
   const baseStyles =
-    'mt-1 flex flex-row items-center truncate justify-between origin-top-right right-0 rounded-md border-2 pl-4 pr-1 leading-5 py-2 active:bg-secondary';
+    'mt-1 flex flex-row items-center truncate justify-between origin-top-right right-0 rounded-md border-2 pl-4 pr-1 leading-5 py-2 active:bg-secondary adminPortalBg';
 
   if (!touched && !hasSelectedItems) {
     return classNames(baseStyles, 'border-uiBg', `bg-${bgColour}`);
@@ -72,6 +72,9 @@ export const getButtonIcon = (
 
   if (hasSelectedItems && !open) {
     return classNames(baseStyle, `text-white`);
+  }
+  if (!hasSelectedItems && !open) {
+    return classNames(baseStyle, `textMid`);
   }
 
   return classNames(baseStyle, `text-${colour}`);

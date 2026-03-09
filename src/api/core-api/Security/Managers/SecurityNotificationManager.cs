@@ -15,8 +15,8 @@ namespace EcdLink.Api.CoreApi.Security.Managers
 {
     public class SecurityNotificationManager
     {
-        private INotificationProviderFactory<ApplicationUser> _notificationProviderFactory;
-        private ISystemSetting<SecurityNotificationOptions> _options;
+        private readonly INotificationProviderFactory<ApplicationUser> _notificationProviderFactory;
+        private readonly ISystemSetting<SecurityNotificationOptions> _options;
         private readonly ApplicationUserManager _userManager;
 
         public SecurityNotificationManager(
@@ -74,7 +74,6 @@ namespace EcdLink.Api.CoreApi.Security.Managers
         {
             var encodedToken = TokenHelper.EncodeToken(token);
 
-            //var forgotPasswordCallback = $"{_options.Value.ForgotPasswordPortal}{encodedToken}?username={user.UserName}";
             var forgotPasswordCallback = $"{_options.Value.ForgotPasswordPortal}?username={user.UserName}&token={encodedToken}";
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
             var organisationName = TenantExecutionContext.Tenant.ApplicationName;
@@ -194,7 +193,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers
               .SendMessageAsync();
         }
 
-        public async Task SendHelpFormSubmissionToAdministratorAsync(Guid adminUserId, UserHelp userHelp)
+        public async Task SendHelpFormSubmissionToAdministratorAsync(UserHelp userHelp)
         {
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
             var organisationName = TenantExecutionContext.Tenant.OrganisationName;
@@ -202,24 +201,21 @@ namespace EcdLink.Api.CoreApi.Security.Managers
 
             var helpLoginStatus = userHelp.IsLoggedIn  ? "Yes" : "No";
             var helpContactDetail = userHelp.ContactPreference == "email" ? userHelp.Email : userHelp.CellNumber;
-            var adminUser = _userManager.FindByIdAsync(adminUserId).Result;
-            var adminEmail = adminUser.Email;
-
-            if (organisationEmail != null)
+            var fromUser = new ApplicationUser()
             {
-                // We need to update the user's email with the organisationEmail, send the mail and then revert
-                adminUser.Email = organisationEmail;
-                await _userManager.UpdateNormalizedEmailAsync(adminUser);
-            }
-
+                Id = Guid.NewGuid(),
+                Email = organisationEmail,
+                NormalizedEmail = organisationEmail
+            };
+                
             var affectedUserFullName = "anonymous";
             if (userHelp.UserId != null)
             {
-                var user = _userManager.FindByIdAsync(userHelp.UserId).Result;
+                var user = await _userManager.FindByIdAsync(userHelp.UserId);
                 affectedUserFullName = user.FullName;
             }
 
-            var notificationProvider = _notificationProviderFactory.Create(adminUser, MessageTypeConstants.EMAIL);
+            var notificationProvider = _notificationProviderFactory.Create(fromUser, MessageTypeConstants.EMAIL);
             await notificationProvider
               .SetMessageTemplate(TemplateTypeEnum.AdminUserHelpForm)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.AffectedUserFullName, affectedUserFullName)
@@ -230,56 +226,42 @@ namespace EcdLink.Api.CoreApi.Security.Managers
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.HelpLoginStatus, helpLoginStatus)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
               .SendMessageAsync();
-
-            if (organisationEmail != null)
-            {
-                // revert email address to previous
-                adminUser.Email = adminEmail;
-                await _userManager.UpdateNormalizedEmailAsync(adminUser);
-            }
         }
 
-        public async Task SendNewTenantSetupToAdministratorAsync(Guid adminUserId, TenantOrgDetailModel tenantOrgDetail)
+        public async Task SendNewTenantSetupToAdministratorAsync(TenantOrgDetailModel tenantOrgDetail)
         {
-            var adminUser = _userManager.FindByIdAsync(adminUserId).Result;
-            var adminEmail = adminUser.Email;
-
             if (TenantExecutionContext.Tenant.OrganisationEmail != null)
             {
-                // We need to update the user's email with the organisationEmail, send the mail and then revert
-                adminUser.Email = TenantExecutionContext.Tenant.OrganisationEmail;
-                await _userManager.UpdateNormalizedEmailAsync(adminUser);
+                var fromUser = new ApplicationUser()
+                {
+                    Id = Guid.NewGuid(),
+                    Email = TenantExecutionContext.Tenant.OrganisationEmail,
+                    NormalizedEmail = TenantExecutionContext.Tenant.OrganisationEmail
+                };
             
-                var notificationProvider = _notificationProviderFactory.Create(adminUser, MessageTypeConstants.EMAIL);
+                var notificationProvider = _notificationProviderFactory.Create(fromUser, MessageTypeConstants.EMAIL);
                 await notificationProvider
                   .SetMessageTemplate(TemplateTypeEnum.NewTenantSetupInfoReceived)
                   .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, tenantOrgDetail.ApplicationName)
                   .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, tenantOrgDetail.OrganisationName)
                   .SendMessageAsync();
-
-                // revert email address to previous
-                adminUser.Email = adminEmail;
-                await _userManager.UpdateNormalizedEmailAsync(adminUser);
             }
         }
 
-        public async Task SendWelcomeEmailToNewSuperAdminAsync(Guid adminUserId, string firstName, string email)
+        public async Task SendWelcomeEmailToNewSuperAdminAsync(string firstName, string email)
         {
-            var adminUser = _userManager.FindByIdAsync(adminUserId).Result;
-            var adminEmail = adminUser.Email;
+            var fromUser = new ApplicationUser()
+            {
+                Id = Guid.NewGuid(),
+                Email = email,
+                NormalizedEmail = email
+            };
 
-            adminUser.Email = email;
-            await _userManager.UpdateNormalizedEmailAsync(adminUser);
-
-            var notificationProvider = _notificationProviderFactory.Create(adminUser, MessageTypeConstants.EMAIL);
+            var notificationProvider = _notificationProviderFactory.Create(fromUser, MessageTypeConstants.EMAIL);
             await notificationProvider
               .SetMessageTemplate(TemplateTypeEnum.WelcomeEmailToNewSuperAdmin)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, firstName)
               .SendMessageAsync();
-
-            // revert email address to previous
-            adminUser.Email = adminEmail;
-            await _userManager.UpdateNormalizedEmailAsync(adminUser);
         }
 
     }

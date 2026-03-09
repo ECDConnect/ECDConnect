@@ -27,9 +27,13 @@ export class ChildDocumentsNotificationValidator
       documents: documentsState,
       children: childrenState,
       staticData: staticDataState,
+      classroomData: classroomDataState,
+      practitioner: practitionerState,
     } = state;
 
     if (!documentsState || !childrenState || !staticDataState) return [];
+
+    const hasPrincipalRole = practitionerState?.practitioner?.isPrincipal;
 
     const notifications: Message[] = [];
     const workflowStatus = staticDataState.WorkflowStatuses?.find(
@@ -64,6 +68,40 @@ export class ChildDocumentsNotificationValidator
             },
           },
         });
+      } else {
+        if (hasPrincipalRole && child.caregiverId) {
+          const groups =
+            classroomDataState?.classroomGroupData?.classroomGroups?.find(
+              (group) =>
+                group.learners?.some(
+                  (learner) =>
+                    learner.childUserId === child.userId && learner.isActive
+                )
+            );
+          if (!groups) {
+            notifications.push({
+              reference: `${child.id || child.user?.idNumber}-class`,
+              title: `Assign ${child.user?.firstName} to a class`,
+              message: `${child.user?.firstName} is not assigned to a class`,
+              dateCreated: new Date().toISOString(),
+              priority: NotificationPriority.higher,
+              viewOnDashboard: true,
+              area: 'child-registration',
+              icon: 'IdentificationIcon',
+              color: 'primary',
+              actionText: 'Add to a class',
+              cta: '[[AddChildToClass]]',
+              action: child.id,
+              viewType: 'Both',
+              routeConfig: {
+                route: '/child-profile',
+                params: {
+                  childId: child.id,
+                },
+              },
+            });
+          }
+        }
       }
     }
 

@@ -11,6 +11,7 @@ interface CoreRadioGroupProps {
   currentValue: any;
   colour: Colours;
   selectedOptionBackgroundColor?: Colours;
+  onScroll?: (scrollTop: number) => void;
 }
 
 export const CoreRadioGroup: React.FC<CoreRadioGroupProps> = ({
@@ -19,6 +20,7 @@ export const CoreRadioGroup: React.FC<CoreRadioGroupProps> = ({
   currentValue,
   options,
   selectedOptionBackgroundColor = 'white',
+  onScroll,
 }) => {
   const [stateValue, setStateValue] = useState(currentValue);
 
@@ -27,48 +29,57 @@ export const CoreRadioGroup: React.FC<CoreRadioGroupProps> = ({
     onChange(val);
   };
 
+  const handleScroll = (e: any) => {
+    const element = e.target;
+    if (onScroll && element.scrollTop) {
+      onScroll(element.scrollTop);
+    }
+  };
+
   return (
-    <RadioGroup
-      value={stateValue}
-      onChange={onChangeHandler}
-      className={styles.wrapper}
-    >
-      {options.map((option, index) => (
-        <RadioGroup.Option
-          value={option.value}
-          key={'radio.group.option.' + option.id}
-        >
-          {({ checked }) => (
-            <div
-              className={styles.optionsWrapper(
-                index,
-                checked,
-                colour,
-                selectedOptionBackgroundColor
-              )}
-            >
-              <div className={styles.groupCircleStyle(checked, colour)}>
-                <div className={styles.inner}></div>
-              </div>
-              {!!option.icon && (
-                <div
-                  className={
-                    'ml-2 mr-4 flex h-9 w-9 items-center justify-center rounded-full'
-                  }
-                >
-                  {option.icon}
+    <div onScroll={(e: any) => handleScroll(e)}>
+      <RadioGroup
+        value={stateValue}
+        onChange={onChangeHandler}
+        className={styles.wrapper}
+      >
+        {options.map((option, index) => (
+          <RadioGroup.Option
+            value={option.value}
+            key={'radio.group.option.' + option.id}
+          >
+            {({ checked }) => (
+              <div
+                className={styles.optionsWrapper(
+                  index,
+                  checked,
+                  colour,
+                  selectedOptionBackgroundColor
+                )}
+              >
+                <div className={styles.groupCircleStyle(checked, colour)}>
+                  <div className={styles.inner}></div>
                 </div>
-              )}
-              <Typography
-                text={option.label}
-                type={'body'}
-                color={checked ? 'textDark' : 'textMid'}
-                weight={checked ? 'normal' : 'skinny'}
-              />
-            </div>
-          )}
-        </RadioGroup.Option>
-      ))}
-    </RadioGroup>
+                {!!option.icon && (
+                  <div
+                    className={
+                      'ml-2 mr-4 flex h-9 w-9 items-center justify-center rounded-full'
+                    }
+                  >
+                    {option.icon}
+                  </div>
+                )}
+                <Typography
+                  text={option.label}
+                  type={'body'}
+                  color={checked ? 'textDark' : 'textMid'}
+                  weight={checked ? 'normal' : 'skinny'}
+                />
+              </div>
+            )}
+          </RadioGroup.Option>
+        ))}
+      </RadioGroup>
+    </div>
   );
 };

@@ -2,7 +2,6 @@ import {
   PractitionerProgressReportSummaryDto,
   ProgressTrackingAgeGroupDto,
   ProgressTrackingCategoryDto,
-  ProgressTrackingLevelDto,
   ProgressTrackingSkillDto,
   ProgressTrackingSubCategoryDto,
 } from '@ecdlink/core';
@@ -22,6 +21,8 @@ export const ProgressTrackingActions = {
   GET_PROGRESS_TRACKING_STRUCTURE: 'getProgressTrackingStructure',
   SYNC_CHILD_PROGRESS_REPORTS: 'syncChildProgressReports',
   GET_CHILD_PROGRESS_REPORTS: 'getChildProgressReports',
+  GET_CHILD_PROGRESS_REPORTS_FOR_PRACTITIONER:
+    'getChildProgressReportsForPractitioner',
 };
 
 export const getProgressTrackingAgeGroups = createAsyncThunk<
@@ -311,6 +312,35 @@ export const getPractitionerProgressReportSummary = createAsyncThunk<
       }
     } catch (err) {
       console.log(err);
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getChildProgressReportsForPractitioner = createAsyncThunk<
+  ChildProgressReport[],
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  { id: string },
+  ThunkApiType<RootState>
+>(
+  ProgressTrackingActions.GET_CHILD_PROGRESS_REPORTS_FOR_PRACTITIONER,
+  // eslint-disable-next-line no-empty-pattern
+  async ({ id }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        const reports = await new ProgressTrackingService(
+          userAuth?.auth_token
+        ).getChildProgressReportsForUser(id);
+
+        return reports;
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
       return rejectWithValue(err);
     }
   }

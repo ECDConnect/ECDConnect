@@ -8,7 +8,7 @@ import { authSelectors } from '@/store/auth';
 import { classroomsSelectors } from '@/store/classroom';
 import { practitionerThunkActions } from '@/store/practitioner';
 import { staticDataSelectors } from '@/store/static-data';
-import { PractitionerDto } from '@ecdlink/core';
+import { PractitionerDto, useSnackbar } from '@ecdlink/core';
 import { UpdateUserPermissionInputModelInput } from '@ecdlink/graphql';
 import { BannerWrapper, Button, CheckboxGroup, Typography } from '@ecdlink/ui';
 import {
@@ -16,7 +16,6 @@ import {
   ClipboardCheckIcon,
   PresentationChartLineIcon,
   UserAddIcon,
-  UserIcon,
 } from '@heroicons/react/solid';
 import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -33,6 +32,7 @@ export const EditPractitionerPermissions = ({
   isFromProfileSection?: boolean;
 }) => {
   const { isOnline } = useOnlineStatus();
+  const { showMessage } = useSnackbar();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const appDispatch = useAppDispatch();
   const tenant = useTenant();
@@ -83,9 +83,15 @@ export const EditPractitionerPermissions = ({
       permissionIds: permissionsAdded,
     };
 
-    const updatePermissions = await new PermissionsService(
-      userAuth?.auth_token!
-    ).UpdateUserPermission(updatePermissionInput);
+    await new PermissionsService(userAuth?.auth_token!)
+      .UpdateUserPermission(updatePermissionInput)
+      .then(() => {
+        showMessage({
+          message: 'App rules updated',
+          type: 'success',
+          duration: 3000,
+        });
+      });
 
     await appDispatch(
       practitionerThunkActions.getAllPractitioners({})

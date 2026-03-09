@@ -34,7 +34,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class ImportUserMutationExtension
     {
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.PORTAL, GraphActionEnum.Create)]
         public async Task<UserImportModel> ImportPractitionersAsync(
           [Service] IHttpContextAccessor httpContextAccessor,
           IGenericRepositoryFactory repoFactory,
@@ -268,7 +268,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             };
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.PORTAL, GraphActionEnum.Create)]
         public async Task<UserImportModel> ImportCoachesAsync(
           [Service] IHttpContextAccessor httpContextAccessor,
           IGenericRepositoryFactory repoFactory,

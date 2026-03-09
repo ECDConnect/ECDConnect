@@ -1,6 +1,7 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.AccessValidators;
 using EcdLink.Api.CoreApi.GraphApi.Models.Users;
 using EcdLink.Api.CoreApi.Security.Managers;
+using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
@@ -124,9 +125,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 ClassroomGroupId = classgroupId,
                 ChildId = newChild.Id,
                 ChildUserId = child.UserId.Value,
-                CaregiverRegistrationUrl = shortUrlManager.GetUrlToken(
+                CaregiverRegistrationUrl = await shortUrlManager.GetUrlToken(
                     registrationUrl,
-                    child.User,
+                    child.User.Id,
                     "ChildRegistration"),
             };
 
@@ -137,6 +138,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         /// This is the endpoint used to complete registration as a caregiver
         /// </summary>s
         /// <returns></returns>
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Create)]
+        
         [TokenAccess(typeof(ChildOpenAccessValidator))]
         public async Task<bool> OpenAccessAddChild(
             [Service] ITokenManager<ApplicationUser, OpenAccessTokenManager> tokenManager,
@@ -150,7 +153,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             AddChildTokenModel child,
             AddChildRegistrationTokenModel registration,
             AddChildUserConsentTokenModel consent,
-            [Service] INotificationService notificationService)
+           [Service] IChildService childService)
         {
             var tokenModel = JsonConvert.DeserializeObject<ChildTokenWrapperModel>(TokenHelper.DecodeToken(token));
 
@@ -163,7 +166,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             using var scope = dbFactory.CreateDbContext();
-
+            var tenantId = TenantExecutionContext.Tenant.Id;
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var childRepo = repoFactory.CreateRepository<Child>(scope, tokenModel.AddedByUserId);
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(scope, tokenModel.AddedByUserId);
@@ -178,9 +181,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 //// Update
                 childEntity.Allergies = child.Allergies;
                 childEntity.Disabilities = child.Disabilities;
-                childEntity.LanguageId = child.LanguageId;
                 childEntity.OtherHealthConditions = child.OtherHealthConditions;
                 childEntity.WorkflowStatusId = child.WorkflowStatusId;
+                childEntity.IsAddedByCaregiver = true;
+                childEntity.OtherLanguages = child.OtherLanguages;
 
                 childEntity.Caregiver = new Caregiver
                 {
@@ -200,6 +204,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     JoinReferencePanel = caregiver.JoinReferencePanel,
                     PhoneNumber = caregiver.PhoneNumber,
                     RelationId = caregiver.RelationId,
+                    TenantId = tenantId,
                     SiteAddress = new SiteAddress
                     {
                         AddressLine1 = siteAddress.AddressLine1,
@@ -214,6 +219,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                 childRepo.Update(childEntity);
 
+                if (caregiver != null && caregiver.GrantIds != null)
+                {
+                    childService.UpdateCaregiverGrants(childEntity.UserId.Value, caregiver.GrantIds, tenantId);
+                }
+
+                if (child != null && child.HomeLanguageIds != null)
+                {
+                    childService.UpdateChildLanguages(childEntity.UserId.Value, child.HomeLanguageIds, tenantId);
+                }
 
                 appUser.GenderId = child.GenderId;
                 appUser.DateOfBirth = child.DateOfBirth;
@@ -349,6 +363,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
         #endregion
 
+[Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Create)]
+
         public void CalculateChildrenRegistrationRemoval([Service] IPointsEngineService pointsEngineService, Guid userId)
         {
             pointsEngineService.CalculateChildRemovedFromPreschool(userId);
@@ -391,7 +407,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return true;
         }
 
-        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Create)]
+[Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Create)]
+
         public async Task<InitialChildRegistrationModel> RefreshCaregiverChildToken(
             [Service] ITokenManager<ApplicationUser, OpenAccessTokenManager> tokenManager,
             [Service] ApplicationUserManager userManager,
@@ -448,9 +465,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 ClassroomGroupId = classgroupId,
                 ChildId = child.Id,
                 ChildUserId = child.UserId.Value,
-                CaregiverRegistrationUrl = shortUrlManager.GetUrlToken(
+                CaregiverRegistrationUrl = await shortUrlManager.GetUrlToken(
                     registrationUrl,
-                    child.User,
+                    child.User.Id,
                     "ChildRegistration"),
             };
 

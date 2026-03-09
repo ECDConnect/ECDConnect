@@ -15,6 +15,8 @@ import { ConfirmPlayGroupListItem } from '../edit-playgroup-form/components/conf
 import { practitionerSelectors } from '@/store/practitioner';
 import { useSelector } from 'react-redux';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
+import { useLocation } from 'react-router';
+import { EditPlaygroupsRouteState } from '@/pages/practitioner/save-practitioner-playgroups/save-practitioner-playgroups.types';
 interface ConfirmPlayGroupsProps extends FormComponentProps<any | void> {
   defaultPlayGroups: EditPlaygroupModel[];
   onEditPlaygroup: (
@@ -33,6 +35,7 @@ export const ConfirmPlayGroups: React.FC<ConfirmPlayGroupsProps> = ({
   title = 'Confirm Playgroups',
   isLoading,
 }) => {
+  const location = useLocation<EditPlaygroupsRouteState>();
   const [playgroups, setPlayGroups] =
     useState<EditPlaygroupModel[]>(defaultPlayGroups);
   const onAddNewPlaygroup = () => {
@@ -51,6 +54,13 @@ export const ConfirmPlayGroups: React.FC<ConfirmPlayGroupsProps> = ({
   useEffect(() => {
     setPlayGroups(defaultPlayGroups);
   }, [defaultPlayGroups]);
+
+  // handle redirect from adding a child when there are no classes available
+  useEffect(() => {
+    if (location?.state?.redirectFromBusinessToAddClass) {
+      onAddNewPlaygroup();
+    }
+  }, [location]);
 
   return (
     <>

@@ -1,5 +1,4 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { useTenant } from '@/hooks/useTenant';
 import ROUTES from '@/routes/routes';
 import { AuthService } from '@/services/AuthService';
 import { useAppDispatch } from '@/store';
@@ -37,6 +36,7 @@ interface VerifyPhoneNumberProps {
   saveNewPractitionerUserData?: () => void;
   isFromEditCellPhone?: boolean;
   setEditiCellPhoneNumber?: (item: boolean) => void;
+  verifyToken?: string;
 }
 
 export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
@@ -45,18 +45,16 @@ export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
   username,
   setIsFromAuthCodeScreen,
   password,
-  handleChangePhoneNumber,
   saveNewPractitionerUserData,
   isFromEditCellPhone,
   setEditiCellPhoneNumber,
+  verifyToken,
 }) => {
   const { isOnline } = useOnlineStatus();
   const { theme } = useTheme();
   const appDispatch = useAppDispatch();
   const { setNotification } = useNotifications();
   const history = useHistory();
-  const tenant = useTenant();
-  const orgName = tenant?.tenant?.organisationName;
   const [isLoading, setIsLoading] = useState(false);
   const [userAuthCode, setUserAuthCode] = useState('');
   const userAuthCodeLength = userAuthCode?.length;

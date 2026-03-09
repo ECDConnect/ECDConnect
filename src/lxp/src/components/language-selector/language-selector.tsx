@@ -37,12 +37,11 @@ export const LanguageSelector = ({
   const { i18n } = useTranslation();
   const { isOnline } = useOnlineStatus();
 
-  const [locale, setLocale] = useState<string>('en-za'); // SET DEFAULT LOCALE
   const currentLanguages = useMemo(
     () =>
       availableLanguages?.length
         ? languages?.filter((language) =>
-            availableLanguages?.includes(language.locale as LanguageCode)
+            availableLanguages.includes(language.locale as LanguageCode)
           )
         : languages.filter((language) => language.locale !== 'other'),
     [languages, availableLanguages]
@@ -50,10 +49,9 @@ export const LanguageSelector = ({
 
   const setLanguage = (nextLocale: string) => {
     if (!isOnline && showOfflineAlert) {
-      return setIsOfflineAlert(true);
+      setIsOfflineAlert(true);
+      return;
     }
-
-    setLocale(nextLocale);
 
     const language = currentLanguages?.find((x) => x.locale === nextLocale);
 
@@ -65,9 +63,7 @@ export const LanguageSelector = ({
 
   const handleOfflineAlert = useCallback(() => {
     if (isOfflineAlert) {
-      setTimeout(() => {
-        setIsOfflineAlert(false);
-      }, 5000);
+      setTimeout(() => setIsOfflineAlert(false), 5000);
     }
   }, [isOfflineAlert]);
 
@@ -76,13 +72,10 @@ export const LanguageSelector = ({
   }, [handleOfflineAlert]);
 
   useEffect(() => {
-    if (i18n.language !== locale) {
-      i18n.changeLanguage(locale);
+    if (i18n.language !== currentLocale) {
+      i18n.changeLanguage(currentLocale);
     }
-
-    // trigger only once
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [currentLocale, i18n]);
 
   return (
     <div className={classNames(styles.localeDropDownWrapper, className)}>
@@ -93,9 +86,10 @@ export const LanguageSelector = ({
       >
         {labelText === undefined ? 'Change Language:' : labelText}
       </label>
+
       <Dropdown
         fillType="clear"
-        selectedValue={currentLocale ?? locale}
+        selectedValue={currentLocale}
         disabled={disabled}
         fillColor="quatenary"
         labelColor="white"

@@ -10,5 +10,9 @@ namespace EcdLink.Api.CoreApi.Services.Interfaces
         List<Child> GetChildrenForClassroom(Guid classroomId);
         List<Child> GetChildrenForClassroomGroup(Guid classroomGroupId);
         void UpdateChild(UpdateChildAndCaregiverInput input);
+        void RemoveChild(UpdateChildAndCaregiverInput input);
+
+        void UpdateCaregiverGrants(Guid childUserId, List<Guid> grantIds, Guid tenantId);
+        void UpdateChildLanguages(Guid childUserId, List<Guid> homeLanguageIds, Guid tenantId);
     }
 }

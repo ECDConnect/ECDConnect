@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import DynamicSelector from '../../../../../../../components/dynamic-selector/dynamic-selector';
 import DynamicStaticSelector from '../../../../../../../components/dynamic-static-selector/dynamic-static-selector';
 import FormColorField from '../../../../../../../components/form-color-field/form-color-field';
@@ -23,6 +23,8 @@ import {
 import { useDialog } from '@ecdlink/core';
 import { InformationCircleIcon } from '@heroicons/react/solid';
 import { useWatch } from 'react-hook-form';
+import * as styles from '../../../../../../pages.styles';
+import ContentLoader from '../../../../../../../components/content-loader/content-loader';
 
 const acceptedFormats = ['svg', 'png', 'PNG', 'jpg', 'JPG', 'jpeg'];
 
@@ -56,6 +58,24 @@ const CreateThemeForm: React.FC<CreateThemeFormProps> = ({
   getValues,
 }) => {
   const { register, control, errors } = handleform;
+  const [isLoading, setIsLoading] = useState(true);
+
+  const isEdit = useMemo(
+    () => template?.fields?.some((f) => !!f.contentValue),
+    [template?.fields]
+  );
+
+  useEffect(() => {
+    if (isEdit) {
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 2500);
+      // Cleanup function to clear the timeout if the component unmounts
+      return () => clearTimeout(timer);
+    } else {
+      setIsLoading(false);
+    }
+  }, [isEdit]);
 
   const onStateChange = (name: string, state: any) => {
     setValue(name, state);
@@ -162,7 +182,7 @@ const CreateThemeForm: React.FC<CreateThemeFormProps> = ({
                     <div className="justify-stretch flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
                       <button
                         type="button"
-                        className="bg-secondary hover:bg-uiLight focus:outline-none focus:ring-secondary-500 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                        className={styles.mainButton}
                         onClick={() => renderDialog()}
                       >
                         Learn more
@@ -176,7 +196,7 @@ const CreateThemeForm: React.FC<CreateThemeFormProps> = ({
                   text={`If you select 'Yes', then any future edits made & all translations of this activity can be shared with other organisations.`}
                 />
                 <div
-                  className={`bg-uiBg gap-2 sm:col-span-12 ${
+                  className={` gap-2 sm:col-span-12 ${
                     hasUnsharedContent && 'pointer-events-none opacity-50'
                   }`}
                 >
@@ -186,6 +206,8 @@ const CreateThemeForm: React.FC<CreateThemeFormProps> = ({
                       onStateChange(propName, value);
                     }}
                     color="tertiary"
+                    notSelectedColor="errorBg"
+                    textColor="tertiary"
                     type={ButtonGroupTypes.Button}
                     className={'mr-2 w-full rounded-2xl'}
                     multiple={false}
@@ -378,7 +400,15 @@ const CreateThemeForm: React.FC<CreateThemeFormProps> = ({
 
   return (
     <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-1">
-      {fields}
+      {isLoading ? (
+        <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-white">
+          <div className="flex flex-col items-center">
+            <ContentLoader />
+          </div>
+        </div>
+      ) : (
+        fields
+      )}
     </div>
   );
 };

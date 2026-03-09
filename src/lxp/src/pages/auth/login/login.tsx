@@ -1,4 +1,4 @@
-import { useTheme, LoginRequestModel, useDialog } from '@ecdlink/core';
+import { LoginRequestModel, useDialog } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
   Alert,
@@ -29,12 +29,12 @@ import ROUTES from '@routes/routes';
 import { StorageFull } from './storage-full/storage-full';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
-import { syncThunkActions } from '@/store/sync';
 import { userThunkActions } from '@/store/user';
 import { useStoreSetup } from '@/hooks/useStoreSetup';
 import { useTenant } from '@/hooks/useTenant';
 import TransparentLayer from '../../../assets/TransparentLayer.png';
 import ReactGA from 'react-ga4';
+import { triggerBackgroundSync } from '@/store/sync/sync.actions';
 
 var CryptoJS = require('crypto-js');
 const { version } = require('../../../../package.json');
@@ -44,22 +44,23 @@ export const Login: React.FC = () => {
   const history = useHistory();
   const dialog = useDialog();
   const [displayError, setDisplayError] = useState(false);
-  const displayMessage = 'Password or ID incorrect. Please try again';
+  const displayMessage = 'Password or username incorrect. Please try again';
   const [displayWrongUserError, setDisplayWrongUserError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [idFieldVisible, setIdFieldVisible] = useState(true);
   const { isOnline } = useOnlineStatus();
   const [freeMemory, setFreeMemory] = useState(0);
   const [errorMessage, setErrorMessage] = useState(false);
-  // const [incorrectBrowser, setIncorrectBrowser] = useState(false);
   const tenant = useTenant();
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
-  const { resetAppStore, resetAuth } = useStoreSetup();
+  const { resetAppStore, resetAuth, resetUser } = useStoreSetup();
 
   useEffect(() => {
-    resetAppStore();
+    if (isOnline) {
+      resetAppStore();
+    }
   }, []);
 
   navigator?.storage?.estimate &&
@@ -124,14 +125,12 @@ export const Login: React.FC = () => {
       !!practitioner &&
       isOnline
     ) {
-      if (practitioner?.isPrincipal === true) {
-        await appDispatch(syncThunkActions.syncOfflineData({}));
-      } else {
-        await appDispatch(syncThunkActions.syncOfflineDataForPractitioner({}));
-      }
-
+      await appDispatch(
+        triggerBackgroundSync({ includeOfflineSyncData: true })
+      );
       await resetAppStore();
       await resetAuth();
+      await resetUser();
     }
   };
 
@@ -202,8 +201,6 @@ export const Login: React.FC = () => {
     loginSetValue('preferId', flag);
     setIdFieldVisible(flag);
   };
-
-  const { theme } = useTheme();
 
   const handleIncorrectBrowser = () => {
     dialog({
@@ -338,7 +335,7 @@ export const Login: React.FC = () => {
                 <Typography
                   type="buttonSmall"
                   color="secondary"
-                  text={'Forgot my password'}
+                  text={'Forgot my password/username'}
                 ></Typography>
               </Button>
             </div>

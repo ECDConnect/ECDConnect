@@ -22,7 +22,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
+
         public List<Absentees> GetAbsenteeByUserId([Service] IHttpContextAccessor contextAccessor,
         IGenericRepositoryFactory repoFactory,
         string userId)
@@ -47,6 +48,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return absents;
         }
 
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
         public int GetTotalDaysAbsent([Service] IHttpContextAccessor contextAccessor,
         IGenericRepositoryFactory repoFactory,
         string userId)
@@ -58,6 +60,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return absents.Count();
         }
 
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
         public List<Absentees> GetAbsentees(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,

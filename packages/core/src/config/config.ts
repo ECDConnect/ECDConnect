@@ -1,7 +1,17 @@
-export const Config = {
+export type ConfigType = {
+  graphQlApi: string;
+  authApi: string;
+  themeUrl: string;
+  facebookAppId: string | undefined;
+  googleClientId: string | undefined;
+};
+
+export const Config: ConfigType = {
   graphQlApi: '',
   authApi: '',
   themeUrl: '',
+  facebookAppId: '',
+  googleClientId: '',
 };
 
 export const toolbarOptions = [

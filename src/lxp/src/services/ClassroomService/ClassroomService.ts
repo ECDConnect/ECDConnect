@@ -28,6 +28,7 @@ class ClassroomService {
             numberOfAssistants
             numberOfOtherAssistants
             preschoolCode
+            isDummySchool
             siteAddress {
               id
               area
@@ -135,19 +136,24 @@ class ClassroomService {
     return response.data.data.updateClassroomSiteAddress;
   }
 
-  async getAllClassroomForCoach(userId: string): Promise<ClassroomDto[]> {
+  async getAllClassroomForCoach(): Promise<ClassroomDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
 
     const response = await apiInstance.post<any>(``, {
       query: `
-      query allClassroomsForCoach($userId: String) {
-        allClassroomsForCoach(userId: $userId) {
+      query allClassroomsForCoach {
+        allClassroomsForCoach {
           id
           userId
           name
           classroomImageUrl
           numberPractitioners
           isPrinciple
+          childProgressReportPeriods {
+            id
+            startDate
+            endDate
+          }
           siteAddress {
             id
             name
@@ -160,9 +166,6 @@ class ClassroomService {
         }
       }
       `,
-      variables: {
-        userId,
-      },
     });
 
     if (response.status !== 200) {

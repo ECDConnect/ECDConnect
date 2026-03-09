@@ -14,10 +14,6 @@ import { ReactComponent as Robot } from '../../../../../assets/iconRobot.svg';
 import { useAppContext } from '@/walkthrougContext';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
-import {
-  ClassDashboardRouteState,
-  TabsItems,
-} from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import { useTranslation } from 'react-i18next';
 import { usePrevious } from 'react-use';
 import { useEffect } from 'react';
@@ -183,14 +179,16 @@ export default function ProgrammeWrapper() {
               </div>
             )}
           </div>
-          <div className="mt-4 flex items-center justify-between gap-4">
-            <SliderPagination
-              totalItems={9}
-              activeIndex={index}
-              className={'p-4'}
-            />
+          <div className="mt-4 flex items-center justify-between">
+            <div className="flex justify-start">
+              <SliderPagination
+                totalItems={10}
+                activeIndex={index}
+                className={'p-4'}
+              />
+            </div>
             {!disableNextButton && (
-              <div {...primaryProps} className={'w-full'}>
+              <div {...primaryProps}>
                 <Button
                   type="filled"
                   color="quatenary"
@@ -202,7 +200,10 @@ export default function ProgrammeWrapper() {
                     color="white"
                     text={isLastStep ? 'Close' : 'Next'}
                   />
-                  {renderIcon('ArrowRightIcon', `w-5 h-5 text-white text-lg`)}
+                  {renderIcon(
+                    'ArrowCircleRightIcon',
+                    `w-5 h-5 text-white text-lg`
+                  )}
                 </Button>
               </div>
             )}
@@ -266,11 +267,11 @@ export default function ProgrammeWrapper() {
           },
           spotlight:
             stepIndex === 9
-              ? {}
+              ? { background: 'transparent' }
               : {
                   borderWidth: 4,
                   borderRadius: 20,
-                  borderColor: '#FF2180',
+                  borderColor: '#ED145B',
                   borderStyle: 'solid',
                 },
         }}

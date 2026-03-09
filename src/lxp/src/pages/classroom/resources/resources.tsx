@@ -32,7 +32,6 @@ export const Resources = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { isOnline } = useOnlineStatus();
   const dialog = useDialog();
-  const isComingSoon = false;
 
   const activitiesResources = useMemo(
     () =>
@@ -165,14 +164,6 @@ export const Resources = () => {
       render: (onSubmit) => <OnlineOnlyModal onSubmit={onSubmit} />,
     });
   }, [dialog]);
-
-  if (isComingSoon) {
-    return (
-      <div className="mt-2 flex flex-col p-4">
-        <Typography color="textDark" text={`Coming soon`} type={'h2'} />
-      </div>
-    );
-  }
 
   const hasResources = resourceItems?.length > 0;
 

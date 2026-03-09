@@ -65,14 +65,14 @@ export const PrincipalNotes: React.FC = () => {
         displayOffline={!isOnline}
       >
         <Typography
-          className={'pt-1 px-4'}
+          className={'px-4 pt-1'}
           type={'h1'}
           color={'primary'}
           text="Notes"
         />
         <div className="flex justify-center">
           <NotesList
-            className={'bg-white w-11/12'}
+            className={'w-11/12 bg-white'}
             notes={notes}
             viewToNote={(note: NoteDto) => viewNote(note)}
           />
@@ -98,7 +98,7 @@ export const PrincipalNotes: React.FC = () => {
           <CreateNote
             userId={practitioner?.userId || ''}
             noteType={NoteTypeEnum.Child}
-            titleText={`Add a note to ${practitioner?.user?.firstName} profile`}
+            titleText={`Add a note to ${practitioner?.user?.firstName}'s profile`}
             onBack={() => onCreateChildNoteBack()}
             onCreated={() => onNoteCreated()}
           />

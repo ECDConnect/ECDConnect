@@ -3,8 +3,12 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { classNames, renderIcon } from '../../utils';
 import Typography from '../typography/typography';
 import { useState } from 'react';
-import { ChevronDownIcon } from '@heroicons/react/solid';
 import { Colours } from '../../models';
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ChevronDownIcon,
+} from '@heroicons/react/solid';
 
 interface BaseDatePickerProps
   extends Omit<ReactDatePickerProps, 'selectsRange' | 'onChange'> {
@@ -70,11 +74,44 @@ export const DatePicker: React.FC<DatePickerProps> = ({
             showChevronIcon ? 'pr-7' : ''
           }`}
           wrapperClassName="w-full"
+          calendarClassName="react-datepicker--large-calendar"
           onCalendarOpen={() => setIsOpen(true)}
           onCalendarClose={() => setIsOpen(false)}
           onFocus={(e) => (e.target.readOnly = true)}
           withPortal={withPortal}
           portalId={!!withPortal ? 'root-portal' : undefined}
+          renderCustomHeader={({
+            date,
+            decreaseMonth,
+            increaseMonth,
+            prevMonthButtonDisabled,
+            nextMonthButtonDisabled,
+          }) => (
+            <div className="react-datepicker__header-custom flex items-center justify-between border-b bg-white px-3 py-2">
+              <button
+                onClick={decreaseMonth}
+                disabled={prevMonthButtonDisabled}
+                className="rounded p-1.5 hover:bg-gray-100 disabled:opacity-40"
+              >
+                <ChevronLeftIcon className="h-8 w-8 text-gray-700" />
+              </button>
+
+              <div className="font-medium text-gray-900">
+                {date.toLocaleDateString('en-US', {
+                  month: 'long',
+                  year: 'numeric',
+                })}
+              </div>
+
+              <button
+                onClick={increaseMonth}
+                disabled={nextMonthButtonDisabled}
+                className="rounded p-1.5 hover:bg-gray-100 disabled:opacity-40"
+              >
+                <ChevronRightIcon className="h-8 w-8 text-gray-700" />
+              </button>
+            </div>
+          )}
         />
         {!hideCalendarIcon &&
           renderIcon(

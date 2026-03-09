@@ -36,17 +36,31 @@ function ThemeProvider({
 
     if (!value || overRideCache) {
       await fetch(themeEndPoint, { cache: 'no-store' })
-        .then(function (res) {
-          return res.json();
-        })
-        .then(async function (data) {
-          await Storage.set({
-            key: 'storageTheme',
-            value: JSON.stringify(data),
-          });
-          setData(data);
+        .then(async function (res) {
+          let res2 = res.clone();
+          let themeData = await res2.json();
+          Promise.all([
+            caches.open('json-files').then((cache) => {
+              cache.put(themeEndPoint, res);
+            }),
+            caches.open('images').then((cache) => {
+              cache.addAll([
+                themeData.images.graphicOverlayUrl,
+                themeData.images.logoUrl,
+                themeData.images.faviconUrl,
+                themeData.images.portalLoginLogoUrl,
+                themeData.images.portalLoginBackgroundUrl,
+              ]);
+            }),
+            Storage.set({
+              key: 'storageTheme',
+              value: JSON.stringify(themeData),
+            }),
+          ]);
+          setData(themeData);
         })
         .catch(function (err) {
+          console.error(err);
           setWhiteLabelTheme();
         });
     } else {
@@ -59,7 +73,7 @@ function ThemeProvider({
   }, [themeEndPoint]);
 
   useEffect(() => {
-    if (data && data.colors) {
+    if (data?.colors) {
       if (data.colors) {
         DefaultTheme.primary = data.colors.primary;
         DefaultTheme.secondary = data.colors.secondary;

@@ -3,8 +3,8 @@ import Joyride, {
   TooltipRenderProps,
   Step as StepType,
 } from 'react-joyride';
-import { Button, Card, SliderPagination, Typography } from '@ecdlink/ui';
-import robot from '../../../assets/iconRobot.svg';
+import { Button, Card, Typography } from '@ecdlink/ui';
+import robot from '../../../assets/iconRobotBlueBg.svg';
 import { useTranslation } from 'react-i18next';
 import { useAppContext } from '@/walkthrougContext';
 
@@ -111,7 +111,7 @@ export default function DashboardWrapper() {
           spotlight: {
             borderWidth: 4,
             borderRadius: 20,
-            borderColor: '#FF2180',
+            borderColor: '#ED145B',
             borderStyle: 'solid',
           },
         }}

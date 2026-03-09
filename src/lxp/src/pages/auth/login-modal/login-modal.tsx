@@ -26,20 +26,17 @@ import * as styles from './login-modal.styles';
 import ROUTES from '@routes/routes';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
-import { practitionerSelectors } from '@/store/practitioner';
-import { syncThunkActions } from '@/store/sync';
+import { triggerBackgroundSync } from '@/store/sync/sync.actions';
 const CryptoJS = require('crypto-js');
 const { version } = require('../../../../package.json');
 
 interface LoginModalProps {
   loginSuccessful: () => void;
-  updateTime?: () => void;
   isLocalExpiration?: boolean;
 }
 
 export const LoginModal: React.FC<LoginModalProps> = ({
   loginSuccessful,
-  updateTime,
   isLocalExpiration,
 }) => {
   const appDispatch = useAppDispatch();
@@ -47,7 +44,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   const [displayError, setDisplayError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [idFieldVisible, setIdFieldVisible] = useState(true);
-  const { resetAppStore, resetAuth } = useStoreSetup();
+  const { resetAppStore, resetAuth, resetUser } = useStoreSetup();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const user = useSelector(userSelectors.getUser);
 
@@ -76,22 +73,15 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   const { isValid } = loginFormState;
   const { idField, passportField, password, preferId } = useWatch({ control });
   const checkIdOrPassport = preferId ? idField : passportField;
-  const practitioner = useSelector(practitionerSelectors?.getPractitioner);
-
-  const sync = async () => {
-    if (practitioner?.isPrincipal === true) {
-      await appDispatch(syncThunkActions.syncOfflineData({}));
-    } else {
-      await appDispatch(syncThunkActions.syncOfflineDataForPractitioner({}));
-    }
-    await appDispatch(settingActions.setLastDataSync());
-  };
 
   const submitForm = async () => {
     if (user?.idNumber !== checkIdOrPassport) {
-      await sync();
+      await appDispatch(
+        triggerBackgroundSync({ includeOfflineSyncData: true })
+      );
       await resetAppStore();
       await resetAuth();
+      await resetUser();
       localStorage?.clear();
       history.push(ROUTES.LOGIN);
     }
@@ -239,7 +229,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             {displayError && (
               <Alert
                 className={'mt-5 mb-3'}
-                message={'Password or ID incorrect. Please try again'}
+                message={'Password or username incorrect. Please try again'}
                 type={'error'}
               />
             )}

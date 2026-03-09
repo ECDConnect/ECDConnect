@@ -28,6 +28,7 @@ import {
   BulkUpdateStoryBookThemes,
   UpdateStoryBookAndParts,
 } from '@ecdlink/graphql';
+import * as styles from '../../../../../pages.styles';
 
 export interface ContentViewProps {
   content: any;
@@ -434,7 +435,7 @@ export default function CreateStory({
                 <button
                   onClick={cancelDialog}
                   type="button"
-                  className="bg-errorBg text-tertiary hover:bg-tertiary ml-2 inline-flex items-center rounded-xl border border-transparent px-4 py-2.5 text-sm font-medium shadow-sm hover:text-white"
+                  className={styles.cancelButton}
                 >
                   Cancel
                   <XIcon width="22px" className="pl-1" />
@@ -504,7 +505,7 @@ export default function CreateStory({
 
             <button
               onClick={content?.isInUse ? cannotDeleteDialog : deleteAndRefresh}
-              className="hover:bg-tertiary border-tertiary focus:outline-none text-tertiary mt-3 ml-4 inline-flex items-center rounded-2xl border-2 bg-transparent  px-14 py-2.5 text-sm font-medium shadow-sm hover:text-white focus:ring-2 focus:ring-offset-2"
+              className={styles.deleteButton}
             >
               <TrashIcon color="tertiary" className="mr-2 h-6 w-6" />
               Delete {content?.name}

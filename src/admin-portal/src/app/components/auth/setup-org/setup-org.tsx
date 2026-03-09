@@ -24,7 +24,6 @@ import setupBackground from '../../../../assets/setup_background.svg';
 import { OrganisationalTerms } from './components/organisational-terms/organisational-terms';
 
 export const SetupOrg = () => {
-  const { theme } = useTheme();
   const history = useHistory();
   const [openSummaryModal, setOpenSummaryModal] = useState(false);
   const [viewIndividualTerms, setViewIndividualTerms] =
@@ -54,12 +53,11 @@ export const SetupOrg = () => {
 
   return (
     <BannerWrapper
-      size={'normal'}
+      size={'large'}
       renderBorder={true}
       className={'h-screen'}
       showBackground={false}
       color={'primary'}
-      menuLogoUrl={theme?.images?.logoUrl}
     >
       <div className="grid grid-cols-2">
         <div className="flex h-screen items-center justify-center gap-4 p-24">

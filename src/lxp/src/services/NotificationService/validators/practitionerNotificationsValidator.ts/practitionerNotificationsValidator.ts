@@ -8,6 +8,7 @@ import {
 } from '../../NotificationService.types';
 import { RoleSystemNameEnum } from '@ecdlink/core';
 import ROUTES from '@/routes/routes';
+import pwa from '@/utils/pwa';
 
 export class PractitionerNotificationValidator
   implements NotificationValidator
@@ -106,6 +107,28 @@ export class PractitionerNotificationValidator
         routeConfig: {
           route: ROUTES.PRACTITIONER.ABOUT.ROOT,
         },
+      });
+    }
+
+    if (
+      !isMoreThan30Days &&
+      practitionerState?.practitioner?.isRegistered &&
+      pwa.isInstallationAvailable()
+    ) {
+      notifications.push({
+        reference: `practitioner-download-app`,
+        title: `Download ${tenantState?.tenant?.applicationName}`,
+        message:
+          "Save the app on your phone so it's quick and easy to open any time!",
+        dateCreated: new Date().toISOString(),
+        priority: 1000,
+        viewOnDashboard: true,
+        isFromBackend: false,
+        area: 'practitioner',
+        icon: 'InformationCircleIcon',
+        color: 'infoMain',
+        actionText: 'Downlad the app',
+        viewType: 'Messages',
       });
     }
 

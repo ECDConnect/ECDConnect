@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import { ChildProgressDetailedSkillObservation } from '@/models/progress/child-progress-report';
 import { ProgressTrackingCategoryDto } from '@ecdlink/core';
 import greenFaceImg from '@/assets/progress-reports/green-face.png';
+import { lightenColor } from '@/utils/common/color.utils';
 
 export type ProgressCaregiverReportSkillsPageProps = {
   childFirstName: string;
@@ -54,10 +55,10 @@ export const ProgressCaregiverReportSkillsPage: React.FC<
 
       {skillsByCategory.map((category) => (
         <div
-          className="bg-infoBb mt-6 mb-4 flex flex-col rounded-sm rounded-2xl border-2 p-4 pb-6 shadow-sm"
+          className="mt-6 mb-4 flex flex-col rounded-sm rounded-2xl border-2 p-4 pb-6 shadow-sm"
           style={{
             borderColor: category.color,
-            // backgroundColor: category.color,
+            backgroundColor: lightenColor(category.color, 95),
           }}
           key={category.id}
         >

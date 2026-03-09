@@ -2,7 +2,6 @@
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -13,7 +12,6 @@ using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using EcdLink.Api.CoreApi.GraphApi.Models.Visits;
@@ -23,7 +21,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class VisitMutationExtension
     {
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.VISITS, GraphActionEnum.Create)]
         public BasicVisitModel RestartVisit(
             [Service] VisitManager visitManager,
             Guid existingVisitId)
@@ -62,7 +60,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
         #region Practitioners
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.VISITS, GraphActionEnum.Create)]
         public Visit AddSupportVisitForPractitioner(
             [Service] IHttpContextAccessor httpContextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -107,7 +105,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return visit;
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.VISITS, GraphActionEnum.Create)]
         public Visit AddFollowUpVisitForPractitioner(
             [Service] IHttpContextAccessor httpContextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -149,7 +147,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return visit;
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.VISITS, GraphActionEnum.Create)]
         public Visit AddReAccreditationFollowUpVisitForPractitioner(
             [Service] IHttpContextAccessor httpContextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -191,7 +189,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return visit;
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.VISITS, GraphActionEnum.Create)]
         public Visit AddReAccreditationVisitForPractitioner(
             [Service] IHttpContextAccessor httpContextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -237,7 +235,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return visit;
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.VISITS, GraphActionEnum.Create)]
         public Visit AddSelfAssessmentForPractitioner(
             [Service] IHttpContextAccessor httpContextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -274,7 +272,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return visit;
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.VISITS, GraphActionEnum.Create)]
         public Visit UpdateVisitPlannedVisitDate(
             [Service] IHttpContextAccessor httpContextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -289,7 +287,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
         #region Coaches
                 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.VISITS, GraphActionEnum.Create)]
         public Visit AddCoachVisitInviteForPractitioner(
             [Service] IHttpContextAccessor httpContextAccessor,
             [Service] INotificationService notificationService,

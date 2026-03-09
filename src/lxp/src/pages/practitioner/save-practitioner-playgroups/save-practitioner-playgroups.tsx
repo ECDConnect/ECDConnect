@@ -1,4 +1,4 @@
-import { useDialog } from '@ecdlink/core';
+import { useDialog, useSnackbar } from '@ecdlink/core';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
@@ -19,7 +19,6 @@ import {
   EditPlaygroupsRouteState,
   EditPlaygroupsSteps,
 } from './save-practitioner-playgroups.types';
-import { staticDataSelectors } from '@store/static-data';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useStoreSetup } from '@hooks/useStoreSetup';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
@@ -27,6 +26,8 @@ import { practitionerSelectors } from '@/store/practitioner';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import ROUTES from '@/routes/routes';
 import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
+import { disableBackendNotification } from '@/store/notifications/notifications.actions';
+import { notificationsSelectors } from '@/store/notifications';
 
 export const EditPlaygroups: React.FC = () => {
   const location = useLocation<EditPlaygroupsRouteState>();
@@ -46,17 +47,33 @@ export const EditPlaygroups: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
   const dialog = useDialog();
+  const { showMessage } = useSnackbar();
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
-  const playGroupType = useSelector(
-    staticDataSelectors.getPlaygroupProgrammeType
-  );
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const isPrincipal = practitioner?.isPrincipal === true;
 
   const [updatedClassroomGroups, setUpdatedClassroomGroups] = useState<
     EditPlaygroupModel[]
   >([]);
+
+  const assignToClassNotifications = useSelector(
+    notificationsSelectors.getAllNotifications
+  ).filter((item) =>
+    item?.message?.cta?.includes('[[[[AssignPractitioner]]]]')
+  );
+
+  const removeNotifications = async () => {
+    if (assignToClassNotifications && assignToClassNotifications?.length > 0) {
+      assignToClassNotifications.map((notification) => {
+        appDispatch(
+          disableBackendNotification({
+            notificationId: notification.message.reference ?? '',
+          })
+        );
+      });
+    }
+  };
 
   useEffect(() => {
     if (classroomGroups) {
@@ -103,6 +120,7 @@ export const EditPlaygroups: React.FC = () => {
     setActiveClassroomGroupIndex(index);
     setActivePage(EditPlaygroupsSteps.edit);
     setAddingPlayGroup(addingPlayGroup);
+    removeNotifications();
   };
 
   const updateClassroomData = async () => {
@@ -171,7 +189,13 @@ export const EditPlaygroups: React.FC = () => {
             userId: playG?.userId,
           },
         })
-      );
+      ).then(() => {
+        showMessage({
+          message: 'Class deleted',
+          type: 'success',
+          duration: 3000,
+        });
+      });
     }
 
     await saveEditedPlayGroups(playgroups);

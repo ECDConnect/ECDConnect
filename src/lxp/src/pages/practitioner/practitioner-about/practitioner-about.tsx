@@ -12,7 +12,7 @@ import {
   Button,
   Dialog,
   DialogPosition,
-  IMAGE_WIDTH,
+  IMAGE_WIDTH_PROFILE,
   PasswordInput,
   ProfileAvatar,
   StackedList,
@@ -41,6 +41,7 @@ import * as styles from './practitioner-about.styles';
 import ROUTES from '@routes/routes';
 import { EditCellPhoneNumber } from './edit-cellphone-number/edit-cellphone-number';
 import { EditEmail } from './edit-email/edit-email';
+import { EditName } from './edit-name/edit-name';
 import {
   practitionerSelectors,
   practitionerThunkActions,
@@ -72,6 +73,7 @@ export const PractitionerAbout: React.FC = () => {
   const [editProfilePictureVisible, setEditProfilePictureVisible] =
     useState(false);
   const [editiCellPhoneNumber, setEditiCellPhoneNumber] = useState(false);
+  const [editName, setEditName] = useState(false);
   const [editEmail, setEditEmail] = useState(false);
   const [addNextToKin, setAddNextToKin] = useState(false);
   const [editFieldVisible, setEditFieldVisible] = useState(false);
@@ -308,6 +310,22 @@ export const PractitionerAbout: React.FC = () => {
   const setNewStackListItems = (currentUser: UserDto) => {
     const list: ActionListDataItem[] = [
       {
+        title: 'Username',
+        subTitle: currentUser?.userName,
+        switchTextStyles: true,
+      },
+      {
+        title: 'Name',
+        subTitle: currentUser?.firstName || 'Add name',
+        switchTextStyles: true,
+        actionName: currentUser?.firstName ? 'Edit' : 'Add',
+        actionIcon: currentUser?.firstName ? 'PencilIcon' : 'PlusIcon',
+        buttonType: 'filled',
+        onActionClick: () => {
+          setEditName(true);
+        },
+      },
+      {
         title: 'Cellphone Number',
         subTitle: currentUser?.phoneNumber || 'Add an Cellphone Number',
         switchTextStyles: true,
@@ -518,6 +536,9 @@ export const PractitionerAbout: React.FC = () => {
       <Dialog fullScreen visible={addNextToKin} position={DialogPosition.Top}>
         <NextOfKin setAddNextOfKin={setAddNextToKin} user={user} />
       </Dialog>
+      <Dialog fullScreen visible={editName} position={DialogPosition.Top}>
+        <EditName setEditName={setEditName} user={user} />
+      </Dialog>
       <BannerWrapper
         showBackground
         backgroundUrl={TransparentLayer}
@@ -571,7 +592,7 @@ export const PractitionerAbout: React.FC = () => {
             }
             isProfileEmojis={true}
             showEmojiOption={true}
-            resolutionLimit={IMAGE_WIDTH}
+            resolutionLimit={IMAGE_WIDTH_PROFILE}
           ></PhotoPrompt>
         </div>
       </Dialog>

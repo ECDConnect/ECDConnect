@@ -23,7 +23,8 @@ export type Message = {
     | 'child-registration'
     | 'programme-planning'
     | 'progress-report'
-    | 'points';
+    | 'points'
+    | 'preschool';
   expiryDate?: string;
   action?: string;
 };

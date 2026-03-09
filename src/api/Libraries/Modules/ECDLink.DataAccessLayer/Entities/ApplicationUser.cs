@@ -4,6 +4,7 @@ using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Notes;
 using ECDLink.DataAccessLayer.Entities.Training;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using HotChocolate;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -64,6 +65,7 @@ namespace ECDLink.DataAccessLayer.Entities
         public bool? ShareInfoPartners { get; set; }
 
         public virtual ICollection<UserPermission> UserPermissions { get; set; }
+        public virtual ICollection<UserLanguage> UserLanguages { get; set; } = new List<UserLanguage>();
 
         [NotMapped]
         public bool isAdminRegistered { get; set; }

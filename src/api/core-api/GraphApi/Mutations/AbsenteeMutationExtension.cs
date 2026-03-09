@@ -14,7 +14,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class AbsenteeMutationExtension
     {
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.ABSENTEE, GraphActionEnum.Create)]
         public Absentees AddAbsenteeForPractitioner(
             [Service] IAbsenteeService absenteeService,
             string practitionerId,
@@ -32,6 +32,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return absenteeService.AddAbsenteeForPractitioner(practitionerId, reassignedToPractitioner, reason, absentDate, loggedByUser, classProgram, absentDateEnd, isRoleAssign, fromRole, toRole, roleAssignedToUser, null);
         }
 
+        [Permission(PermissionGroups.ABSENTEE, GraphActionEnum.Update)]
         public Absentees EditAbsentee(
             [Service] IAbsenteeService absenteeService,
             string absenteeId,
@@ -46,6 +47,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return absenteeService.EditAbsentee(absenteeId, deleteAbsentee, reassignedToPractitioner, reason, absentDate, absentDateEnd, isRoleAssign, roleAssignedToUser);
         }
 
+        [Permission(PermissionGroups.ABSENTEE, GraphActionEnum.Update)]
         public bool ReassignAbsenteeFromHistory([Service] IReassignmentService reassignmentService,
             string userId)
         {

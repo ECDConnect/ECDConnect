@@ -157,7 +157,7 @@ namespace ECDLink.AutomatedJobs.Cron
             var tenants = new List<TenantInternalModel>();
             if (this._tenants == null)
             {
-                tenants.AddRange(tenancyRepo.GetAllTenants(false)
+                tenants.AddRange(tenancyRepo.GetAllTenants(true)
                     .Where(x => x.TenantType != Tenancy.Enums.TenantType.Host && x.TenantType != Tenancy.Enums.TenantType.WhiteLabelTemplate && x.ApplicationName != "API")
                     .OrderBy(x => x.Id).ThenBy(x => x.ApplicationName)
                     .DistinctBy(x => x.Id)
@@ -176,7 +176,7 @@ namespace ECDLink.AutomatedJobs.Cron
                         tenantNames.Add(x);
                     }
                 });
-                tenants.AddRange(tenancyRepo.GetAllTenants(false)
+                tenants.AddRange(tenancyRepo.GetAllTenants(true)
                     .Where(x => x.TenantType != Tenancy.Enums.TenantType.Host && x.TenantType != Tenancy.Enums.TenantType.WhiteLabelTemplate && x.ApplicationName != "API" && (tenantNames.Contains(x.ApplicationName) || tenantIds.Contains(x.Id)))
                     .OrderBy(x => x.Id).ThenBy(x => x.ApplicationName)
                     .DistinctBy(x => x.Id)

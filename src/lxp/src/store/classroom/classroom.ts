@@ -83,6 +83,23 @@ const classroomsSlice = createSlice({
           state.classroomGroupData.classroomGroups[i] = payloadUpdated;
       }
     },
+    deleteLearner: (
+      state,
+      action: PayloadAction<{ childUserId: string; classroomGroupId: string }>
+    ) => {
+      state.classroomGroupData.classroomGroups =
+        state.classroomGroupData.classroomGroups.map((classroomGroup) =>
+          classroomGroup.id === action.payload.classroomGroupId
+            ? {
+                ...classroomGroup,
+                learners: classroomGroup.learners.filter(
+                  (learner) =>
+                    learner.childUserId !== action.payload.childUserId
+                ),
+              }
+            : classroomGroup
+        );
+    },
     deactivateLearner: (
       state,
       action: PayloadAction<{ childUserId: string; classroomGroupId: string }>
@@ -144,7 +161,7 @@ const classroomsSlice = createSlice({
       action: PayloadAction<UpdateUserPermissionInputModelInput>
     ) => {
       const userExist = state.classroomPractitioners.find(
-        (x) => x.userId == action.payload.userId
+        (x) => x.userId === action.payload.userId
       );
       if (!userExist) state.classroomPractitioners.push(action.payload);
     },
@@ -166,6 +183,29 @@ const classroomsSlice = createSlice({
         if (index > -1) {
           state.classroomGroupData.classroomGroups.splice(index, 1);
         }
+      }
+    },
+    addChildProgressReportPeriod: (
+      state,
+      action: PayloadAction<{
+        childProgressReportPeriods: Array<{
+          id: string;
+          startDate: string;
+          endDate: string;
+        }>;
+      }>
+    ) => {
+      if (state.classroom) {
+        state.classroom = {
+          ...state.classroom,
+          childProgressReportPeriods:
+            action.payload.childProgressReportPeriods.map((x) => ({
+              id: x.id,
+              startDate: x.startDate,
+              endDate: x.endDate,
+              synced: false,
+            })),
+        };
       }
     },
   },
@@ -261,7 +301,7 @@ const classroomsSlice = createSlice({
     builder.addCase(
       addChildProgressReportPeriods.fulfilled,
       (state, action) => {
-        if (!!state.classroom) {
+        if (state.classroom) {
           state.classroom = {
             ...state.classroom,
             childProgressReportPeriods:
@@ -269,6 +309,7 @@ const classroomsSlice = createSlice({
                 id: x.id,
                 startDate: x.startDate.toString(),
                 endDate: x.endDate.toString(),
+                synced: true,
               })),
           };
         }

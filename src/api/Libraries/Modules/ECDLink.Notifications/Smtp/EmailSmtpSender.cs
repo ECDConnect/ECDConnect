@@ -29,9 +29,8 @@ namespace ECDLink.Notifications.Smtp
         private readonly TemplateProcessor _templateProcessor;
         private readonly ILogger<EmailSmtpSender> _logger;
         private readonly EmailSmtpOptions _optionsAccessor;
-        private EmailMessage _message;
-        private IWebHostEnvironment _currentEnvironment;
-        private bool _smtpDisabled;
+        private readonly EmailMessage _message;
+        private readonly bool _smtpDisabled;
         private readonly IMessageLogger<IEmailMessage> _messageLogger;
 
         public EmailSmtpSender(
@@ -39,7 +38,6 @@ namespace ECDLink.Notifications.Smtp
             IConfiguration configuration,
             TemplateProcessor templateProcessor,
             ISystemSetting<EmailSmtpOptions> optionsAccessor,
-            IWebHostEnvironment environment,
             ILogger<EmailSmtpSender> logger,
             IMessageLogger<IEmailMessage> messageLogger)
         {
@@ -52,7 +50,6 @@ namespace ECDLink.Notifications.Smtp
 
             _fieldTransform = new Dictionary<string, string>();
             _message = new EmailMessage();
-            _currentEnvironment = environment;
         }
 
         public async Task SendMessageAsync(CancellationToken cancellationToken = default)
@@ -74,14 +71,15 @@ namespace ECDLink.Notifications.Smtp
 
             if (!_smtpDisabled)
             {
+                var messageLogId = Guid.NewGuid();
                 _templateProcessor.SetUserContext(_model)
                             .SetMessageTemplate(_messageTemplate)
                             .SetMessageBody(_message.MessageBody)
                             .SetMessageSubject(_message.Subject)
-                            .ParseMessageFilters(_fieldTransform);
+                            .ParseMessageFilters(_fieldTransform, messageLogId);
 
-                var emailMessage = _templateProcessor.ProcessBody();
-                var processedSubject = _templateProcessor.ProcessSubject();
+                var emailMessage = await _templateProcessor.ProcessBody();
+                var processedSubject = await _templateProcessor.ProcessSubject();
 
                 // Specify the email sender.
                 MailboxAddress from = new MailboxAddress(
@@ -184,7 +182,7 @@ namespace ECDLink.Notifications.Smtp
                 await client.DisconnectAsync(true, cancellationToken);
                 try
                 {
-                    _messageLogger.Log(_message, _messageTemplate?.TemplateType);
+                    await _messageLogger.LogAsync(_message, _messageTemplate?.TemplateType, messageLogId);
                 } catch (Exception exception)
                 {
                     _logger.LogError(exception, "Error logging email message: TemplateType: {templateType}", _messageTemplate?.TemplateType);

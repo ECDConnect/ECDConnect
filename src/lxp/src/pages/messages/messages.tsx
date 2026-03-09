@@ -20,10 +20,14 @@ import {
 } from '@/store/notifications/notifications.actions';
 import { MessageActionConfig } from '@models/messages/messages';
 import { referenceNames } from '@/services/NotificationService/validators/points/poinstNotificationValidator.types';
+import pwa from '@/utils/pwa';
+import { userSelectors } from '@/store/user';
+import { RoleSystemNameEnum } from '@ecdlink/core';
 
 export const Messages: React.FC = () => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
+  const appDispatch = useAppDispatch();
   let notifications = useSelector(
     notificationsSelectors.getMessageBoardNotifications
   );
@@ -35,7 +39,10 @@ export const Messages: React.FC = () => {
   );
 
   const paging = usePaging<Notification>(notifications, 3, 0, 'accummilate');
-  const appDispatch = useAppDispatch();
+  const userData = useSelector(userSelectors.getUser);
+  const isCoach = userData?.roles?.some(
+    (role) => role.systemName === RoleSystemNameEnum.Coach
+  );
 
   useEffect(() => {
     if (!isOnline) {
@@ -80,6 +87,11 @@ export const Messages: React.FC = () => {
   };
 
   const messageActioned = (notification: Notification) => {
+    if (notification.message.reference === 'practitioner-download-app') {
+      pwa.showInstallPrompt();
+      return;
+    }
+
     if (notification.message?.isFromBackend) {
       appDispatch(
         markAsReadNotification({
@@ -96,14 +108,15 @@ export const Messages: React.FC = () => {
 
     if (
       notification.message?.cta?.includes(
-        notificationTagConfig?.TrackIncome?.cta ?? ''
-      ) ||
-      notification.message?.cta?.includes(
         notificationTagConfig?.ProgressSummary?.cta ?? ''
       ) ||
       notification.message?.cta?.includes(
         notificationTagConfig?.SeeClasses?.cta ?? ''
-      )
+      ) ||
+      (notification.message?.cta?.includes(
+        notificationTagConfig?.SeePractitioners?.cta ?? ''
+      ) &&
+        !isCoach)
     ) {
       appDispatch(notificationActions.removeNotification(notification!));
       if (notification.message?.isFromBackend) {
@@ -173,6 +186,16 @@ export const Messages: React.FC = () => {
     paging.visibleItems?.splice(notificationIndex!!, 1);
   };
 
+  useEffect(() => {
+    if (
+      paging.visibleItems.length === 0 &&
+      !paging.isLastPage &&
+      notifications.length > 0
+    ) {
+      paging.getNextPage();
+    }
+  }, [paging.visibleItems.length, paging.isLastPage, notifications.length]);
+
   return (
     <BannerWrapper
       size="medium"
@@ -183,7 +206,7 @@ export const Messages: React.FC = () => {
       displayOffline={!isOnline}
     >
       <div className="divide-uiLight divide-y-2 divide-dashed">
-        {paging.visibleItems.length === 0 && (
+        {paging.visibleItems.length === 0 && notifications.length === 0 && (
           <IconInformationIndicator
             title="You don't have any messages"
             subTitle="Everything seems to be up to date."

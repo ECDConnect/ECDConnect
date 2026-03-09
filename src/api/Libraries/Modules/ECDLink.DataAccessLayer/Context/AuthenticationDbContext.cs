@@ -37,6 +37,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<MessageTemplate> MessageTemplates { get; set; }
         public DbSet<MessageLog> MessageLogs { get; set; }
         public DbSet<UserGrant> UserGrants { get; set; }
+        public DbSet<UserLanguage> UserLanguages { get; set; }
         public DbSet<Document> Documents { get; set; }
         public DbSet<DocumentType> DocumentTypes { get; set; }
         public DbSet<Education> Education { get; set; }
@@ -145,6 +146,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<FeedbackType> FeedbackTypes { get; set; }
         public DbSet<CoachFeedback> CoachFeedback { get; set; }
         public DbSet<CoachFeedbackType> CoachFeedbackTypes { get; set; }
+        public DbSet<CoachContact> CoachContacts { get; set; }
         public DbSet<CommunitySkill> CommunitySkills { get; set; }
         public DbSet<CommunityProfile> CommunityProfile { get; set; }
         public DbSet<CommunityProfileSkill> CommunityProfileSkill { get; set; }
@@ -153,6 +155,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<UserResourceLikes> UserResourceLikes { get; set; }
 
         public DbSet<Holiday> Holidays { get; set; }
+        public DbSet<Invite> Invite { get; set; }
 
         public AuthenticationDbContext(DbContextOptions<AuthenticationDbContext> options)
                : base(options)

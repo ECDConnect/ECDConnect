@@ -16,10 +16,11 @@ export interface MessageFormProps {
   messageSetValue: any;
   panelSetRoles: any;
   panelSetDate: any;
-  editMessageDate: Date;
+  editMessageDate: Date | undefined;
   editRoles: MessageRoleDto[];
   wardData: WardDto[];
   isView?: boolean;
+  trigger: (name?: string | string[]) => Promise<boolean>;
 }
 
 const MessageForm: React.FC<MessageFormProps> = ({
@@ -33,11 +34,14 @@ const MessageForm: React.FC<MessageFormProps> = ({
   editRoles,
   wardData,
   isView,
+  trigger,
 }) => {
   const [provinceData, setProvinceData] = useState<ProvinceDto[]>([]);
-  const [roleData, setRoleData] = useState<MessageRoleDto[]>([]);
-  const [selectedRoles, setSelectedRoles] = useState<MessageRoleDto[]>(ssRoles);
-  const [messageDate, setMessageDate] = useState<Date>(editMessageDate);
+  const [roleData, setRoleData] = useState<MessageRoleDto[]>(ssRoles);
+  const [selectedRoles, setSelectedRoles] = useState<MessageRoleDto[]>([]);
+  const [messageDate, setMessageDate] = useState<Date | undefined>(
+    editMessageDate
+  );
   const [messageText, setMessageText] = useState('');
   const [messageTitle, setMessageTitle] = useState('');
   const tenant = useTenant();
@@ -93,6 +97,15 @@ const MessageForm: React.FC<MessageFormProps> = ({
       panelSetRoles(updateSelectedRoles);
     }
   };
+
+  const isTimeDisabled = !messageDate || isView;
+
+  const now = new Date();
+  const isTodaySelected = messageDate
+    ? messageDate.toDateString() === now.toDateString()
+    : false;
+
+  const currentTime = now.toTimeString().slice(0, 5); // e.g., "14:24"
 
   return (
     <form key={formKey}>
@@ -204,7 +217,12 @@ const MessageForm: React.FC<MessageFormProps> = ({
                   selected={messageDate ? new Date(messageDate) : undefined}
                   onChange={(date: Date) => {
                     setMessageDate(date);
-                    messageSetValue('messageDate', date);
+                    messageSetValue('messageDate', date, {
+                      shouldValidate: true,
+                    });
+                    messageSetValue('messageTime', currentTime, {
+                      shouldValidate: true,
+                    });
                     panelSetDate(date);
                   }}
                   minDate={new Date()}
@@ -216,9 +234,18 @@ const MessageForm: React.FC<MessageFormProps> = ({
                   label={'Time'}
                   nameProp={'messageTime'}
                   type="time"
-                  disabled={isView}
+                  disabled={isTimeDisabled}
                   register={register}
+                  placeholder="hh:mm"
                   error={errors.messageTime?.message}
+                  min={isTodaySelected ? currentTime : undefined}
+                  onChange={(event) => {
+                    const newTime = event.target.value;
+                    messageSetValue('messageTime', newTime, {
+                      shouldValidate: true,
+                    });
+                    trigger('messageTime'); // Trigger validation
+                  }}
                 />
               </div>
             </div>

@@ -12,4 +12,5 @@ export type IncomeItemDto = IncomeItemMinDto & {
   numberOfChildrenCovered?: number;
   payTypeId?: string;
   photoProof?: string;
+  isActive?: boolean;
 };

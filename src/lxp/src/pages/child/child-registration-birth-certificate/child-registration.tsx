@@ -105,7 +105,6 @@ export const ChildRegistrationBirthCertificate: React.FC = () => {
           showStepCount={false}
           title="Child registration"
           onBack={() => exitRegistration()}
-          isOnline={isOnline}
           showOfflineCard={false}
         >
           <Step

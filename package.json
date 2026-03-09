@@ -11,8 +11,10 @@
     "app:mocks": "cd ./src/lxp && yarn start:mocks",
     "app:withSW": "cd ./src/lxp && npx serve -s build -l 3000",
     "app-wl:withSW": "cd ./src/lxp && npx serve -s build -l 3005",
-    "build:portal": "cross-env-shell NODE_OPTIONS=--openssl-legacy-provider \"yarn bootstrap && (cd ./src/admin-portal && yarn build)\"",
-    "build:app": "cross-env-shell NODE_OPTIONS=--openssl-legacy-provider \"yarn bootstrap && (cd ./src/lxp && cross-env  && yarn build)\"",
+    "build:portal": "cross-env-shell NODE_OPTIONS=--openssl-legacy-provider \"yarn bootstrap && cd ./src/admin-portal && yarn build\"",
+    "build:portalonly": "cross-env-shell NODE_OPTIONS=--openssl-legacy-provider \"cd ./src/admin-portal && yarn build\"",
+    "build:app": "cross-env-shell NODE_OPTIONS=--openssl-legacy-provider \"yarn bootstrap && cd ./src/lxp && yarn build\"",
+    "build:apponly": "cross-env-shell NODE_OPTIONS=--openssl-legacy-provider \"cd ./src/lxp && cross-env  && yarn build\"",
     "lint:app": "eslint ./src/lxp/src --ext .js,jsx,.ts,.tsx",
     "lint:portal": "eslint ./src/admin-portal/src --ext .js,jsx,.ts,.tsx",
     "format": "prettier --write './**/*.{ts,tsx}'",
@@ -30,7 +32,12 @@
     "purge:app-wl": "cd ./src/lxp && npx rimraf ./{yarn.lock,package-lock.json,node_modules,build}",
     "patch:fixups": "node ./patch-fixups.js",
     "setnode": "nvm use 20.19.2",
-    "fixmodules": "xcopy node_modules.fixup\\20.x node_modules /s/e/y"
+    "fixmodules": "xcopy node_modules.fixup\\20.x node_modules /s/e/y",
+    "serve:app:azure": "cd ./src/lxp && cross-env NODE_OPTIONS=--openssl-legacy-provider yarn serve:azure",
+    "serve:app": "serve -s -l 3000 src\\lxp\\build",
+    "serve:app-wl": "serve -s -l 3005 src\\lxp\\build",
+    "serve:portal": "serve -s -l 3003 src\\admin-portal\\build",
+    "serve:portal-wl": "serve -s -l 3006 src\\admin-portal\\build"
   },
   "watch": {
     "build:ui": {
@@ -59,6 +66,7 @@
     "@ionic/react-router": "^5.5.0",
     "@reach/window-size": "0.11.2",
     "@react-aria/progress": "^3.4.0",
+    "@react-oauth/google": "^0.12.2",
     "@reduxjs/toolkit": "^1.8.5",
     "@tailwindcss/forms": "^0.3.3",
     "@tailwindcss/postcss7-compat": "^2.2.4",
@@ -106,6 +114,7 @@
     "react-device-detect": "^2.2.2",
     "react-dom": "^17.0.2",
     "react-error-overlay": "^6.0.9",
+    "react-facebook": "^10.0.1",
     "react-ga4": "^2.1.0",
     "react-gtm-module": "^2.0.11",
     "react-helmet": "^6.1.0",
@@ -140,7 +149,7 @@
     "zxcvbn-typescript": "^5.0.1"
   },
   "devDependencies": {
-    "@babel/plugin-proposal-private-property-in-object":"^7.21.0",
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.0",
     "@capacitor/cli": "3.3.1",
     "@commitlint/cli": "^16.2.3",
     "@commitlint/config-conventional": "^16.2.1",

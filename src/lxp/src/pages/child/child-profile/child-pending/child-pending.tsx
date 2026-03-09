@@ -1,4 +1,4 @@
-import { RoleSystemNameEnum, useDialog } from '@ecdlink/core';
+import { RoleSystemNameEnum, useDialog, useSnackbar } from '@ecdlink/core';
 import {
   Alert,
   BannerWrapper,
@@ -13,8 +13,8 @@ import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
-import { childrenThunkActions } from '@store/children';
-import { classroomsSelectors } from '@store/classroom';
+import { childrenActions, childrenThunkActions } from '@store/children';
+import { classroomsActions, classroomsSelectors } from '@store/classroom';
 import { settingSelectors } from '@store/settings';
 import { ChildRegistrationSteps } from '../../child-registration/child-registration.types';
 import { ChildPendingProps } from './child-pending.types';
@@ -34,13 +34,17 @@ import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { ChildListRouteState } from '@/pages/classroom/child-list/child-list.types';
 import { ChildProfileRouteState } from '../child-profile.types';
 import childRegistrationForm from '@/assets/ECD_connect_registration_form.pdf';
+import {
+  notificationActions,
+  notificationsSelectors,
+} from '@/store/notifications';
 
 export const ChildPending: React.FC<ChildPendingProps> = ({
   child,
   childUser,
 }) => {
   const location = useLocation<ChildProfileRouteState>();
-
+  const notificationReference = location?.state?.notificationReference;
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const [deadlineDateText, setDeadlineDateText] = useState<string>('');
@@ -59,6 +63,8 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
   const isCoach = user?.roles?.some(
     (role) => role.systemName === RoleSystemNameEnum.Coach
   );
+  const notifications = useSelector(notificationsSelectors.getAllNotifications);
+  const { showMessage } = useSnackbar();
 
   const practitioners = useSelector(
     practitionerSelectors.getPractitioners
@@ -83,11 +89,7 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
   }, [child, childExpiryTime]);
 
   const completeRegistration = async () => {
-    if (isOnline) {
-      goToChildRegistration();
-    } else {
-      showOnlineOnly();
-    }
+    goToChildRegistration();
   };
 
   const goToChildRegistration = () => {
@@ -145,10 +147,7 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
           <CaregiverChildRegistrationModal
             onSubmit={whatsapp}
             onCancel={onCancel}
-            childDetails={{
-              firstName: childUser?.firstName || '',
-              surname: childUser?.surname || '',
-            }}
+            firstName={childUser?.firstName || ''}
             caregiverUrl={caregiverChildregUrl}
             couldCopyToClipboard={linkCopied}
           />
@@ -156,6 +155,60 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
       },
       position: DialogPosition.Middle,
     });
+  };
+
+  const onRemoveChild = async () => {
+    if (!child) return;
+
+    if (isOnline) {
+      const updatedChild = { ...child };
+      updatedChild.isActive = false;
+      updatedChild.inactiveDate = new Date();
+      updatedChild.inactivityComments = `Registratation not complete`;
+      dispatch(
+        classroomsActions.deleteLearner({
+          childUserId: child.userId!,
+          classroomGroupId: childClassroomGroup?.id || classroomGroupId || '',
+        })
+      );
+      dispatch(childrenActions.updateChild(updatedChild));
+      if (isOnline) {
+        dispatch(
+          childrenThunkActions.removeChild({
+            child: updatedChild,
+            id: String(updatedChild.id),
+          })
+        );
+      }
+
+      const hasNotification = notifications?.find(
+        (item) => item?.message?.reference === notificationReference
+      );
+
+      if (hasNotification) {
+        dispatch(notificationActions.removeNotification(hasNotification!));
+      }
+
+      showMessage({
+        message: `Child removed`,
+        type: 'success',
+      });
+      if (isPrincipal && practitioners?.length! > 1) {
+        history.push(ROUTES.CLASSROOM.ROOT, {
+          activeTabIndex: TabsItemForPrincipal.CLASSES,
+        });
+      } else {
+        if (isCoach) {
+          history.goBack();
+        } else {
+          history.push(ROUTES.CLASSROOM.ROOT, {
+            activeTabIndex: TabsItems.CLASSES,
+          });
+        }
+      }
+    } else {
+      showOnlineOnly();
+    }
   };
 
   const onDownloadChildForm = () => {
@@ -252,6 +305,17 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
               icon="DownloadIcon"
               iconPosition="start"
               onClick={onDownloadChildForm}
+            />
+            <Divider title="OR" dividerType="solid" className="my-4" />
+            <Button
+              type="outlined"
+              className="mt-2 w-full"
+              color="errorMain"
+              text="Remove child"
+              textColor="errorMain"
+              icon="TrashIcon"
+              iconPosition="start"
+              onClick={onRemoveChild}
             />
           </div>
         )}

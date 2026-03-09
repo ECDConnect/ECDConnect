@@ -99,11 +99,11 @@ namespace ECDLink.Security.Api
             });
 
             // Send email to tenant organisation email to inform of new record.
-            await _notificationManager.SendNewTenantSetupToAdministratorAsync((Guid)_applicationUserId, tenantOrgDetail);
+            await _notificationManager.SendNewTenantSetupToAdministratorAsync(tenantOrgDetail);
             // Send email to new super admin 1
-            await _notificationManager.SendWelcomeEmailToNewSuperAdminAsync((Guid)_applicationUserId, tenantOrgDetail.SuperAdmin1FirstName, tenantOrgDetail.SuperAdmin1Email);
+            await _notificationManager.SendWelcomeEmailToNewSuperAdminAsync(tenantOrgDetail.SuperAdmin1FirstName, tenantOrgDetail.SuperAdmin1Email);
             // Send email to new super admin 2
-            await _notificationManager.SendWelcomeEmailToNewSuperAdminAsync((Guid)_applicationUserId, tenantOrgDetail.SuperAdmin2FirstName, tenantOrgDetail.SuperAdmin2Email);
+            await _notificationManager.SendWelcomeEmailToNewSuperAdminAsync(tenantOrgDetail.SuperAdmin2FirstName, tenantOrgDetail.SuperAdmin2Email);
 
             return Ok(setupRecord);
         }

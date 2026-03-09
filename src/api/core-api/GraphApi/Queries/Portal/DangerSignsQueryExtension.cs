@@ -1,5 +1,3 @@
-using ECDLink.ContentManagement.Entities;
-using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.ContentManagement.Repositories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -23,12 +21,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
         {
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.View)]
          public async Task<IEnumerable<DangerSignTranslation>> GetDangerSignTranslations(
-         [Service] ContentManagementRepository contentRepo,
-         [Service] ILocaleService<Language> localeService,
-         string section,
-         string toTranslate)
+            [Service] ContentManagementRepository contentRepo,
+            [Service] ILocaleService<Language> localeService,
+            string section,
+            string toTranslate)
         {
 
             var data = contentRepo.GetAllTranslations("DangerSign", "section", section, toTranslate);

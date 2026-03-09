@@ -1,6 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { RoleSystemNameEnum, useDialog, useTheme } from '@ecdlink/core';
-import { UserSyncStatus } from '@ecdlink/graphql';
 import {
   ActionModal,
   Avatar,
@@ -14,30 +13,26 @@ import {
   UserAvatar,
   ScoreCard,
   NoPointsScoreCard,
+  renderIcon,
 } from '@ecdlink/ui';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useDocuments } from '@hooks/useDocuments';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { OfflineSyncModal, SyncTimeExceeded } from '../../modals';
-import OfflineSyncTimeExceeded from '../../modals/offline-sync/offline-sync-time-exceeded';
 import { useAppDispatch } from '@store';
-import { classroomsSelectors, classroomsThunkActions } from '@store/classroom';
+import { classroomsSelectors } from '@store/classroom';
 import {
   notificationActions,
   notificationsSelectors,
 } from '@store/notifications';
-import { settingSelectors } from '@store/settings';
-import { userSelectors, userThunkActions } from '@store/user';
+import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
 import TransparentLayer from '../../assets/TransparentLayer.png';
-
-import {
-  practitionerSelectors,
-  practitionerThunkActions,
-} from '@/store/practitioner';
+import BusinessIconTile from '../../assets/businessIconTile.png';
+import BusinessIconNavigation from '../../assets/BusinessIconNavigation.png';
+import { practitionerSelectors } from '@/store/practitioner';
 import * as styles from './dashboard.styles';
 import ROUTES from '@routes/routes';
 import { statementsThunkActions } from '@/store/statements';
@@ -45,15 +40,12 @@ import { programmeThunkActions } from '@/store/programme';
 import offlineStatments from '../../assets/statements-offline.png';
 import { setStorageItem } from '@/utils/common/local-storage.utils';
 import { convertImageToBase64 } from '@/utils/common/convert-image-to-64.utils';
-import { pointsSelectors, pointsThunkActions } from '@/store/points';
+import { pointsSelectors } from '@/store/points';
 import { pointsConstants } from '@/constants/points';
 import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg';
 import { ReactComponent as EmojiBlueSmile } from '../../assets/neutral_blue_emoticon.svg';
 import { ReactComponent as EmojiOrangeSmile } from '../../assets/mehFace.svg';
 import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
-import { syncThunkActions } from '@store/sync';
-import { settingActions } from '@/store/settings';
-
 import {
   TabsItemForPrincipal,
   TabsItems,
@@ -72,10 +64,11 @@ import { useTenantModules } from '@/hooks/useTenantModules';
 import { PermissionsNames } from '../principal/components/add-practitioner/add-practitioner.types';
 import { usePoints } from '@/hooks/usePoints';
 import { usePointsToDoEmoji } from '@/hooks/usePointsToDoEmoji';
-import { useStoreSetup } from '@hooks/useStoreSetup';
+import { Logout } from '../auth/logout/logout';
+import { useBrowserVersionCheck } from '@/hooks/useBrowserVersionCheck';
+import { triggerBackgroundSync } from '@/store/sync/sync.actions';
 
 const { version } = require('../../../package.json');
-
 export interface DashboardRouteState {
   isFromLogin?: boolean;
   isFromCompleteProfile?: boolean;
@@ -90,18 +83,14 @@ export const Dashboard: React.FC = () => {
     attendanceEnabled,
     businessEnabled,
     calendarEnabled,
+    trainingEnabled,
     classroomActivitiesEnabled,
     progressEnabled,
-    trainingEnabled,
   } = useTenantModules();
 
   const appName = tenant?.tenant?.applicationName;
   const isOpenAccess = tenant?.isOpenAccess;
   const isWhiteLabel = tenant?.isWhiteLabel;
-  const shouldUserSyncOffline = useSelector(settingSelectors.getShouldUserSync);
-  const shouldUserSyncOnline = useSelector(
-    settingSelectors.getShouldUserSyncOnline
-  );
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const userData = useSelector(userSelectors.getUser);
@@ -118,13 +107,14 @@ export const Dashboard: React.FC = () => {
     notificationsSelectors.getNewNotificationCount
   );
   const { setState } = useAppContext();
-  const { resetAppStore, resetAuth } = useStoreSetup();
-  const { refreshClassroom, refreshChildren } = useStoreSetup();
   const isPractitioner = !!practitioner;
   const isPrincipal = practitioner?.isPrincipal;
   const isRegistered = practitioner?.isRegistered;
   const isProgress = practitioner?.progress;
   const hasConsent = practitioner?.shareInfo;
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const isBrowserOutOfDate = useBrowserVersionCheck();
 
   const missingProgramme =
     (practitioner?.isRegistered === null || practitioner?.isRegistered) &&
@@ -142,71 +132,26 @@ export const Dashboard: React.FC = () => {
   const [pointsScoreProps, setPointsScoreProps] = useState<ScoreCardProps>();
   const totalYearPoints = useSelector(pointsSelectors.getTotalYearPoints);
 
+  const [freeMemory, setFreeMemory] = useState(0);
+  const [errorMessage, setErrorMessage] = useState(false);
+
   const planActivitiesPermission = practitioner?.permissions?.find(
     (item) =>
       item?.permissionName === PermissionsNames.plan_classroom_actitivies
   );
 
-  const getUserSyncStatus = useCallback(async () => {
-    const userSyncStatus: UserSyncStatus = await appDispatch(
-      userThunkActions.getUserSyncStatus({ userId: practitioner?.userId! })
-    ).unwrap();
-
-    if (userSyncStatus) {
-      if (userSyncStatus.syncChildren) {
-        await refreshChildren();
-      }
-      if (userSyncStatus.syncClassroom) {
-        await refreshClassroom();
-      }
-      if (userSyncStatus.syncReportingPeriods) {
-        appDispatch(
-          classroomsThunkActions.getClassroom({ overrideCache: true })
-        ).unwrap();
-      }
-      if (userSyncStatus.syncPermissions) {
-        appDispatch(
-          practitionerThunkActions.getPractitionerPermissions({
-            userId: practitioner?.userId!,
-          })
-        );
-      }
-      if (userSyncStatus.syncPoints) {
-        appDispatch(
-          pointsThunkActions.pointsTodoItems({ userId: practitioner?.userId! })
-        );
-
-        appDispatch(
-          pointsThunkActions.yearPointsView({ userId: practitioner?.userId! })
-        );
-
-        appDispatch(
-          pointsThunkActions.sharedData({
-            userId: practitioner?.userId!,
-            isMonthly: true,
-          })
-        );
-        const currentDate = new Date();
-        const oneYearAgo = new Date();
-
-        oneYearAgo.setMonth(currentDate.getMonth() - 12);
-        (async () =>
-          await appDispatch(
-            pointsThunkActions.getPointsSummaryForUser({
-              userId: practitioner?.userId!,
-              startDate: oneYearAgo,
-              endDate: currentDate,
-            })
-          ).unwrap())();
-      }
-    }
-  }, [appDispatch, practitioner?.userId]);
-
+  // calling centralized getUserSyncStatus without pushing offline data
   useEffect(() => {
     if (isOnline && !isCoach && practitioner) {
-      getUserSyncStatus();
+      appDispatch(triggerBackgroundSync({ includeOfflineSyncData: false }));
     }
   }, [practitioner?.userId]);
+
+  useEffect(() => {
+    if (isBrowserOutOfDate) {
+      handleOutdatedBrowser();
+    }
+  }, [isBrowserOutOfDate]);
 
   const offlineCommunity = () => {
     if (!isOnline) {
@@ -238,6 +183,24 @@ export const Dashboard: React.FC = () => {
       practitioner?.principalHierarchy
     ) {
       history.push(ROUTES.PRACTITIONER.PROFILE.EDIT);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (navigator?.storage?.estimate) {
+      navigator.storage
+        .estimate()
+        .then((estimate) => {
+          if (estimate?.quota) {
+            const freeMemoryMB = estimate.quota / (1024 * 1024);
+            setFreeMemory(Math.round(freeMemoryMB));
+          }
+        })
+        .catch(() => {
+          setFreeMemory(0);
+        });
+    } else {
+      setFreeMemory(0);
     }
   }, []);
 
@@ -374,6 +337,84 @@ export const Dashboard: React.FC = () => {
     }
   }, []);
 
+  useEffect(() => {
+    if (freeMemory !== 0 && freeMemory <= 200) {
+      setErrorMessage(true);
+      // Optionally block form or show message immediately
+    }
+  }, [freeMemory]);
+
+  useEffect(() => {
+    if (errorMessage) {
+      dialog({
+        position: DialogPosition.Middle,
+        blocking: false,
+        render: (onSubmit, onClose) => {
+          return (
+            <ActionModal
+              customIcon={renderIcon(
+                'ExclamationIcon',
+                `z-20 w-28 h-28 text-alertMain`
+              )}
+              className={'bg-white'}
+              title={'Your phone storage is almost full!'}
+              detailText={
+                'You have less than 10MB available. Please clear some items to keep using ECD Connect'
+              }
+              actionButtons={[
+                {
+                  text: 'Close',
+                  textColour: 'white',
+                  colour: 'quatenary',
+                  type: 'filled',
+                  leadingIcon: 'CheckCircleIcon',
+                  onClick: () => {
+                    onSubmit();
+                  },
+                },
+              ]}
+            />
+          );
+        },
+      });
+    }
+  }, [dialog, errorMessage]);
+
+  const handleOutdatedBrowser = () => {
+    return dialog({
+      position: DialogPosition.Middle,
+      blocking: true,
+      fullOverlay: true,
+      render: (onSubmit, onClose) => {
+        return (
+          <ActionModal
+            customIcon={renderIcon(
+              'ExclamationIcon',
+              `z-20 w-28 h-28 text-alertMain`
+            )}
+            className={'bg-white'}
+            title={'Your internet browser is out of date!'}
+            detailText={
+              'Please go to your app store and update your browser before continuing. Tap refresh to try again.'
+            }
+            actionButtons={[
+              {
+                text: 'Refresh',
+                textColour: 'white',
+                colour: 'quatenary',
+                type: 'filled',
+                leadingIcon: 'CheckCircleIcon',
+                onClick: () => {
+                  onSubmit();
+                },
+              },
+            ]}
+          />
+        );
+      },
+    });
+  };
+
   const { userProfilePicture } = useDocuments();
 
   const initStaticStoreSetup = async () => {
@@ -434,6 +475,24 @@ export const Dashboard: React.FC = () => {
     });
   };
 
+  const showLogoutDialog = () => {
+    dialog({
+      color: 'bg-white',
+      position: DialogPosition.Middle,
+      blocking: true,
+      render: (onClose) => (
+        <Logout
+          onSubmit={() => {
+            onClose();
+          }}
+          onCancel={() => {
+            onClose();
+          }}
+        />
+      ),
+    });
+  };
+
   const onNavigation = (navItem: any) => {
     if (navItem.href.includes('community') && !isOnline) {
       history.push(ROUTES.DASHBOARD);
@@ -471,6 +530,10 @@ export const Dashboard: React.FC = () => {
         ((isWhiteLabel && missingProgramme) || wlNotAcceptThePrincipalInvite))
     ) {
       showCompleteProfileBlockingDialog();
+    } else if (navItem.href.includes('logout')) {
+      setTimeout(() => {
+        showLogoutDialog();
+      }, 180); // small delay to let menu close animation finish
     } else {
       history.push(navItem.href, navItem.params);
     }
@@ -509,10 +572,16 @@ export const Dashboard: React.FC = () => {
           current: false,
         },
         {
+          name: NavigationNames.Profile.Help,
+          href: isOpenAccess ? ROUTES.PRACTITIONER.HELP.ROOT : ROUTES.HELP,
+          onNavigation: onNavigation,
+          current: false,
+        },
+        {
           name: NavigationNames.Profile.Journey,
           href: ROUTES.PRACTITIONER.PROFILE.ROOT,
           onNavigation: onNavigation,
-          params: { tabIndex: 1 },
+          params: { tabIndex: 1, visitId: '' },
           current: false,
         },
       ],
@@ -601,7 +670,7 @@ export const Dashboard: React.FC = () => {
           {
             name: NavigationNames.Business.Business,
             href: ROUTES.BUSINESS,
-            icon: styles.businessIconName,
+            icon: BusinessIconNavigation,
             current: false,
             showDivider: true,
             nestedChildren: [
@@ -632,6 +701,13 @@ export const Dashboard: React.FC = () => {
         ]
       : []),
     {
+      name: NavigationNames.Community.Community,
+      href: ROUTES.COMMUNITY.ROOT,
+      icon: styles.communityIconName,
+      current: false,
+      showDivider: true,
+    },
+    {
       name: NavigationNames.Training,
       href: ROUTES.TRAINING,
       icon: styles.trainingIconName,
@@ -660,6 +736,7 @@ export const Dashboard: React.FC = () => {
       icon: styles.logoutIconName,
       current: false,
       showDivider: true,
+      onNavigation: onNavigation,
     },
   ];
 
@@ -688,6 +765,7 @@ export const Dashboard: React.FC = () => {
       icon: styles.profileIconName,
       current: false,
       showDivider: true,
+      params: { tabIndex: 0, visitId: '' },
     },
     {
       name: NavigationNames.Practitioners,
@@ -717,6 +795,7 @@ export const Dashboard: React.FC = () => {
       icon: styles.logoutIconName,
       current: false,
       showDivider: true,
+      onNavigation: onNavigation,
     },
   ];
 
@@ -759,8 +838,7 @@ export const Dashboard: React.FC = () => {
   if (isPrincipal || isTrialPeriod) {
     dashboardItems.splice(1, 0, {
       title: NavigationNames.Business.Business,
-      titleIcon: styles.businessIconName,
-      titleIconClassName: styles.businessIcon,
+      icon: BusinessIconTile,
       onActionClick: () => {
         goToBusiness();
       },
@@ -855,61 +933,6 @@ export const Dashboard: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    if (shouldUserSyncOffline) {
-      dialog({
-        position: DialogPosition.Bottom,
-        blocking: true,
-        render: (onSubmitParent, onCancel) => {
-          return (
-            <OfflineSyncTimeExceeded
-              onSubmit={() => {
-                onSubmitParent();
-
-                dialog({
-                  position: DialogPosition.Bottom,
-                  blocking: true,
-                  render: (onSubmit, onCancel) => {
-                    return (
-                      <OfflineSyncModal onSubmit={onSubmit}></OfflineSyncModal>
-                    );
-                  },
-                });
-              }}
-            ></OfflineSyncTimeExceeded>
-          );
-        },
-      });
-    }
-  }, [shouldUserSyncOffline]);
-
-  useEffect(() => {
-    if (isOnline && shouldUserSyncOnline) {
-      dialog({
-        position: DialogPosition.Middle,
-        blocking: true,
-        render: (onSubmit) => {
-          return (
-            <SyncTimeExceeded
-              onSubmit={async () => {
-                if (practitioner?.isPrincipal === true) {
-                  await appDispatch(syncThunkActions.syncOfflineData({}));
-                } else {
-                  await appDispatch(
-                    syncThunkActions.syncOfflineDataForPractitioner({})
-                  );
-                }
-                await resetAppStore();
-                await resetAuth();
-                return history.push(ROUTES.LOGIN);
-              }}
-            ></SyncTimeExceeded>
-          );
-        },
-      });
-    }
-  }, [isOnline, shouldUserSyncOnline]);
-
   const goToProfile = () => {
     const profileRoute = userData?.roles?.some(
       (role) => role.systemName === RoleSystemNameEnum.Coach
@@ -917,42 +940,19 @@ export const Dashboard: React.FC = () => {
       ? ROUTES.COACH.PROFILE.ROOT
       : ROUTES.PRACTITIONER.PROFILE.ROOT;
 
-    history.push(profileRoute);
+    history.push(profileRoute, { tabIndex: 0, visitId: '' });
   };
-
-  // const goToClassroom = () => {
-  //   if (
-  //     (classroom &&
-  //       !!classroom.id &&
-  //       classroomGroups &&
-  //       classroomGroups.length > 0) ||
-  //     (practitioner?.progress === 2 && classroom && classroom?.name) ||
-  //     (classroomGroups &&
-  //       classroomGroups.length > 0 &&
-  //       !!classroom?.id &&
-  //       isRegistered &&
-  //       isProgress &&
-  //       isProgress > 0 &&
-  //       hasConsent &&
-  //       !missingProgramme) ||
-  //     isTrialPeriod
-  //   ) {
-  //     history.push(ROUTES.CLASSROOM.ROOT, {
-  //       activeTabIndex: TabsItems.CLASSES,
-  //     });
-  //   } else if (
-  //     (missingProgramme && isWhiteLabel) ||
-  //     wlNotAcceptThePrincipalInvite
-  //   ) {
-  //     showCompleteProfileBlockingDialog();
-  //   }
-  // };
 
   const goToClassroom = () => {
     if (
-      (classroom && classroom.id) ||
+      (classroom &&
+        !!classroom.id &&
+        classroomGroups &&
+        classroomGroups.length > 0) ||
       (practitioner?.progress === 2 && classroom && classroom?.name) ||
-      (classroom?.id &&
+      (classroomGroups &&
+        classroomGroups.length > 0 &&
+        !!classroom?.id &&
         isRegistered &&
         isProgress &&
         isProgress > 0 &&
@@ -1055,6 +1055,18 @@ export const Dashboard: React.FC = () => {
     <>
       <DashboardWrapper />
       <BannerWrapper
+        onNavigation={(navItem) => {
+          // Always close menu on any navigation click
+          setSidebarOpen(false);
+
+          if (navItem.href?.includes('logout')) {
+            showLogoutDialog();
+          } else {
+            onNavigation(navItem);
+          }
+        }}
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
         backgroundColour={'white'}
         backgroundImageColour={'primary'}
         avatar={
@@ -1078,7 +1090,6 @@ export const Dashboard: React.FC = () => {
           )
         }
         menuItems={isCoach ? navigationForCoach : navigation}
-        onNavigation={onNavigation}
         menuLogoUrl={theme?.images?.logoUrl || hamburgerLogo}
         calendarRender={
           (calendarEnabled && isWhiteLabel) || isOpenAccess
@@ -1110,7 +1121,7 @@ export const Dashboard: React.FC = () => {
         }}
         onAvatarSelect={goToProfile}
         showBackground
-        size="large"
+        size={dashboardNotification ? 'large' : 'medium'}
         renderBorder={true}
         backgroundUrl={TransparentLayer}
         className={styles.bannerContent}
@@ -1123,7 +1134,7 @@ export const Dashboard: React.FC = () => {
           text={name}
           className={styles.welcomeText}
         />
-        <div className={`${styles.wrapper} pb-4`}>
+        <div className={`${styles.wrapper} mt-4 pb-4`}>
           <DashboardItems
             listItems={dashboardItems}
             notification={dashboardNotification}
@@ -1133,7 +1144,7 @@ export const Dashboard: React.FC = () => {
           {(!isPhase1Completed && !isCoach) || totalYearPoints === 0 ? (
             <NoPointsScoreCard
               image={renderPointsToDoEmoji}
-              className="mt-1 w-full py-4"
+              className="mt-4 w-full py-4"
               mainText={''}
               currentPoints={getCurrentPointsToDo}
               maxPoints={
@@ -1164,7 +1175,7 @@ export const Dashboard: React.FC = () => {
           !isCoach &&
           !!pointsScoreProps ? (
             <ScoreCard
-              className="mt-1 mb-1 h-20 w-full"
+              className="mt-4 mb-1 h-20 w-full"
               progressBarClassName="flex pt-2"
               mainText={pointsScoreProps?.mainText!}
               hint={pointsScoreProps?.hint}

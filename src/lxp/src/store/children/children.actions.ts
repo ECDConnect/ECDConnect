@@ -23,6 +23,7 @@ import { RetrieveFromCache } from '@/models/sync/retrieve-from-cache';
 export const ChildrenActions = {
   GET_CHILDREN: 'getChildren',
   GET_CHILDREN_CLASS_GROUP: 'getChildrenForClassroomGroup',
+  GET_CHILDREN_CLASSROOM: 'getChildrenForClassroom',
   UPDATE_CHILD: 'updateChild',
   UPSERT_CHILDREN: 'upsertChildren',
   FIND_CREATED_CHILD: 'findCreatedChild',
@@ -30,6 +31,7 @@ export const ChildrenActions = {
   REFRESH_CAREGIVER_CHILD_TOKEN: 'refreshCaregiverChildToken',
   OPEN_ACCESS_ADD_CHILD_DETAIL: 'openAccessAddChildDetail',
   OPEN_ACCESS_ADD_CHILD: 'openAccessAddChild',
+  REMOVE_CHILD: 'removeChild',
 };
 
 export const getChildren = createAsyncThunk<
@@ -101,7 +103,7 @@ export const getChildrenForCoach = createAsyncThunk<
         if (userAuth?.auth_token) {
           children = await new ChildService(
             userAuth?.auth_token
-          ).getChildrenForCoach(userAuth?.id);
+          ).getChildrenForCoach();
         } else {
           return rejectWithValue('no access token, profile check required');
         }
@@ -152,6 +154,40 @@ export const getChildrenForClassroomGroup = createAsyncThunk<
         childrenTest,
         retrievedFromCache: false,
         classroomGroupId,
+      };
+    } catch (err) {
+      return rejectWithValue(
+        err instanceof Error ? err.message : 'Error fetching children'
+      );
+    }
+  }
+);
+
+export const getChildrenForClassroom = createAsyncThunk<
+  { children: ChildDto[] } & RetrieveFromCache,
+  { userId: string } & OverrideCache,
+  ThunkApiType<RootState>
+>(
+  ChildrenActions.GET_CHILDREN_CLASSROOM,
+  async ({ userId, overrideCache }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      // children: { childData: childDataCache },
+    } = getState();
+
+    if (!userAuth?.auth_token) {
+      return rejectWithValue('No access token, profile check required');
+    }
+
+    try {
+      const children = await new ChildService(
+        userAuth.auth_token
+      ).getChildrenForClassroom(userId);
+
+      return {
+        children,
+        retrievedFromCache: false,
+        userId,
       };
     } catch (err) {
       return rejectWithValue(
@@ -235,6 +271,28 @@ export const updateChild = createAsyncThunk<
       if (userAuth?.auth_token) {
         const input = mapChildInput(child);
         await new ChildService(userAuth?.auth_token).updateChild(input);
+        return child;
+      } else return rejectWithValue('no access token, profile check required');
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const removeChild = createAsyncThunk<
+  ChildDto,
+  UpdateChildRequest,
+  ThunkApiType<RootState>
+>(
+  ChildrenActions.REMOVE_CHILD,
+  async ({ child }, { getState, rejectWithValue }) => {
+    try {
+      const {
+        auth: { userAuth },
+      } = getState();
+      if (userAuth?.auth_token) {
+        const input = mapChildInput(child);
+        await new ChildService(userAuth?.auth_token).removeChild(input);
         return child;
       } else return rejectWithValue('no access token, profile check required');
     } catch (err) {
@@ -421,10 +479,16 @@ export const openAccessAddChild = createAsyncThunk<
   ChildrenActions.OPEN_ACCESS_ADD_CHILD,
   async (
     { token, caregiver, siteAddress, child, registration, userConsent },
-    { rejectWithValue }
+    { getState, rejectWithValue }
   ) => {
     try {
-      const result = await new ChildService('').openAccessAddChild(
+      const {
+        auth: { userAuth },
+      } = getState();
+
+      const result = await new ChildService(
+        userAuth?.auth_token!
+      ).openAccessAddChild(
         token,
         caregiver,
         siteAddress,
@@ -443,10 +507,10 @@ const mapChildInput = (
   child: Partial<ChildDto>
 ): UpdateChildAndCaregiverInput => ({
   id: child.id,
-  languageId: child.languageId,
   allergies: child.allergies,
   disabilities: child.disabilities,
   otherHealthConditions: child.otherHealthConditions,
+  otherLanguages: child.otherLanguages,
   workflowStatusId: child.workflowStatusId,
   isActive: child.isActive === false ? false : true,
   user: mapUserInput(child.user!),
@@ -454,6 +518,7 @@ const mapChildInput = (
   reasonForLeavingId: child?.reasonForLeavingId || null,
   inactivityComments: child?.inactivityComments || null,
   inactiveDate: child?.inactiveDate || null,
+  homeLanguageIds: child.homeLanguageIds,
 });
 
 const mapUserInput = (childUser: Partial<UserDto>): ChildUserUpdateInput => ({
@@ -494,7 +559,7 @@ const mapCaregiver = (x: Partial<CaregiverDto>): ChildCaregiverInput => ({
   joinReferencePanel: x.joinReferencePanel || false,
   contribution: x.contribution || false,
   isAllowedCustody: x.isAllowedCustody ?? false,
-  grantIds: x.grants,
+  grantIds: x.grantIds,
 });
 
 const mapSiteAddress = (

@@ -265,7 +265,7 @@ export const CalendarHome: React.FC = () => {
                   color="secondaryAccent2"
                   textColor="secondary"
                   text="Next"
-                  icon="ChevronRightIcon"
+                  icon="ArrowCircleRightIcon"
                   iconPosition="end"
                   onClick={() => {
                     advanceCurrentPeriod(1);

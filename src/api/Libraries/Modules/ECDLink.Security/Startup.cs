@@ -2,6 +2,7 @@ using ECDLink.Security.JwtSecurity.Configuration;
 using ECDLink.Security.JwtSecurity.Factories;
 using ECDLink.Security.JwtSecurity.Managers;
 using ECDLink.Security.Secrets;
+using ECDLink.Security.SSO.Google.Configuration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -114,6 +115,9 @@ namespace ECDLink.Security
                 configureOptions.TokenValidationParameters = tokenValidationParameters;
                 configureOptions.SaveToken = true;
             });
+
+            services.Configure<AuthenticationGoogleConfig>(configuration.GetSection("Authentication:Google"));
+            services.Configure<AuthenticationFacebookConfig>(configuration.GetSection("Authentication:Facebook"));
         }
     }
 }

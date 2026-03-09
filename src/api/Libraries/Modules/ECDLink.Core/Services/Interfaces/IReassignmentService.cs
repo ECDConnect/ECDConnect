@@ -1,4 +1,5 @@
 ﻿using System;
+using HotChocolate.Types;
 
 namespace ECDLink.Core.Services.Interfaces
 {
@@ -34,6 +35,7 @@ namespace ECDLink.Core.Services.Interfaces
             bool deleteReassignment = false
             );
         public bool ReassignClassroomsFromHistory(string userId, string reassignmentId = null);
+        public bool ProcessReassignments(Guid reassignmentId, bool reassignBack = false);
 
     }
 }

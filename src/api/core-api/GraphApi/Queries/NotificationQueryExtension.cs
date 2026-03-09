@@ -19,6 +19,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -30,7 +31,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [UseSorting]        
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.View)]
         public List<Notification> GetAllNotifications(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] ApplicationUserManager userManager,
@@ -135,9 +136,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return notifications;
         }
 
+        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.View)]
         public List<MessageTemplate> GetAllTemplates(
-[Service] IHttpContextAccessor contextAccessor,
-IGenericRepositoryFactory repoFactory, string templateId)
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory, string templateId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateGenericRepository<MessageTemplate>(userContext: uId);
@@ -147,7 +149,7 @@ IGenericRepositoryFactory repoFactory, string templateId)
             return templates;
         }
 
-
+        [Permission(PermissionGroups.PORTAL, GraphActionEnum.View)]
         public List<WardModel> GetAllWards(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory)
@@ -158,6 +160,7 @@ IGenericRepositoryFactory repoFactory, string templateId)
         }
 
 
+        [Permission(PermissionGroups.PORTAL, GraphActionEnum.View)]
         public List<MessageLogModel> GetAllMessageLogsForAdmin(
             [Service] IDbContextFactory<AuthenticationDbContext> dbContextFactory,
             [Service] INotificationService notificationService,
@@ -258,9 +261,8 @@ IGenericRepositoryFactory repoFactory, string templateId)
             return messages;
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public int GetUserCountForMessageCriteria([Service] IDbContextFactory<AuthenticationDbContext> dbContextFactory,
-                                                  [Service] IHttpContextAccessor contextAccessor,
+        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.View)]
+        public async Task<int> GetUserCountForMessageCriteria([Service] IHttpContextAccessor contextAccessor,
                                                   IGenericRepositoryFactory repoFactory,
                                                   string provinceId,
                                                   string districtId,
@@ -268,14 +270,11 @@ IGenericRepositoryFactory repoFactory, string templateId)
                                                   List<string> roleIds)
         {
             var count = 0;
-            var tenantId = TenantExecutionContext.Tenant.Id;
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
 
             List<Guid> userIds = new List<Guid>();
-            List<Practitioner> practitioners = new List<Practitioner>();
-            List<Coach> coaches = new List<Coach>();
             List<Guid> messageUserIds = new List<Guid>();
 
             if (roleIds.Count == 0)
@@ -287,81 +286,102 @@ IGenericRepositoryFactory repoFactory, string templateId)
             var isNonPractitioner = roleIds.FindIndex(x => x == "practitioners_non_principals") != -1;
             var isCoach = roleIds.FindIndex(x => x == "coaches") != -1;
 
-            if (isPrincipal || isNonPractitioner)
-            {
-                practitioners = practitionerRepo.GetAll().Where(x => x.IsActive == true).ToList();
-            }
+            var practitioners = isPrincipal || isNonPractitioner 
+                ? await practitionerRepo.GetAll()
+                    .Where(x => x.IsActive && ((isPrincipal && isNonPractitioner) || (isPrincipal && !isNonPractitioner && x.IsPrincipal == true) || (!isPrincipal && isNonPractitioner && x.IsPrincipal == false)))
+                    .Include(x => x.SiteAddress)
+                    .Select(x => new 
+                    { 
+                        UserId = x.UserId.Value, 
+                        x.IsPrincipal,
+                        x.SiteAddress
+                    })
+                    .Distinct()
+                    .ToListAsync() 
+                : null;
 
             if (isPrincipal)
             {
-                userIds.AddRange(practitioners.Where(x => x.IsPrincipal == true).Select(x => x.UserId.Value).Distinct().ToList());
+                userIds.AddRange(practitioners.Where(x => x.IsPrincipal == true).Select(x => x.UserId));
             }
             if (isNonPractitioner)
             {
-                userIds.AddRange(practitioners.Where(x => x.IsPrincipal == true).Select(x => x.UserId.Value).Distinct().ToList());
+                userIds.AddRange(practitioners.Where(x => x.IsPrincipal == false).Select(x => x.UserId));
             }
+
+            var coaches = isCoach 
+                ? await coachRepo.GetAll()
+                    .Where(x => x.IsActive)
+                    .Include(x => x.SiteAddress)
+                    .Select(x => new
+                    {
+                        UserId = x.UserId.Value,
+                        x.SiteAddress
+                    })
+                    .ToListAsync() 
+                : null;
             if (isCoach)
             {
-                coaches = coachRepo.GetAll().Where(x => x.IsActive == true).ToList();
-                userIds.AddRange(coaches.Select(x => x.UserId.Value).Distinct().ToList());
+                userIds.AddRange(coaches.Select(x => x.UserId));
             }
 
             // Currently we don't have districts in the system, but this will change after the development in December 23
             if (provinceId != "" || wardName != "")
             {
+                Guid? provinceGuid = provinceId != "" ? Guid.Parse(provinceId) : null;
                 if (isPrincipal || isNonPractitioner)
                 {
-                    if (provinceId != "" && wardName == "")
+                    if (provinceGuid.HasValue && wardName == "")
                     {
                         messageUserIds.AddRange(practitioners
-                            .Where(x => userIds.Contains(x.UserId.Value) && x.SiteAddress?.ProvinceId?.ToString() == provinceId)
-                            .Select(x => x.UserId.Value)
+                            .Where(x => userIds.Contains(x.UserId) && x.SiteAddress?.ProvinceId == provinceGuid.Value)
+                            .Select(x => x.UserId)
                             .Distinct().ToList());
                     }
-                    else if (provinceId == "" && wardName != "")
+                    else if (provinceGuid.HasValue && wardName != "")
                     {
                         messageUserIds.AddRange(practitioners
-                            .Where(x => userIds.Contains(x.UserId.Value) && x.SiteAddress?.Ward == wardName)
-                            .Select(x => x.UserId.Value)
+                            .Where(x => userIds.Contains(x.UserId) && x.SiteAddress?.Ward == wardName)
+                            .Select(x => x.UserId)
                             .Distinct().ToList());
                     }
                     else
                     {
                         messageUserIds.AddRange(practitioners
-                            .Where(x => userIds.Contains(x.UserId.Value) && x.SiteAddress?.ProvinceId.ToString() == provinceId && x.SiteAddress?.Ward == wardName)
-                            .Select(x => x.UserId.Value)
+                            .Where(x => userIds.Contains(x.UserId) && x.SiteAddress?.ProvinceId == provinceGuid.Value && x.SiteAddress?.Ward == wardName)
+                            .Select(x => x.UserId)
                             .Distinct().ToList());
                     }
                 }
                 if (isCoach)
                 {
-                    if (provinceId != "" && wardName == "")
+                    if (provinceGuid.HasValue && wardName == "")
                     {
                         messageUserIds.AddRange(coaches
-                            .Where(x => userIds.Contains(x.UserId.Value) && x.SiteAddress?.ProvinceId.ToString() == provinceId)
-                            .Select(x => x.UserId.Value)
+                            .Where(x => userIds.Contains(x.UserId) && x.SiteAddress?.ProvinceId == provinceGuid.Value)
+                            .Select(x => x.UserId)
                             .Distinct().ToList());
                     }
-                    else if (provinceId == "" && wardName != "")
+                    else if (provinceGuid.HasValue && wardName != "")
                     {
                         messageUserIds.AddRange(coaches
-                            .Where(x => userIds.Contains(x.UserId.Value) && x.SiteAddress?.Ward == wardName)
-                            .Select(x => x.UserId.Value)
+                            .Where(x => userIds.Contains(x.UserId) && x.SiteAddress?.Ward == wardName)
+                            .Select(x => x.UserId)
                             .Distinct().ToList());
                     }
                     else
                     {
                         messageUserIds.AddRange(coaches
-                            .Where(x => userIds.Contains(x.UserId.Value) && x.SiteAddress?.ProvinceId.ToString() == provinceId && x.SiteAddress?.Ward == wardName)
-                            .Select(x => x.UserId.Value)
+                            .Where(x => userIds.Contains(x.UserId) && x.SiteAddress?.ProvinceId == provinceGuid.Value && x.SiteAddress?.Ward == wardName)
+                            .Select(x => x.UserId)
                             .Distinct().ToList());
                     }
                 }
-                count = messageUserIds.Count();
+                count = messageUserIds.Count;
             }
             else
             {
-                count = userIds.Count();
+                count = userIds.Count;
             }
             return count;
         }

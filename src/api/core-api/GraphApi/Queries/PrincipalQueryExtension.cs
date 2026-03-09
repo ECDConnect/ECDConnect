@@ -24,7 +24,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.View)]
         public List<Practitioner> GetAllPrincipal(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
@@ -39,6 +39,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return principals;
         }
 
+        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.View)]
         public List<Principal> GetAllPrincipals(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
@@ -59,6 +60,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return list;
         }
 
+        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.View)]
         public Practitioner GetPrincipalByUserId(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
@@ -74,12 +76,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return principal;
         }
 
+        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.View)]
         public List<Practitioner> GetAllPractitionersForPrincipal([Service] PersonnelService personnelManager,
         string userId)
         {
             return personnelManager.GetAllPractitionersForPrincipal(userId);
         }
 
+        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.View)]
         public Principal MapPractitionerToPrincipal(Practitioner practitioner)
         {
             Principal userToMap = new Principal()
@@ -107,6 +111,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return userToMap;
         }
 
+        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.View)]
         public List<Classroom> GetAllClassroomsForPrincipal([Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             IGenericRepositoryFactory repoFactory,
@@ -121,6 +126,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return classes;
         }
 
+        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.View)]
         public List<ClassroomGroup> GetAllClassroomGroupsByPrincipal(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -139,6 +145,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return allClassGroups;
         }
 
+        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.View)]
         public List<Child> GetAllChildrenUnderPrincipal(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -164,6 +171,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             }
             return children;
         }
+
+        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.View)]
         public List<Child> GetAllChildrenUnderPrincipalByClassrooms(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,

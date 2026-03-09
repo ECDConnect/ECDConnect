@@ -13,9 +13,14 @@ export const login = createAsyncThunk<
     return await new AuthService().login(Config.authApi, body);
   } catch (err) {
     if ((err as AxiosError).response?.data?.error) {
-      return rejectWithValue((err as AxiosError).response?.data?.error);
+      return rejectWithValue((err as AxiosError).response?.data);
     }
-    return rejectWithValue((err as Error).message);
+    return rejectWithValue({
+      message: (err as Error).message,
+      error: (err as Error).message,
+      statusCode: 600,
+      lockedOut: false,
+    });
   }
 });
 

@@ -17,7 +17,6 @@ using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Reports;
 using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -44,7 +43,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         {
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.COACH, GraphActionEnum.View)]
         public List<CoachPractitioner> GetAllPractitionersForCoach(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] PersonnelService personnelService,
@@ -71,25 +70,38 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return coachPractitioners;
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.COACH, GraphActionEnum.View)]
         public Coach GetCoachByCoachUserId(
             [Service] VisitManager visitManager,
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             string userId)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var dbRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
-            Coach coach = dbRepo.GetByUserId(userId);
+            if (string.IsNullOrWhiteSpace(userId))
+                return null;
 
-            List<Visit> visits = visitManager.GetVisitsForClient(userId, Constants.SSSettings.client_coach);
+            var currentUserId = contextAccessor.HttpContext?.GetUser()?.Id;
+            var dbRepo = repoFactory.CreateGenericRepository<Coach>(userContext: currentUserId);
+            var coach = dbRepo.GetByUserId(userId) ?? dbRepo.GetById(new Guid(userId));
 
-            coach.PractitionerVisits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_practitioner_visit || x.VisitType.Name == Constants.SSSettings.visitType_practitioner_call).ToList();
+            if (coach == null)
+                return null;
+
+            // Cache constants to avoid repeated string comparison
+            const string PractitionerVisit = Constants.SSSettings.visitType_practitioner_visit;
+            const string PractitionerCall = Constants.SSSettings.visitType_practitioner_call;
+
+            var practitionerVisits = visitManager
+                .GetVisitsForClient(userId, Constants.SSSettings.client_coach)
+                .Where(v => v.VisitType?.Name is PractitionerVisit or PractitionerCall)
+                .ToList();
+
+            coach.PractitionerVisits = practitionerVisits;
 
             return coach;
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.COACH, GraphActionEnum.View)]
         public Coach GetCoachByUserId(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -99,7 +111,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return GetCoachByPractitionerId(contextAccessor, repoFactory, userId);
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.COACH, GraphActionEnum.View)]
         public string GetCoachNameByUserId([Service] ApplicationUserManager userManager,
         string userId)
         {
@@ -108,7 +120,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.COACH, GraphActionEnum.View)]
         public Coach GetCoachByPractitionerId(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -126,27 +138,25 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             else return null;
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.COACH, GraphActionEnum.View)]
         public List<Child> GetAllChildrenForCoach(
             [Service] IHttpContextAccessor contextAccessor,
-            AuthenticationDbContext dbContext,
-            string userId)
+            AuthenticationDbContext dbContext)
         {
-          var uid = contextAccessor.HttpContext.GetUser().Id;
-          List<Child> children = [.. dbContext.Children.FromSql($@"
+            var uid = contextAccessor.HttpContext.GetUser().Id;
+            List<Child> children = [.. dbContext.Children.FromSql($@"
                                         SELECT c.* 
                                         FROM ""Child"" c 
                                         JOIN ""Practitioner"" p ON c.""Hierarchy"" LIKE p.""Hierarchy"" || '%'
                                         WHERE p.""CoachHierarchy"" = {uid}::uuid AND c.""IsActive"" is true
                                         ")];
-          return children;
+            return children;
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.COACH, GraphActionEnum.View)]
         public List<Classroom> GetAllClassroomsForCoach(
             [Service] IHttpContextAccessor contextAccessor,
-            AuthenticationDbContext dbContext,
-            string userId)
+            AuthenticationDbContext dbContext)
         {
             var uid = contextAccessor.HttpContext.GetUser().Id;
             List<Classroom> classrooms = [.. dbContext.Classrooms.FromSql($@"
@@ -158,8 +168,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
             return classrooms;
         }
-        
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+
+        [Permission(PermissionGroups.COACH, GraphActionEnum.View)]
         public List<ClassroomGroupModel> GetAllClassroomGroupsForCoach(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] IClassroomService classroomService,
@@ -204,9 +214,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return classrooms.DistinctBy(x => x.Id).ToList();
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        
         [UseFiltering]
         [UseSorting]
+        [Permission(PermissionGroups.COACH, GraphActionEnum.View)]
         public List<PortalCoachModel> GetAllPortalCoaches(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -313,7 +324,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return connectUsageSearch.Any() ? filteredUsers.DistinctBy(x => x.Id).ToList() : coachModels;
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.COACH, GraphActionEnum.View)]
         public async Task<FileModel> CoachTemplateGenerator(
             [Service] IFileGenerationService fileService)
         {
@@ -353,7 +364,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.COACH, GraphActionEnum.View)]
         public CoachStatsModel GetCoachStats(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,

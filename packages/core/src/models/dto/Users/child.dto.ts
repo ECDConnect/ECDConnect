@@ -1,6 +1,5 @@
 import { DocumentDto } from '../Documents/document.dto';
 import { EntityBase } from '../entity-base';
-import { LanguageDto } from '../StaticData/language.dto';
 import { WorkflowStatusDto } from '../StaticData/workflow-status.dto';
 import { CaregiverDto } from './care-giver.dto';
 import { UserDto } from './user.dto';
@@ -10,8 +9,6 @@ export interface ChildDto extends EntityBase {
   userId?: string;
   caregiverId?: string;
   caregiver?: CaregiverDto;
-  language?: LanguageDto;
-  languageId?: string;
   allergies?: string;
   disabilities?: string;
   otherHealthConditions?: string;
@@ -23,6 +20,8 @@ export interface ChildDto extends EntityBase {
   reasonForLeavingId?: string;
   inactiveDate?: Date;
   inactivityComments?: string;
+  otherLanguages?: string;
+  homeLanguageIds?: string[];
 }
 
 export interface AddChildTokenDto {

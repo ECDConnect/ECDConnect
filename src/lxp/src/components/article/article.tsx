@@ -35,7 +35,8 @@ export const Article = ({
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
   const [articleText, setArticleText] = useState<string>('');
-  const [language, setLanguage] = useState({ locale: 'en-za' });
+  const [articleImage, setArticleImage] = useState<string>('');
+  const [language] = useState({ locale: 'en-za' });
   const [availableLanguages, setAvailableLanguages] = useState([
     language.locale as LanguageCode,
   ]);
@@ -70,6 +71,7 @@ export const Article = ({
     if (content && content.length > 0) {
       const consentFilter = content?.[0];
       var description = consentFilter?.description ?? '';
+      setArticleImage(consentFilter?.image ?? '');
 
       if (!consentFilter || description.length === 0) {
         presentUnavailableAlert();
@@ -113,6 +115,7 @@ export const Article = ({
   const getContent = async (consentList: ConsentDto[] | undefined) => {
     const consentFilter = consentList?.find((x) => x.name === consentEnumType);
     var description = consentFilter?.description ?? '';
+    setArticleImage(consentFilter?.image ?? '');
 
     if (!consentFilter || description.length === 0) {
       presentUnavailableAlert();
@@ -155,11 +158,11 @@ export const Article = ({
       render: (submit, close) => {
         return (
           <ActionModal
-            className={'mx-4'}
+            className={'bg-white'}
             title="No content found"
-            paragraphs={[
-              'Could not find any content for the selected language, please select another.',
-            ]}
+            detailText={
+              'Could not find any content for the selected language, please select another.'
+            }
             icon={'InformationCircleIcon'}
             iconColor={'infoDark'}
             iconBorderColor={'infoBb'}
@@ -207,7 +210,20 @@ export const Article = ({
                 />
               </div>
               <div className={styles.articleTextWrapper}>
-                <Typography type={'markdown'} text={articleText} />
+                <div className="flex items-start">
+                  {articleImage && (
+                    <div
+                      className="mr-3 flex-shrink-0"
+                      style={{ width: '48px', height: '48px' }}
+                    >
+                      <img
+                        src={articleImage}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <Typography type={'markdown'} text={articleText} />
+                </div>
               </div>
 
               {showClose && (

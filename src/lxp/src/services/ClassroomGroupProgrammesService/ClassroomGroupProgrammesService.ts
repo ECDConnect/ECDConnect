@@ -1,4 +1,4 @@
-import { ClassProgrammeDto, Config } from '@ecdlink/core';
+import { Config } from '@ecdlink/core';
 import { ClassProgrammeInput } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 class ClassroomGroupProgrammesService {

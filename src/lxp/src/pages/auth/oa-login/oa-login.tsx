@@ -1,9 +1,9 @@
 import {
-  useTheme,
   LoginRequestModel,
-  Config,
   LocalStorageKeys,
   useDialog,
+  LoginType,
+  Config,
 } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
@@ -18,9 +18,9 @@ import {
   DialogPosition,
   ActionModal,
 } from '@ecdlink/ui';
-import { useEffect, useMemo, useState } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
-import { useHistory } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { useHistory, useLocation } from 'react-router';
 import * as styles from './oa-login.styles';
 import { useAppDispatch } from '@store';
 import { authActions, authThunkActions } from '@store/auth';
@@ -33,195 +33,411 @@ import { practitionerSelectors } from '@/store/practitioner';
 import { syncThunkActions } from '@/store/sync';
 import { useStoreSetup } from '@/hooks/useStoreSetup';
 import { userThunkActions } from '@/store/user';
-import facebookLogo from '../../../assets/icon/facebook_white.svg';
 import ReactGA from 'react-ga4';
 import {
   OaLoginModel,
   initialOaLoginValues,
   oaLoginSchema,
 } from '@/schemas/auth/login/oa-login';
-import { AuthService } from '@/services/AuthService';
 import { VerifyPhoneNumberAuthCode } from '@/components/user-registration/components/verify-phone-number';
 import { useTenant } from '@/hooks/useTenant';
+import { getLogo, LogoSvgs } from '@/utils/common/svg.utils';
+import { HelpForm } from '@/components/help-form/help-form';
+import {
+  /*CodeResponse,*/
+  CredentialResponse,
+  GoogleLogin /*,
+  useGoogleLogin,*/,
+} from '@react-oauth/google';
+import jwtDecode from 'jwt-decode';
+import { Login as FacebookLogin } from 'react-facebook';
+import { LoginResponse } from '@/types/facebook';
+import { triggerBackgroundSync } from '@/store/sync/sync.actions';
 
-var CryptoJS = require('crypto-js');
+const CryptoJS = require('crypto-js');
 const { version } = require('../../../../package.json');
+
+enum LoginErrorEnum {
+  None,
+  DetailsIncorrect,
+  StrugglingLogin,
+  UserAlreadyLoggedIn,
+}
+
+interface LoginRouteState {
+  username?: string;
+  password?: string;
+  loginType?: LoginType;
+  googleToken?: string;
+  facebookToken?: string;
+}
 
 export const OaLogin: React.FC = () => {
   const appDispatch = useAppDispatch();
   const history = useHistory();
-  const [displayError, setDisplayError] = useState(false);
-  const displayMessage = 'Password or ID incorrect. Please try again';
-  const [displayWrongUserError, setDisplayWrongUserError] = useState(false);
+  const { state } = useLocation<LoginRouteState>();
+  const [displayError, setDisplayError] = useState('');
+  const [loginAttempts, setLoginAttempts] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const { isOnline } = useOnlineStatus();
   const [freeMemory, setFreeMemory] = useState(0);
   const [errorMessage, setErrorMessage] = useState(false);
+  const [openHelp, setOpenHelp] = useState(false);
   const tenant = useTenant();
+  const { resetAppStore, resetAuth, resetUser } = useStoreSetup();
+
+  const [autoLogin, setAutoLogin] = useState(
+    !!state?.username && !!state?.loginType
+  );
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
-  const { resetAppStore, resetAuth } = useStoreSetup();
+  const isSslEnabled = window.location.protocol === 'https:';
 
-  navigator?.storage?.estimate &&
-    navigator?.storage?.estimate().then((estimate) => {
-      if (estimate?.quota) {
-        const freMemoryResult = estimate?.quota / 1024 / 1024;
-        setFreeMemory(Number(freMemoryResult.toFixed(0)));
-        return estimate;
-      }
-    });
+  const getDisplayErrorMessage = (
+    loginError: LoginErrorEnum,
+    loginType?: LoginType
+  ): string => {
+    switch (loginError) {
+      case LoginErrorEnum.None:
+        return '';
+      case LoginErrorEnum.DetailsIncorrect:
+        return loginType === 'username'
+          ? 'Password or username incorrect. Please try again.'
+          : '';
+      case LoginErrorEnum.StrugglingLogin:
+        return tenant.isOpenAccess
+          ? 'Struggling to log in? Send a message to our help line!'
+          : 'Struggling to log in? Please fill in the help form.';
+      case LoginErrorEnum.UserAlreadyLoggedIn:
+        return `Another user is already logged in on this device. Please try again ${
+          isOnline ? '' : 'when you are online'
+        }`;
+    }
+  };
+
+  const STRUGGLING_LOGIN_ATTEMPTS = 5;
+
+  useEffect(() => {
+    if (navigator?.storage?.estimate) {
+      navigator.storage
+        .estimate()
+        .then((estimate) => {
+          if (estimate?.quota) {
+            const freeMemoryMB = estimate.quota / (1024 * 1024);
+            setFreeMemory(Math.round(freeMemoryMB));
+          }
+        })
+        .catch(() => {
+          setFreeMemory(0);
+        });
+    } else {
+      setFreeMemory(0);
+    }
+  }, []);
+
+  const whatsapp = () => {
+    window.open(
+      `https://wa.me/${tenant.tenant?.organisationHelpWhatsAppNumber}`
+    );
+  };
 
   const {
     register: loginRegister,
     formState: loginFormState,
     getValues: loginFormGetValues,
-    control,
   } = useForm({
     resolver: yupResolver(oaLoginSchema),
-    defaultValues: initialOaLoginValues,
+    defaultValues:
+      state?.loginType === 'username'
+        ? ({
+            username: state?.username || '',
+            password: state?.password || '',
+          } as OaLoginModel)
+        : initialOaLoginValues,
     mode: 'onChange',
   });
   const { isValid, errors } = loginFormState;
-  const { username, password } = useWatch({ control });
   const dialog = useDialog();
 
-  const userHash = CryptoJS.AES.encrypt(password, 'user pass').toString();
-  const userIdHash = CryptoJS.AES.encrypt(username, 'user id').toString();
   const userLocalxpiration = Date.now() + 3600000000;
-  const currentUserId = JSON.parse(localStorage?.getItem('userIdHash')!);
   const [openVerifyPhoneNumber, setOpenVerifyPhoneNumber] = useState(false);
 
-  const userIdHashDecrypted = useMemo(
-    () => (currentUserId ? CryptoJS.AES.decrypt(currentUserId, 'user id') : ''),
-    [currentUserId]
-  );
-  const userIdHashDecryptedToString = useMemo(
-    () =>
-      userIdHashDecrypted
-        ? userIdHashDecrypted.toString(CryptoJS.enc.Utf8)
-        : '',
-    [userIdHashDecrypted]
-  );
+  const getCurrentUserId = (): string => {
+    const userIdHash = localStorage.getItem('userIdHash') || '';
+    if (!userIdHash) return '';
+    const currentUserId = JSON.parse(userIdHash);
+    return currentUserId;
+  };
+
+  const decryptCurrentUserId = (): string => {
+    const currentUserId = getCurrentUserId();
+    const d = currentUserId
+      ? CryptoJS.AES.decrypt(currentUserId, 'user id')
+      : '';
+    const s = d ? d.toString(CryptoJS.enc.Utf8) : '';
+    return s;
+  };
+
+  const displayNoAccountFoundPopup = (loginType: LoginType) => {
+    const name = loginType.charAt(0).toUpperCase() + loginType.slice(1);
+    const title = `No account for this ${name} login`;
+    const detailText = tenant.isOpenAccess
+      ? `This ${name} account isn't linked to ECD Connect.  
+        Already have an account? Log in with your email and password. New here? Sign up first.`
+      : `Please register for the app first.
+        Check your SMS for a registration link. If you didn't receive an SMS, tap Get help`;
+
+    dialog({
+      position: DialogPosition.Middle,
+      blocking: true,
+      color: 'bg-white',
+      render: (onSubmit, onCancel) => {
+        return (
+          <ActionModal
+            className={'mx-4'}
+            title={title}
+            detailText={detailText}
+            icon={'ExclamationCircleIcon'}
+            iconSize={48}
+            iconColor={'alertMain'}
+            // iconBorderColor={'white'}
+            actionButtons={
+              tenant.isOpenAccess
+                ? [
+                    {
+                      text: 'Sign up',
+                      colour: 'quatenary',
+                      type: 'filled',
+                      onClick: () => {
+                        onSubmit();
+                        history.push(ROUTES.OA_SIGN_UP_OR_LOGIN, {
+                          signup: true,
+                        });
+                      },
+                      textColour: 'white',
+                    },
+                    {
+                      text: 'Log in',
+                      colour: 'quatenary',
+                      type: 'outlined',
+                      onClick: () => {
+                        setAutoLogin(false);
+                        onSubmit();
+                      },
+                      textColour: 'quatenary',
+                    },
+                  ]
+                : [
+                    {
+                      text: 'Get help',
+                      colour: 'quatenary',
+                      type: 'filled',
+                      onClick: () => {
+                        setOpenHelp(true);
+                        onSubmit();
+                      },
+                      textColour: 'white',
+                      leadingIcon: 'QuestionMarkCircleIcon',
+                    },
+                    {
+                      text: 'Close',
+                      colour: 'quatenary',
+                      type: 'outlined',
+                      onClick: () => {
+                        setAutoLogin(false);
+                        onSubmit();
+                      },
+                      textColour: 'quatenary',
+                    },
+                  ]
+            }
+          />
+        );
+      },
+    });
+  };
 
   const login = async () => {
+    console.log('login - 1');
     appDispatch(settingActions.setApplicationVersion(version));
+    console.log('login - 2');
     appDispatch(authActions.setUserExpired());
+    console.log('login - 3');
     appDispatch(settingActions.setLoginDate());
+    console.log('login - 4');
     const user = await appDispatch(userThunkActions.getUser({})).unwrap();
+    console.log('login - 5');
     localStorage.setItem(
       LocalStorageKeys.firstTimeOnCommunityDashboard,
       'true'
     );
     setIsLoading(false);
+    setLoginAttempts(0);
     // Set userId for google
     ReactGA.set({ userId: user?.id });
+    console.log('login - 6');
     history.push(ROUTES.DASHBOARD, { isFromLogin: true });
   };
 
-  const checkSyncData = async () => {
+  const checkSyncData = async (username: string) => {
     if (
-      username !== userIdHashDecryptedToString &&
-      !!practitioner &&
-      isOnline
+      username !== decryptCurrentUserId() &&
+      !!practitioner /* &&
+      isOnline*/
     ) {
-      if (practitioner?.isPrincipal === true) {
-        await appDispatch(syncThunkActions.syncOfflineData({}));
-      } else {
-        await appDispatch(syncThunkActions.syncOfflineDataForPractitioner({}));
-      }
+      await appDispatch(
+        triggerBackgroundSync({ includeOfflineSyncData: true })
+      );
 
-      // await resetAppStore();
-      // await resetAuth();
+      resetAppStore && (await resetAppStore());
+      resetAuth && (await resetAuth());
+      resetUser && (await resetUser());
+    }
+  };
+
+  const loginOffline = async (loginRequest: LoginRequestModel) => {
+    const decryptedCurrentUserId = decryptCurrentUserId();
+    if (loginRequest.username === decryptedCurrentUserId) {
+      setDisplayError(getDisplayErrorMessage(LoginErrorEnum.None));
+      login();
+    } else {
+      setLoginAttempts(loginAttempts + 1);
+      setDisplayError(
+        loginAttempts + 1 >= STRUGGLING_LOGIN_ATTEMPTS
+          ? getDisplayErrorMessage(LoginErrorEnum.StrugglingLogin)
+          : getDisplayErrorMessage(LoginErrorEnum.UserAlreadyLoggedIn)
+      );
+      setIsLoading(false);
     }
   };
 
   const submitForm = async () => {
-    setDisplayError(false);
-    setIsLoading(true);
-    const checkUserAuthCode = await new AuthService()
-      .VerifyOaAuthCodeStatus(Config.authApi, {
-        username: loginFormGetValues().username,
-      })
-      .catch((error) => {
-        setIsLoading(false);
-        return;
-      });
-    setIsLoading(false);
+    setDisplayError(getDisplayErrorMessage(LoginErrorEnum.None));
 
-    if (isValid) {
-      if (freeMemory > 200 || freeMemory === 0) {
-        setIsLoading(true);
-        const body: LoginRequestModel = {
-          username: loginFormGetValues().username,
-          password: loginFormGetValues().password,
-        };
-
-        if (currentUserId && !isOnline) {
-          if (username === userIdHashDecryptedToString) {
-            setDisplayWrongUserError(false);
-            login();
-          } else {
-            setDisplayWrongUserError(true);
-            setIsLoading(false);
-          }
-
-          return;
-        }
-
-        await checkSyncData();
-
-        localStorage.setItem('userHash', JSON.stringify(userHash));
-        localStorage.setItem('userIdHash', JSON.stringify(userIdHash));
-        localStorage.setItem(
-          'userLocalxpiration',
-          JSON.stringify(userLocalxpiration)
-        );
-
-        setDisplayWrongUserError(false);
-        appDispatch(authThunkActions.login(body))
-          .then((isAuthenticated: any) => {
-            if (
-              isAuthenticated &&
-              isAuthenticated?.error === undefined &&
-              isAuthenticated?.payload?.response?.status !== 401
-            ) {
-              if (checkUserAuthCode === true) {
-                setOpenVerifyPhoneNumber(true);
-                return;
-              }
-              login();
-            } else {
-              setDisplayError(true);
-              setIsLoading(false);
-            }
-          })
-          .catch((err) => {
-            setDisplayError(true);
-            setIsLoading(false);
-          });
-      } else {
-        setErrorMessage(true);
-      }
+    if (!(freeMemory > 200 || freeMemory === 0)) {
+      setAutoLogin(false);
+      setErrorMessage(true);
+      return;
     }
+
+    if (!isValid) {
+      setAutoLogin(false);
+      return;
+    }
+
+    const loginRequest: LoginRequestModel = {
+      username: loginFormGetValues().username,
+      password: loginFormGetValues().password,
+      loginType: 'username',
+    };
+
+    const currentUserId = getCurrentUserId();
+    if (currentUserId && !isOnline) {
+      await loginOffline(loginRequest);
+      return;
+    }
+
+    await preLogin(loginRequest);
+  };
+
+  const preLogin = async (loginRequest: LoginRequestModel) => {
+    setIsLoading(true);
+
+    await checkSyncData(loginRequest.username || '');
+
+    localStorage.setItem('userHash', '');
+    localStorage.setItem('userIdHash', '');
+
+    setDisplayError(getDisplayErrorMessage(LoginErrorEnum.None));
+    appDispatch(authThunkActions.login(loginRequest))
+      .then((isAuthenticated: any) => {
+        if (
+          isAuthenticated &&
+          isAuthenticated?.error === undefined &&
+          isAuthenticated?.payload?.response?.status !== 401
+        ) {
+          console.log('preLogin - authenticated');
+          const userHash = CryptoJS.AES.encrypt(
+            loginRequest.password,
+            'user pass'
+          ).toString();
+          const userIdHash = CryptoJS.AES.encrypt(
+            loginRequest.username,
+            'user id'
+          ).toString();
+
+          localStorage.setItem('userHash', JSON.stringify(userHash));
+          localStorage.setItem('userIdHash', JSON.stringify(userIdHash));
+          localStorage.setItem(
+            'userLocalxpiration',
+            JSON.stringify(userLocalxpiration)
+          );
+
+          if (isAuthenticated.payload.userMustConfirmAuthCode === true) {
+            setOpenVerifyPhoneNumber(true);
+            return;
+          }
+          login();
+        } else {
+          console.log('preLogin - error1');
+          setLoginAttempts(loginAttempts + 1);
+          setDisplayError(
+            loginAttempts + 1 >= STRUGGLING_LOGIN_ATTEMPTS
+              ? getDisplayErrorMessage(LoginErrorEnum.StrugglingLogin)
+              : getDisplayErrorMessage(
+                  LoginErrorEnum.DetailsIncorrect,
+                  loginRequest?.loginType
+                )
+          );
+          setIsLoading(false);
+          if (isAuthenticated?.payload?.lockedOut === true) {
+            displayUserLockedOutPopup();
+          } else {
+            if (
+              !!loginRequest?.loginType &&
+              loginRequest?.loginType !== 'username'
+            ) {
+              displayNoAccountFoundPopup(loginRequest?.loginType);
+            }
+          }
+        }
+        console.log('preLogin - end');
+      })
+      .catch((err) => {
+        console.log('preLogin - catch');
+        setLoginAttempts(loginAttempts + 1);
+        setDisplayError(
+          loginAttempts + 1 >= STRUGGLING_LOGIN_ATTEMPTS
+            ? getDisplayErrorMessage(LoginErrorEnum.StrugglingLogin)
+            : getDisplayErrorMessage(
+                LoginErrorEnum.DetailsIncorrect,
+                loginRequest?.loginType
+              )
+        );
+        if (!!loginRequest?.loginType && loginRequest?.loginType !== username) {
+          displayNoAccountFoundPopup(loginRequest?.loginType);
+        }
+        setIsLoading(false);
+        setAutoLogin(false);
+      });
   };
 
   const forgotPasswordClicked = () => {
     history.push(ROUTES.PASSWORD_RESET);
   };
 
-  const handleIncorrectBrowser = () => {
+  const displayIncorrectBrowserPopup = () => {
     dialog({
       position: DialogPosition.Middle,
       blocking: true,
+      fullOverlay: true,
       render: (onSubmit) => {
         return (
           <ActionModal
             className={'mx-4'}
             title={`Oops! ${tenant?.tenant?.applicationName} works best on Chrome or Firefox`}
-            paragraphs={[
-              `To download Chrome or Firefox, go to your phone's app store.`,
-            ]}
+            detailText={`To download Chrome or Firefox, go to your phone's app store.`}
             icon={'ExclamationIcon'}
             iconSize={48}
             iconColor={'alertMain'}
@@ -230,9 +446,9 @@ export const OaLogin: React.FC = () => {
               {
                 text: 'Close',
                 colour: 'quatenary',
-                type: 'outlined',
+                type: 'filled',
                 onClick: () => onSubmit(),
-                textColour: 'quatenary',
+                textColour: 'white',
                 leadingIcon: 'XIcon',
               },
             ]}
@@ -242,65 +458,212 @@ export const OaLogin: React.FC = () => {
     });
   };
 
-  const userAgent = navigator.userAgent;
+  const displayUserLockedOutPopup = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      blocking: true,
+      color: 'bg-white',
+      render: (onClose) => {
+        return (
+          <ActionModal
+            className={'mx-4'}
+            title={`Oops! Too many login attempts!`}
+            detailText={
+              tenant.isOpenAccess
+                ? 'Please try again later. If you are still struggling, please send a message to our helpline.'
+                : 'Please try again later. If you are still struggling, please fill in the help form.'
+            }
+            icon={'ExclamationCircleIcon'}
+            iconSize={48}
+            iconColor={'alertMain'}
+            iconBorderColor={'white'}
+            actionButtons={[
+              {
+                text: 'Get help',
+                colour: 'quatenary',
+                type: 'filled',
+                onClick: () => onClickGetHelp(onClose),
+                textColour: 'white',
+                leadingIcon: tenant.isOpenAccess
+                  ? getLogo(LogoSvgs.whatsappWhite)
+                  : 'QuestionMarkCircleIcon',
+                leadingIconType: tenant.isOpenAccess ? 'img' : 'hero',
+              },
+            ]}
+          />
+        );
+      },
+    });
+  };
+
+  const onClickGetHelp = (onClose?: () => void) => {
+    if (tenant.isOpenAccess) {
+      whatsapp();
+    } else {
+      setOpenHelp(true);
+    }
+    if (onClose) onClose();
+  };
 
   useEffect(() => {
-    if (
-      userAgent.includes('Firefox') ||
-      (userAgent.includes('Chrome') && !userAgent.includes('Edg'))
-    ) {
-      return;
-    } else {
-      handleIncorrectBrowser();
+    const ua = navigator.userAgent.toLowerCase();
+
+    const isChromeLike = ua.includes('chrome/') || ua.includes('crios/');
+
+    const isIosSafari =
+      /iphone|ipad|ipod/.test(ua) &&
+      ua.includes('safari/') &&
+      !ua.includes('crios/') &&
+      !ua.includes('fxios/') &&
+      !ua.includes('opios/');
+
+    const isFirefox = ua.includes('firefox/') || ua.includes('fxios/');
+
+    const isAllowed = isChromeLike || isIosSafari || isFirefox;
+
+    if (!isAllowed) {
+      displayIncorrectBrowserPopup();
     }
-  }, [userAgent]);
+
+    // Optional debug
+    console.log({
+      ua,
+      isChromeLike,
+      isIosSafari,
+      isAllowed,
+    });
+  }, []);
+
+  useEffect(() => {
+    setAutoLogin(
+      (state?.loginType === 'username' && isValid) ||
+        state?.loginType === 'google' ||
+        state?.loginType === 'facebook'
+    );
+    if (state?.loginType === 'username' && isValid) {
+      submitForm();
+    } else if (state?.loginType === 'google') {
+      preLogin({
+        username: state?.username,
+        password: '',
+        googleToken: state?.googleToken,
+        loginType: state?.loginType,
+      });
+    } else if (state?.loginType === 'facebook') {
+      preLogin({
+        username: state?.username,
+        password: '',
+        facebookToken: state?.facebookToken,
+        loginType: state?.loginType,
+      });
+    }
+  }, [state, isValid]);
+
+  useEffect(() => {
+    if (freeMemory !== 0 && freeMemory <= 200) {
+      setAutoLogin(false);
+      setErrorMessage(true);
+      // Optionally block form or show message immediately
+    }
+  }, [freeMemory]);
+
+  const backToPromptScreen = () => {
+    history.push('/');
+  };
+
+  const onGoogleLoginSuccess = (response: CredentialResponse) => {
+    const credential = response.credential || '';
+    const decoded = jwtDecode<any>(credential);
+    const email = decoded.email;
+    preLogin({
+      username: email,
+      password: '',
+      googleToken: credential,
+      loginType: 'google',
+    });
+  };
+
+  const onGoogleLoginError = () => {
+    console.log('Google Login failed.');
+  };
+
+  const onFacebookLoginSuccess = (response: LoginResponse) => {
+    const { userID, accessToken } = response.authResponse;
+    preLogin({
+      username: userID,
+      password: '',
+      facebookToken: accessToken,
+      loginType: 'facebook',
+    });
+  };
+
+  const onFacebookLoginError = (error: Error) => {
+    console.log('Facebook login failed', error);
+  };
+
+  const username = loginFormGetValues().username || '';
+  const password = loginFormGetValues().password || '';
 
   return (
     <BannerWrapper
       showBackground={false}
       backgroundImageColour={'primary'}
       color="primary"
-      size="sub-normal"
+      size={tenant.isOpenAccess ? 'small' : 'sub-normal'}
       renderBorder={false}
       displayOffline={!isOnline}
+      onBack={tenant.isOpenAccess ? backToPromptScreen : undefined}
     >
       <div className={styles.loginContainer}>
         <Dialog fullScreen visible={errorMessage} position={DialogPosition.Top}>
           <StorageFull />
         </Dialog>
+        {!autoLogin && isOnline && (
+          <div className="mb-6">
+            {!!Config.googleClientId && (
+              <div className="mb-6 flex justify-center">
+                <GoogleLogin
+                  onSuccess={(credentialResponse) =>
+                    onGoogleLoginSuccess(credentialResponse)
+                  }
+                  onError={() => onGoogleLoginError()}
+                  type="standard"
+                  text="signin_with"
+                  logo_alignment="center"
+                  size="large"
+                  width={250}
+                />
+              </div>
+            )}
+            {!!Config.facebookAppId && isSslEnabled && (
+              <div className="mb-6 flex justify-center">
+                <FacebookLogin
+                  onSuccess={(response: any) =>
+                    onFacebookLoginSuccess(response)
+                  }
+                  onError={(error: Error) => onFacebookLoginError(error)}
+                  fields={['id', 'name', 'picture']}
+                  scope={['public_profile']}
+                  //className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                  className="flex h-10 items-center space-x-2 rounded-lg bg-blue-600 px-6 py-3 text-white transition-colors hover:bg-blue-700"
+                  disabled={isLoading}
+                >
+                  <svg
+                    className="h-5 w-5"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"></path>
+                  </svg>
+                  <span>Login with Facebook</span>
+                </FacebookLogin>
+              </div>
+            )}
+            <Divider title="OR" />
+          </div>
+        )}
         <form>
           <div>
-            {/* <div>
-              <Button
-                className={'mt-3 w-full rounded-xl'}
-                type="filled"
-                color="infoMain"
-                onClick={() => {}}
-                textColor="white"
-              >
-                <img
-                  src={facebookLogo}
-                  alt="facebook"
-                  className="relative mr-2 h-5 w-5"
-                />
-                <Typography
-                  type={'h4'}
-                  text={'Log in with Facebook'}
-                  className={'text-sm font-normal'}
-                  color={'white'}
-                />
-              </Button>
-            </div>
-            <div className="my-8 flex flex-row items-center gap-2">
-              <Divider className="absolute w-6/12" />
-              <Typography
-                type={'h4'}
-                text={'OR'}
-                className={'text-sm font-normal'}
-                color={'textMid'}
-              />
-              <Divider className="absolute w-6/12" />
-            </div> */}
             <FormInput<OaLoginModel>
               label={'Username or email'}
               visible={true}
@@ -309,6 +672,7 @@ export const OaLogin: React.FC = () => {
               register={loginRegister}
               placeholder="e.g. Nothando_123@gmail.com"
               className="my-2"
+              disabled={autoLogin}
             />
             <PasswordInput<OaLoginModel>
               label={'Password'}
@@ -317,6 +681,7 @@ export const OaLogin: React.FC = () => {
               sufficIconColor={'uiMidDark'}
               value={loginFormGetValues().password}
               register={loginRegister}
+              disabled={autoLogin}
             />
             <div>
               <Button
@@ -325,31 +690,40 @@ export const OaLogin: React.FC = () => {
                 color="secondary"
                 background={'transparent'}
                 size="small"
-                disabled={!isOnline}
+                disabled={!isOnline || autoLogin}
                 onClick={forgotPasswordClicked}
               >
                 <Typography
                   type="buttonSmall"
                   color="secondary"
-                  text={'Forgot my password'}
+                  text={'Forgot my password/username'}
                 ></Typography>
               </Button>
             </div>
             <Divider></Divider>
-            {displayError && (
+            {!!displayError && (
               <Alert
                 className={'mt-5 mb-3'}
-                title={displayMessage}
+                title={displayError}
                 type={'error'}
-              />
-            )}
-            {displayWrongUserError && (
-              <Alert
-                className={'mt-5 mb-3'}
-                message={`Another user is already logged in on this device. Please try again ${
-                  isOnline ? '' : 'when you are online'
-                }`}
-                type={'error'}
+                button={
+                  displayError ===
+                  getDisplayErrorMessage(LoginErrorEnum.StrugglingLogin) ? (
+                    <Button
+                      text="Get help"
+                      icon={
+                        tenant.isOpenAccess
+                          ? getLogo(LogoSvgs.whatsappWhite)
+                          : 'QuestionMarkCircleIcon'
+                      }
+                      iconType={tenant.isOpenAccess ? 'img' : 'hero'}
+                      type={'filled'}
+                      color={'quatenary'}
+                      textColor={'white'}
+                      onClick={() => onClickGetHelp()}
+                    />
+                  ) : undefined
+                }
               />
             )}
           </div>
@@ -386,6 +760,14 @@ export const OaLogin: React.FC = () => {
             />
           </Dialog>
         )}
+        <Dialog
+          visible={openHelp}
+          position={DialogPosition.Full}
+          className="w-full"
+          stretch
+        >
+          <HelpForm closeAction={setOpenHelp} />
+        </Dialog>
       </div>
     </BannerWrapper>
   );

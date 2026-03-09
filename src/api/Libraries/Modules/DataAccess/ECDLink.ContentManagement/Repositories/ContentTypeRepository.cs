@@ -2,6 +2,7 @@ using ECDLink.ContentManagement.Entities;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Tenancy.Context;
+using HotChocolate.Data.Projections;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -65,18 +66,43 @@ namespace ECDLink.ContentManagement.Repositories
               .FirstOrDefault();
         }
 
-        public async Task<bool> HasTranslations(int id, Guid localId)
+        public async Task<bool> HasTranslations(int id, int ageGroup, Guid localId)
         {
-            var contentType = await _context.ContentTypes
-              .Include(x => x.Content)
-                .ThenInclude(x => x.ContentValues)
-                .Where(x => x.Id == id)
-              .OrderBy(x => x.Id)
-              .FirstOrDefaultAsync();
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
 
-            var content = contentType.Content.Where(x => x.ContentValues.Any(z => z.LocaleId == localId)).OrderBy(x => x.Id).FirstOrDefault();
+            var skillsFieldId = await _context.ContentTypeFields
+                .Where(x => x.ContentTypeId == 37 && x.FieldName == "skills")
+                .Select(x => x.Id)
+                .FirstOrDefaultAsync();
 
-            return content != null ? true : false;
+            if (skillsFieldId == 0) return false;
+
+            var skills = await _context.ContentValues
+        .Where(x => x.ContentId == ageGroup
+                 && x.ContentTypeFieldId == skillsFieldId
+                 && x.TenantId == tenantId)
+        .Select(x => x.Value)
+        .FirstOrDefaultAsync();
+
+            if (string.IsNullOrWhiteSpace(skills)) return false;
+
+            var skillIds = skills
+        .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        .Select(s => int.TryParse(s, out int val) ? val : (int?)null)
+        .Where(id => id.HasValue)
+        .Select(id => id.Value)
+        .Distinct()                    
+        .ToList();
+
+            if (!skillIds.Any()) return false;
+
+            bool hasAnyTranslation = await _context.ContentValues
+            .AnyAsync(x => x.TenantId == tenantId
+                        && x.LocaleId == localId
+                        && !string.IsNullOrEmpty(x.Value)
+                        && skillIds.Contains(x.ContentId));
+
+            return hasAnyTranslation;
         }
 
         public IQueryable<ContentType> GetAll(string search, bool searchInContent)
@@ -120,29 +146,47 @@ namespace ECDLink.ContentManagement.Repositories
                 if (string.IsNullOrWhiteSpace(search))
                 {
                     result = _context.ContentTypes
-                  .Include(x => x.Content.Where(f => f.IsActive == true))
-                      .ThenInclude(x => x.ContentValues.Where(f => f.TenantId == tenantId))
-                          .ThenInclude(x => x.ContentTypeField)
-                  .Include(x => x.Fields.Where(f => f.IsActive))
-                      .ThenInclude(x => x.FieldType)
-                  .Where(ct =>
-                  (ct.TenantId == null || ct.TenantId == tenantId)
-                  && ct.IsActive == true).AsNoTracking().AsQueryable();
+                                .Include(ct => ct.Content
+                                    .Where(c => c.IsActive)
+                                    .Where(c => c.ContentValues.Any(cv => cv.TenantId == tenantId))
+                                )
+                                    .ThenInclude(c => c.ContentValues
+                                        .Where(cv => cv.TenantId == tenantId))
+                                    .ThenInclude(cv => cv.ContentTypeField)
+                                .Include(ct => ct.Fields.Where(f => f.IsActive))
+                                    .ThenInclude(f => f.FieldType)
+                                .Where(ct => 
+                                    (ct.TenantId == null || ct.TenantId == tenantId) &&
+                                    ct.IsActive &&
+                                    ct.Content.Any(c => 
+                                        c.ContentValues.Any(cv => cv.TenantId == tenantId))
+                                )
+                                .AsNoTracking()
+                                .AsQueryable();
                 }
                 else
                 {
                     result = _context.ContentTypes
-                    .Include(x => x.Content.Where(f => f.IsActive == true && f.TenantId == tenantId || f.TenantId == null))
-                        .ThenInclude(x => x.ContentValues.Where(f => f.TenantId == tenantId || f.TenantId == null))
-                            .ThenInclude(x => x.ContentTypeField)
-                    .Include(x => x.Fields.Where(f => f.IsActive))
-                        .ThenInclude(x => x.FieldType)
-                    .Where(ct =>
-                    (ct.TenantId == null || ct.TenantId == tenantId)
-                    && ct.IsActive == true
-                    && (EF.Functions.ILike(ct.Name, $"%{search}%")
-                        || EF.Functions.ILike(ct.Description, $"%{search}%"))
-                    ).AsNoTracking().AsQueryable();
+                                .Include(ct => ct.Content
+                                    .Where(c => c.IsActive)
+                                    .Where(c => c.ContentValues.Any(cv => cv.TenantId == tenantId))
+                                )
+                                    .ThenInclude(c => c.ContentValues
+                                        .Where(cv => cv.TenantId == tenantId))
+                                    .ThenInclude(cv => cv.ContentTypeField)
+                                .Include(ct => ct.Fields.Where(f => f.IsActive))
+                                    .ThenInclude(f => f.FieldType)
+                                .Where(ct =>
+                                    (ct.TenantId == null || ct.TenantId == tenantId) &&
+                                    ct.IsActive &&
+                                    (EF.Functions.ILike(ct.Name, $"%{search}%")
+                                    || EF.Functions.ILike(ct.Description, $"%{search}%")) &&
+                                    ct.Content.Any(c =>
+                                        c.ContentValues.Any(cv => cv.TenantId == tenantId))
+                                    
+                                )
+                                .AsNoTracking()
+                                .AsQueryable();
                 }
             }
             return result;

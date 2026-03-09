@@ -141,6 +141,13 @@ export const getClassroomGroupLearners = (state: RootState): LearnerDto[] =>
     .flatMap((x) => x.learners)
     ?.filter((x) => x.isActive);
 
+export const getClassroomGroupLearnersForAttendance = (
+  state: RootState
+): LearnerDto[] =>
+  state.classroomData.classroomGroupData.classroomGroups.flatMap(
+    (x) => x.learners
+  );
+
 export const getChildLearnerByClassroomGroup = (
   classroomGroupId: string,
   childUserId?: string
@@ -181,7 +188,7 @@ export const getLearnersForClassroomGroups = (
               children.find(
                 (child) =>
                   child.userId === learner.childUserId &&
-                  child.caregiverId != null
+                  (child.caregiverId != null || child.caregiver != null)
               )
             )
             .map((learner) => ({
@@ -191,6 +198,51 @@ export const getLearnersForClassroomGroups = (
               ),
             })),
         }));
+    }
+  );
+
+export const getNextProgressReportPeriod = () =>
+  createSelector(
+    (state: RootState) => state.classroomData.classroom,
+    (classroom: ClassroomDto | undefined) => {
+      const currentYear = new Date().getFullYear();
+
+      const currentYearsReportingPeriods =
+        classroom?.childProgressReportPeriods
+          ?.filter((x) => new Date(x.startDate).getFullYear() === currentYear)
+          .sort(
+            (a, b) =>
+              new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+          ) || [];
+
+      // Get first in order where start date is after the current date
+      const index = currentYearsReportingPeriods.findIndex((x) =>
+        isBefore(
+          new Date(
+            new Date().getFullYear(),
+            new Date().getMonth(),
+            new Date().getDate()
+          ),
+          new Date(x.startDate)
+        )
+      );
+
+      if (index < 0) {
+        return undefined;
+      }
+
+      const startDate = new Date(currentYearsReportingPeriods[index].startDate);
+      startDate.setHours(0, 0, 0, 0);
+
+      const endDate = new Date(currentYearsReportingPeriods[index].endDate);
+      endDate.setHours(23, 59, 59, 0);
+
+      return {
+        reportNumber: index + 1,
+        id: currentYearsReportingPeriods[index].id,
+        startDate: startDate,
+        endDate: endDate,
+      } as ProgressReportPeriod;
     }
   );
 
@@ -285,10 +337,18 @@ export const getExpiredProgressReportPeriod = () =>
       const index = currentYearsReportingPeriodsAsc.findIndex(
         (report) => report.id === expiredPeriod.id
       );
+
+      const startDate = new Date(expiredPeriod?.startDate);
+      startDate.setHours(0, 0, 0, 0);
+
+      const endDate = new Date(expiredPeriod?.endDate);
+      endDate.setHours(23, 59, 59, 0);
+
       return {
         reportNumber: index + 1,
         id: expiredPeriod?.id,
-        endDate: expiredPeriod?.endDate.toString(),
+        endDate: endDate,
+        startDate: startDate,
       } as unknown as CompleteReportPeriods;
     }
   );
@@ -337,3 +397,27 @@ export const getSetupClassroomPractitioners = (
   state: RootState
 ): UpdateUserPermissionInputModelInput[] =>
   state.classroomData.classroomPractitioners;
+
+/**
+ * Returns all classroom groups from the current classroom,
+ * but with learners filtered to ONLY those whose child has a caregiverId.
+ */
+export const getClassroomGroupsWithLinkedLearnersOnly = createSelector(
+  (state: RootState) => state.classroomData.classroomGroupData.classroomGroups,
+  (state: RootState) => state.children.childData.children,
+  (classroomGroups: ClassroomGroupDto[], children: ChildDto[]) => {
+    const childHasCaregiver = new Set<string>();
+    for (const child of children) {
+      if (child.caregiverId != null || child.caregiver != null) {
+        childHasCaregiver.add(child.userId || child.user?.id || '');
+      }
+    }
+
+    return classroomGroups.map((group) => ({
+      ...group,
+      learners: group.learners.filter((learner) =>
+        childHasCaregiver.has(learner.childUserId)
+      ),
+    }));
+  }
+);

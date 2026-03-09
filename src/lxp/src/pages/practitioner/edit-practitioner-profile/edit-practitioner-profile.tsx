@@ -1,4 +1,4 @@
-import { useDialog, useTheme } from '@ecdlink/core';
+import { useDialog } from '@ecdlink/core';
 import { IonContent } from '@ionic/react';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useCallback, useEffect, useState } from 'react';
@@ -35,12 +35,10 @@ import { ClassroomService } from '@/services/ClassroomService';
 export const EditPractitionerProfile: React.FC = () => {
   const appDispatch = useAppDispatch();
   const history = useHistory();
-  const { theme } = useTheme();
   const dialog = useDialog();
   const { isOnline } = useOnlineStatus();
 
   const tenant = useTenant();
-  const appName = tenant?.tenant?.applicationName;
   const isOpenAccess = tenant?.isOpenAccess;
 
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -191,6 +189,9 @@ export const EditPractitionerProfile: React.FC = () => {
             onSubmit={() => {
               onAllStepsComplete();
             }}
+            showStep={true}
+            stepIndex={1}
+            stepTotal={2}
           />
         );
 

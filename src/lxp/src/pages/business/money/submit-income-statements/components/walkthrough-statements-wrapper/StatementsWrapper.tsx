@@ -4,7 +4,7 @@ import Joyride, {
   Step as StepType,
 } from 'react-joyride';
 import { Button, Card, SliderPagination, Typography } from '@ecdlink/ui';
-import WalktroughImage from '../../../../../../assets/walktroughImage.png';
+import WalktroughImage from '../../../../../../assets/iconRobotBlueBg.svg';
 import { useAppContext } from '@/walkthrougContext';
 import { useTranslation } from 'react-i18next';
 import {
@@ -146,19 +146,21 @@ export default function StatementsWrapper() {
               </div>
             )}
           </div>
-          <div className="mt-4 flex items-center justify-end gap-4">
-            <SliderPagination
-              totalItems={9}
-              activeIndex={index}
-              className={'p-4'}
-            />
+          <div className="mt-4 flex items-center justify-between">
+            <div className="flex justify-start">
+              <SliderPagination
+                totalItems={10}
+                activeIndex={index}
+                className="p-4"
+              />
+            </div>
+
             {!disableNextButton && (
-              <div {...primaryProps} className={'w-full'}>
+              <div {...primaryProps}>
                 <Button
                   size="small"
                   type="filled"
                   color="quatenary"
-                  className={''}
                   onClick={() => {}}
                   text={isLastStep ? 'Close' : 'Next'}
                   textColor="white"
@@ -222,11 +224,13 @@ export default function StatementsWrapper() {
           },
           spotlight:
             stepIndex === 9
-              ? {}
+              ? {
+                  background: 'transparent',
+                }
               : {
                   borderWidth: 4,
                   borderRadius: 20,
-                  borderColor: '#FF2180',
+                  borderColor: '#ED145B',
                   borderStyle: 'solid',
                 },
         }}

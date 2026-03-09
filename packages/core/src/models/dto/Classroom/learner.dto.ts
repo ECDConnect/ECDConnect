@@ -13,4 +13,5 @@ export interface LearnerDto extends EntityBase {
   otherAttendanceReason?: string;
   startedAttendance: Date | string;
   stoppedAttendance: Date | string | null;
+  childUserId?: string;
 }

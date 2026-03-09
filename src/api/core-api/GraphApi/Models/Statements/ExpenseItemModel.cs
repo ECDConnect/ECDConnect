@@ -11,6 +11,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Statements
         public double Amount { get; set; }
         public string Notes { get; set; }
         public string PhotoProof { get; set; }
+        public bool IsActive {get; set;}
 
         public ExpenseItemModel() { }
 
@@ -22,6 +23,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Statements
             DatePaid = expense.DatePaid;
             Notes = expense.Notes;
             PhotoProof = expense.PhotoProof;
+            IsActive = expense.IsActive;
         }
     }
 }

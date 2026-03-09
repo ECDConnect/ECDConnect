@@ -10,6 +10,7 @@ import {
   StatusChip,
 } from '@ecdlink/ui';
 import { useEffect, useMemo, useState } from 'react';
+import { useHistory } from 'react-router';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
@@ -29,6 +30,12 @@ import * as styles from './attendance-list.styles';
 import { AttendanceListProps, AttendanceState } from './attendance-list.types';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { childrenSelectors } from '@store/children';
+import {
+  notificationActions,
+  notificationsSelectors,
+} from '@/store/notifications';
+import ROUTES from '@/routes/routes';
+import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 
 export const filterInfo: FilterInfo = {
   filterName: 'Class',
@@ -42,7 +49,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   classroomGroupId,
 }) => {
   const appDispatch = useAppDispatch();
-
+  const history = useHistory();
   const { showMessage } = useSnackbar();
   const children = useSelector(childrenSelectors.getChildren);
   const [presentChildrenCount, setPresentChildrenCount] = useState<number>(0);
@@ -53,8 +60,12 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     ClassroomGroupDto[]
   >([]);
 
+  const attendanceNotification = useSelector(
+    notificationsSelectors.getAllNotifications
+  ).find((item) => item?.message?.area?.includes('tracking-attendance'));
+
   const allLearners = useSelector(
-    classroomsSelectors.getClassroomGroupLearners
+    classroomsSelectors.getClassroomGroupLearnersForAttendance
   );
   const user = useSelector(userSelectors.getUser);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
@@ -112,9 +123,9 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
 
         return (
           child &&
-          !!child.caregiverId &&
-          !Boolean(x.stoppedAttendance) &&
-          endOfDay.getTime() >= new Date(x.startedAttendance).getTime()
+          (!!child.caregiverId || !!child.caregiver) &&
+          (!x.stoppedAttendance ||
+            new Date(x.stoppedAttendance).getTime() >= endOfDay.getTime())
         );
       });
 
@@ -193,119 +204,128 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   };
 
   const handleFormSubmit = async () => {
-    const currentClassProgramme = classroomGroupHasAttendanceOnDate(
-      classProgrammes,
-      attendanceDate,
-      classroomGroupId
-    );
-
-    const currentGroup = classroomGroups.find(
-      (x) => x.id === currentClassProgramme?.classroomGroupId
-    );
-
-    if (!currentGroup) return;
-
-    const currentAttendanceGroup = attendanceGroups?.find(
-      (x) => x.cacheId === currentGroup.id
-    );
-
-    if (!currentAttendanceGroup) return;
-
-    const currentProgramme = getPlaygroup(
-      classProgrammes,
-      attendanceDate,
-      classroomGroupId
-    );
-
-    if (!currentProgramme) return;
-
-    const allAttendanceGroupLists = attendanceGroups?.reduce((prev, curr) => {
-      return [...prev, ...curr.list];
-    }, [] as AttendanceListDataItem[]);
-
-    const uniqueAttendanceGroups = allAttendanceGroupLists?.filter(
-      (object, index, array) => {
-        return (
-          index ===
-          array.findIndex(
-            (newObject) => newObject.attenendeeId === object.attenendeeId
-          )
+    if (attendanceGroups) {
+      for (const element of attendanceGroups) {
+        const currentClassProgramme = classroomGroupHasAttendanceOnDate(
+          classProgrammes,
+          attendanceDate,
+          element.cacheId
         );
+
+        const currentGroup = classroomGroups.find(
+          (x) => x.id === currentClassProgramme?.classroomGroupId
+        );
+
+        if (!currentGroup) return;
+
+        const currentProgramme = getPlaygroup(
+          classProgrammes,
+          attendanceDate,
+          element.cacheId
+        );
+
+        if (!currentProgramme) return;
+
+        const programme: AttendanceState[] = [];
+
+        programme.push(element);
+
+        const attendanceGroupList = programme?.reduce((prev, curr) => {
+          return [...prev, ...curr.list];
+        }, [] as AttendanceListDataItem[]);
+
+        const uniqueAttendanceGroups = attendanceGroupList?.filter(
+          (object, index, array) => {
+            return (
+              index ===
+              array.findIndex(
+                (newObject) => newObject.attenendeeId === object.attenendeeId
+              )
+            );
+          }
+        );
+
+        const allAttendedChildren: ChildAttendance[] =
+          uniqueAttendanceGroups?.map((x) => ({
+            userId: x.attenendeeId,
+            attended: x.status === AttendanceStatus.Present,
+          })) || [];
+
+        const trackAttendanceInput = mapTrackAttendance(
+          user?.id || '',
+          allAttendedChildren,
+          new Date(
+            attendanceDate.getFullYear(),
+            attendanceDate.getMonth(),
+            attendanceDate.getDate(),
+            12,
+            0,
+            0
+          ).toISOString(),
+          currentProgramme.id ?? ''
+        );
+
+        appDispatch(attendanceActions.trackAttendance(trackAttendanceInput));
+        appDispatch(
+          attendanceThunkActions.trackAttendanceSync(trackAttendanceInput)
+        );
+
+        onSubmitSuccess({
+          attendanceDate,
+          classroomGroupId: element.cacheId,
+        });
       }
-    );
-
-    const allAttendedChildren: ChildAttendance[] =
-      uniqueAttendanceGroups?.map((x) => ({
-        userId: x.attenendeeId,
-        attended: x.status === AttendanceStatus.Present,
-      })) || [];
-
-    const trackAttendanceInput = mapTrackAttendance(
-      user?.id || '',
-      allAttendedChildren,
-      new Date(
-        attendanceDate.getFullYear(),
-        attendanceDate.getMonth(),
-        attendanceDate.getDate(),
-        12,
-        0,
-        0
-      ).toISOString(),
-      currentProgramme.id ?? ''
-    );
-
-    appDispatch(attendanceActions.trackAttendance(trackAttendanceInput));
-    appDispatch(
-      attendanceThunkActions.trackAttendanceSync(trackAttendanceInput)
-    );
-
+    }
     appDispatch(
       analyticsActions.createEventTracking({
         action: 'Attendance tracking click',
         category: 'Attendance tracking click',
       })
     );
+    if (attendanceNotification) {
+      appDispatch(
+        notificationActions.removeNotification(attendanceNotification)
+      );
+    }
 
-    onSubmitSuccess({
-      attendanceDate,
-      classroomGroupId: currentAttendanceGroup.cacheId,
-    });
     setAttendanceGroups([]);
     setSelectedClassroomGroups([]);
     updateAttendanceState([]);
     showMessage({ message: 'Great job, register saved!', type: 'success' });
+    history.push(ROUTES.CLASSROOM.ROOT, {
+      activeTabIndex: TabsItems.ATTENDANCE,
+    });
   };
 
   return (
     <div className={styles.wrapper}>
-      <>
-        {!!searchDropDownOptions?.length && (
-          <div className={'bg-uiBg flex w-full flex-col items-start pb-2 pt-1'}>
-            <SearchDropDown<any>
-              displayMenuOverlay
-              menuItemClassName={styles.dropdownStyles}
-              className={'mr-1 ml-2'}
-              options={searchDropDownOptions}
-              onChange={(value) => onFilterItemsChanges(value)}
-              placeholder={'Class'}
-              pluralSelectionText={'Classes'}
-              color={'secondary'}
-              multiple
-              selectedOptions={selectedClassroomGroups.map((x) => {
-                return {
-                  id: x.id ?? '',
-                  value: x,
-                  label: x.name,
-                };
-              })}
-              info={{
-                name: `Filter by:${filterInfo?.filterName}`,
-                hint: filterInfo?.filterHint || '',
-              }}
-            />
-          </div>
-        )}
-      </>
+      {!!searchDropDownOptions?.length && (
+        <div className={'bg-uiBg flex w-full flex-col items-start pb-2 pt-1'}>
+          <SearchDropDown<any>
+            displayMenuOverlay
+            menuItemClassName={styles.dropdownStyles}
+            className={'mr-1 ml-2'}
+            options={searchDropDownOptions}
+            onChange={(value) => onFilterItemsChanges(value)}
+            placeholder={'Class'}
+            pluralSelectionText={'Classes'}
+            color={'secondary'}
+            multiple
+            selectedOptions={selectedClassroomGroups.map((x) => {
+              return {
+                id: x.id ?? '',
+                value: x,
+                label: x.name,
+              };
+            })}
+            info={{
+              name: `Filter by:${filterInfo?.filterName}`,
+              hint: filterInfo?.filterHint || '',
+            }}
+          />
+        </div>
+      )}
+
       {hasChildren ? (
         <>
           <div>

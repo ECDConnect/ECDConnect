@@ -1,16 +1,9 @@
 import { Card, Divider, Typography } from '@ecdlink/ui';
-import { ProgressReportPeriod } from '@/models/progress/progress-report-period';
 import { format } from 'date-fns';
-import lightbulbEmoji from '@/assets/ECD_Connect_lightbulb.png';
-import {
-  ChildProgressDetailedSkillToWorkOn,
-  ProgressReportsCategorySummary,
-} from '@/models/progress/child-progress-report';
-import {
-  ProgressTrackingAgeGroupDto,
-  ProgressTrackingCategoryDto,
-} from '@ecdlink/core';
+import { ChildProgressDetailedSkillToWorkOn } from '@/models/progress/child-progress-report';
+import { ProgressTrackingCategoryDto } from '@ecdlink/core';
 import pinkFaceImg from '@/assets/progress-reports/pink-face.png';
+import { lightenColor } from '@/utils/common/color.utils';
 
 export type ProgressCaregiverReportWorkingOnPageProps = {
   childFirstName: string;
@@ -65,10 +58,10 @@ export const ProgressCaregiverReportWorkingOnPage: React.FC<
         .map((category) => (
           <div
             key={category.id}
-            className="bg-infoBb mt-6 mb-4 flex flex-col rounded-sm rounded-2xl border-2 p-4 pb-6 shadow-sm"
+            className="mt-6 mb-4 flex flex-col rounded-sm rounded-2xl border-2 p-4 pb-6 shadow-sm"
             style={{
               borderColor: category.color,
-              // backgroundColor: getCategoryBg(category.name),
+              backgroundColor: lightenColor(category.color, 95),
             }}
           >
             <div className="mb-4 flex flex-row">
@@ -81,7 +74,14 @@ export const ProgressCaregiverReportWorkingOnPage: React.FC<
               />
             </div>
             {category.skills.map((skill, index) => (
-              <div className="mb-2" key={index}>
+              <div
+                className="mb-2"
+                key={index}
+                style={{
+                  borderColor: category.color,
+                  backgroundColor: lightenColor(category.color, 95),
+                }}
+              >
                 <Typography
                   type="help"
                   color="textDark"

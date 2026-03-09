@@ -39,14 +39,19 @@ export const ProgressShareReport: React.FC = () => {
   const history = useHistory();
   const appDispatch = useAppDispatch();
   const dialog = useDialog();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [pdfBlob, setPdfBlob] = useState<Blob>();
+  const [isReportReady, setIsReportReady] = useState(false);
 
   const { isOnline } = useOnlineStatus();
 
   const { state: routeState } = useLocation<ProgressShareReportState>();
 
-  const { child, detailedReports } = useProgressForChild(routeState.childId);
+  const { child, detailedReports, currentAgeGroup } = useProgressForChild(
+    routeState.childId
+  );
 
-  const { generateReport } = usePdfFromHtml();
+  const { generateReportAndReturnBlob, sharePdfReport } = usePdfFromHtml();
 
   const [selectedReport, setSelectedReport] = useState<string | undefined>(
     routeState.reportId
@@ -61,6 +66,7 @@ export const ProgressShareReport: React.FC = () => {
       userAuth?.auth_token ?? ''
     ).hasContentTypeBeenTranslated(
       ContentTypeEnum.ProgressTrackingCategory,
+      currentAgeGroup?.id ?? 0,
       language.id ?? ''
     );
 
@@ -93,7 +99,7 @@ export const ProgressShareReport: React.FC = () => {
       render: (submit, close) => {
         return (
           <ActionModal
-            className={'mx-4'}
+            className={'bg-white'}
             title="No content found"
             paragraphs={[
               'Could not find any content for the selected language, please select another.',
@@ -104,7 +110,7 @@ export const ProgressShareReport: React.FC = () => {
             actionButtons={[
               {
                 text: 'Close',
-                colour: 'primary',
+                colour: 'quatenary',
                 onClick: close,
                 type: 'filled',
                 textColour: 'white',
@@ -120,6 +126,43 @@ export const ProgressShareReport: React.FC = () => {
   const currentReportLocale = useSelector(
     progressTrackingSelectors?.getCurrentLocaleForReport
   );
+
+  const shareReport = async () => {
+    if (!isOnline) {
+      showOnlineOnly();
+      return;
+    }
+
+    if (!shareRef.current) return;
+
+    setIsLoading(true);
+
+    try {
+      const pdfBlob = await generateReportAndReturnBlob(
+        shareRef.current,
+        shareRef.current.offsetWidth || 750
+      );
+
+      if (pdfBlob) {
+        await sharePdfReport(
+          pdfBlob,
+          ` - ${child?.user?.fullName || child?.user?.firstName}`
+        );
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const generatePdfReport = async () => {
+    if (shareRef.current) {
+      const pdfBlob = await generateReportAndReturnBlob(
+        shareRef.current,
+        shareRef.current?.offsetWidth || 750
+      );
+      setPdfBlob(pdfBlob);
+    }
+  };
 
   return (
     <BannerWrapper
@@ -173,7 +216,11 @@ export const ProgressShareReport: React.FC = () => {
               value: x.id,
             }))}
           selectedValue={selectedReport}
-          onChange={(item) => setSelectedReport(item)}
+          onChange={async (item) => {
+            setSelectedReport(item);
+            await new Promise((resolve) => setTimeout(resolve, 0)); // wait a tick for state update
+            await generatePdfReport();
+          }}
           className="my-2"
         />
         <LanguageSelector
@@ -211,15 +258,18 @@ export const ProgressShareReport: React.FC = () => {
           </ul>
         </div>
         <Button
-          onClick={() => {
-            if (isOnline) {
-              generateReport(
-                shareRef.current!,
-                shareRef.current?.offsetWidth || 750
-              );
-            } else {
+          onClick={async () => {
+            if (!isOnline) {
               showOnlineOnly();
+              return;
             }
+            setIsLoading(true);
+
+            if (!isReportReady || !pdfBlob) {
+              await generatePdfReport();
+            }
+
+            await shareReport();
           }}
           className="mt-4 w-full"
           size="small"
@@ -227,8 +277,9 @@ export const ProgressShareReport: React.FC = () => {
           textColor="white"
           type="filled"
           icon={'ShareIcon'}
-          text={'Share report'}
-          disabled={!selectedReport}
+          text={isLoading ? 'Loading report...' : 'Share report'}
+          disabled={!selectedReport || !isReportReady}
+          isLoading={isLoading}
         />
       </div>
       {!!selectedReport && (
@@ -237,6 +288,7 @@ export const ProgressShareReport: React.FC = () => {
             <ProgressCaregiverReportPdf
               childId={routeState.childId}
               reportId={selectedReport}
+              onRendered={() => setIsReportReady(true)}
             />
           </div>
         </div>

@@ -19,7 +19,7 @@ export const ActivitySubCategoryCard: React.FC<
       className={classNames('mt-2', className)}
       icon={subCategory.imageUrl}
       title={subCategory.name}
-      hexBackgroundColor={category?.color}
+      hexBackgroundColor={subCategory.imageHexColor}
     ></SkillCard>
   );
 };
