@@ -22,9 +22,11 @@ export const Score = ({ sum, total }: ScoreProps) => {
 
 function getScore(sum: number, total: number) {
   const percentage = total === 0 ? 0 : (sum / total) * 100;
-  let color: Colours = 'alertMain';
+  let color: Colours = 'errorMain';
 
   if (percentage > 99) color = 'successMain';
+
+  if (percentage > 0 && percentage <= 99) color = 'alertMain';
 
   return { score: sum, color, total };
 }

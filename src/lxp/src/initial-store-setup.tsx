@@ -13,19 +13,10 @@ import {
   classroomsThunkActions,
 } from './store/classroom';
 import { contentConsentThunkActions } from './store/content/consent';
-import {
-  programmeRoutineActions,
-  programmeRoutineThunkActions,
-} from './store/content/programme-routine';
-import {
-  programmeThemeActions,
-  programmeThemeThunkActions,
-} from './store/content/programme-theme';
+import { programmeRoutineActions } from './store/content/programme-routine';
+import { programmeThemeActions } from './store/content/programme-theme';
 import { contentReportActions } from './store/content/report';
-import {
-  storyBookActions,
-  storyBookThunkActions,
-} from './store/content/story-book';
+import { storyBookActions } from './store/content/story-book';
 import { documentActions, documentThunkActions } from './store/document';
 import { notesActions, notesThunkActions } from './store/notes';
 import { progressTrackingThunkActions } from './store/progress-tracking';
@@ -67,6 +58,7 @@ import { googleLogout } from '@react-oauth/google';
 import { CmsSyncStatus } from '@ecdlink/graphql';
 import { resourcesThunkActions } from './store/resources';
 import { activityActions } from './store/content/activity';
+import { invitesThunkActions } from './store/invites';
 
 type IntialStoreSetupContextValues = {
   initLoading: boolean;
@@ -213,6 +205,13 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       promises.push(
         appDispatch(
           childrenThunkActions.getChildrenForClassroom({
+            userId: userData?.id!,
+          })
+        ).unwrap()
+      );
+      promises.push(
+        appDispatch(
+          invitesThunkActions.getInvitesByPrincipalId({
             userId: userData?.id!,
           })
         ).unwrap()
