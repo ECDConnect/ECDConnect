@@ -90,7 +90,13 @@ export const ProgressCaregiverReportWorkingOnNonePage: React.FC<
       <img
         src={backgroundImg}
         className="m-4 w-full"
-        style={{ position: 'absolute', bottom: 0, left: 0 }}
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          height: '200px',
+          width: '100%',
+        }}
       />
     </div>
   );
