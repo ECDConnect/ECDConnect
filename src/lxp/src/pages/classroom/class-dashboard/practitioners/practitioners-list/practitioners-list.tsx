@@ -17,12 +17,8 @@ import { useHistory } from 'react-router-dom';
 import * as styles from './practitioners-list.styles';
 import ROUTES from '@routes/routes';
 import { useSelector } from 'react-redux';
-import {
-  practitionerSelectors,
-  practitionerThunkActions,
-} from '@/store/practitioner';
+import { practitionerSelectors } from '@/store/practitioner';
 import { PractitionerDto } from '@/../../../packages/core/lib';
-import { useAppDispatch } from '@store';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
@@ -35,9 +31,9 @@ import { userSelectors } from '@/store/user';
 import { InvitedPractitioner } from '@/pages/practitioner/practitioner-programme-information/practitioner-list/invited-practitioner/invited-practitioner';
 import { formatPhonenumberLocal } from '@utils/common/contact-details.utils';
 import { invitesSelectors } from '@/store/invites';
+import usePractitionerNotifications from '@/hooks/usePractitionerNotifications';
 
 export const PractitionersList: React.FC = () => {
-  const appDispatch = useAppDispatch();
   const isTrialPeriod = useIsTrialPeriod();
   const history = useHistory();
   const dialog = useDialog();
@@ -68,7 +64,10 @@ export const PractitionersList: React.FC = () => {
     }
   }, [errorDialog, isGetPractitionerRejected]);
 
-  const [practitionersMessages, setPractitionersMessages] = useState<any[]>();
+  const practitionersMessages = usePractitionerNotifications({
+    mode: 'principal',
+    now: new Date(),
+  });
 
   const handleClick = (practitionerId: string) => {
     history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
@@ -159,22 +158,6 @@ export const PractitionersList: React.FC = () => {
     practitionersMessages,
     handleInvitedPractitioner,
   ]);
-
-  const classroomsDetailsForPractitioner = async () => {
-    if (isOnline) {
-      const practitionersMessageData = await appDispatch(
-        practitionerThunkActions.getPractitionerDisplayMetrics({})
-      ).unwrap();
-
-      setPractitionersMessages(practitionersMessageData);
-      return practitionersMessageData;
-    }
-  };
-
-  useEffect(() => {
-    classroomsDetailsForPractitioner();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const showTrialPeriodCompleteProfileBlockingDialog = () => {
     dialog({

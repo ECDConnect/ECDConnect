@@ -1,4 +1,9 @@
+import { attendanceSelectors } from '@/store/attendance';
+import { classroomsSelectors } from '@/store/classroom';
+import { practitionerSelectors } from '@/store/practitioner';
+import { getMissedClassAttendance } from '@/utils/classroom/attendance/track-attendance-utils';
 import { useMemo } from 'react';
+import { useSelector } from 'react-redux';
 
 export type UUID = string;
 
@@ -58,34 +63,22 @@ const MetricsColorEnum = {
 
 const DEFAULT_NOW = () => new Date();
 
-export function usePractitionerNotifications(options: {
-  practitioners: Practitioner[] | undefined;
-  mode: 'coach' | 'principal' | 'self' | string;
-  now?: Date;
-  removals?: {
-    userId: UUID;
-    isActive: boolean;
-    insertedDate?: string | Date;
-    dateOfRemoval?: string | Date;
-  }[];
-  absentees?: Absentee[];
-  childProgressReportService?: {
-    getReportOverDueStart: (year: number, isPeriod1: boolean) => Date;
-    getReportOverDueEnd: (year: number, isPeriod1: boolean) => Date;
-  } | null;
-  attendanceService?: {
-    getAllLearnerGroupInstances?: (groupId: UUID) => any[];
-  } | null;
-  holidayService?: { isBusinessDay?: (d: Date) => boolean } | null;
-}) {
+export function usePractitionerNotifications(
+  options: {
+    mode?: 'coach' | 'principal' | 'self' | string; // Now optional with default
+    now?: Date;
+  } = {}
+) {
   const {
-    practitioners,
-    mode,
+    mode = 'principal', // Default to 'principal' or whatever fits most use cases
     now = DEFAULT_NOW(),
-    removals = [],
-    absentees = [],
-    attendanceService = null,
   } = options;
+
+  const classroomGroups =
+    useSelector(classroomsSelectors.getClassroomGroups) ?? [];
+  const practitioners =
+    useSelector(practitionerSelectors.getPractitioners) ?? [];
+  const attendance = useSelector(attendanceSelectors.getAttendance) ?? [];
 
   return useMemo<NotificationDisplay[]>(() => {
     const results: NotificationDisplay[] = [];
@@ -102,10 +95,14 @@ export function usePractitionerNotifications(options: {
     const previousMonthEnd = endOfPreviousMonth(now);
 
     const getUserRemovals = (userId?: UUID) =>
-      removals.filter((r) => r.userId === userId && r.isActive);
+      practitioners
+        .find((a) => a.userId === userId)
+        ?.absentees?.filter(
+          (a) => a.reason === 'Practitioner removed from programme'
+        ) ?? [];
 
     const getAbsenteesForUser = (userId?: UUID) =>
-      absentees.filter((a) => a.userId === userId);
+      practitioners.find((a) => a.userId === userId)?.absentees ?? [];
 
     const safeFormatDate = (d?: Date | string | null) =>
       d ? new Date(d as string).toLocaleDateString() : '';
@@ -143,12 +140,12 @@ export function usePractitionerNotifications(options: {
         results.push({
           ...(notificationBase as NotificationDisplay),
           subject: `Practitioner is leaving on ${safeFormatDate(
-            removalHistory.dateOfRemoval as Date
+            removalHistory.absentDate as Date
           )}`,
           icon: MetricsIconEnum.Error,
           color: MetricsColorEnum.Error,
           notes: `Practitioner is leaving on ${safeFormatDate(
-            removalHistory.dateOfRemoval as Date
+            removalHistory.absentDate as Date
           )}`,
           groupingName: 'Removed from preschool',
         });
@@ -196,19 +193,52 @@ export function usePractitionerNotifications(options: {
         continue;
       }
 
-      // ATTENDANCE PERCENTAGE checks (child attendance)
-      if (
-        attendanceService &&
-        typeof (attendanceService as any).getAttendancePercentileByParent ===
-          'function'
-      ) {
-        const percent = (
-          attendanceService as any
-        ).getAttendancePercentileByParent(
-          practitioner.userId,
-          previousMonthStart,
-          previousMonthEnd
+      const practitionerClassroomGrups =
+        classroomGroups.filter(
+          (classroomGroup) => classroomGroup.userId === practitioner.userId
+        ) || [];
+
+      let sumOfProgrammePercentages = 0;
+      let programmeCountWithAttendance = 0;
+
+      for (const group of practitionerClassroomGrups) {
+        const programmes = (group.classProgrammes || []).filter(
+          (p) => p.isActive
         );
+
+        for (const programme of programmes) {
+          const programmeAttendance = attendance.filter(
+            (a) =>
+              a.classroomProgrammeId === programme.id &&
+              a.attendanceDate &&
+              new Date(a.attendanceDate) >= previousMonthStart &&
+              new Date(a.attendanceDate) <= previousMonthEnd
+          );
+
+          if (programmeAttendance.length === 0) continue;
+
+          let present = 0;
+          let total = 0;
+
+          for (const att of programmeAttendance) {
+            if (att.attended === true) present++;
+            if (att.attended !== null) total++; // only count marked records
+          }
+
+          if (total > 0) {
+            const progPercent = Math.round((present / total) * 100);
+            sumOfProgrammePercentages += progPercent;
+            programmeCountWithAttendance++;
+          }
+        }
+      }
+
+      const percent =
+        programmeCountWithAttendance > 0
+          ? Math.round(sumOfProgrammePercentages / programmeCountWithAttendance)
+          : 0;
+
+      if (typeof percent === 'number') {
         if (percent < 75) {
           results.push({
             ...(notificationBase as NotificationDisplay),
@@ -247,7 +277,7 @@ export function usePractitionerNotifications(options: {
     }
 
     return results;
-  }, [practitioners, mode, now, removals, absentees, attendanceService]);
+  }, [practitioners, mode, now]);
 }
 
 export default usePractitionerNotifications;
