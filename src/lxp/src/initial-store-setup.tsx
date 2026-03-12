@@ -505,12 +505,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
             userId: userData?.id || '',
           })
         ).unwrap())();
-      (async () =>
-        await appDispatch(
-          practitionerThunkActions.getPractitionerDisplayMetrics({
-            userType: 'practitioner',
-          })
-        ).unwrap())();
     }
     if (userData) {
       if (isPrincipal) {
