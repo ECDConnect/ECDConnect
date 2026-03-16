@@ -25,7 +25,6 @@ export const CoreRadioGroup: React.FC<CoreRadioGroupProps> = ({
   const [stateValue, setStateValue] = useState(currentValue);
 
   const onChangeHandler = (val: any) => {
-    setStateValue(val);
     onChange(val);
   };
 
