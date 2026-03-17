@@ -14,29 +14,25 @@ export const getInvitesByPrincipalId = createAsyncThunk<
     invitesData: { invites: invitesCache },
   } = getState();
 
-  if (!invitesCache) {
-    try {
-      let invites: InviteDto[] | undefined;
+  try {
+    let invites: InviteDto[] | undefined;
 
-      if (userAuth?.auth_token) {
-        const response = await new InviteService(
-          userAuth?.auth_token
-        ).getInvitesByPrincipalId(userAuth.id);
+    if (userAuth?.auth_token) {
+      const response = await new InviteService(
+        userAuth?.auth_token
+      ).getInvitesByPrincipalId(userAuth.id);
 
-        invites = response.filter((invite) => invite.isAccepted !== true);
-      } else {
-        return rejectWithValue('no access token, profile check required');
-      }
-
-      if (!invites) {
-        return rejectWithValue('Error getting invites');
-      }
-
-      return invites;
-    } catch (err) {
-      return rejectWithValue(err);
+      invites = response.filter((invite) => invite.isAccepted !== true);
+    } else {
+      return rejectWithValue('no access token, profile check required');
     }
-  } else {
-    return invitesCache;
+
+    if (!invites) {
+      return rejectWithValue('Error getting invites');
+    }
+
+    return invites;
+  } catch (err) {
+    return rejectWithValue(err);
   }
 });
