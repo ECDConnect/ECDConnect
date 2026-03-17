@@ -26,7 +26,7 @@ import { useHistory } from 'react-router';
 import { copyToClip } from '@utils/common/clipboard.utils';
 import { useTenant } from '@/hooks/useTenant';
 import { formatPhonenumberLocal } from '@utils/common/contact-details.utils';
-import { InviteService } from '@/services/InviteService';
+import { invitesThunkActions } from '@/store/invites';
 
 export const InvitedPractitioner: React.FC<InvitedPractitionerRouteState> = ({
   setPractitionerInviteModal,
@@ -118,9 +118,9 @@ export const InvitedPractitioner: React.FC<InvitedPractitionerRouteState> = ({
     ).unwrap();
 
     setInvites(
-      await new InviteService(
-        userAuth?.auth_token || ''
-      ).getInvitesByPrincipalId(practitioner?.id!)
+      await appDispatch(
+        invitesThunkActions.getInvitesByPrincipalId({})
+      ).unwrap()
     );
 
     showMessage({
