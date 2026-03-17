@@ -1,6 +1,7 @@
 import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router';
 import {
+  Alert,
   BannerWrapper,
   Button,
   Card,
@@ -14,7 +15,9 @@ import { userSelectors } from '@/store/user';
 import { PractitionerProfileRouteState } from '../../practitioner-profile.types';
 import { ReactComponent as PositiveEmoticon } from '@/assets/positive-green-emoticon.svg';
 import { ReactComponent as NeutralEmoticon } from '@/assets/neutral_blue_emoticon.svg';
+import { ReactComponent as VeryUnhappy } from '@/assets/ECD_Connect_emoji_unhappy.svg';
 import { ReactComponent as MehEmoticon } from '@/assets/mehFace.svg';
+import { Score } from './score';
 
 export type ViewPublishedFormProps = {
   onBack: () => void;
@@ -78,6 +81,7 @@ export const ViewPublishedForm: React.FC<ViewPublishedFormProps> = ({
     getJourneyAssessmentReportByIdSelector(location.state.visitId)
   );
   const user = useSelector(userSelectors.getUser);
+  const totalHealthCheckQuestions = 22;
 
   // Loading / Empty state
   if (!timelineReport) {
@@ -130,6 +134,120 @@ export const ViewPublishedForm: React.FC<ViewPublishedFormProps> = ({
           text={`${user?.firstName ?? ''} ${user?.surname ?? ''}`}
         />
         <Divider dividerType="dashed" className="my-2" />
+        {/* Preschool detail */}
+        {timelineReport?.preschoolDetail && (
+          <>
+            <Typography
+              className="mt-3"
+              type="h3"
+              weight="bold"
+              text={'Preschool detail'}
+            />
+
+            {timelineReport.preschoolDetail.map((detail, index) => (
+              <Typography
+                key={`preschool-detail-${index}`}
+                type={'markdown'}
+                text={detail}
+              />
+            ))}
+            <Divider dividerType="dashed" className="my-2" />
+          </>
+        )}
+
+        {timelineReport?.name === 'Health and safety check' && (
+          <>
+            <Typography
+              className="mt-3"
+              type="h3"
+              weight="bold"
+              text={'Health and Safety standards:'}
+            />
+            <div className="mb-4">
+              {timelineReport.safetyStandards?.length! > 0 ? (
+                <>
+                  <Card className="bg-alertBg rounded-2xl">
+                    <div className="flex items-center gap-4 p-4">
+                      <VeryUnhappy className="h-12 w-12 shrink-0 text-white" />{' '}
+                      <div className="flex-1">
+                        <Typography
+                          type="h3"
+                          color="textDark"
+                          weight="bold"
+                          text="Some areas need attention"
+                        />
+                      </div>
+                      <Score
+                        sum={
+                          totalHealthCheckQuestions -
+                          (timelineReport.safetyStandards?.length || 0)
+                        }
+                        total={totalHealthCheckQuestions}
+                      />
+                    </div>
+                  </Card>
+
+                  <Typography
+                    className="mt-3"
+                    type="h4"
+                    weight="bold"
+                    text={'These standards were not met:'}
+                  />
+
+                  {timelineReport.safetyStandards?.map((detail, index) => (
+                    <Typography
+                      key={`safety-standard-${index}`}
+                      type={'markdown'}
+                      text={`* ${detail}`}
+                    />
+                  ))}
+                  <Divider dividerType="dashed" className="my-2" />
+                </>
+              ) : (
+                <Card className="bg-successBg rounded-2xl">
+                  <div className="flex items-center gap-4 p-4">
+                    <PositiveEmoticon className="h-12 w-12 shrink-0 text-white" />{' '}
+                    <div className="flex-1">
+                      <Typography
+                        type="h3"
+                        color="textDark"
+                        weight="bold"
+                        text="All standards met!"
+                      />
+                    </div>
+                    <Score
+                      sum={totalHealthCheckQuestions}
+                      total={totalHealthCheckQuestions}
+                    />
+                  </div>
+                </Card>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* Classroom capacity */}
+        {timelineReport?.classroomDetail!! &&
+          timelineReport?.classroomDetail.length > 0 && (
+            <>
+              <Typography
+                className="mt-3"
+                type="h3"
+                weight="bold"
+                text={'Classroom capacity:'}
+              />
+              <div className="text-textMid bg-uiBg z-10 mx-auto w-11/12 rounded-lg bg-white px-3.5 py-2.5">
+                {timelineReport.classroomDetail.map((detail, index) => (
+                  <Typography
+                    key={`classroom-detail-${index}`}
+                    type={'markdown'}
+                    text={detail}
+                  />
+                ))}
+              </div>
+              <Divider dividerType="dashed" className="my-2" />
+            </>
+          )}
 
         {/* Text Q&A */}
         {timelineReport?.textQuestion && (

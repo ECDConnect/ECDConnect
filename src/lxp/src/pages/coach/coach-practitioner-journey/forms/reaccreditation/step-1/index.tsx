@@ -45,7 +45,7 @@ export const Step1ReAccreditation = ({
         </li>
         <li className="text-textMid">
           {' '}
-          At least 20 minutes talking with the SmartStarter (either before the
+          At least 20 minutes talking with the practitioner (either before the
           programme starts, or after children have left)
         </li>
       </ul>

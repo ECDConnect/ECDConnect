@@ -37,4 +37,6 @@ export * from './dto/Visit';
 export * from './dto/Statements';
 export * from './dto/MessageLog';
 export * from './dto/Meetings';
+export * from './dto/Resources';
 export * from './help-form';
+export * from './dto/Invite';

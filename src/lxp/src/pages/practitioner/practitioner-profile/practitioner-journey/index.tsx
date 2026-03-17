@@ -436,7 +436,7 @@ export const PractitionerJourney = ({
       <Typography
         className="mt-4 mb-2"
         type="h4"
-        text={`You have been a SmartStarter for`}
+        text={`You have been a practitioner for`}
       />
       <div className="mb-4 flex gap-2">
         <p className="bg-primary text-14 w-fit w-auto rounded-2xl py-1 px-2 font-semibold text-white">

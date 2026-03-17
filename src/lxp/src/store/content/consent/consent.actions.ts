@@ -6,18 +6,21 @@ import { RootState, ThunkApiType } from '../../types';
 export const getConsent = createAsyncThunk<
   ConsentDto[],
   // eslint-disable-next-line @typescript-eslint/ban-types
-  { locale: string; authToken?: string },
+  { locale: string; authToken?: string; overrideCache?: boolean },
   ThunkApiType<RootState>
 >(
   'getConsent',
   // eslint-disable-next-line no-empty-pattern
-  async ({ locale, authToken }, { getState, rejectWithValue }) => {
+  async (
+    { locale, authToken, overrideCache },
+    { getState, rejectWithValue }
+  ) => {
     const {
       auth: { userAuth },
       contentConsentData: { consent: consentCache },
     } = getState();
 
-    if (!consentCache) {
+    if (!consentCache || !!overrideCache) {
       try {
         let content: ConsentDto[] = [];
 
@@ -54,7 +57,20 @@ export const getOpenConsent = createAsyncThunk<
 >(
   'getOpenConsent',
   // eslint-disable-next-line no-empty-pattern
-  async ({ locale, name }, { rejectWithValue }) => {
+  async ({ locale, name }, { getState, rejectWithValue }) => {
+    const {
+      contentConsentData: { consent: consentCache },
+    } = getState();
+
+    if (consentCache) {
+      const consentForName = consentCache.find(
+        (x) => x.name === name && x.locale === locale
+      );
+      if (consentForName) {
+        return [consentForName];
+      }
+    }
+
     try {
       let content = await new ContentConsentService(
         locale,

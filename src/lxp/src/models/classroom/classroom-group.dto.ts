@@ -1,7 +1,7 @@
 import { ClassProgrammeDto } from '@ecdlink/core';
 import { OfflineUpdate } from '../sync/offline-update';
 
-export type ClassroomGroupDto = {
+export type ClassroomGroupDto = OfflineUpdate & {
   id: string;
   classroomId: string;
   name: string;

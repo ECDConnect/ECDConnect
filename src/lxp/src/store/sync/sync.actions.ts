@@ -10,7 +10,7 @@ import { notesThunkActions } from '../notes';
 import { programmeThunkActions } from '../programme';
 import { RootState, ThunkApiType } from '../types';
 import { userThunkActions } from '../user';
-
+import { queryErrorsActions, queryErrorsThunkActions } from '../queryErrors';
 import { pqaThunkActions } from '../pqa';
 import { calendarThunkActions } from '../calendar';
 import { progressTrackingThunkActions } from '../progress-tracking';
@@ -22,19 +22,12 @@ import {
   classroomsForCoachActions,
   classroomsForCoachThunkActions,
 } from '../classroomForCoach';
+import { UserSyncStatus } from '@ecdlink/graphql';
 
 type SyncStep = {
   title: string;
   action: AsyncThunk<boolean[] | any, any, any>;
 };
-
-interface UserSyncStatus {
-  syncChildren: boolean;
-  syncClassroom: boolean;
-  syncReportingPeriods: boolean;
-  syncPermissions: boolean;
-  syncPoints: boolean;
-}
 
 const isNetworkError = (error: unknown): boolean => {
   if (!(error instanceof Error)) return false;
@@ -122,6 +115,10 @@ export const syncOfflineData = createAsyncThunk<
     {
       title: 'Statements',
       action: statementsThunkActions.upsertIncomeStatements,
+    },
+    {
+      title: 'API Errors',
+      action: queryErrorsThunkActions.upsertQueryErrors,
     },
   ];
 
@@ -232,6 +229,10 @@ export const syncOfflineDataForPractitioner = createAsyncThunk<
         title: 'Calendar events',
         action: calendarThunkActions.cancelCalendarEvent,
       },
+      {
+        title: 'API Errors',
+        action: queryErrorsThunkActions.upsertQueryErrors,
+      },
     ];
 
     let hasCriticalError = false;
@@ -294,7 +295,7 @@ export const pullRemoteChanges = createAsyncThunk<
     try {
       // 1. Get sync status (critical – retry this one too)
       const userSyncStatus = (await retryWithExponentialBackoff(
-        () => dispatch(userThunkActions.getUserSyncStatus({ userId })).unwrap(),
+        () => dispatch(userThunkActions.getUserSyncStatus({})).unwrap(),
         {
           maxAttempts: 3,
           onRetry: (attempt, err) =>
@@ -306,6 +307,8 @@ export const pullRemoteChanges = createAsyncThunk<
         console.warn('No sync status returned from server');
         return;
       }
+
+      //console.log('userSyncStatus--------------------', userSyncStatus)
 
       // ──────────────────────────────────────────────────────────────
       // Children block
@@ -337,7 +340,6 @@ export const pullRemoteChanges = createAsyncThunk<
           );
         }
 
-        // Follow-up fetches – can be parallel
         await Promise.all([
           retryWithExponentialBackoff(
             () =>

@@ -250,7 +250,6 @@ export const AddOrEditPractitioner = ({
               title={'We do not have this practitioner on record.'}
               list={[
                 'Check if the ID you entered is correct.',
-                'Make sure the practitioner is a SmartStarter.',
                 'If you have entered the correct information, contact the call centre or tap Skip to solve the problem later.',
               ]}
               button={

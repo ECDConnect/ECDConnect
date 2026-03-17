@@ -6,6 +6,7 @@ using ECDLink.Core.Caching.Configuration;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
+using ECDLink.DataAccessLayer.Entities;
 using ECDLink.EGraphQL.Constants;
 using ECDLink.Tenancy.Context;
 using Microsoft.EntityFrameworkCore;
@@ -115,6 +116,14 @@ namespace ECDLink.ContentManagement.Repositories
                     _logger.LogWarning(errorMessage, contentTypeId);
                 }
 
+                // get all contentIds
+                var allContentIds = contents
+                    .Select(x => x.Id)
+                    .Distinct()
+                    .ToList();
+                // get dict languages for contentid 
+                var allLanguagesByContentIds = GetAllLanguagesByContentIds(allContentIds);
+
                 var allContentValuePairs = new List<object>();
 
                 foreach (var item in contents ?? new List<Content>())
@@ -136,10 +145,6 @@ namespace ECDLink.ContentManagement.Repositories
                      .Select(y => new { y.Id, y.ContentTypeField, y.Value, y.ContentId })
                      .OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId)
                      .ToList();
-
-                    //var allContents = contentValues.Union(noTenantContenValues).ToList();
-                    // Union just merges the two lists and no duplicates.  With ContentValues.Id in the object, it will never be duplicates.
-
 
                     var mergedContentValues = contentValues.ToDictionary(cv => new { cv.ContentTypeField, cv.ContentId });
                     foreach (var ntcv in noTenantContenValues)
@@ -165,7 +170,9 @@ namespace ECDLink.ContentManagement.Repositories
                     }
                     if (item.ContentValues.Any(x => x.ContentTypeField.FieldName == "availableLanguages"))
                     {
-                        var langsList = this.GetAllLanguagesForContentId(item.Id, item.ContentTypeId);
+                        var langsList = allLanguagesByContentIds.TryGetValue(item.Id, out var langs)
+                                        ? langs
+                                        : new List<Guid>();
                         if (!contentFieldValuePairs.ContainsKey("availableLanguages"))
                         {
                             //add list if non existent
@@ -285,6 +292,36 @@ namespace ECDLink.ContentManagement.Repositories
             return result;
         }
 
+        private Dictionary<int, List<Guid>> GetAllLanguagesByContentIds(
+                List<int> contentIds)  
+            {
+                if (contentIds == null || !contentIds.Any())
+                {
+                    return new Dictionary<int, List<Guid>>();
+                }
+
+                var languagesByContent = _context.ContentValues
+                    .Where(cv => contentIds.Contains(cv.ContentId))
+                    .Select(cv => new
+                    {
+                        cv.ContentId,
+                        cv.LocaleId
+                    })
+                    .AsEnumerable()
+                    .GroupBy(x => x.ContentId)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g
+                            .Select(x => x.LocaleId)
+                            .Where(lang => lang != null)
+                            .DistinctBy(lang => lang) 
+                            .ToList()
+                    );
+
+                return languagesByContent;
+            }
+
+        // This function is called from other extensions
         public List<Guid> GetAllLanguagesForContentId(int contentId, int contentTypeId)
         {
             var currentTenant = TenantExecutionContext.Tenant.Id;
@@ -484,6 +521,14 @@ namespace ECDLink.ContentManagement.Repositories
                 _logger.LogWarning(errorMessage, contentType.ToString(), key, value);
             }
 
+            // get all contentIds
+            var allContentIds = content
+                .Select(x => x.Id)
+                .Distinct()
+                .ToList();
+            // get dict languages for contentid 
+            var allLanguagesByContentIds = GetAllLanguagesByContentIds(allContentIds);
+
             var allContentValuePairs = new List<object>();
 
             foreach (var item in content)
@@ -512,7 +557,9 @@ namespace ECDLink.ContentManagement.Repositories
                 {
                     contentFieldValuePairs["updatedDate"] = item.UpdatedDate.ToString();
                 }
-                var langsList = this.GetAllLanguagesForContentId(item.Id, item.ContentTypeId);
+                var langsList = allLanguagesByContentIds.TryGetValue(item.Id, out var langs)
+                                        ? langs
+                                        : new List<Guid>();
                 if (!contentFieldValuePairs.ContainsKey("availableLanguages"))
                 {
                     //add list if non existent
@@ -652,6 +699,14 @@ namespace ECDLink.ContentManagement.Repositories
                 _logger.LogWarning(errorMessage, contentType.ToString(), "title", title);
             }
 
+            // get all contentIds
+            var allContentIds = content
+                .Select(x => x.Id)
+                .Distinct()
+                .ToList();
+            // get dict languages for contentid 
+            var allLanguagesByContentIds = GetAllLanguagesByContentIds(allContentIds);
+
             var allContentValuePairs = new List<object>();
 
             foreach (var item in content)
@@ -673,7 +728,9 @@ namespace ECDLink.ContentManagement.Repositories
                 {
                     contentFieldValuePairs["updatedDate"] = item.UpdatedDate.ToString();
                 }
-                var langsList = this.GetAllLanguagesForContentId(item.Id, item.ContentTypeId);
+                var langsList = allLanguagesByContentIds.TryGetValue(item.Id, out var langs)
+                                        ? langs
+                                        : new List<Guid>();
                 if (!contentFieldValuePairs.ContainsKey("availableLanguages"))
                 {
                     //add list if non existent
@@ -1039,14 +1096,6 @@ namespace ECDLink.ContentManagement.Repositories
                         .OrderBy(x => x.Id)
                         .FirstOrDefault();
 
-// I am not sure if default is applicable here!!!!
-            // Use global tenant as a fallback, mostly for static and dynamic links            
-            // content ??= _context.Contents
-            //               .Where(x => x.Id == contentId
-            //                 && x.TenantId == null)
-            //               .OrderBy(x => x.Id)
-            //               .FirstOrDefault();
-
             // No Content Found
             if (content == default)
             {
@@ -1060,6 +1109,107 @@ namespace ECDLink.ContentManagement.Repositories
             _context.SaveChanges();
 
             return true;
+        }
+
+
+       public async Task<CmsSyncStatus> GetCmsSyncStatus(DateTime lastSync)
+        {
+            var tenantId = TenantExecutionContext.Tenant.Id;
+            var activitiesId = ContentTypeConstants.ActivityId;
+            var calendarEventTypeId = ContentTypeConstants.CalendarEventTypeId;
+            var storyBookId = ContentTypeConstants.StoryBookId;
+            var consentId = ContentTypeConstants.ConsentId;
+            var resourceLinkId = ContentTypeConstants.ResourceLinkId;
+            var resourcesId = ContentTypeConstants.ClassroomBusinessResourceId;
+            var progressTrackingAgeGroupId = ContentTypeConstants.ProgressTrackingAgeGroupId;
+            var programmeRoutineId = ContentTypeConstants.ProgrammeRoutineId;
+            var programmeThemeId = ContentTypeConstants.ThemeId;
+
+            var activitiesCount = await _context.ContentValues.FromSql($@"
+            SELECT DISTINCT c.""Id""
+            FROM ""ContentValue"" cv 
+            INNER JOIN ""Content"" c ON c.""Id"" = cv.""ContentId""
+            WHERE (cv.""TenantId"" = {tenantId} AND c.""IsActive"" = true AND c.""ContentTypeId"" = {activitiesId})
+            AND cv.""UpdatedDate"" > {lastSync}
+            ").CountAsync();
+
+            // not implementing tenantid
+            var calendarEventTypeCount = await _context.ContentValues.FromSql($@"
+            SELECT DISTINCT c.""Id""
+            FROM ""ContentValue"" cv 
+            INNER JOIN ""Content"" c ON c.""Id"" = cv.""ContentId""
+            WHERE (c.""IsActive"" = true AND c.""ContentTypeId"" = {calendarEventTypeId})
+            AND cv.""InsertedDate"" > {lastSync}
+            ").CountAsync();
+
+            var storyBookCount = await _context.ContentValues.FromSql($@"
+            SELECT DISTINCT c.""Id""
+            FROM ""ContentValue"" cv 
+            INNER JOIN ""Content"" c ON c.""Id"" = cv.""ContentId""
+            WHERE (cv.""TenantId"" = {tenantId} AND c.""IsActive"" = true AND c.""ContentTypeId"" = {storyBookId})
+            AND cv.""UpdatedDate"" > {lastSync}
+            ").CountAsync();
+
+            var consentCount = await _context.ContentValues.FromSql($@"
+            SELECT DISTINCT c.""Id""
+            FROM ""ContentValue"" cv 
+            INNER JOIN ""Content"" c ON c.""Id"" = cv.""ContentId""
+            WHERE (cv.""TenantId"" = {tenantId} AND c.""IsActive"" = true AND c.""ContentTypeId"" = {consentId})
+            AND cv.""UpdatedDate"" > {lastSync}
+            ").CountAsync();
+
+            var resourceLinkCount = await _context.ContentValues.FromSql($@"
+            SELECT DISTINCT c.""Id""
+            FROM ""ContentValue"" cv 
+            INNER JOIN ""Content"" c ON c.""Id"" = cv.""ContentId""
+            WHERE (cv.""TenantId"" = {tenantId} AND c.""IsActive"" = true AND c.""ContentTypeId"" = {resourceLinkId})
+            AND cv.""UpdatedDate"" > {lastSync}
+            ").CountAsync();
+
+            var resourceCount = await _context.ContentValues.FromSql($@"
+            SELECT DISTINCT c.""Id""
+            FROM ""ContentValue"" cv 
+            INNER JOIN ""Content"" c ON c.""Id"" = cv.""ContentId""
+            WHERE (cv.""TenantId"" = {tenantId} AND c.""IsActive"" = true AND c.""ContentTypeId"" = {resourcesId})
+            AND cv.""UpdatedDate"" > {lastSync}
+            ").CountAsync();
+
+            var progressTrackingAgeGroupCount = await _context.ContentValues.FromSql($@"
+            SELECT DISTINCT c.""Id""
+            FROM ""ContentValue"" cv 
+            INNER JOIN ""Content"" c ON c.""Id"" = cv.""ContentId""
+            WHERE (cv.""TenantId"" = {tenantId} AND c.""IsActive"" = true AND c.""ContentTypeId"" = {progressTrackingAgeGroupId})
+            AND cv.""UpdatedDate"" > {lastSync}
+            ").CountAsync();
+
+            var programmeRoutineCount = await _context.ContentValues.FromSql($@"
+            SELECT DISTINCT c.""Id""
+            FROM ""ContentValue"" cv 
+            INNER JOIN ""Content"" c ON c.""Id"" = cv.""ContentId""
+            WHERE (cv.""TenantId"" = {tenantId} AND c.""IsActive"" = true AND c.""ContentTypeId"" = {programmeRoutineId})
+            AND cv.""UpdatedDate"" > {lastSync}
+            ").CountAsync();
+
+            var programmeThemeCount = await _context.ContentValues.FromSql($@"
+            SELECT DISTINCT c.""Id""
+            FROM ""ContentValue"" cv 
+            INNER JOIN ""Content"" c ON c.""Id"" = cv.""ContentId""
+            WHERE (cv.""TenantId"" = {tenantId} AND c.""IsActive"" = true AND c.""ContentTypeId"" = {programmeThemeId})
+            AND cv.""UpdatedDate"" > {lastSync}
+            ").CountAsync();
+
+            return new CmsSyncStatus
+            {
+                SyncActivities = activitiesCount >= 1,
+                SyncCalendarEventTypes = calendarEventTypeCount >= 1,
+                SyncStoryBooks = storyBookCount >= 1,
+                SyncConsent = consentCount >= 1,
+                SyncResourceLinks = resourceLinkCount >= 1,
+                SyncResources = resourceCount >= 1,
+                SyncAgeGroups = progressTrackingAgeGroupCount >= 1,
+                SyncProgrammeRoutines = programmeRoutineCount >= 1,
+                SyncProgrammeThemes = programmeThemeCount >= 1
+            };
         }
     }
 }

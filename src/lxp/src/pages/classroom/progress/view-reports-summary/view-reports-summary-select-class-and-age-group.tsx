@@ -1,5 +1,5 @@
 import { Button, CoreRadioGroup, Typography } from '@ecdlink/ui';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useHistory, useLocation } from 'react-router';
 import { format } from 'date-fns';
 import { useSelector } from 'react-redux';
@@ -35,24 +35,6 @@ export const ProgressViewReportsSummarySelectClassroomGroupAndAgeGroup: React.FC
       children,
       currentReportingPeriod,
     } = useProgressForChildren();
-
-    // ────────────────────────────────────────────────
-    // State
-    // ────────────────────────────────────────────────
-
-    const [selectedPeriod, setSelectedPeriod] = useState<string | undefined>(
-      undefined
-    );
-    const [selectedClassroom, setSelectedClassroom] = useState<
-      string | undefined
-    >(undefined);
-    const [selectedAgeGroup, setSelectedAgeGroup] = useState<
-      number | undefined
-    >(undefined);
-
-    // ────────────────────────────────────────────────
-    // Derived / memoized data
-    // ────────────────────────────────────────────────
 
     const reportChildUserIds = useMemo(
       () => new Set(children.map((r) => r.childUserId)),
@@ -91,21 +73,34 @@ export const ProgressViewReportsSummarySelectClassroomGroupAndAgeGroup: React.FC
       [classroomGroups, reportChildUserIds]
     );
 
-    // Auto-select defaults (only once when data becomes available)
-    useEffect(() => {
-      if (!isOnline) return;
+    const [selectedPeriod, setSelectedPeriod] = useState<string | undefined>(
+      () => {
+        // This runs only once – during initial render
+        if (routeState?.reportPeriodId) {
+          return routeState.reportPeriodId;
+        }
 
-      // Only set if not already selected (prevents reset on re-render)
-      if (routeState) {
-        setSelectedPeriod(routeState?.reportPeriodId);
-      } else {
-        setSelectedPeriod((prev) => prev ?? currentReportingPeriod?.id);
-      }
+        if (availablePeriods?.length === 1) {
+          return availablePeriods[0].id;
+        }
 
-      if (availableClassrooms.length === 1) {
-        setSelectedClassroom((prev) => prev ?? availableClassrooms[0].id);
+        if (currentReportingPeriod?.id) {
+          return currentReportingPeriod.id;
+        }
+
+        return undefined;
       }
-    }, [isOnline, availablePeriods, availableClassrooms]);
+    );
+
+    const [selectedClassroom, setSelectedClassroom] = useState<
+      string | undefined
+    >(() => {
+      if (availableClassrooms.length === 1) return availableClassrooms[0].id;
+      return undefined;
+    });
+    const [selectedAgeGroup, setSelectedAgeGroup] = useState<
+      number | undefined
+    >(undefined);
 
     const periodOptions = useMemo(
       () =>
@@ -311,32 +306,35 @@ export const ProgressViewReportsSummarySelectClassroomGroupAndAgeGroup: React.FC
           stepKey={ChildProgressSummarySteps.reportingPeriod}
           viewBannerWapper={true}
         >
-          <Typography
-            color="textMid"
-            text="Choose reporting period"
-            type="h3"
-            className="mb-4 mt-4"
-          />
+          <div className={'h-full bg-white px-4 pt-2 pb-4'}>
+            <Typography
+              color="textMid"
+              text="Choose reporting period"
+              type="h3"
+              className="mb-4 mt-4"
+            />
 
-          <CoreRadioGroup
-            key={`period-${selectedPeriod ?? 'none'}`}
-            options={periodOptions}
-            currentValue={selectedPeriod}
-            colour="quatenary"
-            selectedOptionBackgroundColor="uiBg"
-            onChange={setSelectedPeriod}
-          />
+            <CoreRadioGroup
+              options={periodOptions}
+              currentValue={selectedPeriod}
+              colour="quatenary"
+              selectedOptionBackgroundColor="uiBg"
+              onChange={(val) => {
+                setSelectedPeriod(val);
+              }}
+            />
 
-          <Button
-            icon="ArrowCircleRightIcon"
-            text="Next"
-            type="filled"
-            color="quatenary"
-            textColor="white"
-            onClick={handleNext}
-            disabled={!canProceed.period}
-            className="mb-4 mt-auto w-full"
-          />
+            <Button
+              icon="ArrowCircleRightIcon"
+              text="Next"
+              type="filled"
+              color="quatenary"
+              textColor="white"
+              onClick={handleNext}
+              disabled={!canProceed.period}
+              className="mb-4 mt-auto w-full"
+            />
+          </div>
         </Step>
 
         {showClassroomStep && (
@@ -352,9 +350,6 @@ export const ProgressViewReportsSummarySelectClassroomGroupAndAgeGroup: React.FC
             />
 
             <CoreRadioGroup
-              key={`classroom-${selectedClassroom ?? 'none'}-${
-                selectedPeriod ?? 'none'
-              }`}
               options={filteredClassroomOptions}
               currentValue={selectedClassroom}
               colour="quatenary"
@@ -388,7 +383,6 @@ export const ProgressViewReportsSummarySelectClassroomGroupAndAgeGroup: React.FC
             />
 
             <CoreRadioGroup
-              key={`agegroup-${selectedAgeGroup ?? 'none'}`}
               options={filteredAgeGroupOptions}
               currentValue={selectedAgeGroup}
               colour="quatenary"

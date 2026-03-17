@@ -40,6 +40,8 @@ import { ReasonForPractitionerLeavingProgrammeService } from '@/services/ReasonF
 import PermissionsService from '@/services/PermissionsService/PermissionsService';
 import { RoleService } from '@/services/RoleService';
 import { SkillsService } from '@/services/SkillsService';
+import { CmsSyncStatus } from '@ecdlink/graphql';
+import { SettingsService } from '@/services/SettingsService';
 
 export const getRelations = createAsyncThunk<
   RelationDto[],
@@ -388,12 +390,12 @@ export const getEducationLevels = createAsyncThunk<
 
 export const getHolidays = createAsyncThunk<
   HolidayDto[],
-  { year: number },
+  { year: number; overrideCache?: boolean },
   ThunkApiType<RootState>
 >(
   'getHolidays',
   // eslint-disable-next-line no-empty-pattern
-  async ({ year }, { getState, rejectWithValue }) => {
+  async ({ year, overrideCache }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       staticData: { holidays: holidaysCache },
@@ -406,7 +408,7 @@ export const getHolidays = createAsyncThunk<
       }
     }
 
-    if (!holidaysCache || getNewHolidays) {
+    if (!holidaysCache || getNewHolidays || !!overrideCache) {
       try {
         let holidays: HolidayDto[] | undefined;
 
@@ -792,3 +794,34 @@ export const getCommunitySkills = createAsyncThunk<
     return communitySkillsCache;
   }
 });
+
+export const getCmsSyncStatus = createAsyncThunk<
+  any,
+  void,
+  ThunkApiType<RootState>
+>(
+  'getCmsSyncStatus',
+  // eslint-disable-next-line no-empty-pattern
+  async (_, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      settings: { lastCmsDataSync },
+    } = getState();
+
+    try {
+      let cmsSyncStatus: CmsSyncStatus;
+
+      if (userAuth?.auth_token) {
+        cmsSyncStatus = await new SettingsService(
+          userAuth?.auth_token
+        ).getCmsSyncStatus(new Date(lastCmsDataSync) || new Date());
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return cmsSyncStatus;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);

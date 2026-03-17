@@ -1,5 +1,6 @@
 import { Config, SettingTypeDto } from '@ecdlink/core';
 import { api } from '../axios.helper';
+import { CmsSyncStatus } from '@ecdlink/graphql';
 class SettingsService {
   _accessToken: string;
 
@@ -54,6 +55,35 @@ class SettingsService {
     }
 
     return response.data.data.changesToSync;
+  }
+
+  async getCmsSyncStatus(lastSyncDate: Date): Promise<CmsSyncStatus> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        query GetCmsSyncStatus($lastSync: DateTime!) {
+          cmsSyncStatus(lastSync: $lastSync) {
+            syncActivities
+            syncCalendarEventTypes
+            syncStoryBooks
+            syncConsent
+            syncResourceLinks
+            syncAgeGroups
+            syncProgrammeRoutines
+            syncHolidays
+          }
+        }   
+        `,
+      variables: {
+        lastSync: lastSyncDate,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Cms Sync Status failed - Server connection error');
+    }
+
+    return response.data.data.cmsSyncStatus;
   }
 }
 

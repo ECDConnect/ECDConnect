@@ -27,7 +27,7 @@ export const InitialObservations = ({
       answer: '',
     },
     {
-      question: `If the daily routine was displayed, was there a marker on it that corresponded to what the SmartStarter was doing?`,
+      question: `If the daily routine was displayed, was there a marker on it that corresponded to what the practitioner was doing?`,
       answer: '',
     },
   ]);
@@ -37,7 +37,7 @@ export const InitialObservations = ({
     { text: 'No', value: false, disabled: isView },
   ];
 
-  const name = smartStarter?.user?.firstName || 'the smartStarter';
+  const name = smartStarter?.user?.firstName || 'the practitioner';
   const visitSection = 'Initial observations';
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
 

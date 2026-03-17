@@ -10,4 +10,5 @@ export type SettingsState = {
   applicationVersion?: string;
   settings?: SettingTypeDto;
   loginDate?: string;
+  lastCmsDataSync: string;
 };
