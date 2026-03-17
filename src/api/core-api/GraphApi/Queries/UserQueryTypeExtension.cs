@@ -337,29 +337,33 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public async Task<UserSyncStatus> GetUserSyncStatus(
+           [Service] IHttpContextAccessor contextAccessor,
            AuthenticationDbContext dbContext,
-           Guid userId, DateTime lastSync, Guid classroomId)
+           DateTime lastSync, Guid classroomId)
         {
+            var userId = contextAccessor.HttpContext.GetUser().Id;
+
             var childrenCount = await dbContext.Children.FromSql($@"
             SELECT c.""Id""
             FROM ""Child"" c 
             JOIN ""Practitioner"" p ON c.""Hierarchy"" LIKE p.""Hierarchy"" || '%'
             WHERE (p.""UserId"" = {userId}::uuid OR p.""PrincipalHierarchy"" = {userId}::uuid)
             AND c.""IsActive"" IS TRUE 
+            AND c.""UpdatedBy"" != {userId}::text
             AND c.""UpdatedDate"" > {lastSync}
             ").CountAsync();
 
             var classroomCount = await dbContext.ClassroomGroups.FromSql($@"
             SELECT cg.""Id""
             FROM ""ClassroomGroup"" cg 
-            WHERE cg.""UserId"" = {userId}::uuid 
+            WHERE cg.""UserId"" = {userId}::uuid and cg.""UpdatedBy"" != {userId}::text
             AND cg.""InsertedDate"" > {lastSync}
             ").CountAsync();
 
             var pointsCount = await dbContext.PointsUserSummary.FromSql($@"
             SELECT pus.""Id""
             FROM ""PointsUserSummary"" pus 
-            WHERE pus.""UserId"" = {userId}::uuid 
+            WHERE pus.""UserId"" = {userId}::uuid  and pus.""UpdatedBy"" != {userId}::text
             AND pus.""UpdatedDate"" > {lastSync}
             ").CountAsync();
 
@@ -370,7 +374,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             AND cprp.""InsertedDate"" > {lastSync}
             ").CountAsync();
 
-            var permissionsCount = await dbContext.PointsUserSummary.FromSql($@"
+            var permissionsCount = await dbContext.UserPermissions.FromSql($@"
             SELECT up.""Id""
             FROM ""UserPermission"" up 
             WHERE up.""UserId"" = {userId}::uuid 

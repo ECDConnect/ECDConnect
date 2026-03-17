@@ -15,8 +15,8 @@ export const AppErrorHandler: React.FC<AppErrorHandlerProps> = (props) => {
   const dialog = useDialog();
 
   const onGraphQLError = (e: Event) => {
-    //  history.push(ROUTES.ERROR);
     e.preventDefault();
+    // if (process.env.NODE_ENV !== 'production') {
     dialog({
       blocking: false,
       position: DialogPosition.Middle,
@@ -46,6 +46,7 @@ export const AppErrorHandler: React.FC<AppErrorHandlerProps> = (props) => {
         );
       },
     });
+    // }
   };
 
   const onServerTimeOut = (e: Event) => {

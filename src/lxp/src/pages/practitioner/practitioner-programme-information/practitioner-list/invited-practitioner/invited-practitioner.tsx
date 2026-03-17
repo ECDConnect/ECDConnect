@@ -26,7 +26,7 @@ import { useHistory } from 'react-router';
 import { copyToClip } from '@utils/common/clipboard.utils';
 import { useTenant } from '@/hooks/useTenant';
 import { formatPhonenumberLocal } from '@utils/common/contact-details.utils';
-import { InviteService } from '@/services/InviteService';
+import { invitesThunkActions } from '@/store/invites';
 
 export const InvitedPractitioner: React.FC<InvitedPractitionerRouteState> = ({
   setPractitionerInviteModal,
@@ -118,9 +118,9 @@ export const InvitedPractitioner: React.FC<InvitedPractitionerRouteState> = ({
     ).unwrap();
 
     setInvites(
-      await new InviteService(
-        userAuth?.auth_token || ''
-      ).getInvitesByPrincipalId(practitioner?.id!)
+      await appDispatch(
+        invitesThunkActions.getInvitesByPrincipalId({})
+      ).unwrap()
     );
 
     showMessage({
@@ -192,7 +192,7 @@ export const InvitedPractitioner: React.FC<InvitedPractitionerRouteState> = ({
       renderBorder={true}
       className="w-full justify-center p-2"
     >
-      <div>
+      <div className="p-4">
         <Alert
           className="mt-4 w-full rounded-xl"
           type={'error'}
@@ -270,39 +270,41 @@ export const InvitedPractitioner: React.FC<InvitedPractitionerRouteState> = ({
         </>
       )}
 
-      <div className="flex w-full justify-center">
-        <Button
-          disabled={
-            isLoading ||
-            (!!inviteDates &&
-              (inviteDates.length >= 5 || timeSinceLastInvite < 60))
-          }
-          text="Re-send invitation"
-          icon="PaperAirplaneIcon"
-          type={'filled'}
-          color={'quatenary'}
-          textColor={'white'}
-          className="mt-4 w-full"
-          onClick={sendPractitionerInvite}
-        />
-      </div>
-      <div className="mt-2 flex w-full justify-center">
-        <Button
-          size="normal"
-          className="mb-4 w-full"
-          type="outlined"
-          color="quatenary"
-          text="Remove practitioner"
-          textColor="quatenary"
-          icon="TrashIcon"
-          onClick={() => {
-            removePractitioner();
-            setPractitionerInviteModal(false);
-            history.push(ROUTES.BUSINESS, {
-              activeTabIndex: BusinessTabItems.STAFF,
-            });
-          }}
-        />
+      <div className="p-4">
+        <div className="flex w-full justify-center">
+          <Button
+            disabled={
+              isLoading ||
+              (!!inviteDates &&
+                (inviteDates.length >= 5 || timeSinceLastInvite < 60))
+            }
+            text="Re-send invitation"
+            icon="PaperAirplaneIcon"
+            type={'filled'}
+            color={'quatenary'}
+            textColor={'white'}
+            className="w-full shadow-xl"
+            onClick={sendPractitionerInvite}
+          />
+        </div>
+        <div className="flex w-full justify-center">
+          <Button
+            size="normal"
+            className="mt-4 mb-4 w-full"
+            type="outlined"
+            color="quatenary"
+            text="Remove practitioner"
+            textColor="quatenary"
+            icon="TrashIcon"
+            onClick={() => {
+              removePractitioner();
+              setPractitionerInviteModal(false);
+              history.push(ROUTES.BUSINESS, {
+                activeTabIndex: BusinessTabItems.STAFF,
+              });
+            }}
+          />
+        </div>
       </div>
     </BannerWrapper>
   );

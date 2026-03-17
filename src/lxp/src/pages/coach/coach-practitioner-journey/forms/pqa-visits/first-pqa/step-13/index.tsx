@@ -127,7 +127,7 @@ export const Step13 = ({
       <Alert
         className="mt-4"
         type="info"
-        title="These standards are also required. If they are not in place, SmartStarters should be able to show how they are working towards them."
+        title="These standards are also required. If they are not in place, Practitioners should be able to show how they are working towards them."
       />
       {isViewAnswers && (
         <Alert

@@ -14,6 +14,7 @@ const initialState: SettingsState = {
   applicationVersion: undefined,
   settings: undefined,
   loginDate: formatISO(new Date()),
+  lastCmsDataSync: format(new Date(), 'MM/dd/yyyy hh:mm aa'),
 };
 
 const settingSlice = createSlice({
@@ -31,6 +32,9 @@ const settingSlice = createSlice({
     setLastDataSync: (state) => {
       state.lastDataSync = format(new Date(), 'MM/dd/yyyy hh:mm aa');
       state.lastDataSyncUnformatted = formatISO(new Date());
+    },
+    setLastCmsDataSync: (state) => {
+      state.lastCmsDataSync = format(new Date(), 'MM/dd/yyyy hh:mm aa');
     },
     setApplicationVersion: (state, action: PayloadAction<string>) => {
       state.applicationVersion = action.payload;

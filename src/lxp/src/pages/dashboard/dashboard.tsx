@@ -418,14 +418,27 @@ export const Dashboard: React.FC = () => {
   const { userProfilePicture } = useDocuments();
 
   const initStaticStoreSetup = async () => {
-    const promises = [
-      appDispatch(
-        programmeThunkActions.getProgrammes({ classroomId: classroom?.id })
-      ).unwrap(),
-      appDispatch(statementsThunkActions.getAllExpensesTypes({})).unwrap(),
-      appDispatch(statementsThunkActions.getAllIncomeTypes({})).unwrap(),
-      appDispatch(statementsThunkActions.getAllPayType({})).unwrap(),
-    ];
+    const promises =
+      isPrincipal || (isOpenAccess && isTrialPeriod)
+        ? [
+            appDispatch(
+              programmeThunkActions.getProgrammes({
+                classroomId: classroom?.id,
+              })
+            ).unwrap(),
+            appDispatch(
+              statementsThunkActions.getAllExpensesTypes({})
+            ).unwrap(),
+            appDispatch(statementsThunkActions.getAllIncomeTypes({})).unwrap(),
+            appDispatch(statementsThunkActions.getAllPayType({})).unwrap(),
+          ]
+        : [
+            appDispatch(
+              programmeThunkActions.getProgrammes({
+                classroomId: classroom?.id,
+              })
+            ).unwrap(),
+          ];
 
     Promise.allSettled(promises);
   };
@@ -436,7 +449,10 @@ export const Dashboard: React.FC = () => {
 
   useEffect(() => {
     if (isOnline) {
-      initStaticStoreSetup();
+      if (!isCoach) {
+        initStaticStoreSetup();
+      }
+
       if (
         dashboardNotification?.isNew &&
         practitioner?.progress! >= 2 &&

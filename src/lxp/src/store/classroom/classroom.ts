@@ -71,7 +71,7 @@ const classroomsSlice = createSlice({
       state,
       action: PayloadAction<SimpleClassroomGroupDto>
     ) => {
-      const payloadUpdated = { ...action.payload, synced: false };
+      const payloadUpdated = { ...action.payload };
       for (
         let i = 0;
         i < state.classroomGroupData.classroomGroups.length;
@@ -220,20 +220,64 @@ const classroomsSlice = createSlice({
       }
     });
     builder.addCase(getClassroomGroups.fulfilled, (state, action) => {
-      if (action.payload) {
-        state.classroomGroupData = {
-          classroomGroups: action.payload.map((cg) => ({
-            ...cg,
+      if (!action.payload) return;
+
+      const incomingGroups = action.payload;
+
+      // Create a map of incoming groups by id for fast lookup
+      const incomingMap = new Map(incomingGroups.map((cg) => [cg.id, cg]));
+
+      // Start with current state or empty array if none exists
+      const currentGroups = state.classroomGroupData?.classroomGroups ?? [];
+
+      // Build the new array by merging/updating existing groups and adding new ones
+      const updatedGroups = currentGroups.map((existing) => {
+        const incoming = incomingMap.get(existing.id);
+
+        if (!incoming) {
+          // Group was removed remotely
+          return { ...existing, synced: true, isActive: false };
+        }
+
+        // Group exists → update it
+        return {
+          ...existing, // keep any local-only fields you might have
+          ...incoming, // overwrite with fresh server data
+          synced: true,
+          learners: incoming.learners.map((l) => ({
+            ...l,
             synced: true,
-            learners: cg.learners.map((l) => ({ ...l, synced: true })),
-            classProgrammes: cg.classProgrammes.map((p) => ({
-              ...p,
-              synced: true,
-            })),
           })),
-          dateRefreshed: new Date().toDateString(),
+          classProgrammes: incoming.classProgrammes.map((p) => ({
+            ...p,
+            synced: true,
+          })),
         };
-      }
+      });
+
+      // Add any completely new groups that weren't in the current state
+      const newGroups = incomingGroups
+        .filter(
+          (cg) => !currentGroups.some((existing) => existing.id === cg.id)
+        )
+        .map((cg) => ({
+          ...cg,
+          synced: true,
+          learners: cg.learners.map((l) => ({ ...l, synced: true })),
+          classProgrammes: cg.classProgrammes.map((p) => ({
+            ...p,
+            synced: true,
+          })),
+        }));
+
+      const finalGroups = [...updatedGroups, ...newGroups];
+
+      // Update state (preserving dateRefreshed pattern)
+      state.classroomGroupData = {
+        ...state.classroomGroupData, // keep any other fields you might have added later
+        classroomGroups: finalGroups,
+        dateRefreshed: new Date().toDateString(),
+      };
     });
     builder.addCase(upsertClassroom.fulfilled, (state, action) => {
       if (state.classroom) {

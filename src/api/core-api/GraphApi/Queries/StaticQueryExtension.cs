@@ -1,5 +1,8 @@
 using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.ContentManagement.Constants;
+using ECDLink.ContentManagement.Repositories;
+using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Helpers;
@@ -7,12 +10,15 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -57,6 +63,26 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             }
 
             return docsQuery;
+        }
+
+        [Permission(PermissionGroups.USERCONSENT, GraphActionEnum.View)]
+        public async Task<CmsSyncStatus> GetCmsSyncStatus(
+            [Service] ContentManagementRepository contentRepo,
+            AuthenticationDbContext dbContext,
+            DateTime lastSync)
+        {
+
+            var cmsSyncStatus = await contentRepo.GetCmsSyncStatus(lastSync);
+            
+            // update holiday count
+            var holidayCount = await dbContext.Holidays.FromSql($@"
+            SELECT h.""Id""
+            FROM ""Holidays"" h 
+            ").CountAsync();
+            
+            cmsSyncStatus.SyncHolidays = holidayCount > 12;
+
+            return cmsSyncStatus;
         }
 
     }

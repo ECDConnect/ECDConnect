@@ -28,10 +28,12 @@ import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { useTenant } from '@/hooks/useTenant';
 import { userSelectors } from '@/store/user';
 import { useNotificationService } from '@/hooks/useNotificationService';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const tenant = useTenant();
+  const { isOnline } = useOnlineStatus();
   const isOpenAccess = tenant?.isOpenAccess;
   const { stopService } = useNotificationService();
   const practitioners = useSelector(
@@ -148,7 +150,7 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
             isActive: true,
             programmeStartDate: today,
             isFullDay: data?.isFullDay || false,
-            synced: false,
+            synced: isOnline,
           };
         }),
       };
@@ -158,14 +160,16 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
         classroomsActions.createClassroomGroup(classroomGroupModel)
       );
 
-      (async () =>
-        await appDispatch(
-          practitionerThunkActions.getPractitionerByUserId({
-            userId: userData?.id || '',
-          })
-        ).unwrap())().then(() => {
-        stopService();
-      });
+      if (isOnline) {
+        (async () =>
+          await appDispatch(
+            practitionerThunkActions.getPractitionerByUserId({
+              userId: userData?.id || '',
+            })
+          ).unwrap())().then(() => {
+          stopService();
+        });
+      }
     }
   };
 

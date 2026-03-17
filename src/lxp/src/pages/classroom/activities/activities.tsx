@@ -9,7 +9,7 @@ import {
   StackedList,
   UserAlertListDataItem,
 } from '@ecdlink/ui';
-import { isSameDay, parseISO, isAfter, isBefore, format } from 'date-fns';
+import { isSameDay, parseISO, isAfter, isBefore } from 'date-fns';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 import { ReactComponent as Emoji3 } from '@/assets/ECD_Connect_emoji3.svg';
@@ -19,7 +19,7 @@ import { IconInformationIndicator } from '../programme-planning/components/icon-
 import { practitionerSelectors } from '@/store/practitioner';
 import { progressTrackingSelectors } from '@/store/progress-tracking';
 import iconRobotImage from '@/assets/iconRobot.svg';
-import { LocalStorageKeys, useDialog, usePrevious } from '@ecdlink/core';
+import { LocalStorageKeys, useDialog } from '@ecdlink/core';
 
 import { replaceSkillText } from '@/utils/child/child-progress-report.utils';
 
@@ -27,24 +27,18 @@ import {
   getStorageItem,
   setStorageItem,
 } from '@/utils/common/local-storage.utils';
-import { useProgressForChildren } from '@/hooks/useProgressForChildren';
 
 export const ActivitiesTab = () => {
-  const [displayCelebrationCard, setDisplayCelebrationCard] = useState(true);
+  const history = useHistory();
+  const today = new Date();
+  const dialog = useDialog();
 
   const classes = useSelector(classroomsSelectors.getClassroomGroups);
   const programmes = useSelector(programmeSelectors.getProgrammes);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   // Add a state to track if the dialog has been shown
   const [hasShownDialog, setHasShownDialog] = useState(false);
-
-  const history = useHistory();
-
-  const today = new Date();
-
-  const dialog = useDialog();
-
-  const { childReports } = useProgressForChildren();
+  const [displayCelebrationCard, setDisplayCelebrationCard] = useState(true);
 
   // Handling the popup after the period has ended and there is completed reports
   const progressReports = useSelector(

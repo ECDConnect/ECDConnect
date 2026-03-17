@@ -38,7 +38,7 @@ export const RequestCoachingVisitOrCall = ({
     { text: 'Call', value: callType },
   ];
 
-  const firstName = smartStarter?.user?.firstName || 'the smartStarter';
+  const firstName = smartStarter?.user?.firstName || 'the practitioner';
   const visitSection = 'Request a coaching visit or call';
 
   const onOptionSelected = useCallback(

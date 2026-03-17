@@ -17,6 +17,7 @@ import { useSelector } from 'react-redux';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { useLocation } from 'react-router';
 import { EditPlaygroupsRouteState } from '@/pages/practitioner/save-practitioner-playgroups/save-practitioner-playgroups.types';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 interface ConfirmPlayGroupsProps extends FormComponentProps<any | void> {
   defaultPlayGroups: EditPlaygroupModel[];
   onEditPlaygroup: (
@@ -36,6 +37,7 @@ export const ConfirmPlayGroups: React.FC<ConfirmPlayGroupsProps> = ({
   isLoading,
 }) => {
   const location = useLocation<EditPlaygroupsRouteState>();
+  const { isOnline } = useOnlineStatus();
   const [playgroups, setPlayGroups] =
     useState<EditPlaygroupModel[]>(defaultPlayGroups);
   const onAddNewPlaygroup = () => {
@@ -44,6 +46,7 @@ export const ConfirmPlayGroups: React.FC<ConfirmPlayGroupsProps> = ({
       name: '',
       classroomGroupId: newGuid(),
       meetEveryday: undefined,
+      synced: isOnline,
     });
     onEditPlaygroup(playgroups, playgroups.length - 1, true);
   };
