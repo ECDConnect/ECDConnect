@@ -2,6 +2,7 @@
 using ECDLink.DataAccessLayer.Entities.Users;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.Services.Interfaces
 {
@@ -9,7 +10,7 @@ namespace EcdLink.Api.CoreApi.Services.Interfaces
     {
         List<Child> GetChildrenForClassroom(Guid classroomId);
         List<Child> GetChildrenForClassroomGroup(Guid classroomGroupId);
-        void UpdateChild(UpdateChildAndCaregiverInput input);
+        Task UpdateChildAsync(UpdateChildAndCaregiverInput input);
         void RemoveChild(UpdateChildAndCaregiverInput input);
 
         void UpdateCaregiverGrants(Guid childUserId, List<Guid> grantIds, Guid tenantId);

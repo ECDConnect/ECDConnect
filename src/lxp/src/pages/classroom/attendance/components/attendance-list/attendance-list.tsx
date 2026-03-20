@@ -265,9 +265,18 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
           currentProgramme.id ?? ''
         );
 
-        appDispatch(attendanceActions.trackAttendance(trackAttendanceInput));
-        appDispatch(
+        await appDispatch(
+          attendanceActions.trackAttendance(trackAttendanceInput)
+        );
+        await appDispatch(
           attendanceThunkActions.trackAttendanceSync(trackAttendanceInput)
+        );
+        // reset data in redux
+        await appDispatch(
+          attendanceActions.resetClassAttendanceForUser({ userId: user?.id! })
+        );
+        await appDispatch(
+          attendanceActions.resetClassroomAttendanceOverviewReport()
         );
 
         onSubmitSuccess({

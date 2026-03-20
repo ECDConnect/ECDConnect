@@ -10,19 +10,16 @@ interface TableDataProps {
   monthlyReport?: ClassRoomChildAttendanceMonthlyReportModel;
   selectedMonth: MonthlyAttendanceRecord;
   practitioner?: PractitionerDto;
-  reportDetails?: PractitionerReportDetails;
 }
 
 export const getTableData = ({
   monthlyReport,
-  reportDetails,
   selectedMonth,
   practitioner,
 }: TableDataProps) => {
   const reportData = monthlyReport?.classroomAttendanceReport ?? [];
   const totalAttendance = monthlyReport?.totalAttendance || [];
   const totalAttendanceStatsReport = monthlyReport?.totalAttendanceStatsReport;
-
   const numDays = totalAttendance.length;
 
   const tableBody = reportData.map(
@@ -79,28 +76,12 @@ export const getTableData = ({
 
   let attendanceSum = 0;
 
-  for (let i = 0; i < totalAttendance.length; i++) {
-    attendanceSum += totalAttendance[i].value;
+  for (const element of totalAttendance) {
+    attendanceSum += element.value;
   }
 
   const tableTopContent = {
     pageTitle: `${selectedMonth.month} ${selectedMonth.year} Attendance Report`,
-    subtitle: `Class: ${reportDetails?.classroomGroupName ?? 'N/A'}`,
-    text_coulumn_one_row_one: `Name: ${practitioner?.user?.fullName}`,
-    text_coulumn_one_row_two: `ID number: ${
-      reportDetails?.idNumber === null ? '' : reportDetails?.idNumber
-    }`,
-    text_coulumn_one_row_three: `Phone number: ${
-      reportDetails?.phone === null ? '' : reportDetails?.phone
-    }`,
-    text_column_two_row_one: `Class days: ${
-      reportDetails?.programmeDays === null ? '' : reportDetails?.programmeDays
-    } `,
-    text_column_two_row_two: `Site address: ${
-      reportDetails?.classSiteAddress === null
-        ? ''
-        : reportDetails?.classSiteAddress
-    }`,
   };
 
   const tableBottomContent = [

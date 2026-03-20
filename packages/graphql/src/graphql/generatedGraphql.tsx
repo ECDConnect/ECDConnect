@@ -9674,6 +9674,7 @@ export type Query = {
   classroomActionItems?: Maybe<Array<Maybe<NotificationDisplay>>>;
   classroomAttendanceOverviewReport?: Maybe<ClassroomGroupChildAttendanceReportOverviewModel>;
   classroomForUser?: Maybe<ClassroomModel>;
+  classroomGroupForClassId?: Maybe<ClassroomGroupModel>;
   classroomGroupsForUser?: Maybe<Array<Maybe<ClassroomGroupModel>>>;
   cmsSyncStatus?: Maybe<CmsSyncStatus>;
   coachByCoachUserId?: Maybe<Coach>;
@@ -11355,11 +11356,14 @@ export type QueryClassroomActionItemsArgs = {
 export type QueryClassroomAttendanceOverviewReportArgs = {
   endDate: Scalars['DateTime'];
   startDate: Scalars['DateTime'];
-  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryClassroomForUserArgs = {
   userId: Scalars['UUID'];
+};
+
+export type QueryClassroomGroupForClassIdArgs = {
+  classroomGroupId: Scalars['UUID'];
 };
 
 export type QueryClassroomGroupsForUserArgs = {
@@ -11945,7 +11949,6 @@ export type QueryMonthlyAttendanceRecordCsvArgs = {
 export type QueryMonthlyAttendanceReportArgs = {
   endMonth: Scalars['DateTime'];
   startMonth: Scalars['DateTime'];
-  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryMoreInformationArgs = {

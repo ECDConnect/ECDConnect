@@ -1,3 +1,3 @@
 export type OfflineCache = {
-  dateRefreshed: string | undefined;
+  dateRefreshed?: string | undefined;
 };

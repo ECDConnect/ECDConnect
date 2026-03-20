@@ -17,7 +17,7 @@ import { practitionerSelectors } from '@/store/practitioner';
 import { VideoCameraIcon, DocumentTextIcon } from '@heroicons/react/solid';
 import { useTenant } from '@/hooks/useTenant';
 import { DownloadAppCard } from '@/components/download-app-card/download-app-card';
-import { getLogo, LogoSvgs } from '@/utils/common/svg.utils';
+import WhatsAppIcon from '@/assets/logos/whatsapp';
 
 export const HelpTypes = {
   videos: 'Watch videos',
@@ -114,11 +114,7 @@ export const PractitionerHelp: React.FC = () => {
         subTitleStyle,
         customIcon: (
           <div className="bg-quatenary mr-2 rounded-full p-3">
-            <img
-              alt=""
-              src={getLogo(LogoSvgs.whatsappWhite)}
-              className="h-8 w-8 text-white"
-            />
+            <WhatsAppIcon className="h-8 w-8 text-white" />
           </div>
         ),
         showIcon: true,

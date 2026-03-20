@@ -12,12 +12,14 @@ import { attendanceSelectors } from '@/store/attendance';
 import ROUTES from '@/routes/routes';
 import { MonthlyAttendanceReportRouteState } from '../components/attendance-report/components/attendance-monthly-report/attendance-report.types';
 import { newGuid } from '@/utils/common/uuid.utils';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export const EditRegisters = () => {
   const [selectedRegister, setSelectedRegister] =
     useState<EditRegistersAttendanceListProps['selectedRegister']>();
 
   const location = useLocation<EditRegistersRouteState>();
+  const { isOnline } = useOnlineStatus();
 
   const startDate = location.state.startDate;
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
@@ -78,6 +80,7 @@ export const EditRegisters = () => {
           selectedMonth: location.state.selectedMonth,
         } as MonthlyAttendanceReportRouteState)
       }
+      displayOffline={!isOnline}
     >
       <Typography
         type="h2"

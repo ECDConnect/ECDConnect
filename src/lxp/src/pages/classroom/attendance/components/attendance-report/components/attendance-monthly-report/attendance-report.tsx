@@ -1,5 +1,5 @@
 import { BannerWrapper, Typography, Divider, Button } from '@ecdlink/ui';
-import { Fragment, useEffect, useMemo, useState, useCallback } from 'react';
+import { Fragment, useEffect, useMemo } from 'react';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
@@ -12,8 +12,6 @@ import {
 import GeneratePdfReportButton from '../../../../../../../../src/components/download-pdf-button/download-pdf-button';
 import { practitionerSelectors } from '@/store/practitioner';
 import { useSelector } from 'react-redux';
-import { authSelectors } from '@/store/auth';
-import { PractitionerService } from '@/services/PractitionerService';
 import ROUTES from '@routes/routes';
 import { useHistory, useLocation } from 'react-router';
 import { classroomsSelectors } from '@/store/classroom';
@@ -27,18 +25,16 @@ import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { AttendanceActions } from '@/store/attendance/attendance.actions';
 import { EditRegistersRouteState } from '@/pages/classroom/attendance/edit-registers/edit-registers.types';
 import { getTableData } from './table-data';
-import { PractitionerReportDetails } from '@ecdlink/graphql';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { MonthlyAttendanceReportRouteState } from './attendance-report.types';
-import { useDialog } from '@ecdlink/core';
-import { ActionModal, DialogPosition } from '@ecdlink/ui';
 import {
   ClassDashboardRouteState,
   TabsItems,
 } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import { useMonthlyAttendanceReport } from '@/hooks/useMonthlyAttendanceReport';
 import { useHolidays } from '@/hooks/useHolidays';
+import { usePractitionerReportDetails } from '@/hooks/usePractitionerReportDetails';
 
 export interface ChildAttendanceReportState {
   childId: string;
@@ -48,51 +44,19 @@ export interface ChildAttendanceReportState {
 export const MonthlyAttendanceReport = () => {
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
-  const userAuth = useSelector(authSelectors.getAuthUser);
   const today = new Date();
   const history = useHistory();
-  const dialog = useDialog();
 
   const location = useLocation<MonthlyAttendanceReportRouteState>();
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const selectedMonth = location.state?.selectedMonth;
 
-  const errorDialog = useCallback(
-    (message) => {
-      dialog({
-        blocking: false,
-        position: DialogPosition.Middle,
-        color: 'bg-white',
-        render: (onClose) => {
-          return (
-            <ActionModal
-              iconColor="alertMain"
-              iconBorderColor="errorBg"
-              title="Eish! Something went wrong!"
-              detailText={message || 'Please try again'}
-              icon={'ExclamationCircleIcon'}
-              actionButtons={[
-                {
-                  colour: 'primary',
-                  text: 'Close',
-                  textColour: 'white',
-                  type: 'filled',
-                  leadingIcon: 'XIcon',
-                  onClick: onClose,
-                },
-              ]}
-            />
-          );
-        },
-      });
-    },
-    [dialog]
-  );
-
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const children = useSelector(childrenSelectors.getChildren);
   const holiday = useHolidays();
+
+  const { classHeaders } = usePractitionerReportDetails();
 
   // for offline purposes, get the attendance data for current month
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
@@ -109,10 +73,6 @@ export const MonthlyAttendanceReport = () => {
 
   const hasPermissionToEdit =
     practitioner?.isPrincipal || hasPermissionToTakeAttendance || isTrialPeriod;
-
-  const [isLoadingReportDetails, setIsLoadingReportDetails] = useState(true);
-  const [reportDetails, setReportDetails] =
-    useState<PractitionerReportDetails>();
 
   const { isLoading } = useThunkFetchCall(
     'attendanceData',
@@ -171,75 +131,18 @@ export const MonthlyAttendanceReport = () => {
     selectedMonth,
     monthlyReport,
     practitioner,
-    reportDetails,
   });
 
   useEffect(() => {
     if (isOnline)
       appDispatch(
         attendanceThunkActions.getClassroomAttendanceReport({
-          userId: userAuth?.id ?? '',
           startDate: startDate,
           endDate: endDate,
         })
       );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
-
-  useEffect(() => {
-    if (!isOnline) return;
-
-    let isMounted = true; // Track if component is still mounted
-
-    const getClassroomDetails = async () => {
-      try {
-        const res = await new PractitionerService(
-          userAuth?.auth_token || ''
-        ).getReportDetailsForPractitioner(userAuth?.id || '');
-
-        if (isMounted) {
-          setReportDetails(res);
-        }
-      } catch (err) {
-        if (isMounted) {
-          if (err instanceof Error) {
-            errorDialog(err.message);
-          }
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoadingReportDetails(false);
-        }
-      }
-    };
-
-    getClassroomDetails();
-
-    return () => {
-      isMounted = false; // Cleanup function to prevent state updates on unmount
-    };
-  }, [isOnline, userAuth, errorDialog]);
-
-  // useEffect(() => {
-  //   if (!isOnline) return;
-
-  //   const getClassroomDetails = async () => {
-  //     const res = await new PractitionerService(
-  //       userAuth?.auth_token || ''
-  //     ).getReportDetailsForPractitioner(userAuth?.id || '');
-  //     return res;
-  //   };
-
-  //   getClassroomDetails()
-  //     .then((data) => {
-  //       setReportDetails(data);
-  //     })
-  //     .catch((err) => {
-  //       errorDialog(err.message);
-  //     })
-  //     .finally(() => setIsLoadingReportDetails(false));
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, []);
 
   useEffect(() => {
     if (!isOnline) {
@@ -267,6 +170,7 @@ export const MonthlyAttendanceReport = () => {
       title={`View ${selectedMonth.month} Report `}
       subTitle={''}
       className={'flex h-full flex-col p-4'}
+      displayOffline={!isOnline}
     >
       <Typography
         type="h1"
@@ -371,7 +275,6 @@ export const MonthlyAttendanceReport = () => {
           />
         )}
         <GeneratePdfReportButton
-          isLoading={isOnline && isLoadingReportDetails}
           title="Download Register"
           outputName={`${selectedMonth.month}-attendance-report.pdf`}
           tableData={reportDataWithClassroomGroup}
@@ -386,6 +289,7 @@ export const MonthlyAttendanceReport = () => {
           numberOfChildren={attendanceSum}
           tableHeaders={tableHeaders}
           logo={classroom?.classroomImageUrl}
+          classHeaders={classHeaders}
         />
       </div>
     </BannerWrapper>

@@ -599,40 +599,6 @@ class PractitionerService {
     return response.data.data.promotePractitionerToPrincipal;
   }
 
-  async getReportDetailsForPractitioner(
-    userId: string
-  ): Promise<PractitionerReportDetails> {
-    const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
-      query: `
-      query reportDetailsForPractitioner($userId: String) {
-          reportDetailsForPractitioner(userId: $userId) { 
-          classroomGroupName
-          name
-          principalName
-          classroomGroupId
-          programmeTypeName
-          idNumber
-          insertedDate
-          programmeDays
-          phone classSiteAddress
-          }     
-        }
-      `,
-      variables: {
-        userId,
-      },
-    });
-
-    if (response.status !== 200) {
-      throw new Error(
-        'Get Practitioner by ID number Failed - Server connection error'
-      );
-    }
-
-    return response.data.data.reportDetailsForPractitioner;
-  }
-
   // Used only by coach stuff, we should refactor and remove this when we work on coach functionality
   // Already removed on the BE
   async getClassroomGroupClassroomsForPractitioner(
