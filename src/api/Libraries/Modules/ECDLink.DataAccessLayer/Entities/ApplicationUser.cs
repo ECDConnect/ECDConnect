@@ -64,6 +64,8 @@ namespace ECDLink.DataAccessLayer.Entities
         public string RegisterType { get; set; }
         public bool? ShareInfoPartners { get; set; }
 
+        public bool? WhatsAppConsent { get; set; }
+
         public virtual ICollection<UserPermission> UserPermissions { get; set; }
         public virtual ICollection<UserLanguage> UserLanguages { get; set; } = new List<UserLanguage>();
 

@@ -57,6 +57,8 @@ import { communitySelectors } from '@/store/community';
 import TransparentLayer from '../../../assets/TransparentLayer.png';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { CommunityRouteState } from '@/pages/community/community.types';
+import { EditWhatsAppConsent } from './edit-whatsAppConsent/edit-whatsAppConsent';
+import { useTenant } from '@/hooks/useTenant';
 
 export const PractitionerAbout: React.FC = () => {
   const location = useLocation<PractitionerAboutRouteState>();
@@ -74,8 +76,12 @@ export const PractitionerAbout: React.FC = () => {
   const [editiCellPhoneNumber, setEditiCellPhoneNumber] = useState(false);
   const [editName, setEditName] = useState(false);
   const [editEmail, setEditEmail] = useState(false);
+  const [editWhatsAppConsent, setEditWhatsAppConsent] = useState(false);
   const [addNextToKin, setAddNextToKin] = useState(false);
   const [editFieldVisible, setEditFieldVisible] = useState(false);
+  const tenant = useTenant();
+  const appName = tenant?.tenant?.applicationName;
+  const isOpenAccess = tenant?.isOpenAccess;
 
   const isFromCommunityWelcome = location?.state?.isFromCommunityWelcome;
   const wasFromCommunityWelcome = usePrevious(isFromCommunityWelcome);
@@ -341,6 +347,20 @@ export const PractitionerAbout: React.FC = () => {
       }
     );
 
+    if (isOpenAccess) {
+      list.push({
+        title: 'WhatsApp updates',
+        subTitle: 'Receiving updates',
+        switchTextStyles: true,
+        actionName: 'Edit',
+        actionIcon: 'PencilIcon',
+        buttonType: 'filled',
+        onActionClick: () => {
+          setEditWhatsAppConsent(true);
+        },
+      });
+    }
+
     setListItems(list);
   };
 
@@ -497,6 +517,16 @@ export const PractitionerAbout: React.FC = () => {
       </Dialog>
       <Dialog fullScreen visible={editEmail} position={DialogPosition.Top}>
         <EditEmail setEditEmail={setEditEmail} user={user} />
+      </Dialog>
+      <Dialog
+        fullScreen
+        visible={editWhatsAppConsent}
+        position={DialogPosition.Top}
+      >
+        <EditWhatsAppConsent
+          setEditWhatsAppConsent={setEditWhatsAppConsent}
+          user={user}
+        />
       </Dialog>
       <Dialog fullScreen visible={addNextToKin} position={DialogPosition.Top}>
         <NextOfKin setAddNextOfKin={setAddNextToKin} user={user} />
