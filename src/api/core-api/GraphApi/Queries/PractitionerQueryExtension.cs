@@ -235,40 +235,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
 
         [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
-        // This needs to be removed, data should already be available on FE
-        public PractitionerReportDetails GetReportDetailsForPractitioner(
-            [Service] IHttpContextAccessor contextAccessor,
-            [Service] IClassroomService classroomService,
-            IGenericRepositoryFactory repoFactory,
-            string userId)
-        {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
-            var practitioner = practitionerRepo.GetByUserId(userId);
-            var classroom = classroomService.GetClassroomForUser(Guid.Parse(userId));
-            var classroomGroup = classroomService.GetClassroomGroupsForUser(Guid.Parse(userId)).FirstOrDefault();
-
-            var details = new PractitionerReportDetails()
-            {
-                ClassroomGroupId = classroomGroup?.Id.ToString(),
-                ClassroomGroupName = classroomGroup?.Name,
-                Id = classroom.Id.ToString(),
-                IdNumber = practitioner.User.IdNumber,
-                InsertedDate = classroom.InsertedDate,
-                Name = practitioner.User.FullName,
-                Phone = practitioner.User.PhoneNumber,
-                PrincipalName = $"{classroom.User.FirstName} {classroom.User.Surname}",
-                ProgrammeDays = "Monday to Friday",
-                ProgrammeTypeName = classroomGroup?.ProgrammeType?.Description,
-                ClassSiteAddress = classroom.SiteAddress != null
-                    ? classroom.SiteAddress.Name + " " + classroom.SiteAddress.AddressLine1 + " " + classroom.SiteAddress.AddressLine2 + " " + classroom.SiteAddress.AddressLine3 + " " + (classroom.SiteAddress.Province != null ? classroom.SiteAddress.Province.Description : string.Empty) + " " + classroom.SiteAddress.PostalCode
-                    : ""
-            };
-
-            return details;
-        }
-
-        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
         public List<PractitionerColleagues> GetPractitionerColleagues([Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             string userId)

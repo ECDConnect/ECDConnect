@@ -1,4 +1,7 @@
-import { AttendanceReportTableDataDto } from '@ecdlink/core';
+import {
+  AttendancePageHeaderDto,
+  AttendanceReportTableDataDto,
+} from '@ecdlink/core';
 import { jsPDF, jsPDFOptions } from 'jspdf';
 import autoTable, { RowInput, UserOptions } from 'jspdf-autotable';
 
@@ -20,7 +23,8 @@ export const useGenerateAttendancePdf = () => {
     pageOriantations?: jsPDFOptions['orientation'],
     tableHeaders?: any[],
     outputName?: string,
-    logo?: string
+    logo?: string,
+    classHeaders?: any[]
   ) => {
     //make landscape document
     const doc = new jsPDF(pageOriantations ?? 'landscape');
@@ -104,9 +108,35 @@ export const useGenerateAttendancePdf = () => {
       // Step 4: Build footer row
       const footerRow = ['Child Attendance per Day', '', ...formattedTotals];
 
+      const classHeaderData = classHeaders?.find(
+        (x) => x.classroomGroupId === table.classroomGroupId
+      );
+      const classPageHeader = {
+        subtitle: `Class: ${classHeaderData?.classroomGroupName ?? 'N/A'}`,
+        text_coulumn_one_row_one: `Name: ${classHeaderData?.name}`,
+        text_coulumn_one_row_two: `ID number: ${
+          classHeaderData?.idNumber === null ? '' : classHeaderData?.idNumber
+        }`,
+        text_coulumn_one_row_three: `Phone number: ${
+          classHeaderData?.phone === null ? '' : classHeaderData?.phone
+        }`,
+        text_column_two_row_one: `Class days: ${
+          classHeaderData?.programmeDays === null
+            ? ''
+            : classHeaderData?.programmeDays
+        } `,
+        text_column_two_row_two: `Site address: ${
+          classHeaderData?.classSiteAddress === null
+            ? ''
+            : classHeaderData?.classSiteAddress
+        }`,
+        text_column_two_row_three: '',
+      } as AttendancePageHeaderDto;
+
       // Step 5: Build final PDF table object
       const pdfTable: AttendanceReportTableDataDto = {
         tableName: table.classroomGroup.name,
+        classPageHeader: classPageHeader,
         headers: tableHeaders!,
         data: pageData,
         footer: footerRow,
@@ -142,6 +172,7 @@ export const useGenerateAttendancePdf = () => {
         const totalSessions = `Total number of sessions: ${table.totalExpected}`;
         const numberOfChildren = `Number of children who attended all sessions: ${table.totalChildren}`;
         const legend = `* = child was not registered yet OR practitioner did not take attendance`;
+        const classPageHeader = table.classPageHeader;
 
         const pageHeight = doc.internal.pageSize.height;
 
@@ -207,13 +238,13 @@ export const useGenerateAttendancePdf = () => {
             doc.setFont('bold');
 
             // Document Top text section
-            doc.text(content.text_coulumn_one_row_one ?? '', 10, 20);
-            doc.text(content.text_coulumn_one_row_two ?? '', 10, 25);
-            doc.text(content.text_coulumn_one_row_three ?? '', 10, 30);
-            // Column two top content
-            doc.text(content.text_column_two_row_one ?? '', 100, 20);
-            doc.text(content.text_column_two_row_two ?? '', 100, 25);
-            doc.text(content.text_column_two_row_three ?? '', 100, 30);
+            doc.text(classPageHeader.text_coulumn_one_row_one ?? '', 10, 20);
+            doc.text(classPageHeader.text_coulumn_one_row_two ?? '', 10, 25);
+            doc.text(classPageHeader.text_coulumn_one_row_three ?? '', 10, 30);
+            // Column two top
+            doc.text(classPageHeader.text_column_two_row_one ?? '', 100, 20);
+            doc.text(classPageHeader.text_column_two_row_two ?? '', 100, 25);
+            doc.text(classPageHeader.text_column_two_row_three ?? '', 100, 30);
           },
         });
 

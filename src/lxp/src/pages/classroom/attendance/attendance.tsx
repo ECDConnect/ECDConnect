@@ -34,6 +34,7 @@ import { useWindowSize } from '@reach/window-size';
 import { ClassDashboardRouteState } from '../class-dashboard/class-dashboard.types';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 const headerHeight = 121;
 
@@ -41,6 +42,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const { height } = useWindowSize();
   const location = useLocation<ClassDashboardRouteState>();
   const history = useHistory();
+  const { isOnline } = useOnlineStatus();
   const userData = useSelector(userSelectors.getUser);
   const [seeCompletedRegisters, setSeeCompletedRegisters] =
     useState<boolean>(false);
@@ -305,6 +307,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
           title="Attendance registers"
           size="small"
           onBack={onCloseCompletedRegisters}
+          displayOffline={!isOnline}
         >
           <AttendanceReport
             isAllRegistersCompleted={isAllRegistersCompleted}

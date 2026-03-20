@@ -79,7 +79,7 @@ export const getChildren = createAsyncThunk<
       children: { childData: childDataCache },
     } = getState();
 
-    if (!childDataCache || !!overrideCache) {
+    if (childDataCache?.children.length === 0 || !!overrideCache) {
       try {
         let children: ChildDto[];
 

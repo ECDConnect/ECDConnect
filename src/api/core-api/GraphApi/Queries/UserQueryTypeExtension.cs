@@ -386,7 +386,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 SyncClassroom = classroomCount >= 1,
                 SyncReportingPeriods = periodCount >= 1,
                 SyncPoints = pointsCount >= 1,
-                SyncPermissions = permissionsCount >= 1
+                SyncPermissions = permissionsCount >= 1,
             };
         }
     }

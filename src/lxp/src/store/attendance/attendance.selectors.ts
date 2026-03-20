@@ -1,4 +1,4 @@
-import { AttendanceDto } from '@ecdlink/core';
+import { AttendanceDto, ChildAttendanceReportModel } from '@ecdlink/core';
 import { isSameDay, parseISO } from 'date-fns';
 import { createSelector } from 'reselect';
 import { RootState } from '../types';
@@ -11,6 +11,16 @@ export const getTrackedAttendance = (
   state: RootState
 ): TrackAttendanceModelInput[] | undefined =>
   state.attendanceData.attendanceTracked;
+
+export const getClassAttendanceForId = (userId: string) =>
+  createSelector(
+    [(state: RootState) => state.attendanceData.attendanceByUserId[userId]],
+    (attendanceReports): ChildAttendanceReportModel =>
+      attendanceReports?.data ?? []
+  );
+
+export const getAllClassAttendance = (state: RootState) =>
+  state.attendanceData.attendanceByUserId;
 
 export const getClassroomProgrammeAttendanceFor = (attendanceDate: Date) =>
   createSelector(

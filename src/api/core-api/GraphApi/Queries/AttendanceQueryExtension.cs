@@ -55,17 +55,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         /// This fetches stats around how the practitioner has taken attendance for their classroom groups
         /// </summary>
         /// <param name="report"></param>
-        /// <param name="userId"></param>
         /// <param name="classroomId"></param>
         /// <param name="startMonth"></param>
         /// <param name="endMonth"></param>
         /// <returns></returns>
         public IEnumerable<MonthlyAttendanceReportModel> MonthlyAttendanceReport(
           [Service] MonthlyAttendanceReport report,
-          string userId,
+          [Service] IHttpContextAccessor httpContextAccessor,
           DateTime startMonth,
           DateTime endMonth)
         {
+            var userId = httpContextAccessor.HttpContext.GetUser().Id;
             startMonth = startMonth.GetStartOfMonth();
 
             //if current month, do not project as per business rules and use current date as enddate - if its the 1st of the month and dates match, then add 1 day
@@ -74,7 +74,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 : endMonth.GetEndOfMonth().GetEndOfDay();
 
 
-            var data = report.GenerateMonthlyAttendanceReport(userId, startMonth, endMonth);
+            var data = report.GenerateMonthlyAttendanceReport(userId.ToString(), startMonth, endMonth);
+
             return data;
         }
 
