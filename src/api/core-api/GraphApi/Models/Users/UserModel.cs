@@ -37,6 +37,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Users
             Password = null;
             IsAdmin = null;
             ResetData = user.ResetData;
+            WhatsAppConsent = user.WhatsAppConsent;
         }
 
         public string Id { get; set; }
@@ -66,5 +67,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Users
         public bool? ResetData { get; set; } = false;
         public string WelcomeMessage { get; set; }
         public bool? ProfilePicIsEmoji { get; set; } = false;
+        public bool? WhatsAppConsent { get; set; } = false;
     }
 }

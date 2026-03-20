@@ -371,6 +371,7 @@ export type ApplicationUser = {
   userName?: Maybe<Scalars['String']>;
   userPermissions?: Maybe<Array<Maybe<UserPermission>>>;
   verifiedByHomeAffairs: Scalars['Boolean'];
+  whatsAppConsent?: Maybe<Scalars['Boolean']>;
   whatsAppNumber?: Maybe<Scalars['String']>;
 };
 
@@ -435,6 +436,7 @@ export type ApplicationUserFilterInput = {
   userName?: InputMaybe<StringOperationFilterInput>;
   userPermissions?: InputMaybe<ListFilterInputTypeOfUserPermissionFilterInput>;
   verifiedByHomeAffairs?: InputMaybe<BooleanOperationFilterInput>;
+  whatsAppConsent?: InputMaybe<BooleanOperationFilterInput>;
   whatsAppNumber?: InputMaybe<StringOperationFilterInput>;
 };
 
@@ -497,6 +499,7 @@ export type ApplicationUserInput = {
   userName?: InputMaybe<Scalars['String']>;
   userPermissions?: InputMaybe<Array<InputMaybe<UserPermissionInput>>>;
   verifiedByHomeAffairs: Scalars['Boolean'];
+  whatsAppConsent?: InputMaybe<Scalars['Boolean']>;
   whatsAppNumber?: InputMaybe<Scalars['String']>;
 };
 
@@ -554,6 +557,7 @@ export type ApplicationUserSortInput = {
   updatedDate?: InputMaybe<SortEnumType>;
   userName?: InputMaybe<SortEnumType>;
   verifiedByHomeAffairs?: InputMaybe<SortEnumType>;
+  whatsAppConsent?: InputMaybe<SortEnumType>;
   whatsAppNumber?: InputMaybe<SortEnumType>;
 };
 
@@ -584,10 +588,15 @@ export type AssessmentOption = {
 
 export type AssessmentPage = {
   __typename?: 'AssessmentPage';
+  canSkip?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
   formQuestions?: Maybe<Array<Maybe<AssessmentQuestion>>>;
   formQuestionsIds?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
+  info?: Maybe<Scalars['String']>;
+  isScoreResult?: Maybe<Scalars['String']>;
+  isScored?: Maybe<Scalars['String']>;
+  multiAnswers?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
   stepNr?: Maybe<Scalars['String']>;
 };
@@ -606,6 +615,7 @@ export type AssessmentQuestion = {
   formQuestionOptions?: Maybe<Array<Maybe<AssessmentOption>>>;
   formQuestionOptionsIds?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
+  minValue: Scalars['Int'];
   name?: Maybe<Scalars['String']>;
 };
 
@@ -620,10 +630,13 @@ export type AssessmentReport = {
   __typename?: 'AssessmentReport';
   amberQuestions?: Maybe<Array<Maybe<Scalars['String']>>>;
   blueQuestions?: Maybe<Array<Maybe<Scalars['String']>>>;
+  classroomDetail?: Maybe<Array<Maybe<Scalars['String']>>>;
   dailyActivities?: Maybe<Array<Maybe<Scalars['String']>>>;
   generatedAt: Scalars['DateTime'];
   greenQuestions?: Maybe<Array<Maybe<Scalars['String']>>>;
   name?: Maybe<Scalars['String']>;
+  preschoolDetail?: Maybe<Array<Maybe<Scalars['String']>>>;
+  safetyStandards?: Maybe<Array<Maybe<Scalars['String']>>>;
   skippedActivities?: Maybe<Array<Maybe<Scalars['String']>>>;
   textAnswer?: Maybe<Scalars['String']>;
   textQuestion?: Maybe<Scalars['String']>;
@@ -12125,7 +12138,6 @@ export type QueryUserCountForMessageCriteriaArgs = {
 export type QueryUserSyncStatusArgs = {
   classroomId: Scalars['UUID'];
   lastSync: Scalars['DateTime'];
-  userId: Scalars['UUID'];
 };
 
 export type QueryUsersArgs = {
@@ -14070,6 +14082,7 @@ export type UserModelInput = {
   userName?: InputMaybe<Scalars['String']>;
   verifiedByHomeAffairs?: InputMaybe<Scalars['Boolean']>;
   welcomeMessage?: InputMaybe<Scalars['String']>;
+  whatsAppConsent?: InputMaybe<Scalars['Boolean']>;
   whatsAppNumber?: InputMaybe<Scalars['String']>;
 };
 

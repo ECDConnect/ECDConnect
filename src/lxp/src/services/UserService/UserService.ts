@@ -53,7 +53,8 @@ class UserService {
               systemName
             }   
             resetData  
-            registerType       
+            registerType    
+            whatsAppConsent   
           }
         }
       `,
