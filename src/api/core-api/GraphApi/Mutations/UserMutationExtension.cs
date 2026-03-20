@@ -201,6 +201,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 user.ResetData = input.ResetData;
             }
 
+             if (input.WhatsAppConsent is not null) {
+                user.WhatsAppConsent = input.WhatsAppConsent;
+            }
+
             // Phone Number
             if (input.PhoneNumber is not null
                 && input.PhoneNumber != user.PhoneNumber)
