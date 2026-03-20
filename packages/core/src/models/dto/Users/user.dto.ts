@@ -43,4 +43,5 @@ export interface UserDto extends EntityBase {
   registerType?: string;
   whatsAppConsent?: boolean | null;
   synced?: boolean;
+  whatsAppConsent?: boolean | null;
 }

@@ -55,10 +55,10 @@ import {
 import { UserResetPasswrodParams } from '@/store/user/user.types';
 import { communitySelectors } from '@/store/community';
 import TransparentLayer from '../../../assets/TransparentLayer.png';
-import { EditWhatsAppConsent } from './edit-whatsAppConsent/edit-whatsAppConsent';
-import { useTenant } from '@/hooks/useTenant';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { CommunityRouteState } from '@/pages/community/community.types';
+import { EditWhatsAppConsent } from './edit-whatsAppConsent/edit-whatsAppConsent';
+import { useTenant } from '@/hooks/useTenant';
 
 export const PractitionerAbout: React.FC = () => {
   const location = useLocation<PractitionerAboutRouteState>();
