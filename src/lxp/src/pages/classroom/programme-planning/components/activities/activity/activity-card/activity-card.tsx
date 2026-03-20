@@ -106,7 +106,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
                         }
                         className={`transform text-white ${
                           idx % 2 !== 0 ? '-translate-x-4' : 'relative z-10'
-                        } border-quatenaryBg border-2 border-solid`}
+                        } border-uiBg border-2 border-solid`}
                       />
                     );
                   })}

@@ -13,7 +13,6 @@ import {
   NotificationDisplay,
   PractitionerInput,
   PractitionerRemovalHistory,
-  PractitionerReportDetails,
   PrincipalInvitationStatus,
 } from '@ecdlink/graphql';
 

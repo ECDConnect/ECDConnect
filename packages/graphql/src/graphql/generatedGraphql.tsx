@@ -371,6 +371,7 @@ export type ApplicationUser = {
   userName?: Maybe<Scalars['String']>;
   userPermissions?: Maybe<Array<Maybe<UserPermission>>>;
   verifiedByHomeAffairs: Scalars['Boolean'];
+  whatsAppConsent?: Maybe<Scalars['Boolean']>;
   whatsAppNumber?: Maybe<Scalars['String']>;
 };
 
@@ -435,6 +436,7 @@ export type ApplicationUserFilterInput = {
   userName?: InputMaybe<StringOperationFilterInput>;
   userPermissions?: InputMaybe<ListFilterInputTypeOfUserPermissionFilterInput>;
   verifiedByHomeAffairs?: InputMaybe<BooleanOperationFilterInput>;
+  whatsAppConsent?: InputMaybe<BooleanOperationFilterInput>;
   whatsAppNumber?: InputMaybe<StringOperationFilterInput>;
 };
 
@@ -497,6 +499,7 @@ export type ApplicationUserInput = {
   userName?: InputMaybe<Scalars['String']>;
   userPermissions?: InputMaybe<Array<InputMaybe<UserPermissionInput>>>;
   verifiedByHomeAffairs: Scalars['Boolean'];
+  whatsAppConsent?: InputMaybe<Scalars['Boolean']>;
   whatsAppNumber?: InputMaybe<Scalars['String']>;
 };
 
@@ -554,6 +557,7 @@ export type ApplicationUserSortInput = {
   updatedDate?: InputMaybe<SortEnumType>;
   userName?: InputMaybe<SortEnumType>;
   verifiedByHomeAffairs?: InputMaybe<SortEnumType>;
+  whatsAppConsent?: InputMaybe<SortEnumType>;
   whatsAppNumber?: InputMaybe<SortEnumType>;
 };
 
@@ -8674,21 +8678,6 @@ export type PractitionerRemovalHistorySortInput = {
   userId?: InputMaybe<SortEnumType>;
 };
 
-export type PractitionerReportDetails = {
-  __typename?: 'PractitionerReportDetails';
-  classSiteAddress?: Maybe<Scalars['String']>;
-  classroomGroupId?: Maybe<Scalars['String']>;
-  classroomGroupName?: Maybe<Scalars['String']>;
-  id?: Maybe<Scalars['String']>;
-  idNumber?: Maybe<Scalars['String']>;
-  insertedDate: Scalars['DateTime'];
-  name?: Maybe<Scalars['String']>;
-  phone?: Maybe<Scalars['String']>;
-  principalName?: Maybe<Scalars['String']>;
-  programmeDays?: Maybe<Scalars['String']>;
-  programmeTypeName?: Maybe<Scalars['String']>;
-};
-
 export type PractitionerSortInput = {
   attendanceRegisterLink?: InputMaybe<SortEnumType>;
   clickedCommunityTab?: InputMaybe<SortEnumType>;
@@ -9833,7 +9822,6 @@ export type Query = {
   >;
   removeHolidays?: Maybe<Array<Scalars['DateTime']>>;
   removeWeekendDays?: Maybe<Array<Scalars['DateTime']>>;
-  reportDetailsForPractitioner?: Maybe<PractitionerReportDetails>;
   resourceByLanguage?: Maybe<ResourceModel>;
   resourceLikedStatusForUser?: Maybe<UserResourceLikes>;
   resources: Array<Maybe<ClassroomBusinessResource>>;
@@ -12050,10 +12038,6 @@ export type QueryRemoveWeekendDaysArgs = {
   days?: InputMaybe<Array<Scalars['DateTime']>>;
 };
 
-export type QueryReportDetailsForPractitionerArgs = {
-  userId?: InputMaybe<Scalars['String']>;
-};
-
 export type QueryResourceByLanguageArgs = {
   contentId: Scalars['Int'];
   contentTypeId: Scalars['Int'];
@@ -14081,6 +14065,7 @@ export type UserModelInput = {
   userName?: InputMaybe<Scalars['String']>;
   verifiedByHomeAffairs?: InputMaybe<Scalars['Boolean']>;
   welcomeMessage?: InputMaybe<Scalars['String']>;
+  whatsAppConsent?: InputMaybe<Scalars['Boolean']>;
   whatsAppNumber?: InputMaybe<Scalars['String']>;
 };
 
