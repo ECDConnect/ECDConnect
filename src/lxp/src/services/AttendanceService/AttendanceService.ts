@@ -54,7 +54,6 @@ class AttendanceService {
   }
 
   async getClassroomAttendanceReport(
-    userId: string,
     startDate: Date,
     endDate: Date
   ): Promise<ClassRoomChildAttendanceMonthlyReportModel> {
@@ -103,7 +102,6 @@ class AttendanceService {
   }
 
   async getMonthlyAttendanceReport(
-    userId: string,
     startDate: Date,
     endDate: Date
   ): Promise<MonthlyAttendanceRecord[]> {
@@ -111,7 +109,6 @@ class AttendanceService {
     const response = await apiInstance.post<any>(``, {
       query: `
       query monthlyAttendanceReport(
-        $userId: String
         $startMonth: DateTime!
         $endMonth: DateTime!) {
         monthlyAttendanceReport(
@@ -129,7 +126,6 @@ class AttendanceService {
       }
       `,
       variables: {
-        userId: userId,
         startMonth: startDate,
         endMonth: endDate,
       },

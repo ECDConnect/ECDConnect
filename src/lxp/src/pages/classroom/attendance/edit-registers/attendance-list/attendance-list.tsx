@@ -32,6 +32,7 @@ import {
   notificationActions,
   notificationsSelectors,
 } from '@/store/notifications';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export const EditRegistersAttendanceList = ({
   selectedRegister,
@@ -39,6 +40,7 @@ export const EditRegistersAttendanceList = ({
 }: EditRegistersAttendanceListProps) => {
   const [presentChildrenCount, setPresentChildrenCount] = useState<number>(0);
   const [absentChildrenCount, setAbsentChildrenCount] = useState<number>(0);
+  const { isOnline } = useOnlineStatus();
 
   const attendanceNotification = useSelector(
     notificationsSelectors.getAllNotifications
@@ -118,9 +120,18 @@ export const EditRegistersAttendanceList = ({
           currentProgramme.id ?? ''
         );
 
-        appDispatch(attendanceActions.trackAttendance(trackAttendanceInput));
-        appDispatch(
+        await appDispatch(
+          attendanceActions.trackAttendance(trackAttendanceInput)
+        );
+        await appDispatch(
           attendanceThunkActions.trackAttendanceSync(trackAttendanceInput)
+        );
+        // reset data in redux
+        await appDispatch(
+          attendanceActions.resetClassAttendanceForUser({ userId: user?.id! })
+        );
+        await appDispatch(
+          attendanceActions.resetClassroomAttendanceOverviewReport()
         );
       }
     }
@@ -153,6 +164,7 @@ export const EditRegistersAttendanceList = ({
         title="Edit register"
         subTitle={format(attendanceDate, 'EEEE, dd MMMM')}
         className="flex h-full flex-col pb-4"
+        displayOffline={!isOnline}
       >
         <div className="mt-4 flex gap-10">
           <StatusChip

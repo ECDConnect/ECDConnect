@@ -1,5 +1,4 @@
 import { formatPhonenumberInternational } from '@/utils/common/contact-details.utils';
-import { LogoSvgs, getLogo } from '@/utils/common/svg.utils';
 import { PractitionerDto } from '@ecdlink/core';
 import {
   Alert,
@@ -9,6 +8,7 @@ import {
   renderIcon,
 } from '@ecdlink/ui';
 import { PhoneIcon } from '@heroicons/react/solid';
+import WhatsAppIcon from '@/assets/logos/whatsapp';
 
 interface RegisterChildrenInfoProps {
   setShowRegisterChildrenInfo: (item: boolean) => void;
@@ -80,11 +80,7 @@ export const RegisterChildrenInfo: React.FC<RegisterChildrenInfoProps> = ({
             onClick={whatsapp}
           >
             <div className="flex items-center justify-center">
-              <img
-                src={getLogo(LogoSvgs.whatsapp)}
-                alt="whatsapp"
-                className="text-primary mr-1 h-5 w-5"
-              />
+              <WhatsAppIcon className="text-primary mr-1 h-5 w-5" />
               <Typography
                 text={`Whatsapp ${practitioner?.user?.firstName}`}
                 type="button"

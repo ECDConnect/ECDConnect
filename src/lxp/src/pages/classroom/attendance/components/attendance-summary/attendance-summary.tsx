@@ -44,7 +44,6 @@ import {
 } from '@utils/common/local-storage.utils';
 import EditAttendanceRegister from '../edit-attendance-register/edit-attendance-register';
 import * as styles from './attendance-summary.styles';
-import { practitionerSelectors } from '@/store/practitioner';
 import { usePrevious } from '@ecdlink/core/lib/hooks/usePrevious';
 import { AttendanceSummaryState } from './attendance-summary.types';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
@@ -72,7 +71,6 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
     ActionListDataItem[]
   >([]);
 
-  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const [attendanceEditDay, setAttendanceEditDay] = useState<Date>();
   const [missedAttendanceGroups, setMissedAttendanceGroups] = useState<
     MissedAttendanceGroups[]

@@ -1,8 +1,8 @@
 import { formatPhonenumberInternational } from '@/utils/common/contact-details.utils';
-import { LogoSvgs, getLogo } from '@/utils/common/svg.utils';
 import { CommunityProfileDto } from '@ecdlink/core';
 import { Alert, Button, Typography } from '@ecdlink/ui';
 import { MailIcon, PhoneIcon } from '@heroicons/react/solid';
+import WhatsAppIcon from '@/assets/logos/whatsapp';
 
 interface ConnectionContactDetailsProps {
   connectionCommunityProfile: CommunityProfileDto;
@@ -52,11 +52,7 @@ export const ConnectionContactDetails: React.FC<
               onClick={whatsapp}
             >
               <div className="flex items-center">
-                <img
-                  src={getLogo(LogoSvgs.whatsapp)}
-                  alt="whatsapp"
-                  className="text-secondary mr-1 h-5 w-5"
-                />
+                <WhatsAppIcon className="text-secondary mr-1 h-5 w-5" />
                 <Typography
                   text={`Whatsapp`}
                   type="button"

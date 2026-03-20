@@ -6,6 +6,7 @@ import {
   getAllIncomeTypes,
   getAllPayType,
   getIncomeStatements,
+  upsertIncomeStatements,
 } from './statements.actions';
 import { StatementsState } from './statements.types';
 import { newGuid } from '@/utils/common/uuid.utils';
@@ -204,6 +205,12 @@ const statementsSlice = createSlice({
     });
     builder.addCase(getAllPayType.fulfilled, (state, action) => {
       state.payTypes = action.payload;
+    });
+    builder.addCase(upsertIncomeStatements.fulfilled, (state, action) => {
+      state.incomeStatements = state.incomeStatements.map((statement) => ({
+        ...statement,
+        synced: true,
+      }));
     });
     builder.addCase(getIncomeStatements.fulfilled, (state, action) => {
       if (action.payload && action.payload.length) {

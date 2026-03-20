@@ -5,19 +5,14 @@ import {
   MonthlyAttendanceRecord,
 } from '@ecdlink/core';
 import {
-  QueryClassroomAttendanceOverviewReportArgs,
   TrackAttendanceAttendeeModelInput,
   TrackAttendanceModelInput,
 } from '@ecdlink/graphql';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { AttendanceService } from '@services/AttendanceService';
 import { RootState, ThunkApiType } from '../types';
-import {
-  ChildAttendanceReportQueryParams,
-  MonthlyAttendanceReportQueryParams,
-} from './attendance.types';
+import { MonthlyAttendanceReportQueryParams } from './attendance.types';
 import { RetrieveFromCache } from '@/models/sync/retrieve-from-cache';
-import { isSameDay, parseISO } from 'date-fns';
 import { OverrideCache } from '@/models/sync/override-cache';
 
 export const AttendanceActions = {
@@ -109,16 +104,9 @@ export const getMonthlyAttendanceReport = createAsyncThunk<
       attendanceData: { monthlyAttendanceRecordsByUser },
     } = getState();
 
-    let oneDayAgo = new Date();
-    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+    const records = monthlyAttendanceRecordsByUser[userId].data;
 
-    const dateRefreshed = monthlyAttendanceRecordsByUser[userId]?.dateRefreshed;
-
-    if (
-      !overrideCache &&
-      dateRefreshed &&
-      new Date(dateRefreshed) > oneDayAgo
-    ) {
+    if (!overrideCache && records && records.length !== 0) {
       return monthlyAttendanceRecordsByUser[userId].data;
     }
 
@@ -128,7 +116,7 @@ export const getMonthlyAttendanceReport = createAsyncThunk<
       if (userAuth?.auth_token) {
         reportData = await new AttendanceService(
           userAuth?.auth_token
-        ).getMonthlyAttendanceReport(userId, startDate, endDate);
+        ).getMonthlyAttendanceReport(startDate, endDate);
       }
 
       if (!reportData) {
@@ -144,39 +132,61 @@ export const getMonthlyAttendanceReport = createAsyncThunk<
 
 export const getChildAttendanceRecords = createAsyncThunk<
   ChildAttendanceReportModel,
-  ChildAttendanceReportQueryParams,
+  { userId: string; classgroupId: string; startDate: Date; endDate: Date },
   ThunkApiType<RootState>
 >(
-  'getChildAttendanceRecords',
+  'attendance/getChildAttendanceRecords', // ← more specific & conventional prefix
   async (
-    { classgroupId, startDate, endDate },
+    { userId, classgroupId, startDate, endDate },
     { getState, rejectWithValue }
   ) => {
-    const {
-      auth: { userAuth },
-    } = getState();
+    const state = getState();
+    const { userAuth } = state.auth;
+
+    const cachedData = state.attendanceData.attendanceByUserId?.[userId]?.data;
+
+    // Early return from cache (most common happy path should be fast)
+    if (cachedData) {
+      if (
+        cachedData.attendancePercentage !== 0 &&
+        cachedData.totalExpectedAttendance !== 0 &&
+        cachedData.totalActualAttendance !== 0
+      ) {
+        return cachedData;
+      }
+    }
+
+    // Normalize userId – use current authenticated user when empty
+    const effectiveUserId = userId || userAuth?.id;
+
+    if (!effectiveUserId) {
+      return rejectWithValue('No user ID available');
+    }
+
+    if (!userAuth?.auth_token) {
+      return rejectWithValue('Not authenticated');
+    }
 
     try {
-      let reportData: ChildAttendanceReportModel | undefined;
+      const service = new AttendanceService(userAuth.auth_token);
 
-      if (userAuth?.auth_token) {
-        reportData = await new AttendanceService(
-          userAuth?.auth_token
-        ).getChildAttendanceRecords(
-          userAuth.id,
-          classgroupId,
-          startDate,
-          endDate
-        );
+      const report = await service.getChildAttendanceRecords(
+        effectiveUserId,
+        classgroupId,
+        startDate,
+        endDate
+      );
+
+      if (!report) {
+        return rejectWithValue('Received empty attendance report');
       }
 
-      if (!reportData) {
-        return rejectWithValue('Error getting Monthly Attendance Report');
-      }
-
-      return reportData;
-    } catch (err) {
-      return rejectWithValue(err);
+      return report;
+    } catch (err: any) {
+      // Usually better to pass meaningful message + original error
+      return rejectWithValue(
+        err?.message || 'Failed to fetch child attendance records'
+      );
     }
   }
 );
@@ -235,44 +245,48 @@ export const trackAttendanceSync = createAsyncThunk<
 
 export const getClassroomAttendanceReport = createAsyncThunk<
   { data: ClassRoomChildAttendanceMonthlyReportModel } & RetrieveFromCache,
-  QueryClassroomAttendanceOverviewReportArgs,
+  { startDate: Date | string; endDate: Date | string },
   ThunkApiType<RootState>
 >(
-  AttendanceActions.GET_CLASSROOM_ATTENDANCE_REPORT,
-  async ({ startDate, endDate, userId }, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      attendanceData: { classroomAttendanceOverviewReport },
-    } = getState();
+  'attendance/getClassroomAttendanceReport',
+  async ({ startDate, endDate }, { getState, rejectWithValue }) => {
+    const state = getState();
+    const { userAuth } = state.auth;
+    const { classroomAttendanceOverviewReport } = state.attendanceData;
+
+    if (!userAuth?.auth_token) {
+      return rejectWithValue('No access token – please check profile/login');
+    }
+
+    // ────────────────────────────────────────────────────────────────
+    // Normalize incoming args to YYYY-MM-DD string (timezone-safe) - same as builder
+    // ────────────────────────────────────────────────────────────────
+    const normalize = (input: Date | string): string => {
+      const date = typeof input === 'string' ? new Date(input) : input;
+      return date.toISOString().split('T')[0];
+    };
+
+    const reqStart = normalize(startDate);
+    const reqEnd = normalize(endDate);
+
+    const cached = classroomAttendanceOverviewReport.find(
+      (report) => report.startDate === reqStart && report.endDate === reqEnd
+    );
+
+    if (cached) {
+      return { data: cached.data, retrievedFromCache: true };
+    }
 
     try {
-      if (userAuth?.auth_token) {
-        let oneDayAgo = new Date();
-        oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+      const result = await new AttendanceService(
+        userAuth.auth_token
+      ).getClassroomAttendanceReport(new Date(startDate), new Date(endDate));
 
-        const cachedData = classroomAttendanceOverviewReport?.find(
-          (report) =>
-            isSameDay(parseISO(report.startDate), startDate) &&
-            isSameDay(parseISO(report.endDate), endDate)
-        );
-
-        if (
-          cachedData?.dateRefreshed &&
-          new Date(cachedData.dateRefreshed) > oneDayAgo
-        ) {
-          return { data: cachedData.data, retrievedFromCache: true };
-        }
-
-        const result = await new AttendanceService(
-          userAuth?.auth_token ?? ''
-        ).getClassroomAttendanceReport(userId ?? '', startDate, endDate);
-
-        return { data: result, retrievedFromCache: false };
-      } else {
-        return rejectWithValue('no access token, profile check required');
-      }
-    } catch (err) {
-      return rejectWithValue(err);
+      return { data: result, retrievedFromCache: false };
+    } catch (err: any) {
+      return rejectWithValue(
+        err.message || 'Failed to fetch classroom attendance report'
+      );
     }
   }
 );

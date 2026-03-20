@@ -13,8 +13,8 @@ import * as styles from './coach-classes-reassigned.styles';
 import ROUTES from '@routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
 import { useSelector } from 'react-redux';
-import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
 import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
+import WhatsAppIcon from '@/assets/logos/whatsapp';
 
 export const CoachClassesReassigned: React.FC = () => {
   const history = useHistory();
@@ -112,11 +112,7 @@ export const CoachClassesReassigned: React.FC = () => {
               onClick={whatsapp}
             >
               <div className="flex items-center justify-center">
-                <img
-                  src={getLogo(LogoSvgs.whatsapp)}
-                  alt="whatsapp"
-                  className={styles.buttonIconStyle}
-                />
+                <WhatsAppIcon className={styles.buttonIconStyle} />
                 <Typography
                   text={`Whatsapp ${practitioner?.user?.firstName}`}
                   type="button"
