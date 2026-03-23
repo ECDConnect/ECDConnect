@@ -30,7 +30,7 @@ export const ProgressCaregiverReportBuildingPage: React.FC<
       style={{ height: '1100px' }}
     >
       <div className="mb-4 flex flex-row">
-        <img src={blueFaceImg} className="mr-4 h-20 w-20" />
+        <img src={blueFaceImg} className="mr-4 h-20 w-20" alt="blueFace" />
         <Typography
           type="h1"
           color="textDark"
@@ -64,7 +64,11 @@ export const ProgressCaregiverReportBuildingPage: React.FC<
             }}
           >
             <div className="flex flex-row">
-              <img src={category.imageUrl} className="mr-4 h-14 w-14" />
+              <img
+                src={category.imageUrl}
+                className="mr-4 h-14 w-14"
+                alt="category"
+              />
               <Typography
                 type="h3"
                 color="textDark"
