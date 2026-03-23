@@ -356,7 +356,7 @@ export const Dashboard: React.FC = () => {
                 type: 'outlined',
                 onClick: () => {
                   saveWhatsAppConsent(false);
-                  onCancel();
+                  onSubmit();
                 },
                 leadingIcon: 'XIcon',
               },

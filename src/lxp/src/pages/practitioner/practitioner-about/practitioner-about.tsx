@@ -86,6 +86,7 @@ export const PractitionerAbout: React.FC = () => {
   const isFromCommunityWelcome = location?.state?.isFromCommunityWelcome;
   const wasFromCommunityWelcome = usePrevious(isFromCommunityWelcome);
   const [openChangeCommunityPic, setOpenChangeCommunityPic] = useState(false);
+  const userData = useSelector(userSelectors.getUser);
 
   useEffect(() => {
     isOnlineRef.current = isOnline;
@@ -350,7 +351,12 @@ export const PractitionerAbout: React.FC = () => {
     if (isOpenAccess) {
       list.push({
         title: 'WhatsApp updates',
-        subTitle: 'Receiving updates',
+        subTitle:
+          userData?.whatsAppConsent === true
+            ? 'Receiving updates'
+            : userData?.whatsAppConsent === false
+            ? 'Not receiving updates'
+            : 'No response',
         switchTextStyles: true,
         actionName: 'Edit',
         actionIcon: 'PencilIcon',
