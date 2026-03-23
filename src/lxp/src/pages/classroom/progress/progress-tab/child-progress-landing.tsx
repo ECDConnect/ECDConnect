@@ -439,7 +439,7 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
           {childReports &&
             childReports.map((report) =>
               report.report.id ? (
-                <div key={report.childId} style={{ letterSpacing: '0.01px' }}>
+                <div key={report.childId} style={{ letterSpacing: '0.02px' }}>
                   <ProgressCaregiverReportPdf
                     childId={report.childId}
                     reportId={report.report.id as string}
