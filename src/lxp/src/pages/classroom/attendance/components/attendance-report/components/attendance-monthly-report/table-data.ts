@@ -3,7 +3,6 @@ import {
   MonthlyAttendanceRecord,
   PractitionerDto,
 } from '@ecdlink/core';
-import { PractitionerReportDetails } from '@ecdlink/graphql';
 import { UserOptions } from 'jspdf-autotable';
 
 interface TableDataProps {
