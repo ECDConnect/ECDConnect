@@ -50,7 +50,6 @@ import { NextOfKin } from './next-of-kin/next-of-kin';
 import { getReportingPeriodForProfileUsePhotoInReport } from '@/utils/child/child-profile-utils';
 import { PractitionerAboutRouteState } from './practitioner-about.types';
 import { BackToCommunityDialog } from '@/pages/coach/coach-about/components/back-to-community-dialog/indext';
-import { useTenant } from '@/hooks/useTenant';
 import { DialogFormInput } from '@/models/practitioner/DialogFormInput';
 import {
   PractitionerAccountModel,
@@ -60,6 +59,8 @@ import {
 import { UserResetPasswrodParams } from '@/store/user/user.types';
 import { communitySelectors } from '@/store/community';
 import TransparentLayer from '../../../assets/TransparentLayer.png';
+import { EditWhatsAppConsent } from './edit-whatsAppConsent/edit-whatsAppConsent';
+import { useTenant } from '@/hooks/useTenant';
 
 export const PractitionerAbout: React.FC = () => {
   const location = useLocation<PractitionerAboutRouteState>();
@@ -75,14 +76,17 @@ export const PractitionerAbout: React.FC = () => {
   const [editiCellPhoneNumber, setEditiCellPhoneNumber] = useState(false);
   const [editName, setEditName] = useState(false);
   const [editEmail, setEditEmail] = useState(false);
+  const [editWhatsAppConsent, setEditWhatsAppConsent] = useState(false);
   const [addNextToKin, setAddNextToKin] = useState(false);
   const [editFieldVisible, setEditFieldVisible] = useState(false);
   const tenant = useTenant();
   const appName = tenant?.tenant?.applicationName;
+  const isOpenAccess = tenant?.isOpenAccess;
 
   const isFromCommunityWelcome = location?.state?.isFromCommunityWelcome;
   const wasFromCommunityWelcome = usePrevious(isFromCommunityWelcome);
   const [openChangeCommunityPic, setOpenChangeCommunityPic] = useState(false);
+  const userData = useSelector(userSelectors.getUser);
 
   const [dialogFormInput, setDialogFormInput] = useState<
     DialogFormInput<PractitionerAccountModel>
@@ -383,6 +387,25 @@ export const PractitionerAbout: React.FC = () => {
       }
     );
 
+    if (isOpenAccess) {
+      list.push({
+        title: 'WhatsApp updates',
+        subTitle:
+          userData?.whatsAppConsent === true
+            ? 'Receiving updates'
+            : userData?.whatsAppConsent === false
+            ? 'Not receiving updates'
+            : 'No response',
+        switchTextStyles: true,
+        actionName: 'Edit',
+        actionIcon: 'PencilIcon',
+        buttonType: 'filled',
+        onActionClick: () => {
+          setEditWhatsAppConsent(true);
+        },
+      });
+    }
+
     setListItems(list);
   };
 
@@ -536,6 +559,16 @@ export const PractitionerAbout: React.FC = () => {
       </Dialog>
       <Dialog fullScreen visible={editEmail} position={DialogPosition.Top}>
         <EditEmail setEditEmail={setEditEmail} user={user} />
+      </Dialog>
+      <Dialog
+        fullScreen
+        visible={editWhatsAppConsent}
+        position={DialogPosition.Top}
+      >
+        <EditWhatsAppConsent
+          setEditWhatsAppConsent={setEditWhatsAppConsent}
+          user={user}
+        />
       </Dialog>
       <Dialog fullScreen visible={addNextToKin} position={DialogPosition.Top}>
         <NextOfKin setAddNextOfKin={setAddNextToKin} user={user} />

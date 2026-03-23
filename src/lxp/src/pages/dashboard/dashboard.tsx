@@ -26,7 +26,7 @@ import {
   notificationActions,
   notificationsSelectors,
 } from '@store/notifications';
-import { userSelectors } from '@store/user';
+import { userActions, userSelectors, userThunkActions } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
 import TransparentLayer from '../../assets/TransparentLayer.png';
@@ -67,6 +67,8 @@ import { usePointsToDoEmoji } from '@/hooks/usePointsToDoEmoji';
 import { Logout } from '../auth/logout/logout';
 import { useBrowserVersionCheck } from '@/hooks/useBrowserVersionCheck';
 import { triggerBackgroundSync } from '@/store/sync/sync.actions';
+import { ReactComponent as RobotImage } from '../../assets/iconRobot.svg';
+import { cloneDeep } from 'lodash';
 
 const { version } = require('../../../package.json');
 export interface DashboardRouteState {
@@ -139,6 +141,18 @@ export const Dashboard: React.FC = () => {
     (item) =>
       item?.permissionName === PermissionsNames.plan_classroom_actitivies
   );
+
+  const saveWhatsAppConsent = (consent: boolean) => {
+    const copy = cloneDeep(userData);
+    if (copy) {
+      copy.whatsAppConsent = consent;
+
+      appDispatch(userActions.updateUser(copy));
+      if (isOnline) {
+        appDispatch(userThunkActions.updateUser(copy));
+      }
+    }
+  };
 
   // calling centralized getUserSyncStatus without pushing offline data
   useEffect(() => {
@@ -312,6 +326,47 @@ export const Dashboard: React.FC = () => {
     });
   };
 
+  const handleWhatsAppConsent = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      blocking: true,
+      render: (onSubmit, onCancel) => {
+        return (
+          <ActionModal
+            title={`Stay in touch`}
+            className="bg-white"
+            detailText={`Would you like to receive occasional updates from ECD Connect on WhatsApp?`}
+            actionButtons={[
+              {
+                text: 'Yes',
+                textColour: 'white',
+                colour: 'quatenary',
+                type: 'filled',
+                onClick: () => {
+                  saveWhatsAppConsent(true);
+                  onSubmit();
+                },
+                leadingIcon: 'CheckCircleIcon',
+              },
+              {
+                text: 'No thanks',
+                textColour: 'quatenaryMain',
+                colour: 'quatenaryMain',
+                type: 'outlined',
+                onClick: () => {
+                  saveWhatsAppConsent(false);
+                  onSubmit();
+                },
+                leadingIcon: 'XIcon',
+              },
+            ]}
+            customIcon={<RobotImage />}
+          />
+        );
+      },
+    });
+  };
+
   useEffect(() => {
     if (practitioner?.startDate) {
       const diffDays = differenceInDays(
@@ -322,6 +377,12 @@ export const Dashboard: React.FC = () => {
       if (diffDays > 30 && !classroom?.preschoolCode && isOpenAccess) {
         handle30DaysExpired();
       }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (userData?.whatsAppConsent === null && isOpenAccess) {
+      handleWhatsAppConsent();
     }
   }, []);
 
