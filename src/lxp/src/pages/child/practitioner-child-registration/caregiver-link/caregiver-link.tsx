@@ -122,7 +122,7 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
     const childRegistrationDetails = await getChildToken();
 
     if (!childId) {
-      refetchData();
+      refetchData(childId!);
     }
 
     setChildId(childRegistrationDetails.childId);
@@ -182,7 +182,7 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
     setLoadingManualUpload(true);
     const childRegistrationDetails = await getChildToken();
     if (!childId) {
-      await refetchData();
+      await refetchData(childRegistrationDetails.childId);
       setChildId(childRegistrationDetails.childId);
     }
     setLoadingManualUpload(false);
@@ -195,11 +195,14 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
   };
 
   // This should just sync children and classgroups (to get the newly created child)
-  const refetchData = async () => {
-    await dispatch(childrenThunkActions.getChildren({ overrideCache: true }));
-    await dispatch(
-      classroomsThunkActions.getClassroomGroups({ overrideCache: true })
-    );
+  const refetchData = async (childId: string) => {
+    if (isOnline) {
+      const classroomGroupId = childDetails.playgroupId;
+      await dispatch(childrenThunkActions.getChildById({ childId }));
+      await dispatch(
+        classroomsThunkActions.getClassroomGroupForClassId({ classroomGroupId })
+      );
+    }
   };
 
   const onDownloadChildForm = () => {

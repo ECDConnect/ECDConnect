@@ -28,4 +28,15 @@ export interface AttendanceReportTableDataDto {
   totalAttendance: string;
   totalExpected: string;
   totalChildren: string;
+  classPageHeader: AttendancePageHeaderDto;
+}
+
+export interface AttendancePageHeaderDto {
+  subtitle: string;
+  text_coulumn_one_row_one: string;
+  text_coulumn_one_row_two: string;
+  text_coulumn_one_row_three: string;
+  text_column_two_row_one: string;
+  text_column_two_row_two: string;
+  text_column_two_row_three: string;
 }

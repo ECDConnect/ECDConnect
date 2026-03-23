@@ -14,16 +14,15 @@ import { useDialog, useSnackbar, useTheme } from '@ecdlink/core';
 import { useState } from 'react';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './community-coach-profile.styles';
-import ROUTES from '@routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
 import { useSelector } from 'react-redux';
-import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
 import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
 import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
 import { useTenant } from '@/hooks/useTenant';
 import { coachSelectors } from '@/store/coach';
 import { CoachFeedback } from './components/coach-feedback/coach-feedback';
 import TransparentLayer from '../../../../../../../assets/TransparentLayer.png';
+import WhatsAppIcon from '@/assets/logos/whatsapp';
 interface CommunityCoachProfileProps {
   onClose?: (item: boolean) => void;
 }
@@ -124,11 +123,7 @@ export const CommunityCoachProfile: React.FC<CommunityCoachProfileProps> = ({
                   size={'small'}
                   onClick={whatsapp}
                 >
-                  <img
-                    src={getLogo(LogoSvgs.whatsapp)}
-                    alt="whatsapp"
-                    className="text-secondary mr-1 h-5 w-5"
-                  />
+                  <WhatsAppIcon className="text-secondary mr-1 h-5 w-5" />
                   <Typography
                     color={'secondary'}
                     type={'small'}

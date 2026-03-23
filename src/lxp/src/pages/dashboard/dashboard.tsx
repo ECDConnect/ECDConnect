@@ -146,6 +146,7 @@ export const Dashboard: React.FC = () => {
     const copy = cloneDeep(userData);
     if (copy) {
       copy.whatsAppConsent = consent;
+      copy.synced = isOnline;
 
       appDispatch(userActions.updateUser(copy));
       if (isOnline) {

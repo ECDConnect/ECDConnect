@@ -17,10 +17,10 @@ import { useEffect } from 'react';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { formatPhonenumberInternational } from '@/utils/common/contact-details.utils';
-import { getLogo, LogoSvgs } from '@/utils/common/svg.utils';
 import { useDialog } from '@ecdlink/core';
 import { coachThunkActions } from '@store/coach';
 import { useAppDispatch } from '@store';
+import WhatsAppIcon from '@/assets/logos/whatsapp';
 
 export type ProgressViewReportsSummaryState = {
   ageGroupId: number;
@@ -195,11 +195,7 @@ export const CoachProgressViewReportsSummary: React.FC = () => {
               disabled={!phone}
               className="w-full justify-start"
             >
-              <img
-                src={getLogo(LogoSvgs.whatsapp)}
-                alt="WhatsApp"
-                className="mr-3 h-5 w-5"
-              />
+              <WhatsAppIcon className="mr-3 h-5 w-5" />
               <Typography
                 type="small"
                 weight="bold"

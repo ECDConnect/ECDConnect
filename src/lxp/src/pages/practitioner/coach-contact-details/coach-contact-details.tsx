@@ -9,7 +9,6 @@ import {
   StatusChip,
   Typography,
 } from '@ecdlink/ui';
-import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useSelector } from 'react-redux';
 import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
@@ -20,6 +19,7 @@ import { useState } from 'react';
 import TransparentLayer from '../../../assets/TransparentLayer.png';
 import { CoachProfileRouteState } from './coach-contact-details.types';
 import ROUTES from '@/routes/routes';
+import WhatsAppIcon from '@/assets/logos/whatsapp';
 
 export const CoachContactDetails: React.FC = () => {
   const history = useHistory();
@@ -101,11 +101,7 @@ export const CoachContactDetails: React.FC = () => {
               size={'small'}
               onClick={whatsapp}
             >
-              <img
-                src={getLogo(LogoSvgs.whatsapp)}
-                alt="whatsapp"
-                className="text-secondary mr-1 h-5 w-5"
-              />
+              <WhatsAppIcon className="text-secondary mr-1 h-5 w-5" />
               <Typography
                 color={'secondary'}
                 type={'small'}

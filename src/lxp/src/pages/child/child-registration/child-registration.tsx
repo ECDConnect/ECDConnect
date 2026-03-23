@@ -305,21 +305,31 @@ export const ChildRegistration: React.FC = () => {
   useEffect(() => {
     let updatedFormState = { ...formState };
     if (existingChild && routeStep && existingChild?.user) {
-      const userDob = existingChild?.user?.dateOfBirth
-        ? new Date(existingChild?.user?.dateOfBirth)
-        : new Date();
+      const rawDob = existingChild.user.dateOfBirth;
 
-      const dobDay = getDate(userDob);
-      const dobMonth = getMonth(userDob);
-      const dobYear = getYear(userDob);
+      let parsedDob: Date | null = null;
+
+      if (typeof rawDob === 'string' && rawDob.trim() !== '') {
+        parsedDob = new Date(rawDob);
+
+        // Protect against sentinel value '1901-01-01'
+        if (
+          !isNaN(parsedDob.getTime()) && // valid date
+          parsedDob.getFullYear() === 1901 &&
+          parsedDob.getMonth() === 0 && // January (0-based)
+          parsedDob.getDate() === 1
+        ) {
+          parsedDob = null; // treat as no real DOB
+        }
+      }
 
       updatedFormState = {
         ...updatedFormState,
         childInformationFormModel: {
-          dobDay: dobDay,
-          dobMonth: dobMonth,
-          dobYear: dobYear,
-          dob: userDob,
+          dobDay: parsedDob ? parsedDob.getDate() : 0,
+          dobMonth: parsedDob ? parsedDob.getMonth() + 1 : 0,
+          dobYear: parsedDob ? parsedDob.getFullYear() : 0,
+          dob: parsedDob!,
           firstname: existingChild?.user?.firstName || '',
           surname: existingChild?.user?.surname || '',
           childIdField: existingChild?.user?.idNumber || '',

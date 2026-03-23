@@ -1,3 +1,4 @@
+using EcdLink.Api.CoreApi;
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.Abstractrions.Services;
 using ECDLink.Core.Extensions;
@@ -70,7 +71,9 @@ namespace ECDLink.Api.CoreApi.Services
         {
             var learners = from learner in _dbContext.Learners
                            join child in _dbContext.Children on learner.UserId equals child.UserId
-                           where child.IsActive && learner.ClassroomGroupId == classgroupId
+                           where child.IsActive && 
+                            learner.ClassroomGroupId == classgroupId && 
+                            child.WorkflowStatusId == Constants.WorkflowStatus.ActiveId
                            select learner;
 
             return learners
@@ -136,38 +139,49 @@ namespace ECDLink.Api.CoreApi.Services
 
         public List<ClassroomGroup> GetUserClassroomGroups(string userId)
         {
-            Practitioner practi = _dbContext.Practitioners.FirstOrDefault(x => Guid.Parse(userId) == x.UserId);
-
-            if (practi != null && practi.IsPrincipal == true)
+            if (string.IsNullOrWhiteSpace(userId) || !Guid.TryParse(userId, out var userGuid))
             {
-               return _classGroupRepo.GetAll()
-                              .Include(x => x.Classroom)
-                              .Include(x => x.ClassProgrammes.Where(x => x.IsActive))
-                              .Where(x => x.IsActive && x.Classroom.UserId.ToString() == userId)
-                              .OrderBy(x => x.Id)
-                             .ToList();
+                return new List<ClassroomGroup>();
             }
 
+            var practitioner = _dbContext.Practitioners
+                .AsNoTracking()
+                .FirstOrDefault(p => p.UserId == userGuid);
 
-            var groups = _classGroupRepo.GetAll()
-              .Include(x => x.ClassProgrammes.Where(x => x.IsActive))
-              .Where(x => x.IsActive && (x.UserId.HasValue && x.UserId.ToString() == userId) && x.Name != "Unsure")                
-              .OrderBy(x => x.Id)
-             .ToList();
+            if (practitioner?.IsPrincipal == true)
+            {
+                return _classGroupRepo.GetAll()
+                    .AsNoTracking()
+                    .Include(g => g.Classroom)
+                    .Include(g => g.ClassProgrammes.Where(cp => cp.IsActive))
+                    .Where(g => g.IsActive && g.Classroom.UserId == userGuid)
+                    .OrderBy(g => g.Id)
+                    .ToList();
+            }
 
-            return groups;
+            return _classGroupRepo.GetAll()
+                .AsNoTracking()
+                .Include(g => g.ClassProgrammes.Where(cp => cp.IsActive))
+                .Where(g => 
+                    g.IsActive &&
+                    g.UserId == userGuid && 
+                    g.Name != "Unsure"
+                )
+                .OrderBy(g => g.Id)
+                .ToList();
         }
 
         public List<Child> GetChildrenForUser(string userId)
         {
+            var result1 = _childRepo.GetAll().ToList();
             return _childRepo.GetAll()
-                .Where(x => x.IsActive)
-                .ToList(); ; //Hierarchy based children
+                .Where(x => x.IsActive && x.WorkflowStatusId == Constants.WorkflowStatus.ActiveId)
+                .ToList(); //Hierarchy based children
         }
 
         public List<Practitioner> GetPractitionersByHierarchy()
         {
-            return _practiRepo.GetAll().ToList(); ; //Hierarchy based children
+            return _practiRepo.GetAll().ToList(); //Hierarchy based children
         }
 
         #endregion

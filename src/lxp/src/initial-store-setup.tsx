@@ -1,4 +1,4 @@
-import { subMonths } from 'date-fns';
+import { endOfMonth, startOfMonth, subMonths } from 'date-fns';
 import React, { useCallback, useEffect, useState } from 'react';
 import Loader from './components/loader/loader';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
@@ -126,7 +126,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     if (!isSync) {
       appDispatch(userActions.resetUserState());
     }
-    appDispatch(attendanceActions.resetAttendanceState());
     appDispatch(calendarActions.resetCalendarState());
     appDispatch(caregiverActions.resetCaregiverState());
     appDispatch(childrenActions.resetChildrenState());
@@ -169,6 +168,11 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     // SPECIFIC DATA
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    // for attendance overview report
+    const firstDayOfMonth = new Date(
+      startOfMonth(new Date()).setHours(23, 59, 59)
+    );
+    const lastDayOfMonth = endOfMonth(new Date());
     setOtherLoading(true);
 
     const promises: Promise<any>[] = !isCoach
@@ -241,6 +245,14 @@ const InitialStoreSetup: React.FC = ({ children }) => {
           attendanceThunkActions.getAttendance({
             startDate: thirtyDaysAgo,
             endDate: new Date(),
+          })
+        ).unwrap()
+      );
+      promises.push(
+        appDispatch(
+          attendanceThunkActions.getClassroomAttendanceReport({
+            startDate: firstDayOfMonth,
+            endDate: lastDayOfMonth,
           })
         ).unwrap()
       );
