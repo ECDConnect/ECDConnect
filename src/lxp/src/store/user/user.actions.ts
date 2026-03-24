@@ -222,6 +222,10 @@ export const syncUser = createAsyncThunk<any, {}, ThunkApiType<RootState>>(
       return ['no_update_required'];
     }
 
+    if ('synced' in user === false) {
+      return ['no_update_required'];
+    }
+
     // 3. Action Case: User needs syncing
     try {
       const userModelInput: UserModelInput = mapUser(user);
