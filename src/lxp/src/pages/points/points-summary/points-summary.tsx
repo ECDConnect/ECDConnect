@@ -141,7 +141,6 @@ export const PointsSummary: React.FC = () => {
         });
 
   const clickInfluencerHandler = () => {
-    console.log('clickInfluencerHandler.isOnline', isOnline);
     if (isOnline) {
       history.push(ROUTES.COMMUNITY.WELCOME);
     } else {
