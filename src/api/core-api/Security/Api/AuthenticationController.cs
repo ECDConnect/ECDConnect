@@ -215,21 +215,7 @@ namespace ECDLink.Security.Api
 
             var jwt = await _securityManager.GenerateJwtForUserAsync(user, JwtEncoderEnum.Standard);
             var jwtObj = JsonConvert.DeserializeObject<JwtObject>(jwt);
-
-            // If the user reaches the confirm auth code screen, but for some reason leaves the flow. And after that, the user tries to log in directly with the username,
-            // we should check the auth code status. If it's not confirmed yet, we should redirect the user to the confirm auth code screen again.
-            var latestMessage = await (from m in _dbContext.MessageLogs
-                                       where m.TenantId == tenantData.Id
-                                            && (m.To == user.PendingPhoneNumber || m.To == user.PhoneNumber)
-                                            && m.MessageTemplateType == TemplateTypeConstants.OAWLAuthCode
-                                       select new { m.Id, m.InsertedDate, m.IsActive }
-                                       )
-                                       .OrderByDescending(x => x.InsertedDate)
-                                       .FirstOrDefaultAsync();
-            if (latestMessage != null)
-            {
-                jwtObj.userMustConfirmAuthCode = latestMessage.IsActive;
-            }
+            jwtObj.userMustConfirmAuthCode = false;     // phone number code is confirmed before username is created now (changes because of SSO)
             jwtObj.loginType = isGoogleAccount ? "google" : isFacebookAccount ? "facebook" : "";
             jwtObj.userName = user.UserName;
 
