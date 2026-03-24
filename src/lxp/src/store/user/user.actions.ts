@@ -213,19 +213,27 @@ export const syncUser = createAsyncThunk<any, {}, ThunkApiType<RootState>>(
       user: { user },
     } = getState();
 
+    // 1. Hard Failure: No token
+    if (!userAuth?.auth_token) {
+      return rejectWithValue('No access token found');
+    }
+
+    // 2. Success Case: User is already synced, nothing to do!
+    if (user?.synced || !user) {
+      return ['no_update_required'];
+    }
+
+    if ('synced' in user === false) {
+      return ['no_update_required'];
+    }
+
+    // 3. Action Case: User needs syncing
     try {
-      let update: boolean | undefined;
-
-      if (userAuth?.auth_token && user && !user?.synced) {
-        const userModelInput: UserModelInput = mapUser(user);
-
-        update = await new UserService(userAuth?.auth_token).updateUser(
-          userAuth.id,
-          userModelInput
-        );
-      } else {
-        return rejectWithValue('no access token, profile check required');
-      }
+      const userModelInput: UserModelInput = mapUser(user);
+      const update = await new UserService(userAuth.auth_token).updateUser(
+        userAuth.id,
+        userModelInput
+      );
 
       if (!update) {
         return rejectWithValue('Error updating user');

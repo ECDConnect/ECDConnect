@@ -140,6 +140,16 @@ export const PointsSummary: React.FC = () => {
           });
         });
 
+  const clickInfluencerHandler = () => {
+    console.log('clickInfluencerHandler.isOnline', isOnline);
+    if (isOnline) {
+      history.push(ROUTES.COMMUNITY.WELCOME);
+    } else {
+      showOnlineOnly();
+      return;
+    }
+  };
+
   const getPhase1StackedMenuList = (): MenuListDataItem[] => {
     const titleStyle = 'text-textDark font-semibold text-base leading-snug';
     const subTitleStyle = 'text-sm font-h1 font-normal text-textMid';
@@ -320,7 +330,7 @@ export const PointsSummary: React.FC = () => {
       } rounded-full h-12 w-12 p-2.5`,
       showIcon: true,
       onActionClick: canClickInfluencer
-        ? () => history.push(ROUTES.COMMUNITY.WELCOME)
+        ? () => clickInfluencerHandler()
         : () => {},
       hideRightIcon: true,
       backgroundColor: pointsToDo?.viewedCommunitySection

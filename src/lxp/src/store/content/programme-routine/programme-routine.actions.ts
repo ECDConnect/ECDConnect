@@ -20,7 +20,13 @@ export const getProgrammeRoutines = createAsyncThunk<
       programmeRoutineData: { programmeRoutines: programmeRoutineCache },
     } = getState();
 
-    if (!programmeRoutineCache || !!overrideCache) {
+    const shouldFetchFresh = overrideCache === true;
+
+    if (
+      shouldFetchFresh ||
+      !programmeRoutineCache ||
+      programmeRoutineCache.length === 0
+    ) {
       try {
         let programmeRoutines: ProgrammeRoutineDto[] | undefined;
 
