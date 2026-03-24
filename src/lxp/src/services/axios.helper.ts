@@ -42,8 +42,8 @@ const updateConfigEndTime = (
   response.duration =
     response.config.metadata.endTime - response.config.metadata.startTime;
 
-  const connectionType: string = (window.navigator as any).connection
-    .effectiveType as string;
+  const connectionType: string =
+    ((window.navigator as any)?.connection?.effectiveType as string) || '4g';
 
   const spottyConnectionTimeout =
     TIMEOUTS[connectionType]?.slowRequestTime || TIMEOUTS['4g'].slowRequestTime;
