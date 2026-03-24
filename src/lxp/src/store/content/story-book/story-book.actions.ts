@@ -13,7 +13,7 @@ export const getStoryBooks = createAsyncThunk<
   ThunkApiType<RootState>
 >(
   StoryBookActions.GET_STORY_BOOKS,
-  async ({ locale, overrideCache }, { getState, rejectWithValue }) => {
+  async ({ locale, overrideCache = false }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       storyBookData: { storyBooks: storyBookCache },
