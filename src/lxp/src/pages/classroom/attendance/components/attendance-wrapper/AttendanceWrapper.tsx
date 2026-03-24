@@ -6,7 +6,7 @@ import Joyride, {
 import { useHistory } from 'react-router-dom';
 import { useAppContext } from '../../../../../walkthrougContext';
 import { Button, Card, SliderPagination, Typography } from '@ecdlink/ui';
-import robot from '../../../../../assets/iconRobot.svg';
+import IconRobot from '@/assets/svg-components/iconRobot';
 import ROUTES from '../../../../../routes/routes';
 import { useAppDispatch } from '@/store';
 import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
@@ -68,11 +68,7 @@ export default function AttendanceWrapper() {
           <div>
             {step.content && (
               <div className="flex items-center gap-2 align-middle">
-                <img
-                  src={robot}
-                  className="mr-4 h-20 w-20"
-                  alt="walkthrough profile"
-                />
+                <IconRobot className="mr-4 h-20 w-20" />
                 <Typography
                   color={'textDark'}
                   type={'h2'}

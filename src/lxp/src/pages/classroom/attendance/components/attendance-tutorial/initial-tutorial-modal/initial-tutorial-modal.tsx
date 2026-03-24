@@ -1,5 +1,5 @@
 import { ActionModal } from '@ecdlink/ui';
-import robot from '../../../../../../assets/ECD_Connect_robot1.svg';
+import EcdConnectRobot from '@/assets/svg-components/ecdConnectRobot';
 import { useTenant } from '@/hooks/useTenant';
 
 interface InitialAttendanceTutorialModalProps {
@@ -15,7 +15,7 @@ export const InitialAttendanceTutorialModal = ({
 
   return (
     <ActionModal
-      customIcon={<img src={robot} alt="profile" className="mb-2" />}
+      customIcon={<EcdConnectRobot className="mb-2" />}
       iconColor="alertMain"
       iconBorderColor="alertBg"
       importantText={`Want to learn how to track attendance ${

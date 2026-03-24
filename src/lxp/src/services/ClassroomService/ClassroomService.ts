@@ -1,8 +1,5 @@
 import { Config } from '@ecdlink/core';
-import {
-  ChildProgressReportPeriodModelInput,
-  ClassroomInput,
-} from '@ecdlink/graphql';
+import { ClassroomInput } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 import { ClassroomDto } from '@/models/classroom/classroom.dto';
 

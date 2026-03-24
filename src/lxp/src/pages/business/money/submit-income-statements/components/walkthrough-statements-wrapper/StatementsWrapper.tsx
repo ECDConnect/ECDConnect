@@ -4,7 +4,7 @@ import Joyride, {
   Step as StepType,
 } from 'react-joyride';
 import { Button, Card, SliderPagination, Typography } from '@ecdlink/ui';
-import WalktroughImage from '../../../../../../assets/iconRobotBlueBg.svg';
+import IconRobotBlue from '@/assets/svg-components/iconRobotBlue';
 import { useAppContext } from '@/walkthrougContext';
 import { useTranslation } from 'react-i18next';
 import {
@@ -136,7 +136,7 @@ export default function StatementsWrapper() {
           <div>
             {step.content && (
               <div className="flex items-center gap-2 align-middle">
-                <img src={WalktroughImage} alt="walkthrough profile" />
+                <IconRobotBlue />
                 <Typography
                   color={'textDark'}
                   type={'h2'}

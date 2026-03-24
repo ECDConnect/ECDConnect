@@ -1,7 +1,7 @@
 import { ActionModal, Dialog, DialogPosition, Typography } from '@ecdlink/ui';
 import { useState } from 'react';
-import robot from '@/assets/iconRobot.svg';
-import robotBlueBg from '@/assets/iconRobotBlueBg.svg';
+import IconRobot from '@/assets/svg-components/iconRobot';
+import IconRobotBlue from '@/assets/svg-components/iconRobotBlue';
 import { LocalStorageKeys } from '@ecdlink/core';
 import { setStorageItem } from '@/utils/common/local-storage.utils';
 import { useAppContext } from '@/walkthrougContext';
@@ -40,7 +40,7 @@ export const StatementsWalkthroughStart = ({
         <ActionModal
           customIcon={
             <div className="flex">
-              <img src={robot} alt="robot" className="mb-2 mr-6 h-24 w-24" />
+              <IconRobot className="mb-2 mr-6 h-24 w-24" />
               <Typography
                 text="Ok, you can always get help by tapping the question mark at the top of the screen!"
                 type="body"
@@ -74,7 +74,7 @@ export const StatementsWalkthroughStart = ({
   return (
     <Dialog visible position={DialogPosition.Middle} className="p-4">
       <ActionModal
-        customIcon={<img src={robotBlueBg} alt="robot" className="mb-4" />}
+        customIcon={<IconRobotBlue className="mb-4" />}
         title="Manage your business like a boss!"
         detailText="Would you like to see how to create your income statements?"
         actionButtons={[

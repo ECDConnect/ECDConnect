@@ -1,7 +1,7 @@
 import { ActionModal, Dialog, DialogPosition, Typography } from '@ecdlink/ui';
 import { useCallback, useState } from 'react';
-import robot from '@/assets/iconRobot.svg';
-import robotFullBody from '@/assets/ECD_Connect_robot1.svg';
+import IconRobot from '@/assets/svg-components/iconRobot';
+import EcdConnectRobot from '@/assets/svg-components/ecdConnectRobot';
 import { LocalStorageKeys } from '@ecdlink/core';
 import { setStorageItem } from '@/utils/common/local-storage.utils';
 import { useAppContext } from '@/walkthrougContext';
@@ -55,7 +55,7 @@ export const ProgrammeWalkthroughStart = ({
         <ActionModal
           customIcon={
             <div className="flex">
-              <img src={robot} alt="robot" className="mb-2 mr-6 h-24 w-24" />
+              <IconRobot className="mb-2 mr-6 h-24 w-24" />
               <Typography
                 text="Ok, you can always get help by tapping the question mark at the top of the screen!"
                 type="body"
@@ -89,7 +89,7 @@ export const ProgrammeWalkthroughStart = ({
   return (
     <Dialog visible position={DialogPosition.Middle} className="p-4">
       <ActionModal
-        customIcon={<img src={robotFullBody} alt="robot" className="mb-4" />}
+        customIcon={<EcdConnectRobot className="mb-4" />}
         title="Hello! Would you like me to show you how to use this section?"
         detailText="I'll show you how to pick a theme and plan a programme."
         actionButtons={[
