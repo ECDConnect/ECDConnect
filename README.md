@@ -135,7 +135,8 @@ Fore more information on creating a Facebook App to use with ECD Connect go to h
 
 ## Google SSO
 Google SSO can be enabled by configuring the Google Client Id in the settings.json files in src\lxp and in the appsettings.json files in src\api.
-
+Visit https://console.cloud.google.com/auth/clients and create a new OAuth client.  That will give you the Client Id and secret you will need for the config files.
+Authorized JavaScript origins need to be set to the various URLs from which the app will be served.
 
 
 ## Project Requirements
