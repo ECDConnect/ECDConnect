@@ -504,6 +504,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 Id = x.Id,
                 StartDate = x.StartDate,
                 EndDate = x.EndDate,
+                UpdatedBy = uId.ToString()
             }));
 
             // create notifications

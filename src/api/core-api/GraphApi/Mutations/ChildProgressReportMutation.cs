@@ -17,7 +17,6 @@ namespace ECDLink.GraphQL.Mutations
     {
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.Create)]
         public bool CreateOrUpdateChildProgressReport(
-            [Service] IHttpContextAccessor httpContextAccessor,
             [Service] IChildProgressReportService progressService,
             ChildProgressReportModel input)
         {
