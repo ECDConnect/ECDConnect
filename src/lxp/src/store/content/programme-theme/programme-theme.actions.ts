@@ -19,7 +19,13 @@ export const getProgrammeThemes = createAsyncThunk<
       programmeThemeData: { programmeThemes: programmeThemeCache },
     } = getState();
 
-    if (!programmeThemeCache || !!overrideCache) {
+    const shouldFetchFresh = overrideCache === true;
+
+    if (
+      shouldFetchFresh ||
+      !programmeThemeCache ||
+      programmeThemeCache.length === 0
+    ) {
       try {
         let programmeThemes: ProgrammeThemeDto[] | undefined;
 

@@ -19,7 +19,10 @@ export const getStoryBooks = createAsyncThunk<
       storyBookData: { storyBooks: storyBookCache },
     } = getState();
 
-    if (!storyBookCache || !!overrideCache) {
+    // Force fresh fetch if overrideCache is explicitly true
+    const shouldFetchFresh = overrideCache === true;
+
+    if (shouldFetchFresh || !storyBookCache || storyBookCache.length === 0) {
       try {
         let storyBooks: StoryBookDto[] | undefined;
 
