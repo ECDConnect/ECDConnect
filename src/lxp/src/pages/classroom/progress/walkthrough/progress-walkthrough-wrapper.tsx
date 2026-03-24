@@ -4,7 +4,7 @@ import Joyride, {
   Step as StepType,
 } from 'react-joyride';
 import { Button, Card, SliderPagination, Typography } from '@ecdlink/ui';
-import WalktroughImage from '../../../../assets/iconRobot.svg';
+import IconRobot from '@/assets/svg-components/iconRobot';
 import { useAppContext } from '@/walkthrougContext';
 import {
   practitionerSelectors,
@@ -191,7 +191,7 @@ export default function ProgressWalkthroughWrapper() {
           <div>
             {step.content && (
               <div className="flex items-center gap-2 align-middle">
-                <img src={WalktroughImage} alt="walkthrough profile" />
+                <IconRobot />
                 <Typography
                   color={'textDark'}
                   type={'h2'}

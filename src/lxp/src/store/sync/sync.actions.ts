@@ -66,6 +66,10 @@ const SHARED_SYNC_STEPS: SyncStep[] = [
 const PRINCIPAL_SYNC_STEPS: SyncStep[] = [
   ...SHARED_SYNC_STEPS.slice(0, 4),
   { title: 'Classrooms', action: classroomsThunkActions.upsertClassroom },
+  {
+    title: 'Child progress report periods',
+    action: classroomsThunkActions.upsertChildProgressReportPeriods,
+  },
   ...SHARED_SYNC_STEPS.slice(4),
   {
     title: 'Calendar events',
