@@ -25,7 +25,7 @@ import * as styles from './class-dashboard.styles';
 import { ClassDashboardRouteState, TabsItems } from './class-dashboard.types';
 import ROUTES from '@routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
-import robot from '@/assets/iconRobot.svg';
+import IconRobot from '@/assets/svg-components/iconRobot';
 import { childrenSelectors } from '@/store/children';
 import { userSelectors } from '@/store/user';
 import { usePractitionerAbsentees } from '@/hooks/usePractitionerAbsentees';
@@ -208,7 +208,7 @@ export const ClassDashboard: React.FC = () => {
         <ActionModal
           customIcon={
             <div className="flex">
-              <img src={robot} alt="profile" className="mb-2" />
+              <IconRobot className="mb-2" />
               <Typography
                 text="Ok, you can always get help by tapping the question mark at the top of the screen!"
                 type={'body'}

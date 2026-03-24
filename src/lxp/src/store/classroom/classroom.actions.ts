@@ -29,6 +29,7 @@ export const ClassroomActions = {
   UPSERT_CLASS_PROGRAMMES: 'upsertClassroomGroupProgrammes',
   GET_CLASSROOM_FOR_TRIAL_PERIOD_USER: 'getClassroomForTrialPeriodUser',
   ADD_CHILD_PROGRESS_REPORT_PERIODS: 'addChildProgressReportPeriods',
+  UPSERT_CHILD_PROGRESS_REPORT_PERIODS: 'upsertChildProgressReportPeriods',
   UPDATE_CLASSROOM_PRACTITIONER_PERMISSIONS:
     'updateClassroomPractitionerPermissions',
 };
@@ -199,22 +200,22 @@ export const upsertClassroom = createAsyncThunk<
           input.SiteAddressId = addressInput.Id;
         }
 
-        if (
-          classroom!.childProgressReportPeriods?.some((a) => a.synced === false)
-        ) {
-          await new ClassroomService(
-            userAuth?.auth_token
-          ).addChildProgressReportPeriods(
-            classroom!.id,
-            classroom!.childProgressReportPeriods
-              ?.filter((y) => y.synced === false)
-              .map((x) => ({
-                id: x.id,
-                startDate: new Date(x.startDate),
-                endDate: new Date(x.endDate),
-              }))
-          );
-        }
+        // if (
+        //   classroom!.childProgressReportPeriods?.some((a) => a.synced === false)
+        // ) {
+        //   await new ClassroomService(
+        //     userAuth?.auth_token
+        //   ).addChildProgressReportPeriods(
+        //     classroom!.id,
+        //     classroom!.childProgressReportPeriods
+        //       ?.filter((y) => y.synced === false)
+        //       .map((x) => ({
+        //         id: x.id,
+        //         startDate: new Date(x.startDate),
+        //         endDate: new Date(x.endDate),
+        //       }))
+        //   );
+        // }
 
         const result = await new ClassroomService(
           userAuth?.auth_token
@@ -225,6 +226,65 @@ export const upsertClassroom = createAsyncThunk<
       return false;
     } catch (err) {
       return rejectWithValue(err);
+    }
+  }
+);
+
+export const upsertChildProgressReportPeriods = createAsyncThunk<
+  boolean,
+  {}, // no payload needed
+  { state: RootState }
+>(
+  'childProgressReportPeriods/upsert',
+  async (_, { getState, rejectWithValue }) => {
+    const state = getState();
+    const { userAuth } = state.auth;
+    const { classroom } = state.classroomData;
+
+    // Early returns + better guard clauses
+    if (!userAuth?.auth_token) {
+      return rejectWithValue('No authentication token available');
+    }
+
+    if (!classroom?.id) {
+      return rejectWithValue('No classroom selected');
+    }
+
+    if (!classroom.childProgressReportPeriods?.length) {
+      return true; // nothing to sync → consider success
+    }
+
+    const token = userAuth.auth_token;
+
+    // Only take periods that need syncing
+    const periodsToSync = classroom.childProgressReportPeriods
+      .filter((period) => period.synced === false)
+      .map((period) => ({
+        id: period.id,
+        startDate: new Date(period.startDate),
+        endDate: new Date(period.endDate),
+      }));
+
+    // Nothing to update → early success
+    if (periodsToSync.length === 0) {
+      return true;
+    }
+
+    try {
+      await new ClassroomService(token).addChildProgressReportPeriods(
+        classroom.id,
+        periodsToSync
+      );
+
+      return true;
+    } catch (err: any) {
+      console.error('Failed to upsert progress report periods:', err);
+
+      return rejectWithValue(
+        err.response?.data?.message ||
+          err.message ||
+          'Failed to save progress report periods'
+      );
     }
   }
 );
