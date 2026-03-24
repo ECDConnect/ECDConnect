@@ -114,7 +114,12 @@ export const BannerWrapper = React.forwardRef<
     >
       {showBackground && (
         <div className={styles.backgroundImageWrapper(size, color)}>
-          <img alt="logo" className={styles.overlayImage} src={backgroundUrl} />
+          <img
+            alt="logo"
+            className={styles.overlayImage}
+            src={backgroundUrl}
+            crossOrigin="anonymous"
+          />
         </div>
       )}
 
