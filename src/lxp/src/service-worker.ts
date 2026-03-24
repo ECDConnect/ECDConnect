@@ -182,4 +182,14 @@ self.addEventListener('message', (event) => {
   }
 });
 
+self.addEventListener('install', (event) => {
+  // Force the new service worker to activate immediately
+  event.waitUntil(self.skipWaiting());
+});
+
+self.addEventListener('activate', (event) => {
+  // Take control of all open clients (tabs / PWA windows) immediately
+  event.waitUntil(self.clients.claim());
+});
+
 log('Installed');
