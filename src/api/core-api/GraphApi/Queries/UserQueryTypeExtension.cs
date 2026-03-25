@@ -389,6 +389,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             AND up.""UpdatedDate"" > {lastSync}
             ").CountAsync();
 
+
+            var moneyInCount = await dbContext.StatementsIncomes.FromSql($@"
+            SELECT si.""Id""
+            FROM ""StatementsIncomeStatement"" sis 
+            JOIN ""StatementsIncome"" si on si.""StatementsIncomeStatementId"" = sis.""Id""
+            WHERE sis.""UserId"" = {userId}::uuid and si.""UpdatedBy"" != {userId}::text
+            AND si.""UpdatedDate"" > {lastSync}
+            ").CountAsync();
+
+            var moneyOutCount = await dbContext.StatementsExpenses.FromSql($@"
+            SELECT se.""Id""
+            FROM ""StatementsIncomeStatement"" sis 
+            JOIN ""StatementsExpenses"" se on se.""StatementsIncomeStatementId"" = sis.""Id""
+            WHERE sis.""UserId"" = {userId}::uuid and se.""UpdatedBy"" != {userId}::text
+            AND se.""UpdatedDate"" > {lastSync}
+            ").CountAsync();
+
             return new UserSyncStatus
             {
                 SyncChildren = childrenCount >= 1,
@@ -396,6 +413,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 SyncReportingPeriods = periodCount >= 1,
                 SyncPoints = pointsCount >= 1,
                 SyncPermissions = permissionsCount >= 1,
+                SyncMoney = moneyInCount >= 1 || moneyOutCount >=1
             };
         }
     }
