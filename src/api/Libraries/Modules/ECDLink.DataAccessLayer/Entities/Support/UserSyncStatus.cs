@@ -8,7 +8,7 @@ namespace ECDLink.DataAccessLayer.Entities
         public bool SyncChildren { get; set; }
         public bool SyncReportingPeriods { get; set; }
         public bool SyncPoints { get; set; }
-
         public bool SyncPermissions { get; set; }
+        public bool SyncMoney { get; set; }
     }
 }

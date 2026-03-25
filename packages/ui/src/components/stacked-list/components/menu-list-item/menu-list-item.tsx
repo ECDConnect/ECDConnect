@@ -1,5 +1,4 @@
 import { ChevronRightIcon } from '@heroicons/react/solid';
-import { useMemo } from 'react';
 import { Avatar } from '../../..';
 import {
   classNames,
@@ -13,68 +12,86 @@ import * as styles from './menu-list-item.styles';
 
 export interface MenuListItemProps extends ComponentBaseProps {
   item: MenuListDataItem;
-  onClickItem?: (item: any) => void;
+  onClickItem?: (item: MenuListDataItem) => void;
 }
 
 export const MenuListItem: React.FC<MenuListItemProps> = ({
   item,
   onClickItem,
 }) => {
-  const getBackground = useMemo(() => {
-    if (item.hexBackgroundColor) return;
+  const handleClick = () => {
+    item.onActionClick?.() ?? onClickItem?.(item);
+  };
 
-    return item.backgroundColor ? `bg-${item.backgroundColor}` : 'bg-uiBg';
-  }, []);
+  // Determine background class (only if no custom hex color)
+  const backgroundClass = item.hexBackgroundColor
+    ? undefined
+    : item.backgroundColor
+    ? `bg-${item.backgroundColor}`
+    : 'bg-uiBg';
+
+  // Render the left icon/avatar part
+  const renderLeftIcon = () => {
+    if (item.customIcon) return item.customIcon;
+
+    if (!item.showIcon && item?.menuIconUrl) {
+      return (
+        <Avatar
+          className="mr-4"
+          displayBorder
+          dataUrl={item.menuIconUrl ?? ''}
+          size="lg"
+          borderColor="primary"
+        />
+      );
+    }
+
+    if (item.svgIcon || item.menuIconUrl || item.menuIcon) {
+      return (
+        <RoundIcon
+          className="mr-4"
+          svgIcon={item.svgIcon}
+          imageUrl={item.menuIconUrl}
+          icon={item.menuIcon}
+          hexBackgroundColor={item.iconHexBackgroundColor}
+          iconColor={item.iconColor}
+          backgroundColor={item.iconBackgroundColor}
+          iconClassName={item.menuIconClassName}
+        />
+      );
+    }
+
+    return null;
+  };
 
   return (
     <div
       id={item?.id}
       className={classNames(styles.menulistItemContainer, item.className)}
-      onClick={() => {
-        if (!!item.onActionClick) item.onActionClick();
-        else if (!!onClickItem) onClickItem(item);
-      }}
+      onClick={handleClick}
     >
       <div
         className={
-          item?.childList
+          item.childList
             ? styles.contentWrapperChildList
-            : classNames(styles.contentWrapper, getBackground)
+            : classNames(styles.contentWrapper, backgroundClass)
         }
         style={
-          item.hexBackgroundColor ? { background: item.hexBackgroundColor } : {}
+          item.hexBackgroundColor
+            ? { background: item.hexBackgroundColor }
+            : undefined
         }
       >
+        {/* Left side: Icon + Text */}
         <div className={stackedListStyles.textRowsWrapper}>
-          {item?.customIcon}
-          {!item?.customIcon &&
-            (item.menuIcon || item.menuIconUrl) &&
-            (item.showIcon ? (
-              <RoundIcon
-                className="mr-4"
-                hexBackgroundColor={item.iconHexBackgroundColor}
-                iconColor={item.iconColor}
-                backgroundColor={item.iconBackgroundColor}
-                imageUrl={item.menuIconUrl}
-                icon={item.menuIcon}
-                iconClassName={item.menuIconClassName}
-              />
-            ) : (
-              <div>
-                <Avatar
-                  className="mr-4"
-                  displayBorder
-                  dataUrl={item.menuIconUrl ?? ''}
-                  size={'lg'}
-                  borderColor={'primary'}
-                />
-              </div>
-            ))}
+          {renderLeftIcon()}
+
           <div className={stackedListStyles.paragraphWrapper}>
             <div>
               <p className={classNames(styles.menuTitle, item.titleStyle)}>
                 {item.title}
               </p>
+
               {typeof item.subTitle === 'string' ? (
                 <p
                   className={classNames(
@@ -90,18 +107,22 @@ export const MenuListItem: React.FC<MenuListItemProps> = ({
             </div>
           </div>
         </div>
-        <div className="flex">
-          {item?.subItem && (
+
+        {/* Right side: Sub item, likes, chevron */}
+        <div className="flex items-center">
+          {item.subItem && (
             <p className={classNames(styles.menuSubItem, item.titleStyle)}>
-              {item?.subItem}
+              {item.subItem}
             </p>
           )}
-          {item?.likesItem && <div>{item?.likesItem}</div>}
-          {item?.rightIcon ? (
+
+          {item.likesItem && <div>{item.likesItem}</div>}
+
+          {item.rightIcon ? (
             renderIcon(item.rightIcon, item.rightIconClassName)
-          ) : item?.hideRightIcon ? null : (
+          ) : !item.hideRightIcon ? (
             <ChevronRightIcon className={styles.menuChevron} />
-          )}
+          ) : null}
         </div>
       </div>
     </div>

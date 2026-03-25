@@ -60,6 +60,7 @@ const SHARED_SYNC_STEPS: SyncStep[] = [
   { title: 'Documents', action: documentThunkActions.createDocument },
   { title: 'User Consent', action: userThunkActions.upsertUserConsents },
   { title: 'Analytics', action: analyticsThunkActions.pushAnalytics },
+  { title: 'Money', action: statementsThunkActions.upsertIncomeStatements },
 ];
 
 /** Steps specifically for Principals */
@@ -305,6 +306,14 @@ export const pullRemoteChanges = createAsyncThunk<
             dispatch(
               practitionerThunkActions.getPractitionerPermissions({ userId })
             ).unwrap()
+          )
+        );
+      }
+      // Money block
+      if (userSyncStatus.syncMoney) {
+        otherPromises.push(
+          retryWithExponentialBackoff(() =>
+            dispatch(statementsThunkActions.upsertIncomeStatements({})).unwrap()
           )
         );
       }

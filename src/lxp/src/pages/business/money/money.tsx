@@ -15,14 +15,9 @@ export const Money: React.FC = () => {
   const appDispatch = useAppDispatch();
 
   useEffect(() => {
-    const syncStatements = async () => {
+    const fetchStatements = async () => {
       if (userAuth?.auth_token && isOnline) {
         setIsLoading(true);
-
-        // Push any updates
-        await appDispatch(
-          statementsThunkActions.upsertIncomeStatements({})
-        ).unwrap();
 
         // Fetch updates
         const startDate = new Date();
@@ -37,7 +32,7 @@ export const Money: React.FC = () => {
       }
     };
 
-    syncStatements();
+    fetchStatements();
   }, []);
 
   const {
