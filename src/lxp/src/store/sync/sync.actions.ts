@@ -71,14 +71,6 @@ const PRINCIPAL_SYNC_STEPS: SyncStep[] = [
   { title: 'Documents', action: documentThunkActions.createDocument },
   { title: 'Notes', action: notesThunkActions.upsertNotes },
   { title: 'User Consent', action: userThunkActions.upsertUserConsents },
-  { title: 'Analytics', action: analyticsThunkActions.pushAnalytics },
-  { title: 'Money', action: statementsThunkActions.upsertIncomeStatements },
-];
-
-/** Steps specifically for Principals */
-const PRINCIPAL_SYNC_STEPS: SyncStep[] = [
-  ...SHARED_SYNC_STEPS.slice(0, 4),
-  { title: 'Classrooms', action: classroomsThunkActions.upsertClassroom },
   {
     title: 'Child progress report periods',
     action: classroomsThunkActions.upsertChildProgressReportPeriods,
@@ -321,14 +313,6 @@ export const pullRemoteChanges = createAsyncThunk<
             dispatch(
               practitionerThunkActions.getPractitionerPermissions({ userId })
             ).unwrap()
-          )
-        );
-      }
-      // Money block
-      if (userSyncStatus.syncMoney) {
-        otherPromises.push(
-          retryWithExponentialBackoff(() =>
-            dispatch(statementsThunkActions.upsertIncomeStatements({})).unwrap()
           )
         );
       }
