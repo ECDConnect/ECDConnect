@@ -170,7 +170,6 @@ class UserService {
           syncReportingPeriods
           syncPoints
           syncPermissions
-          syncMoney
         }
       }
       `,
