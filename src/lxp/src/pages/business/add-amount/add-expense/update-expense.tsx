@@ -9,10 +9,11 @@ import Food from './components/food/food';
 import LearningMaterials from './components/learning-materials/learning-materials';
 import AnnualMaintenance from './components/annual-maintenance/annual-maintenance';
 import OtherExpense from './components/other-expense/other';
-import { statementsActions } from '@/store/statements';
+import { statementsActions, statementsThunkActions } from '@/store/statements';
 import { ExpenseItemDto, ExpenseTypeIds } from '@ecdlink/core';
 import ROUTES from '@/routes/routes';
 import { BusinessTabItems } from '../../business.types';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export type UpdateExpenseState = {
   statementId: string;
@@ -22,6 +23,7 @@ export type UpdateExpenseState = {
 export const UpdateExpense: React.FC = () => {
   const history = useHistory();
   const appDispatch = useAppDispatch();
+  const { isOnline } = useOnlineStatus();
 
   const location = useLocation<UpdateExpenseState>();
   const statementId = location.state.statementId;
@@ -29,12 +31,17 @@ export const UpdateExpense: React.FC = () => {
 
   const onSubmit = useCallback(
     (updatedExpenseItem: ExpenseItemDto) => {
+      // update redux
       appDispatch(
         statementsActions.updateExpenseItem({
           statementId,
           expenseItem: updatedExpenseItem,
         })
       );
+      if (isOnline) {
+        // send change to backend
+        appDispatch(statementsThunkActions.upsertIncomeStatements({})).unwrap();
+      }
       history.push(ROUTES.BUSINESS, {
         activeTabIndex: BusinessTabItems.MONEY,
       });

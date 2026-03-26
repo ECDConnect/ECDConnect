@@ -213,7 +213,7 @@ const statementsSlice = createSlice({
       }));
     });
     builder.addCase(getIncomeStatements.fulfilled, (state, action) => {
-      if (action.payload && action.payload.length) {
+      if (action.payload?.length) {
         state.incomeStatements = [
           ...state.incomeStatements.filter(
             (x) =>

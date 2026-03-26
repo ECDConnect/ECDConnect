@@ -36,12 +36,24 @@ type SyncStep = {
 const SHARED_SYNC_STEPS: SyncStep[] = [
   { title: 'User', action: userThunkActions.syncUser },
   { title: 'Calendar', action: calendarThunkActions.upsertCalendarEvents },
-  { title: 'Care givers', action: caregiverThunkActions.upsertCareGivers },
-  { title: 'Children', action: childrenThunkActions.upsertChildren },
+  {
+    title: 'Calendar events',
+    action: calendarThunkActions.cancelCalendarEvent,
+  },
+  { title: 'API errors', action: queryErrorsThunkActions.upsertQueryErrors },
+  { title: 'Analytics', action: analyticsThunkActions.pushAnalytics },
+];
+
+/** Steps specifically for Principals */
+const PRINCIPAL_SYNC_STEPS: SyncStep[] = [
+  ...SHARED_SYNC_STEPS,
+  { title: 'Classrooms', action: classroomsThunkActions.upsertClassroom },
   {
     title: 'Classroom groups',
     action: classroomsThunkActions.upsertClassroomGroups,
   },
+  { title: 'Care givers', action: caregiverThunkActions.upsertCareGivers },
+  { title: 'Children', action: childrenThunkActions.upsertChildren },
   {
     title: 'Classroom group programmes',
     action: classroomsThunkActions.upsertClassroomGroupProgrammes,
@@ -55,26 +67,13 @@ const SHARED_SYNC_STEPS: SyncStep[] = [
     action: progressTrackingThunkActions.syncChildProgressReports,
   },
   { title: 'Attendance', action: attendanceThunkActions.trackAttendanceSync },
-  { title: 'Notes', action: notesThunkActions.upsertNotes },
   { title: 'Programmes', action: programmeThunkActions.updateProgrammes },
   { title: 'Documents', action: documentThunkActions.createDocument },
+  { title: 'Notes', action: notesThunkActions.upsertNotes },
   { title: 'User Consent', action: userThunkActions.upsertUserConsents },
-  { title: 'Analytics', action: analyticsThunkActions.pushAnalytics },
-  { title: 'Money', action: statementsThunkActions.upsertIncomeStatements },
-];
-
-/** Steps specifically for Principals */
-const PRINCIPAL_SYNC_STEPS: SyncStep[] = [
-  ...SHARED_SYNC_STEPS.slice(0, 4),
-  { title: 'Classrooms', action: classroomsThunkActions.upsertClassroom },
   {
     title: 'Child progress report periods',
     action: classroomsThunkActions.upsertChildProgressReportPeriods,
-  },
-  ...SHARED_SYNC_STEPS.slice(4),
-  {
-    title: 'Calendar events',
-    action: calendarThunkActions.cancelCalendarEvent,
   },
   {
     title: 'Statements',
@@ -85,6 +84,22 @@ const PRINCIPAL_SYNC_STEPS: SyncStep[] = [
 /** Steps specifically for Practitioners */
 const PRACTITIONER_SYNC_STEPS: SyncStep[] = [
   ...SHARED_SYNC_STEPS,
+
+  { title: 'Care givers', action: caregiverThunkActions.upsertCareGivers },
+  { title: 'Children', action: childrenThunkActions.upsertChildren },
+  {
+    title: 'Classroom group learners',
+    action: classroomsThunkActions.upsertClassroomGroupLearners,
+  },
+  {
+    title: 'Child progress reports',
+    action: progressTrackingThunkActions.syncChildProgressReports,
+  },
+  { title: 'Attendance', action: attendanceThunkActions.trackAttendanceSync },
+  { title: 'Programmes', action: programmeThunkActions.updateProgrammes },
+  { title: 'Documents', action: documentThunkActions.createDocument },
+  { title: 'Notes', action: notesThunkActions.upsertNotes },
+  { title: 'User Consent', action: userThunkActions.upsertUserConsents },
   { title: 'PQAs', action: pqaThunkActions.addVisitFormData },
   {
     title: 'PQAs Support Visits',
@@ -101,14 +116,6 @@ const PRACTITIONER_SYNC_STEPS: SyncStep[] = [
   {
     title: 'ReAccreditation Follow up Visits',
     action: pqaThunkActions.addReAccreditationFollowUpVisitForPractitioner,
-  },
-  {
-    title: 'Calendar events',
-    action: calendarThunkActions.cancelCalendarEvent,
-  },
-  {
-    title: 'API errors',
-    action: queryErrorsThunkActions.upsertQueryErrors,
   },
 ];
 
@@ -306,14 +313,6 @@ export const pullRemoteChanges = createAsyncThunk<
             dispatch(
               practitionerThunkActions.getPractitionerPermissions({ userId })
             ).unwrap()
-          )
-        );
-      }
-      // Money block
-      if (userSyncStatus.syncMoney) {
-        otherPromises.push(
-          retryWithExponentialBackoff(() =>
-            dispatch(statementsThunkActions.upsertIncomeStatements({})).unwrap()
           )
         );
       }
