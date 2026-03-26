@@ -367,7 +367,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var pointsCount = await dbContext.PointsUserSummary.FromSql($@"
             SELECT pus.""Id""
             FROM ""PointsUserSummary"" pus 
-            WHERE pus.""UserId"" = {userId}::uuid and pus.""UpdatedBy"" != {userId}::text
+            WHERE pus.""UserId"" = {userId}::uuid
             AND pus.""UpdatedDate"" > {lastSync}
             ").CountAsync();
 
