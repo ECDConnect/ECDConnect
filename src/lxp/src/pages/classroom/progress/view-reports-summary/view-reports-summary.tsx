@@ -96,6 +96,7 @@ export const ProgressViewReportsSummary: React.FC = () => {
           userId: userAuth?.id!,
           startDate: oneYearAgo,
           endDate: currentDate,
+          overrideCache: true,
         })
       ).unwrap();
     }

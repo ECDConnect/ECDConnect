@@ -322,16 +322,25 @@ export const pullRemoteChanges = createAsyncThunk<
         oneYearAgo.setMonth(now.getMonth() - 12);
 
         otherPromises.push(
-          dispatch(pointsThunkActions.pointsTodoItems({ userId })).unwrap(),
-          dispatch(pointsThunkActions.yearPointsView({ userId })).unwrap(),
           dispatch(
-            pointsThunkActions.sharedData({ userId, isMonthly: true })
+            pointsThunkActions.pointsTodoItems({ userId, overrideCache: true })
+          ).unwrap(),
+          dispatch(
+            pointsThunkActions.yearPointsView({ userId, overrideCache: true })
+          ).unwrap(),
+          dispatch(
+            pointsThunkActions.sharedData({
+              userId,
+              isMonthly: true,
+              overrideCache: true,
+            })
           ).unwrap(),
           dispatch(
             pointsThunkActions.getPointsSummaryForUser({
               userId,
               startDate: oneYearAgo,
               endDate: now,
+              overrideCache: true,
             })
           ).unwrap()
         );
