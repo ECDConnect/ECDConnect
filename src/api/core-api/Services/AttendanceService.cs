@@ -173,7 +173,6 @@ namespace ECDLink.Api.CoreApi.Services
 
         public List<Child> GetChildrenForUser(string userId)
         {
-            var result1 = _childRepo.GetAll().ToList();
             return _childRepo.GetAll()
                 .Where(x => x.IsActive && x.WorkflowStatusId == Constants.WorkflowStatus.ActiveId)
                 .ToList(); //Hierarchy based children

@@ -22,7 +22,7 @@ import Food from './components/food/food';
 import LearningMaterials from './components/learning-materials/learning-materials';
 import AnnualMaintenance from './components/annual-maintenance/annual-maintenance';
 import OtherExpense from './components/other-expense/other';
-import { statementsActions } from '@/store/statements';
+import { statementsActions, statementsThunkActions } from '@/store/statements';
 import { authSelectors } from '@/store/auth';
 import { ExpenseItemDto } from '@ecdlink/core';
 import { BusinessTabItems } from '../../business.types';
@@ -63,7 +63,12 @@ export const AddExpense: React.FC = () => {
   const onSubmit = useCallback(
     (expenseItem: ExpenseItemDto) => {
       removeNotifications();
+      // update redux
       appDispatch(statementsActions.addExpenseItem(expenseItem));
+      if (isOnline) {
+        // send change to backend
+        appDispatch(statementsThunkActions.upsertIncomeStatements({})).unwrap();
+      }
       history.push(ROUTES.BUSINESS, {
         activeTabIndex: BusinessTabItems.MONEY,
       });
