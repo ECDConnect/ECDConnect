@@ -114,11 +114,13 @@ export const PointsSummary: React.FC = () => {
   }, [dispatch, practitioner?.userId]);
 
   const getYearPoints = useCallback(async () => {
-    const response = await new PointsService(
-      userAuth?.auth_token!
-    ).yearPointsView(practitioner?.userId!);
+    const response = await dispatch(
+      pointsThunkActions.yearPointsView({
+        userId: practitioner?.userId!,
+      })
+    );
     return response;
-  }, [practitioner?.userId, userAuth?.auth_token]);
+  }, [dispatch, practitioner?.userId]);
 
   const todoListFiltered = practitioner?.isPrincipal
     ? principalActivitiesItems
