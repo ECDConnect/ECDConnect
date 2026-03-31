@@ -14196,7 +14196,6 @@ export type UserSyncStatus = {
   __typename?: 'UserSyncStatus';
   syncChildren: Scalars['Boolean'];
   syncClassroom: Scalars['Boolean'];
-  syncMoney: Scalars['Boolean'];
   syncPermissions: Scalars['Boolean'];
   syncPoints: Scalars['Boolean'];
   syncReportingPeriods: Scalars['Boolean'];

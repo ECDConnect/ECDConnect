@@ -110,8 +110,6 @@ export const yearPointsView = createAsyncThunk<
       points: { yearPoints: yearPointsCache },
     } = getState();
 
-    console.log('action.yearPointsView.yearPointsCache', yearPointsCache);
-
     // === CACHE CHECK ===
     if (!overrideCache && !!yearPointsCache) {
       return yearPointsCache;
