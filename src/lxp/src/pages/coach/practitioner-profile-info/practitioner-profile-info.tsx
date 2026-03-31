@@ -195,7 +195,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const updatedUserReassigned = useCallback(async () => {
     if (isFromReassignView) {
       await appDispatch(
-        practitionerThunkActions.getAllPractitioners({})
+        practitionerThunkActions.getAllPractitioners({ overrideCache: true })
       ).unwrap();
     }
   }, [appDispatch, isFromReassignView]);

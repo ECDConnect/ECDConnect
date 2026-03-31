@@ -12,10 +12,7 @@ import {
   Dialog,
   DialogPosition,
 } from '@ecdlink/ui';
-import {
-  MutationAddPractitionerToPrincipalArgs,
-  UpdateUserPermissionInputModelInput,
-} from '@ecdlink/graphql';
+import { MutationAddPractitionerToPrincipalArgs } from '@ecdlink/graphql';
 import { useHistory } from 'react-router-dom';
 import { UserDto, useSnackbar } from '@ecdlink/core';
 import { useState, useEffect } from 'react';
@@ -50,7 +47,6 @@ import { practitionerThunkActions } from '@/store/practitioner';
 import { useTenant } from '@/hooks/useTenant';
 import { staticDataSelectors } from '@/store/static-data';
 import { HelpForm } from '@/components/help-form/help-form';
-import PermissionsService from '@/services/PermissionsService/PermissionsService';
 import { useTenantModules } from '@/hooks/useTenantModules';
 
 export const AddPractitioner = ({
@@ -253,23 +249,23 @@ export const AddPractitioner = ({
       preschoolCode: '',
     };
 
-    const updatePermissionInput: UpdateUserPermissionInputModelInput = {
-      userId: newPractitioner?.userId,
-      permissionIds: permissionsAdded,
-    };
     // also set the progress for this newly assigned user to 0
     await new PractitionerService(
       userAuth?.auth_token!
     ).UpdatePractitionerProgress(newPractitioner?.userId!, 0);
 
-    const updatePermissions = await new PermissionsService(
-      userAuth?.auth_token!
-    ).UpdateUserPermission(updatePermissionInput);
+    await appDispatch(
+      practitionerThunkActions.updatePractitionerPermissions({
+        userId: newPractitioner?.userId!,
+        permissionsIds: permissionsAdded,
+      })
+    );
+
     await new PractitionerService(
       userAuth?.auth_token!
     ).AddPractitionerToPrincipal(input);
     await appDispatch(
-      practitionerThunkActions.getAllPractitioners({})
+      practitionerThunkActions.getAllPractitioners({ overrideCache: true })
     ).unwrap();
 
     setIsloading(false);

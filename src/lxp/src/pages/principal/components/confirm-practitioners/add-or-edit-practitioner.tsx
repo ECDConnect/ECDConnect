@@ -38,7 +38,6 @@ import {
 } from '../add-practitioner/add-practitioner.types';
 import { useTenant } from '@/hooks/useTenant';
 import { staticDataSelectors } from '@/store/static-data';
-import PermissionsService from '@/services/PermissionsService/PermissionsService';
 import { UpdateUserPermissionInputModelInput } from '@ecdlink/graphql';
 import { StackListItems } from './confirm-practitioners';
 import { HelpForm } from '@/components/help-form/help-form';
@@ -236,10 +235,6 @@ export const AddOrEditPractitioner = ({
       await appDispatch(
         classroomsActions.createClassroomPractitioner(updatePermissionInput)
       );
-
-      // await new PermissionsService(userAuth?.auth_token!).UpdateUserPermission(
-      //   updatePermissionInput
-      // );
     }
 
     if (practitionerPhoneNumber) {
@@ -320,10 +315,6 @@ export const AddOrEditPractitioner = ({
       await appDispatch(
         classroomsActions.createClassroomPractitioner(updatePermissionInput)
       );
-
-      // await new PermissionsService(userAuth?.auth_token!).UpdateUserPermission(
-      //   updatePermissionInput
-      // );
     }
 
     handleAddOrEditAnotherPractitionerSubmit({

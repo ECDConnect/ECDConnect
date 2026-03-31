@@ -95,6 +95,10 @@ export const AllResources: React.FC<AllResourcesprops> = ({
     [likedByUserFilter]
   );
 
+  useEffect(() => {
+    setResourcesData(resourcesSorted);
+  }, [resources]); // Re-sync when resources prop changes
+
   const resourcesLiked = resources?.filter((item1) =>
     resourcesLikedByUser?.find((item2) => item1.id === item2.contentId)
   );
@@ -196,7 +200,7 @@ export const AllResources: React.FC<AllResourcesprops> = ({
               position: DialogPosition.Full,
               render: (onClose) => (
                 <ResourceItem
-                  resource={item}
+                  resourceId={item.id}
                   onClose={onClose}
                   handleGetResourcesQueries={handleGetResourcesQueries}
                 />
@@ -242,7 +246,7 @@ export const AllResources: React.FC<AllResourcesprops> = ({
               position: DialogPosition.Full,
               render: (onClose) => (
                 <ResourceItem
-                  resource={item}
+                  resourceId={item.id}
                   onClose={onClose}
                   handleGetResourcesQueries={handleGetResourcesQueries}
                 />

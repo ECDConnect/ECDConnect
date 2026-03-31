@@ -114,7 +114,7 @@ export const InvitedPractitioner: React.FC<InvitedPractitionerRouteState> = ({
     ).UpdatePrincipalInvitation(userId!, practitioner?.id!, false);
 
     await appDispatch(
-      practitionerThunkActions.getAllPractitioners({})
+      practitionerThunkActions.getAllPractitioners({ overrideCache: true })
     ).unwrap();
 
     setInvites(

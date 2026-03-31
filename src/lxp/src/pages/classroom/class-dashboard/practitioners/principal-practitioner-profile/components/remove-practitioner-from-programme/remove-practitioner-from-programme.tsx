@@ -291,7 +291,7 @@ export const RemovePractitionerFromProgramme: React.FC<
         );
       }
       await appDispatch(
-        practitionerThunkActions.getAllPractitioners({})
+        practitionerThunkActions.getAllPractitioners({ overrideCache: true })
       ).unwrap();
     }
   };

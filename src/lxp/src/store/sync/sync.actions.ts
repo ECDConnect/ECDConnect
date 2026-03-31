@@ -311,7 +311,10 @@ export const pullRemoteChanges = createAsyncThunk<
         otherPromises.push(
           retryWithExponentialBackoff(() =>
             dispatch(
-              practitionerThunkActions.getPractitionerPermissions({ userId })
+              practitionerThunkActions.getPractitionerPermissions({
+                userId,
+                overrideCache: true,
+              })
             ).unwrap()
           )
         );

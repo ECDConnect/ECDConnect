@@ -221,7 +221,11 @@ export const SetupPrincipal: React.FC = () => {
               userId: user?.id!,
             })
           );
-          await appDispatch(practitionerThunkActions.getAllPractitioners({}));
+          await appDispatch(
+            practitionerThunkActions.getAllPractitioners({
+              overrideCache: true,
+            })
+          );
           await appDispatch(
             classroomsThunkActions.getClassroom({ overrideCache: true })
           ).unwrap();
@@ -375,7 +379,9 @@ export const SetupPrincipal: React.FC = () => {
             ).unwrap();
           }
           await appDispatch(
-            practitionerThunkActions.getAllPractitioners({})
+            practitionerThunkActions.getAllPractitioners({
+              overrideCache: true,
+            })
           ).unwrap();
           await appDispatch(
             notificationActions.resetFrontendNotificationState()
@@ -407,7 +413,7 @@ export const SetupPrincipal: React.FC = () => {
           })
         ).unwrap();
         await appDispatch(
-          practitionerThunkActions.getAllPractitioners({})
+          practitionerThunkActions.getAllPractitioners({ overrideCache: true })
         ).unwrap();
         await appDispatch(notificationActions.resetFrontendNotificationState());
       }
