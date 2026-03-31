@@ -25,10 +25,7 @@ export const ProgressCaregiverReportSkillsPage: React.FC<
   reportingPeriodEndDate,
 }) => {
   return (
-    <div
-      className={'flex flex-col px-4 pb-4 pt-4'}
-      style={{ height: '1100px' }}
-    >
+    <div className={'flex flex-col px-4 pb-4'} style={{ height: '1100px' }}>
       <div className="mb-4 flex flex-row">
         <img src={greenFaceImg} className="mr-4 h-20 w-20" alt="greenFace" />
         <Typography
@@ -55,7 +52,7 @@ export const ProgressCaregiverReportSkillsPage: React.FC<
 
       {skillsByCategory.map((category) => (
         <div
-          className="mt-6 mb-4 flex flex-col rounded-sm rounded-2xl border-2 p-4 pb-6 shadow-sm"
+          className="mt-2 mb-2 flex flex-col rounded-sm rounded-2xl border-2 p-4 pb-6 shadow-sm"
           style={{
             borderColor: category.color,
             backgroundColor: lightenColor(category.color, 95),

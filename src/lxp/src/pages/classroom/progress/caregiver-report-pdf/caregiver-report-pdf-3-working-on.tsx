@@ -27,7 +27,7 @@ export const ProgressCaregiverReportWorkingOnPage: React.FC<
   return (
     <div
       className={'flex flex-col px-4 pb-4 pt-4'}
-      style={{ height: '1100px' }}
+      style={{ height: '1100px', position: 'relative', overflow: 'hidden' }}
     >
       <div className="mb-4 flex flex-row">
         <img src={pinkFaceImg} className="mr-4 h-20 w-20" alt="pinkFace" />
@@ -58,13 +58,13 @@ export const ProgressCaregiverReportWorkingOnPage: React.FC<
         .map((category) => (
           <div
             key={category.id}
-            className="mt-6 mb-4 flex flex-col rounded-sm rounded-2xl border-2 p-4 pb-6 shadow-sm"
+            className="mt-2 mb-2 flex flex-col rounded-sm rounded-2xl border-2 p-4 pb-6 shadow-sm"
             style={{
               borderColor: category.color,
               backgroundColor: lightenColor(category.color, 95),
             }}
           >
-            <div className="mb-4 flex flex-row">
+            <div className="flex flex-row">
               <img
                 src={category.imageUrl}
                 className="mr-4 h-14 w-14"
