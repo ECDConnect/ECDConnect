@@ -253,7 +253,7 @@ export const upsertIncomeStatements = createAsyncThunk<
             ).updateStatement(statement as IncomeStatementDto);
           });
       }
-      return Promise.all(promises);
+      return await Promise.all(promises);
     } catch (err) {
       return rejectWithValue(err);
     }
