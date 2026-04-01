@@ -150,7 +150,7 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
             isActive: true,
             programmeStartDate: today,
             isFullDay: data?.isFullDay || false,
-            synced: isOnline,
+            synced: false,
           };
         }),
       };
