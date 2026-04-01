@@ -165,7 +165,7 @@ export const upsertClassroom = createAsyncThunk<
       token && classroom && !classroom.synced
     );
 
-    if (shouldSyncClassroom) {
+    if (!shouldSyncClassroom) {
       return false;
     }
 
