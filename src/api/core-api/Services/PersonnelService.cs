@@ -361,7 +361,7 @@ namespace ECDLink.Api.CoreApi.Services
 
         public Practitioner PromotePractitionerToPrincipal(string userId, bool sendComm = false)
         {
-            var practitionerToPromote = _practiRepo.GetByUserId(userId);            
+            var practitionerToPromote = _practiGenericRepo.GetByUserId(userId);            
             if (practitionerToPromote!=null)
             {
                 practitionerToPromote.IsPrincipal = true;
