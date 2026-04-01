@@ -149,23 +149,6 @@ export const EditClass = ({
         classProgrammes: updatedClassroomProgrammes,
       })
     );
-
-    // TODO - this probably needs to be updated
-    if (isOnline) {
-      appDispatch(
-        classroomsThunkActions.updateClassroomGroup({
-          id: classToEdit.id,
-          classroomGroup: {
-            name: name || '',
-            classroomId: editClassroomId,
-            isActive: true,
-            practitionerId: practitionerId,
-          },
-        })
-      );
-      appDispatch(classroomsThunkActions.upsertClassroomGroupProgrammes({}));
-    }
-
     onSubmit();
   };
 
