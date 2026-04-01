@@ -36,12 +36,6 @@ const contentConsentSlice = createSlice({
             ...incoming,
             locale,
           });
-        } else {
-          state.consent![index] = {
-            ...state.consent![index],
-            ...incoming,
-            locale,
-          };
         }
       });
 
@@ -58,25 +52,21 @@ const contentConsentSlice = createSlice({
 
       state.consent = state.consent ?? [];
 
-      action.payload.forEach((incoming) => {
-        const index = state.consent!.findIndex(
-          (item) => item.id === incoming.id && item.locale === locale
-        );
-        if (index === -1) {
-          state.consent!.push({
-            ...incoming,
-            locale,
-            name,
-          });
-        } else {
-          state.consent![index] = {
-            ...state.consent![index],
-            ...incoming,
-            locale,
-            name,
-          };
-        }
-      });
+      const incoming = action.payload[0];
+      const index = state.consent.findIndex(
+        (item) =>
+          item.id === incoming.id &&
+          item.locale === locale &&
+          item.name === name
+      );
+
+      if (index === -1) {
+        state.consent.push({
+          ...incoming,
+          locale,
+          name,
+        });
+      }
       setFulfilledThunkActionStatus(state, action);
     });
   },
