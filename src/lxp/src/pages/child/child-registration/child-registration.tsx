@@ -65,7 +65,7 @@ export const ChildRegistration: React.FC = () => {
   const practitionerId = location?.state?.practitionerId;
   const { isOnline } = useOnlineStatus();
   const user = useSelector(userSelectors.getUser);
-  const consentList = useSelector(contentConsentSelectors.getConsent);
+  const consentList = useSelector(contentConsentSelectors.getConsentSelector);
   const existingChild = useSelector(childrenSelectors.getChildById(childId));
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const isFromPqa = !!practitionerId;
