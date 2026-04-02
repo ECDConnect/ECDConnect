@@ -240,9 +240,8 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
   return (
     <>
       {/* Report period set, all reports completed && current period undefined */}
-      {isAllReportsComplete && isReportWindowSet && isAfterLastReport && (
-        <ProgressTabReportPeriodsCompleted />
-      )}
+      {(isAllReportsComplete && isReportWindowSet) ||
+        (isAfterLastReport && <ProgressTabReportPeriodsCompleted />)}
 
       {/* No report periods defined and principal */}
       {!isReportWindowSet && !!practitioner?.isPrincipal && (
@@ -288,6 +287,7 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
       {isReportWindowSet &&
         !!children.length &&
         !!childrenUnder5Years.length &&
+        !isAfterLastReport &&
         childReports.some((x) => !x.isNotStarted) && (
           <div className="mt-2 flex flex-col p-4">
             <Typography
@@ -436,18 +436,17 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
         )}
       <div hidden={true}>
         <div ref={shareRef}>
-          {childReports &&
-            childReports.map((report) =>
-              report.report.id ? (
-                <div key={report.childId} style={{ letterSpacing: '0.02px' }}>
-                  <ProgressCaregiverReportPdf
-                    childId={report.childId}
-                    reportId={report.report.id as string}
-                    onRendered={() => setIsReportReady(true)}
-                  />
-                </div>
-              ) : null
-            )}
+          {childReports?.map((report) =>
+            report.report.id ? (
+              <div key={report.childId} style={{ letterSpacing: '0.02px' }}>
+                <ProgressCaregiverReportPdf
+                  childId={report.childId}
+                  reportId={report.report.id as string}
+                  onRendered={() => setIsReportReady(true)}
+                />
+              </div>
+            ) : null
+          )}
         </div>
       </div>
     </>
