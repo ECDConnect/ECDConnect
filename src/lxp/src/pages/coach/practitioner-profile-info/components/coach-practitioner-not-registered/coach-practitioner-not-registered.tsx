@@ -30,6 +30,7 @@ export const CoachPractitionerNotRegistered: React.FC<
   const { isOnline } = useOnlineStatus();
   const dialog = useDialog();
   const tenant = useTenant();
+  const isOpenAccess = tenant?.isOpenAccess;
   const userAuth = useSelector(authSelectors.getAuthUser);
   const [showAlert, setShowAlert] = useState(false);
   const [inviteDates, setInviteDates] = useState<Date[]>();
@@ -123,19 +124,23 @@ export const CoachPractitionerNotRegistered: React.FC<
                 )}, this profile will be deleted.`
               : `${practitioner?.user?.firstName} has not registered on ${tenant.tenant?.applicationName}.`
           }
-          list={[
-            `If ${practitioner?.user?.firstName} needs help registering for ${tenant.tenant?.applicationName}, please tap the button.`,
-          ]}
-          button={
-            <Button
-              text="Get help"
-              icon="QuestionMarkCircleIcon"
-              type={'filled'}
-              color={'quatenary'}
-              textColor={'white'}
-              onClick={() => setShowHelp(true)}
-            />
-          }
+          {...(!isOpenAccess && {
+            list: [
+              `If ${practitioner?.user?.firstName} needs help registering for ${tenant.tenant?.applicationName}, please tap the button.`,
+            ],
+          })}
+          {...(!isOpenAccess && {
+            button: (
+              <Button
+                text="Get help"
+                icon="QuestionMarkCircleIcon"
+                type={'filled'}
+                color={'quatenary'}
+                textColor={'white'}
+                onClick={() => setShowHelp(true)}
+              />
+            ),
+          })}
         />
 
         {isLoading && (
