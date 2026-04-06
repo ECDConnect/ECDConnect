@@ -27,6 +27,10 @@ import {
   startOfMonth,
   startOfWeek,
   subDays,
+  startOfDay,
+  endOfDay,
+  isSameDay,
+  isAfter,
 } from 'date-fns';
 import {
   averageScoreThreshold,
@@ -143,7 +147,8 @@ export const getMissedClassAttendance = (
   classroomGroups: SimpleClassroomGroupDto[],
   classProgrammes: ClassProgrammeDto[],
   attendance: AttendanceDto[],
-  date: Date
+  date: Date,
+  holidays: HolidayDto[]
 ) => {
   const dayOfWeek = getDay(date);
   const currentDayFilter = dayOfWeek === 0 ? 7 : dayOfWeek;
@@ -201,7 +206,7 @@ export const getMissedClassAttendance = (
   if (last30DaysProgrammes)
     for (const day of last30DaysProgrammes) {
       const programme = day.programme;
-      const missedDayDate = new Date(day.date.setHours(0, 0, 0, 0));
+      const missedDayDate = startOfDay(day.date);
 
       const classGroups = classroomGroups.filter((x) => {
         return x.id === programme?.classroomGroupId;
@@ -213,16 +218,17 @@ export const getMissedClassAttendance = (
       const classLearners = classGroups
         .flatMap((x) => x.learners)
         .filter((x) => {
-          const checkEndOfDay = new Date(day.date.setHours(23, 59, 59));
+          const dayEnd = endOfDay(day.date); // immutable
+          const learnerStart = startOfDay(new Date(x.startedAttendance));
+
           const isValidDay =
-            isValidAttendableDate(missedDayDate, meetingDays || [], []) &&
-            checkEndOfDay.getTime() >= new Date(x.startedAttendance).getTime();
+            isValidAttendableDate(missedDayDate, meetingDays || [], holidays) && // ← pass real holidays!
+            !isAfter(learnerStart, dayEnd); // started on or before this day
 
           return (
             isValidDay &&
             (!x.stoppedAttendance ||
-              new Date(x.stoppedAttendance).getTime() >=
-                checkEndOfDay.getTime())
+              !isAfter(startOfDay(new Date(x.stoppedAttendance)), dayEnd))
           );
         });
 
@@ -230,15 +236,9 @@ export const getMissedClassAttendance = (
         const hasNoLearnerAttendance = !classLearners.every((learner) => {
           const hasAttendance = programmeAttendance.some((att) => {
             if (att.attendanceDate && att.userId === learner.childUserId) {
-              const isMatch =
-                missedDayDate.getTime() ===
-                new Date(
-                  new Date(att.attendanceDate).setHours(0, 0, 0, 0)
-                ).getTime();
-              return isMatch;
-            } else {
-              return false;
+              return isSameDay(missedDayDate, new Date(att.attendanceDate)); // ← much safer
             }
+            return false;
           });
           return hasAttendance;
         });
@@ -442,7 +442,8 @@ export const getMissedAttendanceSummaryGroups = (
         classroomGroups,
         classProgrammes,
         attendance,
-        currentDate
+        currentDate,
+        holidays
       );
 
       for (const classroomGroup of classroomGroups) {
@@ -694,7 +695,7 @@ export const mergeMonthlyAttendanceReportWithSameClassroomGroupId = (
 
 export function calculateDaysOfClassForMonth(
   month: Date,
-  day: number, // 0 = Sunday, 6 = Saturday
+  day: number, // 0 = Sunday, 6 = Saturday (JS getDay)
   validClassDays: Date[],
   startBound?: Date,
   endBound?: Date
@@ -707,16 +708,24 @@ export function calculateDaysOfClassForMonth(
     new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
 
   const today = new Date();
+  today.setHours(23, 59, 59, 999); // end of today
 
   let actualStart = new Date(month);
   let actualEnd = endOfM;
 
-  // Apply start bound
-  if (startBound && startBound > actualStart) {
-    if (isInSameMonth(actualStart, startBound)) {
-      actualStart = startBound;
-    } else {
-      return [];
+  // Apply start bound (inclusive)
+  if (startBound) {
+    const normalizedStartBound = new Date(
+      startBound.getFullYear(),
+      startBound.getMonth(),
+      startBound.getDate()
+    );
+    if (normalizedStartBound > actualStart) {
+      if (isInSameMonth(actualStart, normalizedStartBound)) {
+        actualStart = normalizedStartBound;
+      } else {
+        return [];
+      }
     }
   }
 
@@ -729,18 +738,20 @@ export function calculateDaysOfClassForMonth(
     }
   }
 
-  // ✅ Ensure we never count dates beyond today
+  // Never count beyond today
   if (actualEnd > today) {
     if (isInSameMonth(actualEnd, today)) {
       actualEnd = today;
     } else if (today < actualStart) {
-      // If today is before the current month, no valid days
       return [];
     }
   }
 
-  // Filter only valid days within actualStart–actualEnd
+  // Filter validClassDays that fall in the range AND match the meeting day of week
   return validClassDays
-    .filter((d) => d >= actualStart && d <= endOfDay(actualEnd))
+    .filter((d) => {
+      const normalizedD = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      return normalizedD >= actualStart && normalizedD <= actualEnd;
+    })
     .filter((d) => d.getDay() === day);
 }

@@ -47,7 +47,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
-
+  const [hasMoreRegisters, setHasMoreRegisters] = useState(true);
   const { hasPermissionToTakeAttendance } = useUserPermissions();
   const isTrialPeriod = useIsTrialPeriod();
 
@@ -111,9 +111,6 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
 
   const isInitialStartDate =
     lastStartOfPeriod && isSameDay(fourthRecentMonth, lastStartOfPeriod);
-  const isToShowSeeMoreButton =
-    isInitialStartDate ||
-    newAttendanceSummary?.length !== previousAttendanceSummary?.length;
 
   const formattedAttendanceSummary = useMemo(() => {
     const copy = [...(newAttendanceSummary ?? [])]?.reverse() ?? [];
@@ -125,28 +122,37 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     return copy;
   }, [newAttendanceSummary, isInitialStartDate]);
 
+  const shouldShowSeeMoreButton =
+    isInitialStartDate &&
+    formattedAttendanceSummary.length > 0 &&
+    hasMoreRegisters;
+
   const onSeeMoreRegisters = () => {
     if (!isOnline) {
       return dialog({
         color: 'bg-white',
         position: DialogPosition.Middle,
-        render: (onSubmit) => {
-          return <OnlineOnlyModal onSubmit={onSubmit} />;
-        },
+        render: (onSubmit) => <OnlineOnlyModal onSubmit={onSubmit} />,
       });
     }
+
     const nextStartOfPeriod = subMonths(lastStartOfPeriod!, 1);
 
     setLastStartOfPeriod(nextStartOfPeriod);
-    if (isOnline)
-      appDispatch(
-        attendanceThunkActions.getMonthlyAttendanceReport({
-          overrideCache: true,
-          userId: authUser?.id!,
-          startDate: nextStartOfPeriod,
-          endDate: today,
-        })
-      );
+
+    appDispatch(
+      attendanceThunkActions.getMonthlyAttendanceReport({
+        overrideCache: true,
+        userId: authUser?.id!,
+        startDate: nextStartOfPeriod,
+        endDate: today,
+      })
+    ).then((result) => {
+      // If the backend returns no new data, hide the button permanently
+      if (!result || (Array.isArray(result) && result.length === 0)) {
+        setHasMoreRegisters(false);
+      }
+    });
   };
 
   useEffect(() => {
@@ -189,14 +195,14 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   }, []);
 
   useEffect(() => {
-    if (wasLoading && isFulfilled && !isToShowSeeMoreButton) {
+    if (wasLoading && isFulfilled && !shouldShowSeeMoreButton) {
       showMessage({
         message: 'No more registers to show',
         type: 'info',
         duration: 10000,
       });
     }
-  }, [isFulfilled, isToShowSeeMoreButton, showMessage, wasLoading]);
+  }, [isFulfilled, shouldShowSeeMoreButton, showMessage, wasLoading]);
 
   if (isLoading) {
     return (
@@ -258,7 +264,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
             <AttendanceMonthlyReport
               attendanceSummary={formattedAttendanceSummary}
             />
-            {isToShowSeeMoreButton && (
+            {shouldShowSeeMoreButton && (
               <Button
                 className="mt-6"
                 type="outlined"
