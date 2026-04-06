@@ -103,7 +103,8 @@ export class IncompleteTrackAttendanceNotificationValidator
         .flatMap((x) => x.classProgrammes)
         .filter((x) => x.isActive),
       attendanceState.attendance || [],
-      this.currentDate
+      this.currentDate,
+      []
     );
 
     if (!missedAttendance.length) return [];
