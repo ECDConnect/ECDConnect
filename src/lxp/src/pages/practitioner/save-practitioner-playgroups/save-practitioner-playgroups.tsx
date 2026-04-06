@@ -241,7 +241,7 @@ export const EditPlaygroups: React.FC = () => {
         return {
           ...p,
           isActive: !isBeingRemoved,
-          synced: !isBeingRemoved,
+          synced: !isBeingRemoved || !teacherChanged,
         };
       });
 
