@@ -5,7 +5,13 @@ import {
   MonthlyAttendanceRecord,
 } from '@ecdlink/core';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
-import { endOfMonth, startOfMonth, addMonths } from 'date-fns';
+import {
+  endOfMonth,
+  startOfMonth,
+  addMonths,
+  startOfDay,
+  isSameDay,
+} from 'date-fns';
 import { getWorkingDays } from '@/utils/common/date.utils';
 import { calculateDaysOfClassForMonth } from '@/utils/classroom/attendance/track-attendance-utils';
 
@@ -23,24 +29,24 @@ export function useMonthlyAttendanceSummary(
       const startMonthDate = startOfMonth(today);
       const endMonthDate = endOfMonth(today);
 
-      const currentMonthData = attendanceData.filter(
-        (x) =>
-          x.monthOfYear === today.getMonth() + 1 &&
-          x.year === today.getFullYear()
-      );
-
       const generated = generateMonthlyAttendanceSummary(
         startMonthDate,
         endMonthDate,
         classroomGroups,
-        currentMonthData,
-        holidays
+        attendanceData,
+        holidays,
+        today // pass today for better current-month handling
       );
 
-      // ✅ Take only the first (or only) record
-      setMonthlySummary(generated[0] ?? null);
+      const currentMonthRecord = generated.find(
+        (r) =>
+          parseInt(r.monthOfYear) === today.getMonth() + 1 &&
+          parseInt(r.year) === today.getFullYear()
+      );
+
+      setMonthlySummary(currentMonthRecord ?? null);
     } catch (err) {
-      console.log('setMonthlySummary', err);
+      setMonthlySummary(null);
     }
   }, [attendanceData, classroomGroups, holidays]);
 
@@ -51,92 +57,102 @@ function generateMonthlyAttendanceSummary(
   startMonth: Date,
   endMonth: Date,
   classroomGroups: ClassroomGroupDto[],
-  attendanceForPeriod: AttendanceDto[],
-  holidays: HolidayDto[]
+  allAttendance: AttendanceDto[],
+  holidays: HolidayDto[],
+  today: Date // new param
 ): MonthlyAttendanceRecord[] {
-  if (!classroomGroups?.length || !attendanceForPeriod?.length) return [];
+  if (!classroomGroups?.length) {
+    return [];
+  }
 
-  const monthlyAttendance = new Map<Date, Array<[number, number]>>();
+  const monthlyAttendance = new Map<string, Array<[number, number]>>();
 
-  for (
-    let dt = new Date(startMonth);
-    dt.getFullYear() < endMonth.getFullYear() ||
-    (dt.getFullYear() === endMonth.getFullYear() &&
-      dt.getMonth() <= endMonth.getMonth());
-    dt = addMonths(dt, 1)
-  ) {
-    const attendance: Array<[number, number]> = [];
+  for (let dt = new Date(startMonth); dt <= endMonth; dt = addMonths(dt, 1)) {
+    const monthKey = `${dt.getFullYear()}-${dt.getMonth() + 1}`;
+    const attendanceTuples: Array<[number, number]> = [];
 
     for (const classroomGroup of classroomGroups) {
-      const validClassDays = getWorkingDays(
-        dt.getFullYear(),
-        dt.getMonth(),
-        holidays
-      );
-      const learners = classroomGroup.learners;
+      const learners = classroomGroup.learners || [];
 
-      for (const programme of classroomGroup.classProgrammes) {
+      for (const programme of classroomGroup.classProgrammes || []) {
+        const validClassDays = getWorkingDays(
+          dt.getFullYear(),
+          dt.getMonth(),
+          holidays
+        );
+
+        // For current month, allow days up to today (but don't exclude start day)
         const daysOfClass = calculateDaysOfClassForMonth(
           dt,
           programme.meetingDay,
           validClassDays,
           new Date(programme.programmeStartDate),
-          endMonth
+          today // use today instead of endMonth for current month
         );
 
-        if (daysOfClass.length > 0 && learners.length > 0) {
-          const attendedClasses = attendanceForPeriod.filter(
-            (x) =>
-              x.classroomProgrammeId === programme.id &&
-              //    new Date(x.attendanceDate!).getTime() >=
-              //      new Date(programme.programmeStartDate).getTime() &&
-              x.monthOfYear === dt.getMonth() + 1 &&
-              x.year === dt.getFullYear() &&
-              x.attended
-          );
+        if (daysOfClass.length === 0 || learners.length === 0) continue;
 
-          const distinctProgrammeSessions = new Set(
-            attendedClasses.map(
-              (x) =>
-                `${x.classroomProgrammeId}-${new Date(
-                  x.attendanceDate!
-                ).toDateString()}`
-            )
-          );
-          attendance.push([daysOfClass.length, distinctProgrammeSessions.size]);
+        let attendedSessionCount = 0;
+
+        for (const classDay of daysOfClass) {
+          const normalizedClassDay = startOfDay(classDay);
+
+          const hasLearnerAttendance = allAttendance.some((record) => {
+            if (record.classroomProgrammeId !== programme.id) return false;
+            if (!record.attendanceDate || !record.attended) return false;
+
+            const isLearnerRecord = learners.some(
+              (learner) => learner.childUserId === record.userId
+            );
+            if (!isLearnerRecord) return false;
+
+            return isSameDay(
+              normalizedClassDay,
+              startOfDay(new Date(record.attendanceDate))
+            );
+          });
+
+          if (hasLearnerAttendance) attendedSessionCount++;
         }
+
+        attendanceTuples.push([daysOfClass.length, attendedSessionCount]);
       }
     }
 
-    if (attendance.length > 0) {
-      monthlyAttendance.set(new Date(dt), attendance);
+    if (attendanceTuples.length > 0) {
+      monthlyAttendance.set(monthKey, attendanceTuples);
     }
   }
 
   return createReport(monthlyAttendance);
 }
 
+// createReport stays exactly the same as before
 function createReport(
-  monthlyAttendance: Map<Date, Array<[number, number]>>
+  monthlyAttendance: Map<string, Array<[number, number]>>
 ): MonthlyAttendanceRecord[] {
   const report: MonthlyAttendanceRecord[] = [];
 
-  for (const [monthDate, tuples] of monthlyAttendance.entries()) {
-    const totalAttendance = tuples.reduce((sum, t) => sum + t[0], 0);
-    const actualAttendance = tuples.reduce((sum, t) => sum + t[1], 0);
+  for (const [monthKey, tuples] of monthlyAttendance.entries()) {
+    const [yearStr, monthStr] = monthKey.split('-');
+    const totalScheduled = tuples.reduce((sum, t) => sum + t[0], 0);
+    const actualAttended = tuples.reduce((sum, t) => sum + t[1], 0);
 
-    const reportPercentage =
-      totalAttendance > 0
-        ? Math.round((actualAttendance / totalAttendance) * 100)
+    const percentage =
+      totalScheduled > 0
+        ? Math.round((actualAttended / totalScheduled) * 100)
         : 0;
 
     report.push({
-      monthOfYear: (monthDate.getMonth() + 1).toString(),
-      month: monthDate.toLocaleString('default', { month: 'long' }),
-      year: monthDate.getFullYear().toString(),
-      percentageAttendance: Math.min(100, Math.max(0, reportPercentage)),
-      numberOfSessions: actualAttendance,
-      totalScheduledSessions: totalAttendance,
+      monthOfYear: monthStr,
+      month: new Date(parseInt(yearStr), parseInt(monthStr) - 1).toLocaleString(
+        'default',
+        { month: 'long' }
+      ),
+      year: yearStr,
+      percentageAttendance: Math.min(100, Math.max(0, percentage)),
+      numberOfSessions: actualAttended,
+      totalScheduledSessions: totalScheduled,
     });
   }
 
