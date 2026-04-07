@@ -446,23 +446,30 @@ export const updatePractitionerUsePhotoInReport = createAsyncThunk<
 
 export const updatePractitionerBusinessWalkThrough = createAsyncThunk<
   boolean | undefined,
-  {
-    userId: string;
-  },
+  void,
   ThunkApiType<RootState>
 >(
   PractitionerActions.UPDATE_PRACTITIONER_BUSINESS_WALK_THROUGH,
-  async ({ userId }, { getState, rejectWithValue }) => {
+  async (_, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
+      practitioner: { practitioner: cache },
     } = getState();
+
+    if (
+      cache?.isCompletedBusinessWalkThrough === true &&
+      cache?.syncedBusinessWalkThrough === true
+    ) {
+      return true;
+    }
 
     try {
       if (userAuth?.auth_token) {
         return await new PractitionerService(
           userAuth.auth_token
-        ).UpdatePractitionerBusinessWalkthrough(userId);
+        ).UpdatePractitionerBusinessWalkthrough();
       }
+      return undefined;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -471,23 +478,31 @@ export const updatePractitionerBusinessWalkThrough = createAsyncThunk<
 
 export const updatePractitionerProgressWalkthrough = createAsyncThunk<
   boolean | undefined,
-  {
-    userId: string;
-  },
+  void,
   ThunkApiType<RootState>
 >(
   PractitionerActions.UPDATE_PRACTITIONER_PROGRESS_WALKTHROUGH,
-  async ({ userId }, { getState, rejectWithValue }) => {
+  async (_, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
+      practitioner: { practitioner: cache },
     } = getState();
+
+    if (
+      cache?.progressWalkthroughComplete === true &&
+      cache?.syncedProgressWalkThrough === true
+    ) {
+      return true;
+    }
 
     try {
       if (userAuth?.auth_token) {
         return await new PractitionerService(
           userAuth.auth_token
-        ).UpdatePractitionerProgressWalkthrough(userId);
+        ).UpdatePractitionerProgressWalkthrough();
       }
+
+      return undefined;
     } catch (err) {
       return rejectWithValue(err);
     }

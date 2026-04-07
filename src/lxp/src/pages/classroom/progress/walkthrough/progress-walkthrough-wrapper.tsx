@@ -7,10 +7,9 @@ import { Button, Card, SliderPagination, Typography } from '@ecdlink/ui';
 import IconRobot from '@/assets/svg-components/iconRobot';
 import { useAppContext } from '@/walkthrougContext';
 import {
-  practitionerSelectors,
+  practitionerActions,
   practitionerThunkActions,
 } from '@/store/practitioner';
-import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@/store';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router';
@@ -25,12 +24,12 @@ import progressWalkthroughTn from '../../../../i18n/modules/progress/walkthrough
 import progressWalkthroughSS from '../../../../i18n/modules/progress/walkthrough/ss.json';
 import progressWalkthroughVe from '../../../../i18n/modules/progress/walkthrough/ve.json';
 import progressWalkthroughTso from '../../../../i18n/modules/progress/walkthrough/tso.json';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export default function ProgressWalkthroughWrapper() {
-  const practitioner = useSelector(practitionerSelectors.getPractitioner);
-
   const appDispatch = useAppDispatch();
   const history = useHistory();
+  const { isOnline } = useOnlineStatus();
 
   const {
     setState,
@@ -244,11 +243,13 @@ export default function ProgressWalkthroughWrapper() {
       setState({ run: true, stepIndex: 10 });
     } else if (lifecycle === 'complete' && index === 10) {
       setState({ run: false, stepIndex: 0, tourActive: false });
-      appDispatch(
-        practitionerThunkActions.updatePractitionerProgressWalkthrough({
-          userId: practitioner?.userId!,
-        })
-      );
+      appDispatch(practitionerActions.updateProgressWalkthroughComplete(true));
+      if (isOnline) {
+        appDispatch(
+          practitionerThunkActions.updatePractitionerProgressWalkthrough()
+        );
+      }
+
       history.replace(ROUTES.CHILD_PROFILE, {
         childId: childId,
       });

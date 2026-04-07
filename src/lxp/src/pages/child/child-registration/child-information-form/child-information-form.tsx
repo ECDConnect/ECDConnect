@@ -56,9 +56,6 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
   });
 
   const { childIdField, dobDay, dobMonth, dobYear } = useWatch({ control });
-
-  console.log({ dobDay, dobMonth, dobYear });
-
   const [alerts, setAlerts] = useState<AlertProps[]>([]);
 
   const dayOptions = useMemo(
