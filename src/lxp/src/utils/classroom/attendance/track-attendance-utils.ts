@@ -206,7 +206,7 @@ export const getMissedClassAttendance = (
   if (last30DaysProgrammes)
     for (const day of last30DaysProgrammes) {
       const programme = day.programme;
-      const missedDayDate = startOfDay(day.date);
+      const missedDayDate = normalizeToStartOfDay(day.date);
 
       const classGroups = classroomGroups.filter((x) => {
         return x.id === programme?.classroomGroupId;
@@ -218,17 +218,17 @@ export const getMissedClassAttendance = (
       const classLearners = classGroups
         .flatMap((x) => x.learners)
         .filter((x) => {
-          const dayEnd = endOfDay(day.date); // immutable
-          const learnerStart = startOfDay(new Date(x.startedAttendance));
+          const dayEnd = normalizeToStartOfDay(day.date); // or endOfDay if you prefer, but normalized
+          const learnerStart = normalizeToStartOfDay(x.startedAttendance);
 
           const isValidDay =
-            isValidAttendableDate(missedDayDate, meetingDays || [], holidays) && // ← pass real holidays!
-            !isAfter(learnerStart, dayEnd); // started on or before this day
+            isValidAttendableDate(missedDayDate, meetingDays || [], holidays) &&
+            !isAfter(learnerStart, dayEnd);
 
           return (
             isValidDay &&
             (!x.stoppedAttendance ||
-              !isAfter(startOfDay(new Date(x.stoppedAttendance)), dayEnd))
+              !isAfter(normalizeToStartOfDay(x.stoppedAttendance), dayEnd))
           );
         });
 
@@ -236,7 +236,10 @@ export const getMissedClassAttendance = (
         const hasNoLearnerAttendance = !classLearners.every((learner) => {
           const hasAttendance = programmeAttendance.some((att) => {
             if (att.attendanceDate && att.userId === learner.childUserId) {
-              return isSameDay(missedDayDate, new Date(att.attendanceDate)); // ← much safer
+              return isSameDay(
+                normalizeToStartOfDay(missedDayDate),
+                normalizeToStartOfDay(att.attendanceDate!)
+              );
             }
             return false;
           });
@@ -695,7 +698,7 @@ export const mergeMonthlyAttendanceReportWithSameClassroomGroupId = (
 
 export function calculateDaysOfClassForMonth(
   month: Date,
-  day: number, // 0 = Sunday, 1 = Monday, ..., 6 = Saturday (JS getDay)
+  day: number, // 0=Sun ... 6=Sat
   validClassDays: Date[],
   startBound?: Date,
   endBound?: Date
@@ -703,30 +706,33 @@ export function calculateDaysOfClassForMonth(
   const today = normalizeToStartOfDay(new Date());
 
   let actualStart = normalizeToStartOfDay(month);
-  let actualEnd = normalizeToStartOfDay(endOfMonth(month)); // we'll adjust below
+  let actualEnd = normalizeToStartOfDay(endOfMonth(month));
 
+  // Apply startBound (programme start date)
   if (startBound) {
-    const normalizedStartBound = normalizeToStartOfDay(startBound);
-    if (normalizedStartBound > actualStart) {
-      if (isSameMonth(actualStart, normalizedStartBound)) {
-        actualStart = normalizedStartBound;
+    const normStart = normalizeToStartOfDay(startBound);
+    if (normStart > actualStart) {
+      if (isSameMonth(actualStart, normStart)) {
+        actualStart = normStart;
       } else {
         return [];
       }
     }
   }
 
+  // Apply endBound
   if (endBound) {
-    const normalizedEndBound = normalizeToStartOfDay(endBound);
-    if (normalizedEndBound < actualEnd) {
-      if (isSameMonth(actualEnd, normalizedEndBound)) {
-        actualEnd = normalizedEndBound;
+    const normEnd = normalizeToStartOfDay(endBound);
+    if (normEnd < actualEnd) {
+      if (isSameMonth(actualEnd, normEnd)) {
+        actualEnd = normEnd;
       } else {
         return [];
       }
     }
   }
 
+  // Never go beyond today
   if (actualEnd > today) {
     if (isSameMonth(actualEnd, today)) {
       actualEnd = today;
@@ -735,11 +741,10 @@ export function calculateDaysOfClassForMonth(
     }
   }
 
+  // Filter and normalize every validClassDay
   return validClassDays
-    .filter((d) => {
-      const normalizedD = normalizeToStartOfDay(d);
-      return normalizedD >= actualStart && normalizedD <= actualEnd;
-    })
+    .map((d) => normalizeToStartOfDay(d))
+    .filter((d) => d >= actualStart && d <= actualEnd)
     .filter((d) => d.getDay() === day);
 }
 
@@ -749,14 +754,27 @@ function isSameMonth(d1: Date, d2: Date): boolean {
   );
 }
 
-export const normalizeToStartOfDay = (dateInput: Date | string): Date => {
+export const normalizeToStartOfDay = (
+  dateInput: Date | string | undefined
+): Date => {
+  if (!dateInput) {
+    return new Date(Date.UTC(1970, 0, 1));
+  }
+
   const date = new Date(dateInput);
 
-  const year = date.getUTCFullYear();
-  const month = date.getUTCMonth();
-  const day = date.getUTCDate();
-
-  return new Date(Date.UTC(year, month, day)); // always UTC midnight
+  // Force UTC midnight for the calendar day - this is the key
+  return new Date(
+    Date.UTC(
+      date.getUTCFullYear(),
+      date.getUTCMonth(),
+      date.getUTCDate(),
+      0,
+      0,
+      0,
+      0
+    )
+  );
 };
 
 export const getDateKey = (date: Date | string): string => {
