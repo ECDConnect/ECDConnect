@@ -43,6 +43,7 @@ export const ObservationsForChild: React.FC = () => {
     updateHowToSupport,
     updateSkillToWorkOn,
     syncChildProgressReports,
+    setReportObservationDateComplete,
   } = useObserveProgressForChild(routeState.childId);
 
   const {
@@ -194,7 +195,11 @@ export const ObservationsForChild: React.FC = () => {
               if (currentStep === totalSteps) {
                 if (isOnline) {
                   syncChildProgressReports();
+                } else {
+                  // here we set the observation date complete and synced value false
+                  setReportObservationDateComplete();
                 }
+
                 history.replace(ROUTES.PROGRESS_OBSERVATIONS_LANDING, {
                   childId: routeState.childId,
                 });
@@ -232,6 +237,10 @@ export const ObservationsForChild: React.FC = () => {
             } else {
               if (isOnline && !isWalkthrough) {
                 syncChildProgressReports();
+              }
+              // here we set the observation date complete and synced value false
+              if (!isOnline && currentStep === totalSteps) {
+                setReportObservationDateComplete();
               }
               history.replace(ROUTES.PROGRESS_OBSERVATIONS_LANDING, {
                 childId: routeState.childId,
