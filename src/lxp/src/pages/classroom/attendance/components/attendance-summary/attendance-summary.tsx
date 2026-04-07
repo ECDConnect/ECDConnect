@@ -37,6 +37,7 @@ import {
   getClassroomGroupSchoolDays,
   getMissedAttendanceSummaryGroups,
   isValidAttendableDate,
+  normalizeToStartOfDay,
 } from '@utils/classroom/attendance/track-attendance-utils';
 import {
   getStorageItem,
@@ -368,6 +369,13 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
     const today = new Date().toDateString();
     localStorage.setItem('summarylastDate', today);
   };
+
+  console.log('Browser timezone offset:', new Date().getTimezoneOffset());
+  console.log('Today normalized:', normalizeToStartOfDay(new Date()));
+  console.log(
+    'Sample attendanceDate normalized:',
+    normalizeToStartOfDay('2026-04-07T00:00:00.000Z')
+  );
 
   return (
     <div className="flex h-full flex-col px-4 pt-4">

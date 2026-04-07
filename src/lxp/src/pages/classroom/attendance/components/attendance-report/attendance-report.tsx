@@ -33,6 +33,7 @@ import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { IconInformationIndicator } from '@/pages/classroom/programme-planning/components/icon-information-indicator/icon-information-indicator';
 import { useHolidays } from '@/hooks/useHolidays';
 import { useMonthlyAttendanceSummary } from '@/hooks/useMonthlyAttendanceSummary';
+import { normalizeToStartOfDay } from '@/utils/classroom/attendance/track-attendance-utils';
 
 export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   classroom,
@@ -224,6 +225,13 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     !formattedAttendanceSummary.length ||
     (formattedAttendanceSummary.length === 1 &&
       formattedAttendanceSummary[0].percentageAttendance === 0);
+
+  console.log('Browser timezone offset:', new Date().getTimezoneOffset());
+  console.log('Today normalized:', normalizeToStartOfDay(new Date()));
+  console.log(
+    'Sample attendanceDate normalized:',
+    normalizeToStartOfDay('2026-04-07T00:00:00.000Z')
+  );
 
   return (
     <div className="flex h-full w-full flex-col overflow-y-auto p-4">
