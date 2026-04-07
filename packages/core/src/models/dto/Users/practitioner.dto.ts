@@ -34,12 +34,14 @@ export interface PractitionerDto extends EntityBase {
   progress?: number;
   usePhotoInReport?: string;
   isCompletedBusinessWalkThrough?: boolean;
+  syncedBusinessWalkThrough?: boolean;
   absentees?: AbsenteeDto[];
   daysAbsentLastMonth?: number | string;
   permissions?: UserPermissionDto[];
   communitySectionViewDate?: string;
   clickedCommunityTab?: boolean;
   progressWalkthroughComplete?: boolean;
+  syncedProgressWalkThrough?: boolean;
 }
 
 export interface UserPermissionDto {

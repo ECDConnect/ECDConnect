@@ -32,7 +32,6 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useStaticData } from '@hooks/useStaticData';
 import { Age } from '@models/common/Age';
 import { attendanceSelectors, attendanceThunkActions } from '@store/attendance';
-import { authSelectors } from '@store/auth';
 import { CaregiverContactReason } from '@store/caregiver/caregiver.types';
 import {
   childrenActions,
@@ -150,7 +149,6 @@ export const ChildProfile: React.FC = () => {
     notesSelectors.getNotesByUserId(child?.userId || child?.user?.id)
   );
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
-  const authUser = useSelector(authSelectors.getAuthUser);
 
   const childPhotoConsent = useSelector(
     userSelectors.getUserConsentByType(

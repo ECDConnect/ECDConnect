@@ -20,8 +20,8 @@ namespace ECDLink.Core.Services.Interfaces
         public Principal MapPractitionerToPrincipal(Practitioner practitioner);
         public PractitionerTimeline GetPractitionerTimeline(string userId);
         public Task<bool> DeActivatePractitionerAsync(string userId, string leavingComment, string reasonForPractitionerLeavingId, string reasonDetails);
-        public bool UpdatePractitionerBusinessWalkthrough(string userId);
-        void UpdatePractitioneProgressWalkthrough(string userId);
+        public bool UpdatePractitionerBusinessWalkthrough();
+        public bool UpdatePractitioneProgressWalkthrough();
         #endregion
         public string GetUserSignature(string userId);
         public string GetUserSiteAddress(string userId);
