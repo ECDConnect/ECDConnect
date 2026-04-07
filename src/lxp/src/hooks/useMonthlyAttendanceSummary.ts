@@ -13,7 +13,10 @@ import {
   isSameDay,
 } from 'date-fns';
 import { getWorkingDays } from '@/utils/common/date.utils';
-import { calculateDaysOfClassForMonth } from '@/utils/classroom/attendance/track-attendance-utils';
+import {
+  calculateDaysOfClassForMonth,
+  normalizeToStartOfDay,
+} from '@/utils/classroom/attendance/track-attendance-utils';
 
 export function useMonthlyAttendanceSummary(
   attendanceData: AttendanceDto[],
@@ -95,8 +98,6 @@ function generateMonthlyAttendanceSummary(
         let attendedSessionCount = 0;
 
         for (const classDay of daysOfClass) {
-          const normalizedClassDay = startOfDay(classDay);
-
           const hasLearnerAttendance = allAttendance.some((record) => {
             if (record.classroomProgrammeId !== programme.id) return false;
             if (!record.attendanceDate || !record.attended) return false;
@@ -107,8 +108,8 @@ function generateMonthlyAttendanceSummary(
             if (!isLearnerRecord) return false;
 
             return isSameDay(
-              normalizedClassDay,
-              startOfDay(new Date(record.attendanceDate))
+              normalizeToStartOfDay(classDay),
+              normalizeToStartOfDay(record.attendanceDate)
             );
           });
 
