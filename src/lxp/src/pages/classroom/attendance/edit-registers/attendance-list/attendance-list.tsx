@@ -15,6 +15,7 @@ import {
   getAttendanceStatusCheck,
   getPlaygroup,
   mapTrackAttendance,
+  normalizeToStartOfDay,
 } from '@/utils/classroom/attendance/track-attendance-utils';
 import { AttendanceState } from '../../components/attendance-list/attendance-list.types';
 import { ChildAttendance } from '@/store/attendance/attendance.types';
@@ -33,6 +34,7 @@ import {
   notificationsSelectors,
 } from '@/store/notifications';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { attendance } from '@/utils/child/child-profile-utils.mock';
 
 export const EditRegistersAttendanceList = ({
   selectedRegister,
@@ -106,17 +108,13 @@ export const EditRegistersAttendanceList = ({
 
         if (!currentProgramme) return;
 
+        const attendanceDateIso =
+          normalizeToStartOfDay(attendanceDate).toISOString();
+
         const trackAttendanceInput = mapTrackAttendance(
           user?.id || '',
           allAttendedChildren,
-          new Date(
-            attendanceDate.getFullYear(),
-            attendanceDate.getMonth(),
-            attendanceDate.getDate(),
-            12,
-            0,
-            0
-          ).toISOString(),
+          attendanceDateIso,
           currentProgramme.id ?? ''
         );
 

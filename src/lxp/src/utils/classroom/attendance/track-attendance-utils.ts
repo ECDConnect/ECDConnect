@@ -695,33 +695,20 @@ export const mergeMonthlyAttendanceReportWithSameClassroomGroupId = (
 
 export function calculateDaysOfClassForMonth(
   month: Date,
-  day: number, // 0 = Sunday, 6 = Saturday (JS getDay)
+  day: number, // 0 = Sunday, 1 = Monday, ..., 6 = Saturday (JS getDay)
   validClassDays: Date[],
   startBound?: Date,
   endBound?: Date
 ): Date[] {
-  const isInSameMonth = (d1: Date, d2: Date) =>
-    d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth();
+  const today = normalizeToStartOfDay(new Date());
 
-  const endOfM = new Date(month.getFullYear(), month.getMonth() + 1, 0);
-  const endOfDay = (d: Date) =>
-    new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
+  let actualStart = normalizeToStartOfDay(month);
+  let actualEnd = normalizeToStartOfDay(endOfMonth(month)); // we'll adjust below
 
-  const today = new Date();
-  today.setHours(23, 59, 59, 999); // end of today
-
-  let actualStart = new Date(month);
-  let actualEnd = endOfM;
-
-  // Apply start bound (inclusive)
   if (startBound) {
-    const normalizedStartBound = new Date(
-      startBound.getFullYear(),
-      startBound.getMonth(),
-      startBound.getDate()
-    );
+    const normalizedStartBound = normalizeToStartOfDay(startBound);
     if (normalizedStartBound > actualStart) {
-      if (isInSameMonth(actualStart, normalizedStartBound)) {
+      if (isSameMonth(actualStart, normalizedStartBound)) {
         actualStart = normalizedStartBound;
       } else {
         return [];
@@ -729,29 +716,53 @@ export function calculateDaysOfClassForMonth(
     }
   }
 
-  // Apply end bound
-  if (endBound && endBound < actualEnd) {
-    if (isInSameMonth(actualEnd, endBound)) {
-      actualEnd = endBound;
-    } else {
-      return [];
+  if (endBound) {
+    const normalizedEndBound = normalizeToStartOfDay(endBound);
+    if (normalizedEndBound < actualEnd) {
+      if (isSameMonth(actualEnd, normalizedEndBound)) {
+        actualEnd = normalizedEndBound;
+      } else {
+        return [];
+      }
     }
   }
 
-  // Never count beyond today
   if (actualEnd > today) {
-    if (isInSameMonth(actualEnd, today)) {
+    if (isSameMonth(actualEnd, today)) {
       actualEnd = today;
     } else if (today < actualStart) {
       return [];
     }
   }
 
-  // Filter validClassDays that fall in the range AND match the meeting day of week
   return validClassDays
     .filter((d) => {
-      const normalizedD = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      const normalizedD = normalizeToStartOfDay(d);
       return normalizedD >= actualStart && normalizedD <= actualEnd;
     })
     .filter((d) => d.getDay() === day);
 }
+
+function isSameMonth(d1: Date, d2: Date): boolean {
+  return (
+    d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth()
+  );
+}
+
+export const normalizeToStartOfDay = (dateInput: Date | string): Date => {
+  const date = new Date(dateInput);
+
+  const year = date.getUTCFullYear();
+  const month = date.getUTCMonth();
+  const day = date.getUTCDate();
+
+  return new Date(Date.UTC(year, month, day)); // always UTC midnight
+};
+
+export const getDateKey = (date: Date | string): string => {
+  const d = new Date(date);
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(
+    2,
+    '0'
+  )}-${String(d.getUTCDate()).padStart(2, '0')}`;
+};
