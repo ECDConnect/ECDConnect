@@ -51,6 +51,30 @@ const practitionerSlice = createSlice({
         state.practitioner = action.payload;
       }
     },
+    updateProgressWalkthroughComplete: (
+      state,
+      action: PayloadAction<boolean>
+    ) => {
+      if (state.practitioner) {
+        state.practitioner = {
+          ...state.practitioner,
+          progressWalkthroughComplete: action.payload,
+          syncedProgressWalkThrough: false,
+        };
+      }
+    },
+    updateBusinessWalkthroughComplete: (
+      state,
+      action: PayloadAction<boolean>
+    ) => {
+      if (state.practitioner) {
+        state.practitioner = {
+          ...state.practitioner,
+          isCompletedBusinessWalkThrough: action.payload,
+          syncedBusinessWalkThrough: false,
+        };
+      }
+    },
   },
   extraReducers: (builder) => {
     setThunkActionStatus(builder, deActivatePractitioner);
@@ -116,6 +140,7 @@ const practitionerSlice = createSlice({
         state.practitioner = {
           ...state.practitioner,
           isCompletedBusinessWalkThrough: action.payload,
+          syncedBusinessWalkThrough: true,
         };
       }
     );
@@ -125,6 +150,7 @@ const practitionerSlice = createSlice({
         state.practitioner = {
           ...state.practitioner,
           progressWalkthroughComplete: action.payload,
+          syncedProgressWalkThrough: true,
         };
       }
     );

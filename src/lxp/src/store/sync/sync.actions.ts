@@ -42,6 +42,14 @@ const SHARED_SYNC_STEPS: SyncStep[] = [
   },
   { title: 'API errors', action: queryErrorsThunkActions.upsertQueryErrors },
   { title: 'Analytics', action: analyticsThunkActions.pushAnalytics },
+  {
+    title: 'Walkthrough status: progress',
+    action: practitionerThunkActions.updatePractitionerProgressWalkthrough,
+  },
+  {
+    title: 'Walkthrough status: business',
+    action: practitionerThunkActions.updatePractitionerBusinessWalkThrough,
+  },
 ];
 
 /** Steps specifically for Principals */
