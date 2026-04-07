@@ -82,10 +82,12 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   // replace this month's summary from hook or add as new
   const newAttendanceSummary = [...attendanceSummary];
   if (monthlySummary !== null) {
-    if (attendanceSummary.length > 0) {
-      const thisMonthIndex = newAttendanceSummary.findIndex(
-        (x) => +x.month === today.getMonth() - 1
-      );
+    const thisMonthIndex = newAttendanceSummary.findIndex(
+      (x) =>
+        parseInt(x.monthOfYear) === today.getMonth() + 1 &&
+        parseInt(x.year) === today.getFullYear()
+    );
+    if (thisMonthIndex !== -1) {
       newAttendanceSummary[thisMonthIndex] = monthlySummary;
     } else {
       newAttendanceSummary.push(monthlySummary);
@@ -224,14 +226,8 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   const noValidAttendance =
     !formattedAttendanceSummary.length ||
     (formattedAttendanceSummary.length === 1 &&
-      formattedAttendanceSummary[0].percentageAttendance === 0);
-
-  console.log('Browser timezone offset:', new Date().getTimezoneOffset());
-  console.log('Today normalized:', normalizeToStartOfDay(new Date()));
-  console.log(
-    'Sample attendanceDate normalized:',
-    normalizeToStartOfDay('2026-04-07T00:00:00.000Z')
-  );
+      formattedAttendanceSummary[0].percentageAttendance === 0 &&
+      formattedAttendanceSummary[0].totalScheduledSessions === 0);
 
   return (
     <div className="flex h-full w-full flex-col overflow-y-auto p-4">
