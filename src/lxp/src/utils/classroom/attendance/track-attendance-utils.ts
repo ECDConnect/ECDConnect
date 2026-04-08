@@ -741,11 +741,14 @@ export function calculateDaysOfClassForMonth(
     }
   }
 
-  // Filter and normalize every validClassDay
+  // Filter and normalize every validClassDay.
+  // Use getUTCDay() (not getDay()) because normalizeToStartOfDay produces UTC
+  // midnight dates — getDay() would return the local weekday which is off by one
+  // in UTC-negative timezones.
   return validClassDays
     .map((d) => normalizeToStartOfDay(d))
     .filter((d) => d >= actualStart && d <= actualEnd)
-    .filter((d) => d.getDay() === day);
+    .filter((d) => d.getUTCDay() === day);
 }
 
 function isSameMonth(d1: Date, d2: Date): boolean {
