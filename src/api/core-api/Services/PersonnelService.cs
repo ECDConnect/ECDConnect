@@ -10,7 +10,6 @@ using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Calendar;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -401,7 +400,7 @@ namespace ECDLink.Api.CoreApi.Services
 
         public Practitioner PromotePractitionerToPrincipal(string userId, bool sendComm = false)
         {
-            var practitionerToPromote = _practiRepo.GetByUserId(userId);            
+            var practitionerToPromote = _practiGenericRepo.GetByUserId(userId);            
             if (practitionerToPromote!=null)
             {
                 practitionerToPromote.IsPrincipal = true;
@@ -711,9 +710,9 @@ namespace ECDLink.Api.CoreApi.Services
             return false;
         }
 
-        public bool UpdatePractitionerBusinessWalkthrough(string userId)
+        public bool UpdatePractitionerBusinessWalkthrough()
         {
-            Practitioner practitioner = _practiGenericRepo.GetByUserId(userId);
+            Practitioner practitioner = _practiGenericRepo.GetByUserId(_applicationUserId.ToString());
             practitioner.IsCompletedBusinessWalkThrough = true;
             practitioner.UpdatedBy = _applicationUserId.ToStringOrNull();
             practitioner.UpdatedDate = DateTime.Now;
@@ -721,11 +720,12 @@ namespace ECDLink.Api.CoreApi.Services
             return true;
         }
 
-        public void UpdatePractitioneProgressWalkthrough(string userId)
+        public bool UpdatePractitioneProgressWalkthrough()
         {
-            var practitioner = _practiGenericRepo.GetByUserId(userId);
+            var practitioner = _practiGenericRepo.GetByUserId(_applicationUserId.ToString());
             practitioner.ProgressWalkthroughComplete = true;
             _practiGenericRepo.Update(practitioner);
+            return true;
         }
 
         public Practitioner UpdatePractitionerCommunityTabStatus(string userId)

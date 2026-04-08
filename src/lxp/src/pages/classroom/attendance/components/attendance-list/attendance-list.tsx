@@ -24,6 +24,7 @@ import {
   getPlaygroup,
   mapTrackAttendance,
   mergeClassProgrammesWithSameClassroomGroupId,
+  normalizeToStartOfDay,
 } from '@utils/classroom/attendance/track-attendance-utils';
 import ClassProgrammeAttendanceList from '../class-programme-attendance-list/class-programme-attendance-list';
 import * as styles from './attendance-list.styles';
@@ -251,17 +252,13 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
             attended: x.status === AttendanceStatus.Present,
           })) || [];
 
+        const attendanceDateIso =
+          normalizeToStartOfDay(attendanceDate).toISOString();
+
         const trackAttendanceInput = mapTrackAttendance(
           user?.id || '',
           allAttendedChildren,
-          new Date(
-            attendanceDate.getFullYear(),
-            attendanceDate.getMonth(),
-            attendanceDate.getDate(),
-            12,
-            0,
-            0
-          ).toISOString(),
+          attendanceDateIso,
           currentProgramme.id ?? ''
         );
 

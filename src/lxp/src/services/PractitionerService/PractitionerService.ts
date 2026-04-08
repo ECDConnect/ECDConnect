@@ -1452,21 +1452,15 @@ class PractitionerService {
     return response.data.data.switchPrincipal;
   }
 
-  async UpdatePractitionerBusinessWalkthrough(
-    userId: string
-  ): Promise<boolean> {
+  async UpdatePractitionerBusinessWalkthrough(): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      mutation UpdatePractitionerBusinessWalkthrough($userId: String) {
-        updatePractitionerBusinessWalkthrough(userId: $userId) {
-          
+      mutation UpdatePractitionerBusinessWalkthrough() {
+        updatePractitionerBusinessWalkthrough() {
         }
       }
       `,
-      variables: {
-        userId,
-      },
     });
 
     if (response.status !== 200) {
@@ -1478,21 +1472,15 @@ class PractitionerService {
     return response.data.data.updatePractitionerBusinessWalkthrough;
   }
 
-  async UpdatePractitionerProgressWalkthrough(
-    userId: string
-  ): Promise<boolean> {
+  async UpdatePractitionerProgressWalkthrough(): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      mutation UpdatePractitionerProgressWalkthrough($userId: String) {
-        updatePractitionerProgressWalkthrough(userId: $userId) {
-          
+      mutation UpdatePractitionerProgressWalkthrough() {
+        updatePractitionerProgressWalkthrough() {
         }
       }
       `,
-      variables: {
-        userId,
-      },
     });
 
     if (response.status !== 200) {

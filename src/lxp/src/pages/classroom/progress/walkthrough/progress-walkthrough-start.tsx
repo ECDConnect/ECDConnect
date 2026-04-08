@@ -8,10 +8,10 @@ import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router';
 import { useAppDispatch } from '@/store';
 import {
-  practitionerSelectors,
   practitionerThunkActions,
+  practitionerActions,
 } from '@/store/practitioner';
-import { useSelector } from 'react-redux';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export const ProgressWalkthroughStart = ({
   childId,
@@ -20,13 +20,11 @@ export const ProgressWalkthroughStart = ({
   childId: string;
   onClose: () => void;
 }) => {
+  const { isOnline } = useOnlineStatus();
   const history = useHistory();
   const appDispatch = useAppDispatch();
   const [isSkipped, setIsSkipped] = useState(false);
   const [isLanguageModalOpen, setIsLanguageModalOpen] = useState(false);
-
-  const practitioner = useSelector(practitionerSelectors.getPractitioner);
-
   const { setState } = useAppContext();
 
   if (isLanguageModalOpen) {
@@ -74,12 +72,14 @@ export const ProgressWalkthroughStart = ({
               type: 'filled',
               onClick: () => {
                 appDispatch(
-                  practitionerThunkActions.updatePractitionerProgressWalkthrough(
-                    {
-                      userId: practitioner?.userId!,
-                    }
-                  )
+                  practitionerActions.updateProgressWalkthroughComplete(true)
                 );
+                if (isOnline) {
+                  appDispatch(
+                    practitionerThunkActions.updatePractitionerProgressWalkthrough()
+                  );
+                }
+
                 onClose();
               },
               leadingIcon: 'XIcon',

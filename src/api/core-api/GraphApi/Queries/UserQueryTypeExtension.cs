@@ -345,7 +345,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.UserId == userId);
 
-            bool isPrincipal = practitioner?.IsPrincipal.Value == true;
+            bool isPrincipal = practitioner?.IsPrincipal ?? false;
             
             var childrenCount = await dbContext.Children.FromSql($@"
             SELECT c.""Id""

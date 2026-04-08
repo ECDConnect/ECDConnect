@@ -42,6 +42,14 @@ const SHARED_SYNC_STEPS: SyncStep[] = [
   },
   { title: 'API errors', action: queryErrorsThunkActions.upsertQueryErrors },
   { title: 'Analytics', action: analyticsThunkActions.pushAnalytics },
+  {
+    title: 'Walkthrough status: progress',
+    action: practitionerThunkActions.updatePractitionerProgressWalkthrough,
+  },
+  {
+    title: 'Walkthrough status: business',
+    action: practitionerThunkActions.updatePractitionerBusinessWalkThrough,
+  },
 ];
 
 /** Steps specifically for Principals */
@@ -179,17 +187,16 @@ async function runSyncSequence(
         maxAttempts: 3,
         onRetry: (a, e) => console.warn(`[${title}] Retry ${a}/3:`, e),
       });
+      console.log(`[Sync] ✅ Completed: ${title}`);
     } catch (err) {
-      console.error(`Sync failed at "${title}":`, err);
+      console.error(`[Sync] ❌ Failed at step "${title}":`, err);
       if (!firstError) firstError = err;
       dispatch(
         syncActions.setError(
           err instanceof Error ? err.message : 'Unknown sync error'
         )
       );
-      return rejectWithValue(
-        firstError instanceof Error ? firstError.message : 'Offline sync failed'
-      );
+      continue;
     }
   }
 }

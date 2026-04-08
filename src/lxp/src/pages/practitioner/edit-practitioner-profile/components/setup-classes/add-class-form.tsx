@@ -136,7 +136,7 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
             isActive: true,
             programmeStartDate: today,
             isFullDay: data?.isFullDay || false,
-            synced: isOnline,
+            synced: false,
           };
         }),
       };
@@ -144,12 +144,6 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
       await appDispatch(
         classroomsActions.createClassroomGroup(classroomGroupModel)
       );
-      if (isOnline) {
-        await appDispatch(classroomsThunkActions.upsertClassroomGroups({}));
-        await appDispatch(
-          classroomsThunkActions.upsertClassroomGroupProgrammes({})
-        );
-      }
     }
   };
 

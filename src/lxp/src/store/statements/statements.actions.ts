@@ -243,17 +243,16 @@ export const upsertIncomeStatements = createAsyncThunk<
     } = getState();
 
     try {
-      let promises: Promise<IncomeStatementDto>[] = [];
-      if (userAuth?.auth_token) {
-        promises = incomeStatements
-          .filter((statement) => !statement.synced)
-          .map(async (statement) => {
-            return await new IncomeStatementsService(
-              userAuth?.auth_token
-            ).updateStatement(statement as IncomeStatementDto);
-          });
-      }
-      return Promise.all(promises);
+      if (!userAuth?.auth_token) return [];
+
+      const promises = incomeStatements
+        .filter((statement) => !statement.synced)
+        .map((statement) =>
+          new IncomeStatementsService(userAuth.auth_token).updateStatement(
+            statement as IncomeStatementDto
+          )
+        );
+      return await Promise.all(promises);
     } catch (err) {
       return rejectWithValue(err);
     }

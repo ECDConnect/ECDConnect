@@ -41,6 +41,7 @@ export const PractitionerNotRegistered: React.FC<
   const userAuth = useSelector(authSelectors.getAuthUser);
   const appDispatch = useAppDispatch();
   const user = useSelector(userSelectors.getUser);
+  const isOpenAccess = tenant?.isOpenAccess;
 
   const removePractitioner = async () => {
     await new PractitionerService(
@@ -146,19 +147,23 @@ export const PractitionerNotRegistered: React.FC<
               addDays(new Date(practitioner.dateLinked!), 7),
               'LLL d'
             )}, this profile will be deleted.`}
-            list={[
-              `If ${practitioner?.user?.firstName} needs help registering for ${tenant.tenant?.applicationName}, please tap the button.`,
-            ]}
-            button={
-              <Button
-                text="Get help"
-                icon="QuestionMarkCircleIcon"
-                type={'filled'}
-                color={'quatenary'}
-                textColor={'white'}
-                onClick={() => setShowHelp(true)}
-              />
-            }
+            {...(!isOpenAccess && {
+              list: [
+                `If ${practitioner?.user?.firstName} needs help registering for ${tenant.tenant?.applicationName}, please tap the button.`,
+              ],
+            })}
+            {...(!isOpenAccess && {
+              button: (
+                <Button
+                  text="Get help"
+                  icon="QuestionMarkCircleIcon"
+                  type={'filled'}
+                  color={'quatenary'}
+                  textColor={'white'}
+                  onClick={() => setShowHelp(true)}
+                />
+              ),
+            })}
           />
         </div>
         {isLoading && (

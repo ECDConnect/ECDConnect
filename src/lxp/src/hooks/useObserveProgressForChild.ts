@@ -255,6 +255,16 @@ export const useObserveProgressForChild = (childId: string) => {
       }
     }
   };
+  const setReportObservationDateComplete = () => {
+    if (currentObservationPeriod) {
+      appDispatch(
+        progressTrackingActions.setReportObservationDateComplete({
+          childId,
+          reportingPeriodId: currentObservationPeriod.id,
+        })
+      );
+    }
+  };
 
   const addObservationForSkill = async (
     skillId: number,
@@ -464,5 +474,6 @@ export const useObserveProgressForChild = (childId: string) => {
     updateGoodProgressWith,
     updateHowCanCaregiverSupport,
     completeReport,
+    setReportObservationDateComplete,
   };
 };
