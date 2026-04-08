@@ -766,17 +766,14 @@ export const normalizeToStartOfDay = (
 
   const date = new Date(dateInput);
 
-  // Force UTC midnight for the calendar day - this is the key
+  // Use LOCAL date components so that "2026-04-07T00:00:00+02:00" and
+  // "2026-04-07T00:00:00Z" both normalise to the same UTC midnight for April 7.
+  // Using getUTCDate() would return April 6 for the +02:00 form, because the
+  // server in UTC+0 serialises the same DB value as plain "Z" while a local
+  // backend serialises it with the timezone offset — getDate() gives the same
+  // local calendar day regardless of which form was used.
   return new Date(
-    Date.UTC(
-      date.getUTCFullYear(),
-      date.getUTCMonth(),
-      date.getUTCDate(),
-      0,
-      0,
-      0,
-      0
-    )
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0)
   );
 };
 
