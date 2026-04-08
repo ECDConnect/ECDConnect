@@ -33,6 +33,7 @@ import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { IconInformationIndicator } from '@/pages/classroom/programme-planning/components/icon-information-indicator/icon-information-indicator';
 import { useHolidays } from '@/hooks/useHolidays';
 import { useMonthlyAttendanceSummary } from '@/hooks/useMonthlyAttendanceSummary';
+import { normalizeToStartOfDay } from '@/utils/classroom/attendance/track-attendance-utils';
 
 export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   classroom,
@@ -81,10 +82,12 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   // replace this month's summary from hook or add as new
   const newAttendanceSummary = [...attendanceSummary];
   if (monthlySummary !== null) {
-    if (attendanceSummary.length > 0) {
-      const thisMonthIndex = newAttendanceSummary.findIndex(
-        (x) => +x.month === today.getMonth() - 1
-      );
+    const thisMonthIndex = newAttendanceSummary.findIndex(
+      (x) =>
+        parseInt(x.monthOfYear) === today.getMonth() + 1 &&
+        parseInt(x.year) === today.getFullYear()
+    );
+    if (thisMonthIndex !== -1) {
       newAttendanceSummary[thisMonthIndex] = monthlySummary;
     } else {
       newAttendanceSummary.push(monthlySummary);
@@ -223,7 +226,8 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   const noValidAttendance =
     !formattedAttendanceSummary.length ||
     (formattedAttendanceSummary.length === 1 &&
-      formattedAttendanceSummary[0].percentageAttendance === 0);
+      formattedAttendanceSummary[0].percentageAttendance === 0 &&
+      formattedAttendanceSummary[0].totalScheduledSessions === 0);
 
   return (
     <div className="flex h-full w-full flex-col overflow-y-auto p-4">
