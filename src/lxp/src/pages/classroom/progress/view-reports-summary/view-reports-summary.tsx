@@ -15,11 +15,11 @@ import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
 import { useAppDispatch } from '@/store';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { ProgressTrackingService } from '@/services/ProgressTrackingService';
 import { authSelectors } from '@/store/auth';
 import { pointsThunkActions } from '@/store/points';
 import ROUTES from '@/routes/routes';
 import { TabsItems } from '../../class-dashboard/class-dashboard.types';
+import { progressTrackingThunkActions } from '@/store/progress-tracking';
 
 export type ProgressViewReportsSummaryState = {
   ageGroupId: number;
@@ -84,9 +84,11 @@ export const ProgressViewReportsSummary: React.FC = () => {
 
   const addPoints = async () => {
     if (isOnline) {
-      await new ProgressTrackingService(
-        userAuth?.auth_token || ''
-      ).classroomProgressSummaryDownloaded(routeState.classroomGroupId);
+      await appDispatch(
+        progressTrackingThunkActions.getClassroomProgressSummaryDownloaded({
+          classroomGroupId: routeState.classroomGroupId,
+        })
+      );
 
       const currentDate = new Date();
       const oneYearAgo = new Date();

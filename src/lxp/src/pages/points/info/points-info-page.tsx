@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { staticDataSelectors } from '@/store/static-data';
 import { MoreInformation } from '@ecdlink/graphql';
-import InfoService from '@/services/InfoService/InfoService';
 import { MoreInformationTypeEnum } from '@ecdlink/core';
+import { useAppDispatch } from '@/store';
+import { informationThunkActions } from '@/store/content/information';
 
 interface PointsInfoPageProps {
   onClose: () => void;
@@ -16,10 +17,16 @@ export const PointsInfoPage: React.FC<PointsInfoPageProps> = ({ onClose }) => {
   const [data, setData] = useState<MoreInformation[]>();
   const languages = useSelector(staticDataSelectors.getLanguages);
   const [selectedLanguage, setSelectedLanguage] = useState('en-za');
+  const appDispatch = useAppDispatch();
 
   useEffect(() => {
-    new InfoService()
-      .getMoreInformation(MoreInformationTypeEnum.Points, selectedLanguage)
+    appDispatch(
+      informationThunkActions.getMoreInformation({
+        section: MoreInformationTypeEnum.Points,
+        locale: selectedLanguage,
+      })
+    )
+      .unwrap()
       .then((info) => setData(info));
   }, [selectedLanguage, userAuth?.auth_token]);
 

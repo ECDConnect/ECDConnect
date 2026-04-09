@@ -9,6 +9,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState, ThunkApiType } from '../types';
 import { CommunityService } from '@/services/CommunityService';
 import { CommunityProfileDto } from '@ecdlink/core';
+import { OverrideCache } from '@/models/sync/override-cache';
 
 export interface CommunityConnectDataForGGWithLocale {
   locale: string;
@@ -89,28 +90,30 @@ export const getAllConnectItem = createAsyncThunk<
 
 export const getCommunityProfile = createAsyncThunk<
   any,
-  { userId: string },
+  { userId: string } & OverrideCache,
   ThunkApiType<RootState>
 >(
   CommunityActions.GET_COMMUNITY_PROFILE,
-  async ({ userId }, { getState, rejectWithValue }) => {
+  async ({ userId, overrideCache = false }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       community: { communityProfile: cache },
     } = getState();
 
-    if (cache) {
+    // === CACHE CHECK ===
+    if (!overrideCache && cache) {
       return cache;
     }
 
+    // === FETCH FROM API ===
     try {
-      if (userAuth?.auth_token) {
-        return await new CommunityService(
-          userAuth?.auth_token ?? ''
-        ).getCommunityProfile(userId);
-      } else {
+      if (!userAuth?.auth_token) {
         return rejectWithValue('no access token, profile check required');
       }
+
+      return await new CommunityService(
+        userAuth?.auth_token ?? ''
+      ).getCommunityProfile(userId);
     } catch (err) {
       return rejectWithValue(err);
     }

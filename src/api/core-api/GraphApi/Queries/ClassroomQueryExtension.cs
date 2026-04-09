@@ -24,13 +24,24 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     [ExtendObjectType(OperationTypeNames.Query)]
     public class ClassroomQueryExtension
     {
+
+        // The reason we make userId here optional is to accommodate handleNoClassroomForInvitedUser,
+        // getPrincipalClassroom
+        // In most cases this userId will be null
         [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
         public ClassroomModel GetClassroomForUser(
             [Service] IClassroomService classroomService,
             [Service] INotificationService notificationService,
-            Guid userId)
+            [Service] IHttpContextAccessor httpContextAccessor,
+            Guid? userId = null)
         {
-            var classroom = classroomService.GetClassroomForUser(userId);
+            if (!userId.HasValue)
+            {
+                var currentUser = httpContextAccessor.HttpContext?.GetUser();
+                userId = currentUser?.Id ?? throw new UnauthorizedAccessException("User is not authenticated.");
+            }
+            
+            var classroom = classroomService.GetClassroomForUser(userId.Value);
 
             if (classroom == null)
             {
@@ -106,12 +117,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
 
+        // The reason we make userId here optional is to accommodate classroomsDetailsForPractitioner,
+        // In most cases this userId will be null
         [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
         public List<ClassroomGroupModel> GetClassroomGroupsForUser(
             [Service] IClassroomService classroomService,
-            Guid userId)
+            [Service] IHttpContextAccessor httpContextAccessor,
+            Guid? userId = null)
         {
-            var classroomGroups = classroomService.GetClassroomGroupsForUser(userId);
+            if (!userId.HasValue)
+            {
+                var currentUser = httpContextAccessor.HttpContext?.GetUser();
+                userId = currentUser?.Id ?? throw new UnauthorizedAccessException("User is not authenticated.");
+            }
+
+            var classroomGroups = classroomService.GetClassroomGroupsForUser(userId.Value);
 
             if (classroomGroups == null)
             {

@@ -17,15 +17,16 @@ import {
   PractitionerListProps,
   PractitionerListRouteState,
 } from './practitioner-list.types';
-import { practitionerSelectors } from '@/store/practitioner';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
 import { userSelectors } from '@store/user';
-import { PractitionerService } from '@/services/PractitionerService';
 import { authSelectors } from '@/store/auth';
 import { OtherPractitionerProfile } from './other-practitioner-view/other-practitioner';
 import ROUTES from '@routes/routes';
 import { EditPractitionerModal } from './components/edit-practitioner-modal';
 import TransparentLayer from '../../../../assets/TransparentLayer.png';
-import { InviteService } from '@/services/InviteService';
 import { InviteDto } from '@ecdlink/core/src/models/dto/Invite/invite.dto';
 import { InvitedPractitioner } from './invited-practitioner/invited-practitioner';
 import { formatPhonenumberLocal } from '@utils/common/contact-details.utils';
@@ -69,9 +70,11 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
 
     if (userAuth) {
       setIsLoading(true);
-      practitionerColleagues = await new PractitionerService(
-        userAuth?.auth_token
-      ).practitionerColleagues(user?.id!);
+      practitionerColleagues = await appDispatch(
+        practitionerThunkActions.getPractitionerColleagues({
+          userId: user?.id!,
+        })
+      ).unwrap();
       if (isOpenAccess) {
         setInvites(
           await appDispatch(

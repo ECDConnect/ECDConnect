@@ -30,13 +30,13 @@ import { CreateNote } from './components/create-note/create-note';
 import { getLastNoteDate } from '@utils/child/child-profile-utils';
 import { notesSelectors } from '@store/notes';
 import { useSelector } from 'react-redux';
-import { practitionerSelectors } from '@/store/practitioner';
-import { classroomsSelectors } from '@/store/classroom';
-import { authSelectors } from '@/store/auth';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
+import { classroomsSelectors, classroomsThunkActions } from '@/store/classroom';
 import { PractitionerNotRegistered } from './practitioner-not-registered/practitioner-not-registered';
-import { ClassroomGroupService } from '@/services/ClassroomGroupService';
 import { format, isPast, isToday, sub } from 'date-fns';
-import { PractitionerService } from '@/services/PractitionerService';
 import EditRemovePractitionerFromProgrammePrompt from './components/remove-practitioner-from-programme/edit-remove-practitioner-from-programme-prompt';
 import { formatDateLong } from '@/utils/common/date.utils';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
@@ -51,10 +51,11 @@ import { useTenantModules } from '@/hooks/useTenantModules';
 import { useTenant } from '@/hooks/useTenant';
 import { PermissionsNames } from '@/pages/principal/components/add-practitioner/add-practitioner.types';
 import TransparentLayer from '../../../../../assets/TransparentLayer.png';
+import { useAppDispatch } from '@/store';
 
 export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const history = useHistory();
-  const userAuth = useSelector(authSelectors.getAuthUser);
+  const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
   const location = useLocation<PractitionerProfileRouteState>();
   const practitionerUserId = location.state.practitionerId;
@@ -193,11 +194,13 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   >();
 
   const getRemovalForPractitioner = async () => {
-    const removalDetails = await new PractitionerService(
-      userAuth?.auth_token!
-    ).getRemovalForPractitioner(practitioner?.userId!);
-    setExistingRemoval(removalDetails);
+    const removalDetails = await appDispatch(
+      practitionerThunkActions.getRemovalForPractitioner({
+        userId: practitioner?.userId!,
+      })
+    ).unwrap();
 
+    setExistingRemoval(removalDetails);
     return removalDetails;
   };
 
@@ -209,13 +212,13 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
       1
     );
     const lastDayPrevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
-    const metricsData = await new ClassroomGroupService(
-      userAuth?.auth_token!
-    ).getClassAttendanceMetricsByUser(
-      practitionerUserId,
-      firstDayPrevMonth,
-      lastDayPrevMonth
-    );
+    const metricsData = await appDispatch(
+      classroomsThunkActions.getClassAttendanceMetricsByUser({
+        userId: practitionerUserId,
+        startMonth: firstDayPrevMonth,
+        endMonth: lastDayPrevMonth,
+      })
+    ).unwrap();
     setClassMetrics(metricsData);
     return metricsData;
   };
@@ -227,9 +230,12 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   }, []);
 
   const cancelPractitionerRemoval = async () => {
-    await new PractitionerService(
-      userAuth?.auth_token || ''
-    ).cancelRemovePractitionerFromProgramme(existingRemoval?.id);
+    await appDispatch(
+      practitionerThunkActions.cancelRemovePractitionerFromProgramme({
+        existingRemovalId: existingRemoval?.id,
+      })
+    );
+
     setExistingRemoval(undefined);
   };
 

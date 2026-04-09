@@ -145,6 +145,8 @@ export const getChildAttendanceRecords = createAsyncThunk<
 
     const cachedData = state.attendanceData.attendanceByUserId?.[userId]?.data;
 
+    console.log('cachedData', cachedData);
+
     // Early return from cache (most common happy path should be fast)
     if (cachedData) {
       if (

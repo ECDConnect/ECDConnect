@@ -14,22 +14,24 @@ import { PractitionerProfileRouteState } from './contact-practitioner.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './contact-practitioner.styles';
 import ROUTES from '@routes/routes';
-import { practitionerSelectors } from '@/store/practitioner';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
 import { useSelector } from 'react-redux';
 import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { PractitionerService } from '@/services/PractitionerService';
-import { authSelectors } from '@/store/auth';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { useDialog } from '@ecdlink/core';
-import { ClassroomGroupService } from '@/services/ClassroomGroupService';
 import TransparentLayer from '@/assets/TransparentLayer.png';
 import WhatsAppIcon from '@/assets/logos/whatsapp';
+import { useAppDispatch } from '@/store';
+import { classroomsThunkActions } from '@/store/classroom';
 
 export const ContactPractitioner: React.FC = () => {
   const history = useHistory();
+  const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
-  const userAuth = useSelector(authSelectors.getAuthUser);
   const location = useLocation<PractitionerProfileRouteState>();
   const currentPractitioner = useSelector(
     practitionerSelectors.getPractitioner
@@ -39,11 +41,13 @@ export const ContactPractitioner: React.FC = () => {
   const [practitioner, setPractitioner] = useState<PractitionerDto>();
 
   const getPractitionerDetails = async () => {
-    if (userAuth && practitionerId) {
+    if (practitionerId) {
       setPractitioner(
-        await new PractitionerService(
-          userAuth?.auth_token ?? ''
-        ).getPractitionerByUserId(practitionerId)
+        await appDispatch(
+          practitionerThunkActions.getPractitionerByUserId({
+            userId: practitionerId,
+          })
+        ).unwrap()
       );
     }
   };
@@ -60,13 +64,13 @@ export const ContactPractitioner: React.FC = () => {
 
   const classroomsDetailsForPractitioner = useCallback(
     async (practitionerUserId: string) => {
-      const classroomDetails = (await new ClassroomGroupService(
-        userAuth?.auth_token!
-      ).getClassroomGroupsForUser(practitionerUserId)) as unknown;
+      const classroomDetails = await appDispatch(
+        classroomsThunkActions.getClassroomGroups({ practitionerUserId })
+      ).unwrap();
       setPractitionerClassroomDetails(classroomDetails as ClassroomGroupDto[]);
       return classroomDetails;
     },
-    [userAuth?.auth_token]
+    []
   );
 
   useMemo(() => {

@@ -1,7 +1,8 @@
 import ROUTES from '@/routes/routes';
-import { PractitionerService } from '@/services/PractitionerService';
-import { authSelectors } from '@/store/auth';
-import { practitionerSelectors } from '@/store/practitioner';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
 import { PractitionerDto } from '@ecdlink/core';
 import { PractitionerRemovalHistory } from '@ecdlink/graphql';
 import { Button, Dialog, DialogPosition, Typography } from '@ecdlink/ui';
@@ -12,6 +13,7 @@ import EditRemovePractitionerFromProgrammePrompt from '@/pages/classroom/class-d
 import { classroomsSelectors } from '@/store/classroom';
 import { EditPractitionerPermissions } from './edit-practitioner-permissions';
 import { ReassignClassPageState } from '@/pages/classroom/class-dashboard/practitioners/reassign-class/reassign-class.types';
+import { useAppDispatch } from '@/store';
 
 export const EditPractitionerModal = ({
   setEditPractitionerModal,
@@ -22,8 +24,8 @@ export const EditPractitionerModal = ({
 }) => {
   const history = useHistory();
   const location = useLocation<object>();
+  const appDispatch = useAppDispatch();
 
-  const userAuth = useSelector(authSelectors.getAuthUser);
   const classroom = useSelector(classroomsSelectors?.getClassroom);
   const [existingRemovals, setExisitingRemovals] = useState<
     PractitionerRemovalHistory[]
@@ -42,11 +44,11 @@ export const EditPractitionerModal = ({
 
   const getRemovalsForPractitioners = async () => {
     if (practitioners) {
-      const removalDetails = await new PractitionerService(
-        userAuth?.auth_token!
-      ).getRemovalsForPractitioners(
-        practitioners!.map((x) => x.userId as string)
-      );
+      const removalDetails = await appDispatch(
+        practitionerThunkActions.getRemovalsForPractitioners({
+          userIds: practitioners!.map((x) => x.userId as string),
+        })
+      ).unwrap();
       setExisitingRemovals(removalDetails || []);
       return removalDetails;
     }
@@ -57,9 +59,11 @@ export const EditPractitionerModal = ({
       (x) => x.userId === removingPractitionerId
     )?.id;
     if (removalId) {
-      await new PractitionerService(
-        userAuth?.auth_token || ''
-      ).cancelRemovePractitionerFromProgramme(removalId);
+      await appDispatch(
+        practitionerThunkActions.cancelRemovePractitionerFromProgramme({
+          existingRemovalId: removalId,
+        })
+      );
       setExisitingRemovals(
         existingRemovals.filter((x) => x.userId !== removingPractitionerId)
       );

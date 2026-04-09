@@ -40,7 +40,7 @@ class ClassroomGroupService {
   }
 
   async getClassroomGroupsForUser(
-    userId: string
+    practitionerUserId?: string
   ): Promise<ClassroomGroupDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
@@ -48,7 +48,7 @@ class ClassroomGroupService {
       errors?: {};
     }>(``, {
       query: `
-        query GetClassroomGroupsForUser($userId: UUID!) {
+        query GetClassroomGroupsForUser($userId: UUID) {
           classroomGroupsForUser(userId: $userId) {
             id
             classroomId
@@ -73,7 +73,7 @@ class ClassroomGroupService {
         }
           `,
       variables: {
-        userId: userId,
+        userId: practitionerUserId,
       },
     });
 

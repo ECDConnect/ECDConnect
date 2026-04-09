@@ -94,6 +94,7 @@ import {
   queryErrorsPersistConfig,
 } from '../queryErrors/queryErrors';
 import { invitesPersistConfig, invitesReducer } from '../invites/invites';
+import { informationReducer } from '../content/information';
 
 const persistedReducers = {
   analytics: persistReducer(analyticsPersistConfig, analyticsReducer),
@@ -145,6 +146,7 @@ const persistedReducers = {
   activityData: activityReducer,
   storyBookData: storyBookReducer,
   programmeRoutineData: programmeRoutineReducer,
+  informationData: informationReducer,
   invitesData: persistReducer(invitesPersistConfig, invitesReducer),
 };
 
