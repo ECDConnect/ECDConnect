@@ -24,7 +24,6 @@ import {
   addPractitionerSchema,
   initialAddPractitionerValues,
 } from '@/schemas/practitioner/add-practitioner';
-import { PractitionerService } from '@/services/PractitionerService';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import { RegisterPractitioner } from '../../setup-principal/setup-principal.types';
@@ -131,16 +130,20 @@ export const AddPractitioner = ({
 
     if (userAuth && idNumber) {
       setIsloading(true);
-      _practitioner = await new PractitionerService(
-        userAuth.auth_token
-      ).getPractitionerByIdNumber(idNumber);
+      _practitioner = await appDispatch(
+        practitionerThunkActions.getPractitionerByIdNumber({
+          idNumber: idNumber,
+        })
+      ).unwrap();
       setIsloading(false);
     }
 
     if (userAuth && passport) {
-      _practitioner = await new PractitionerService(
-        userAuth.auth_token
-      ).getPractitionerByIdNumber(passport);
+      _practitioner = await appDispatch(
+        practitionerThunkActions.getPractitionerByIdNumber({
+          idNumber: passport,
+        })
+      ).unwrap();
     }
 
     return _practitioner;
@@ -211,16 +214,16 @@ export const AddPractitioner = ({
         return;
       } else {
         setIsloading(true);
-        const principalInvite = await new PractitionerService(
-          userAuth?.auth_token!
+        const principalInvite = await appDispatch(
+          practitionerThunkActions.sendPractitionerInviteToPreschool({
+            practitionerPhoneNumber: practitionerPhoneNumber,
+            preSchoolNameCode: classroom?.preschoolCode!,
+            preSchoolName: classroom?.name!,
+            principalUserId: user?.id!,
+            idOrPassport: idNumber || passport,
+          })
         )
-          .sendPractitionerInviteToPreschool(
-            practitionerPhoneNumber,
-            classroom?.preschoolCode!,
-            classroom?.name!,
-            user?.id!,
-            idNumber || passport
-          )
+          .unwrap()
           .catch((error) => {
             console.log(error);
             showMessage({
@@ -250,9 +253,12 @@ export const AddPractitioner = ({
     };
 
     // also set the progress for this newly assigned user to 0
-    await new PractitionerService(
-      userAuth?.auth_token!
-    ).UpdatePractitionerProgress(newPractitioner?.userId!, 0);
+    await appDispatch(
+      practitionerThunkActions.updatePractitionerProgress({
+        practitionerId: newPractitioner?.userId!,
+        progress: 0,
+      })
+    );
 
     await appDispatch(
       practitionerThunkActions.updatePractitionerPermissions({
@@ -261,9 +267,9 @@ export const AddPractitioner = ({
       })
     );
 
-    await new PractitionerService(
-      userAuth?.auth_token!
-    ).AddPractitionerToPrincipal(input);
+    await appDispatch(
+      practitionerThunkActions.addPractitionerToPrincipal(input)
+    );
     await appDispatch(
       practitionerThunkActions.getAllPractitioners({ overrideCache: true })
     ).unwrap();

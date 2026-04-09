@@ -2,8 +2,6 @@ import { BannerWrapper, Button, Alert } from '@ecdlink/ui';
 import { format, addDays } from 'date-fns';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useHistory } from 'react-router';
-import { PractitionerService } from '@/services/PractitionerService';
-import { authSelectors } from '@/store/auth';
 import { useSelector } from 'react-redux';
 import { practitionerThunkActions } from '@/store/practitioner';
 import { useAppDispatch } from '@/store';
@@ -24,19 +22,18 @@ export const PractitionerNotAccepted: React.FC<
   const tenant = useTenant();
   const { showMessage } = useSnackbar();
   const { isOnline } = useOnlineStatus();
-  const userAuth = useSelector(authSelectors.getAuthUser);
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const appDispatch = useAppDispatch();
   const userName =
     practitioner?.user?.firstName || practitioner?.user?.userName;
 
   const removePractitioner = async () => {
-    await new PractitionerService(
-      userAuth?.auth_token || ''
-    ).UpdatePrincipalInvitation(
-      practitioner?.userId!,
-      practitioner?.principalHierarchy!,
-      false
+    await appDispatch(
+      practitionerThunkActions.updatePrincipalInvitation({
+        userId: practitioner?.userId!,
+        principalHierarchy: practitioner?.principalHierarchy!,
+        accepted: false,
+      })
     );
 
     await appDispatch(

@@ -13,10 +13,11 @@ import { ClassroomGroup } from '@ecdlink/graphql';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
-import { PractitionerService } from '@/services/PractitionerService';
 import { usePrevious, useSessionStorage } from '@ecdlink/core';
 import { practitionerVisitIdKey } from '@/pages/practitioner/practitioner-profile/practitioner-journey/forms';
 import { getSectionsQuestionsByStep } from '@/store/pqa/pqa.selectors';
+import { useAppDispatch } from '@/store';
+import { practitionerThunkActions } from '@/store/practitioner';
 
 export const step2ReAccreditationVisitSection = 'Step 2';
 
@@ -26,6 +27,7 @@ export const Step2ReAccreditation = ({
   setSectionQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
+  const appDispatch = useAppDispatch();
   const [practitionerClassroomDetails, setPractitionerClassroomDetails] =
     useState<ClassroomGroup[]>();
   const [question, setAnswers] = useState({
@@ -110,11 +112,11 @@ export const Step2ReAccreditation = ({
 
   const classroomsDetailsForPractitioner = useCallback(async () => {
     // Needs to be updated
-    const classroomDetails = (await new PractitionerService(
-      userAuth?.auth_token!
-    ).getClassroomGroupClassroomsForPractitioner(
-      smartStarter?.userId! || smartStarter?.id!
-    )) as unknown;
+    const classroomDetails = await appDispatch(
+      practitionerThunkActions.getClassroomGroupClassroomsForPractitioner({
+        userId: smartStarter?.userId! || smartStarter?.id!,
+      })
+    ).unwrap();
 
     setPractitionerClassroomDetails(classroomDetails as ClassroomGroup[]);
     return classroomDetails;

@@ -17,7 +17,6 @@ import {
   MenuListDataItem,
 } from '@ecdlink/ui';
 import { NoteTypeEnum, PractitionerRemovalHistory } from '@ecdlink/graphql';
-import { PractitionerService } from '@/services/PractitionerService';
 import { PractitionerProfileRouteState } from './practitioner-profile-info.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './practitioner-profile-info.styles';
@@ -51,7 +50,6 @@ import {
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
 import { getPractitionerTimeline } from '@/store/pqa/pqa.actions';
-import { authSelectors } from '@/store/auth';
 import { useTenantModules } from '@/hooks/useTenantModules';
 import { useTenant } from '@/hooks/useTenant';
 import TransparentLayer from '../../../assets/TransparentLayer.png';
@@ -60,7 +58,6 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const dialog = useDialog();
   const appDispatch = useAppDispatch();
   const history = useHistory();
-  const userAuth = useSelector(authSelectors.getAuthUser);
   const { isOnline } = useOnlineStatus();
   const location = useLocation<PractitionerProfileRouteState>();
   const classroom = useSelector(classroomsSelectors?.getClassroom);
@@ -265,9 +262,11 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   >();
 
   const getRemovalForPractitioner = async () => {
-    const removalDetails = await new PractitionerService(
-      userAuth?.auth_token!
-    ).getRemovalForPractitioner(practitioner?.userId!);
+    const removalDetails = await appDispatch(
+      practitionerThunkActions.getRemovalForPractitioner({
+        userId: practitioner?.userId!,
+      })
+    ).unwrap();
     setExistingRemoval(removalDetails);
 
     return removalDetails;

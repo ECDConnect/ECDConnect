@@ -17,9 +17,7 @@ import {
   useDialog,
 } from '@ecdlink/core';
 import LanguageSelector from '@/components/language-selector/language-selector';
-import { ContentService } from '@/services/ContentService';
 import { useSelector } from 'react-redux';
-import { authSelectors } from '@/store/auth';
 import { useAppDispatch } from '@/store';
 import {
   progressTrackingActions,
@@ -61,18 +59,17 @@ export const ObservationsForChildLandingIncomplete: React.FC<
   const appDispatch = useAppDispatch();
   const dialog = useDialog();
   const [showDetails, setShowDetails] = useState(false);
-  const userAuth = useSelector(authSelectors.getAuthUser);
 
   const changeLanguage = async (language: LanguageDto) => {
     if (!language?.locale) return;
 
-    const hasTranslations = await new ContentService(
-      userAuth?.auth_token ?? ''
-    ).hasContentTypeBeenTranslated(
-      ContentTypeEnum.ProgressTrackingSkill,
-      currentAgeGroup?.id ?? 0,
-      language.id ?? ''
-    );
+    const hasTranslations = await appDispatch(
+      progressTrackingThunkActions.hasContentTypeBeenTranslated({
+        id: ContentTypeEnum.ProgressTrackingSkill,
+        ageGroup: currentAgeGroup?.id ?? 0,
+        localeId: language.id ?? '',
+      })
+    ).unwrap();
 
     if (hasTranslations) {
       await appDispatch(
@@ -80,7 +77,7 @@ export const ObservationsForChildLandingIncomplete: React.FC<
           locale: language.locale,
         })
       ).unwrap();
-      await appDispatch(
+      appDispatch(
         progressTrackingActions.setLocale({ localeId: language.locale })
       );
     } else {

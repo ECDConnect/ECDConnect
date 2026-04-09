@@ -1016,7 +1016,7 @@ class PractitionerService {
   }
 
   // Can we remove this now?
-  async classroomActionItems(
+  async getClassroomActionItems(
     practitionerId: string
   ): Promise<NotificationDisplay[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
@@ -1046,7 +1046,7 @@ class PractitionerService {
     return response.data.data.classroomActionItems;
   }
 
-  async practitionerColleagues(
+  async getPractitionerColleagues(
     userId: string
   ): Promise<PractitionerColleagues[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
@@ -1492,7 +1492,7 @@ class PractitionerService {
     return response.data.data.updatePractitionerProgressWalkthrough;
   }
 
-  async practitionerInvitePrincipal(
+  async sendPractitionerInvitePrincipal(
     principalPhoneNumber: string,
     practitionerUserId: string
   ): Promise<boolean> {
@@ -1500,8 +1500,8 @@ class PractitionerService {
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation SendPrincipalInviteToApplication($principalPhoneNumber: String, $practitionerUserId: UUID!) {
-  sendPrincipalInviteToApplication(principalPhoneNumber: $principalPhoneNumber, practitionerUserId: $practitionerUserId)
-}
+          sendPrincipalInviteToApplication(principalPhoneNumber: $principalPhoneNumber, practitionerUserId: $practitionerUserId)
+        }
       `,
       variables: {
         principalPhoneNumber,

@@ -3,6 +3,7 @@ import {
   ClassProgrammeInput,
   ClassroomGroupInput,
   ClassroomInput,
+  ClassroomMetricReport,
   LearnerInput,
   LearnerInputModelInput,
   SiteAddressInput,
@@ -13,35 +14,42 @@ import { ClassroomGroupProgrammesService } from '@services/ClassroomGroupProgram
 import { ClassroomGroupService } from '@services/ClassroomGroupService';
 import { ClassroomService } from '@services/ClassroomService';
 import { RootState, ThunkApiType } from '../types';
-import { ClassroomDto as SimpleClassroomDto } from '@/models/classroom/classroom.dto';
+import {
+  ClassroomDto,
+  ClassroomDto as SimpleClassroomDto,
+} from '@/models/classroom/classroom.dto';
 import { ClassroomGroupDto as SimpleClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { OverrideCache } from '@/models/sync/override-cache';
 import { SiteAddressService } from '@/services/SiteAddressService';
 import PermissionsService from '@/services/PermissionsService/PermissionsService';
 
 export const ClassroomActions = {
-  GET_CLASSROOM: 'getClassroom',
+  GET_CLASSROOM_FOR_USER: 'getClassroomForUser',
   GET_CLASSROOM_GROUPS: 'getClassroomGroups',
-  UPSERT_CLASSROOM_GROUPS: 'upsertClassroomGroups',
   GET_CLASSROOM_GROUP_FOR_CLASS_ID: 'getClassroomGroupForClassId',
+  GET_CLASSROOM_FOR_TRIAL_PERIOD_USER: 'getClassroomForTrialPeriodUser',
+  GET_CLASS_ATTENDANCE_METRICS_BY_USER: 'getClassAttendanceMetricsByUser',
+  GET_CLASSROOM_FOR_PRESCHOOL_CODE: 'getClassroomForPreschoolCode',
+  UPSERT_CLASSROOM_GROUPS: 'upsertClassroomGroups',
   UPSERT_CLASSROOM_GROUPS_LEARNERS: 'upsertClassroomGroupLearners',
   UPDATE_CLASSROOM_GROUP: 'updateClassroomGroup',
   UPSERT_CLASS_PROGRAMMES: 'upsertClassroomGroupProgrammes',
-  GET_CLASSROOM_FOR_TRIAL_PERIOD_USER: 'getClassroomForTrialPeriodUser',
   ADD_CHILD_PROGRESS_REPORT_PERIODS: 'addChildProgressReportPeriods',
   UPSERT_CHILD_PROGRESS_REPORT_PERIODS: 'upsertChildProgressReportPeriods',
   UPDATE_CLASSROOM_PRACTITIONER_PERMISSIONS:
     'updateClassroomPractitionerPermissions',
+  EDIT_ABSENTEE: 'editAbsentee',
+  UPDATE_REASSIGN_CLASSROOM_GROUP: 'updateReassignClassroomGroup',
 };
 
-export const getClassroom = createAsyncThunk<
+export const getClassroomForUser = createAsyncThunk<
   SimpleClassroomDto,
-  {} & OverrideCache,
+  { userId?: string } & OverrideCache,
   ThunkApiType<RootState>
 >(
-  ClassroomActions.GET_CLASSROOM,
+  ClassroomActions.GET_CLASSROOM_FOR_USER,
   // eslint-disable-next-line no-empty-pattern
-  async ({ overrideCache }, { getState, rejectWithValue }) => {
+  async ({ userId, overrideCache = false }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       classroomData: { classroom: cache },
@@ -53,7 +61,7 @@ export const getClassroom = createAsyncThunk<
         if (userAuth?.auth_token) {
           classroom = await new ClassroomService(
             userAuth?.auth_token
-          ).getClassroomForUser(userAuth?.id);
+          ).getClassroomForUser(userId);
         } else {
           return rejectWithValue('no access token, profile check required');
         }
@@ -70,12 +78,15 @@ export const getClassroom = createAsyncThunk<
 
 export const getClassroomGroups = createAsyncThunk<
   SimpleClassroomGroupDto[],
-  {} & OverrideCache,
+  { practitionerUserId?: string } & OverrideCache,
   ThunkApiType<RootState>
 >(
   ClassroomActions.GET_CLASSROOM_GROUPS,
   // eslint-disable-next-line no-empty-pattern
-  async ({ overrideCache }, { getState, rejectWithValue }) => {
+  async (
+    { practitionerUserId, overrideCache = false },
+    { getState, rejectWithValue }
+  ) => {
     const {
       auth: { userAuth },
       classroomData: { classroomGroupData: cache },
@@ -90,7 +101,7 @@ export const getClassroomGroups = createAsyncThunk<
         if (userAuth?.auth_token) {
           groups = await new ClassroomGroupService(
             userAuth?.auth_token
-          ).getClassroomGroupsForUser(userAuth?.id);
+          ).getClassroomGroupsForUser(practitionerUserId);
         } else {
           return rejectWithValue('no access token, profile check required');
         }
@@ -596,6 +607,182 @@ export const updateClassroomPractitionerPermissions = createAsyncThunk<
       }
     } catch (err) {
       return rejectWithValue(err);
+    }
+  }
+);
+
+export const editAbsentee = createAsyncThunk<
+  boolean,
+  {
+    absenteeId: string;
+    deleteAbsentee: boolean;
+    reassignedToPractitioner: string;
+    reason: string;
+    absentDate: Date;
+    absentDateEnd?: Date;
+    isRoleAssign?: boolean;
+    roleAssignedToUser?: string;
+  },
+  ThunkApiType<RootState>
+>(
+  ClassroomActions.EDIT_ABSENTEE,
+  async (
+    {
+      absenteeId,
+      deleteAbsentee,
+      reassignedToPractitioner,
+      reason,
+      absentDate,
+      absentDateEnd,
+      isRoleAssign,
+      roleAssignedToUser,
+    },
+    { getState, rejectWithValue }
+  ) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      if (!userAuth?.auth_token) {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return await new ClassroomGroupService(userAuth?.auth_token).editAbsentee(
+        absenteeId,
+        deleteAbsentee,
+        reassignedToPractitioner,
+        reason,
+        absentDate,
+        absentDateEnd,
+        isRoleAssign,
+        roleAssignedToUser
+      );
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message ||
+          err?.message ||
+          'Failed to edit Absentee'
+      );
+    }
+  }
+);
+
+export const getClassAttendanceMetricsByUser = createAsyncThunk<
+  ClassroomMetricReport[],
+  { userId: string; startMonth: Date; endMonth: Date },
+  ThunkApiType<RootState>
+>(
+  ClassroomActions.GET_CLASS_ATTENDANCE_METRICS_BY_USER,
+  async ({ userId, startMonth, endMonth }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      if (!userAuth?.auth_token) {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return await new ClassroomGroupService(
+        userAuth?.auth_token
+      ).getClassAttendanceMetricsByUser(userId, startMonth, endMonth);
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message ||
+          err?.message ||
+          'Failed to get Class Attendance Metrics By User'
+      );
+    }
+  }
+);
+
+export const updateReassignClassroomGroup = createAsyncThunk<
+  boolean,
+  {
+    practitionerId: string;
+    reassignedToPractitioner: string;
+    reason: string;
+    absentDate: Date;
+    loggedByUser: string;
+    classProgram: string;
+    absentDateEnd?: Date;
+    fromRole?: string;
+    toRole?: string;
+    roleAssignedToUser?: string;
+  },
+  ThunkApiType<RootState>
+>(
+  ClassroomActions.UPDATE_REASSIGN_CLASSROOM_GROUP,
+  async (
+    {
+      practitionerId,
+      reassignedToPractitioner,
+      reason,
+      absentDate,
+      loggedByUser,
+      classProgram,
+      absentDateEnd,
+      fromRole,
+      toRole,
+      roleAssignedToUser,
+    },
+    { getState, rejectWithValue }
+  ) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      if (!userAuth?.auth_token) {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return await new ClassroomGroupService(
+        userAuth?.auth_token
+      ).updateReassignClassroomGroup(
+        practitionerId,
+        reassignedToPractitioner,
+        reason,
+        absentDate,
+        loggedByUser,
+        classProgram,
+        absentDateEnd,
+        fromRole,
+        toRole,
+        roleAssignedToUser
+      );
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message ||
+          err?.message ||
+          'Failed to update Reassign ClassroomGroup'
+      );
+    }
+  }
+);
+
+export const getClassroomForPreschoolCode = createAsyncThunk<
+  ClassroomDto,
+  { preSchoolCode: string },
+  ThunkApiType<RootState>
+>(
+  ClassroomActions.GET_CLASSROOM_FOR_PRESCHOOL_CODE,
+  async ({ preSchoolCode }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      if (!userAuth?.auth_token) {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return await new ClassroomService(
+        userAuth?.auth_token
+      ).getClassroomForPreschoolCode(preSchoolCode);
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message ||
+          err?.message ||
+          'Failed to get Classroom For Preschool Code'
+      );
     }
   }
 );

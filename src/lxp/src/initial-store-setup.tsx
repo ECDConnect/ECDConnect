@@ -227,12 +227,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     }
     if (!isCoach) {
       promises.push(
-        appDispatch(classroomsThunkActions.getClassroom({})).unwrap()
-      );
-      promises.push(
-        appDispatch(
-          communityThunkActions.getCommunityProfile({ userId: userData?.id! })
-        ).unwrap()
+        appDispatch(classroomsThunkActions.getClassroomForUser({})).unwrap()
       );
       promises.push(
         appDispatch(classroomsThunkActions.getClassroomGroups({})).unwrap()
@@ -456,7 +451,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const refreshClassroom = async () => {
     appDispatch(classroomsActions.resetClassroomState());
     appDispatch(
-      classroomsThunkActions.getClassroom({ overrideCache: true })
+      classroomsThunkActions.getClassroomForUser({ overrideCache: true })
     ).unwrap();
     appDispatch(
       classroomsThunkActions.getClassroomGroups({ overrideCache: true })

@@ -18,7 +18,6 @@ import {
   DialogPosition,
 } from '@ecdlink/ui';
 import { useAppDispatch } from '@store/config';
-import { authSelectors } from '@store/auth';
 import { useEffect, useMemo, useState } from 'react';
 import { useForm, useFormState, useWatch } from 'react-hook-form';
 import { useSelector } from 'react-redux';
@@ -38,7 +37,6 @@ import { staticDataSelectors } from '@store/static-data';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useHistory, useLocation } from 'react-router-dom';
 import { PractitionerProfileRouteState } from '../../practitioner-profile-info.types';
-import { PractitionerService } from '@/services/PractitionerService';
 import ROUTES from '@routes/routes';
 import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
 import { RemovePractitionerPrompt } from './remove-practitioner-prompt';
@@ -51,7 +49,6 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
 }) => {
   const appDispatch = useAppDispatch();
   const history = useHistory();
-  const authUser = useSelector(authSelectors.getAuthUser);
   const { isOnline } = useOnlineStatus();
   const tenant = useTenant();
   const orgName = tenant?.tenant?.organisationName;
@@ -212,14 +209,14 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
         }
       );
 
-      await new PractitionerService(
-        authUser?.auth_token || ''
-      ).RemovePractitioner(
-        practitioner?.userId!,
-        formValues.removeReasonId,
-        formValues.reasonDetail,
-        formValues.newPrincipalId,
-        reassignments
+      await appDispatch(
+        practitionerThunkActions.removePractitioner({
+          practitionerUserId: practitioner?.userId!,
+          reasonForPractitionerLeavingId: formValues.removeReasonId,
+          reasonDetails: formValues.reasonDetail,
+          newPrincipalId: formValues.newPrincipalId!,
+          classroomGroupReassignments: reassignments,
+        })
       );
       await appDispatch(
         practitionerThunkActions.getAllPractitioners({ overrideCache: true })
