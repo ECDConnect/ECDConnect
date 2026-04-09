@@ -187,7 +187,7 @@ async function runSyncSequence(
         maxAttempts: 3,
         onRetry: (a, e) => console.warn(`[${title}] Retry ${a}/3:`, e),
       });
-      console.log(`[Sync] ✅ Completed: ${title}`);
+      // console.log(`[Sync] ✅ Completed: ${title}`);
     } catch (err) {
       console.error(`[Sync] ❌ Failed at step "${title}":`, err);
       if (!firstError) firstError = err;

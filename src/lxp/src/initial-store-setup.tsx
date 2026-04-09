@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import Loader from './components/loader/loader';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
 import { useAppDispatch } from './store';
-import { attendanceActions, attendanceThunkActions } from './store/attendance';
+import { attendanceThunkActions } from './store/attendance';
 import { authActions } from './store/auth';
 import { caregiverActions } from './store/caregiver';
 import { childrenActions, childrenThunkActions } from './store/children';
@@ -43,7 +43,11 @@ import {
 import { programmeActions, programmeThunkActions } from './store/programme';
 import { calendarActions, calendarThunkActions } from './store/calendar';
 import { authSelectors } from '@store/auth';
-import { statementsActions, statementsThunkActions } from '@store/statements';
+import {
+  statementsActions,
+  statementsSelectors,
+  statementsThunkActions,
+} from '@store/statements';
 import {
   LocalStorageKeys,
   ResourceLocaleId,
@@ -90,6 +94,9 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const classroomForUser = useSelector(classroomsSelectors.getClassroom);
   const isPrincipal = userData?.roles?.some(
     (role) => role.systemName === RoleSystemNameEnum.Principal
+  );
+  const canFetchIncomeStatement = useSelector(
+    statementsSelectors.selectStatementSyncStatus
   );
 
   const [otherLoading, setOtherLoading] = useState(false);
@@ -519,7 +526,8 @@ const InitialStoreSetup: React.FC = ({ children }) => {
         ).unwrap())();
     }
     if (userData) {
-      if (isPrincipal) {
+      // if we have unsynced statements, this will override the values which should not happen
+      if (isPrincipal && canFetchIncomeStatement) {
         const startDate = new Date();
         startDate.setFullYear(startDate.getFullYear() - 1);
         (async () =>
