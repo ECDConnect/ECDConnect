@@ -7,6 +7,8 @@ import {
 import { IncomeTypeIds } from '@ecdlink/core';
 import { RootState } from '../types';
 import { createSelector } from '@reduxjs/toolkit';
+import { OfflineUpdate } from '@/models/sync/offline-update';
+import { OfflineCache } from '@/models/sync/offline-cache';
 
 // Statements types
 export const getExpensesTypes = (state: RootState): ExpensesStatementsTypes[] =>
@@ -28,6 +30,12 @@ export const getIncomeStatements = createSelector(
   (state: RootState) => state.statements.incomeStatements,
   (statementsData: IncomeStatementDto[]) =>
     [...statementsData].sort((a, b) => a.year - b.year || a.month - b.month)
+);
+
+export const selectStatementSyncStatus = createSelector(
+  (state: RootState) => state.statements.incomeStatements,
+  (statements: (IncomeStatementDto & OfflineUpdate & OfflineCache)[]) =>
+    statements.some((x) => x.synced === false)
 );
 
 export const getStatementById = (statementId: string) =>
