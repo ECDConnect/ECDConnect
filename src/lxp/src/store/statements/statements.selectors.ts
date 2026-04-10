@@ -32,12 +32,6 @@ export const getIncomeStatements = createSelector(
     [...statementsData].sort((a, b) => a.year - b.year || a.month - b.month)
 );
 
-export const selectStatementSyncStatus = createSelector(
-  (state: RootState) => state.statements.incomeStatements,
-  (statements: (IncomeStatementDto & OfflineUpdate & OfflineCache)[]) =>
-    statements.some((x) => x.synced === false)
-);
-
 export const getStatementById = (statementId: string) =>
   createSelector(
     (state: RootState) => state.statements.incomeStatements,
