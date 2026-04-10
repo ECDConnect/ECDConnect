@@ -43,11 +43,7 @@ import {
 import { programmeActions, programmeThunkActions } from './store/programme';
 import { calendarActions, calendarThunkActions } from './store/calendar';
 import { authSelectors } from '@store/auth';
-import {
-  statementsActions,
-  statementsSelectors,
-  statementsThunkActions,
-} from '@store/statements';
+import { statementsActions, statementsThunkActions } from '@store/statements';
 import {
   LocalStorageKeys,
   ResourceLocaleId,
@@ -95,10 +91,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const isPrincipal = userData?.roles?.some(
     (role) => role.systemName === RoleSystemNameEnum.Principal
   );
-  const canFetchIncomeStatement = useSelector(
-    statementsSelectors.selectStatementSyncStatus
-  );
-
   const [otherLoading, setOtherLoading] = useState(false);
 
   const resetAuth = async () => {
@@ -527,7 +519,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     }
     if (userData) {
       // if we have unsynced statements, this will override the values which should not happen
-      if (isPrincipal && canFetchIncomeStatement) {
+      if (isPrincipal) {
         const startDate = new Date();
         startDate.setFullYear(startDate.getFullYear() - 1);
         (async () =>
