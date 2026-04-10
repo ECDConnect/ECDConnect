@@ -457,7 +457,7 @@ export const updatePractitionerBusinessWalkThrough = createAsyncThunk<
     } = getState();
 
     if (
-      cache?.isCompletedBusinessWalkThrough === true &&
+      cache?.isCompletedBusinessWalkThrough === true ||
       cache?.syncedBusinessWalkThrough === true
     ) {
       return true;
@@ -489,7 +489,7 @@ export const updatePractitionerProgressWalkthrough = createAsyncThunk<
     } = getState();
 
     if (
-      cache?.progressWalkthroughComplete === true &&
+      cache?.progressWalkthroughComplete === true ||
       cache?.syncedProgressWalkThrough === true
     ) {
       return true;
