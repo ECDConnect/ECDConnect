@@ -223,7 +223,6 @@ const statementsSlice = createSlice({
           ),
           ...action.payload.map((item) => ({
             ...item,
-            synced: true,
             dateRefreshed: new Date().toString(),
           })),
         ];
