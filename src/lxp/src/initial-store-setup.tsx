@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import Loader from './components/loader/loader';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
 import { useAppDispatch } from './store';
-import { attendanceActions, attendanceThunkActions } from './store/attendance';
+import { attendanceThunkActions } from './store/attendance';
 import { authActions } from './store/auth';
 import { caregiverActions } from './store/caregiver';
 import { childrenActions, childrenThunkActions } from './store/children';
@@ -91,7 +91,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const isPrincipal = userData?.roles?.some(
     (role) => role.systemName === RoleSystemNameEnum.Principal
   );
-
   const [otherLoading, setOtherLoading] = useState(false);
 
   const resetAuth = async () => {
@@ -516,6 +515,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
         ).unwrap())();
     }
     if (userData) {
+      // if we have unsynced statements, this will override the values which should not happen
       if (isPrincipal) {
         const startDate = new Date();
         startDate.setFullYear(startDate.getFullYear() - 1);

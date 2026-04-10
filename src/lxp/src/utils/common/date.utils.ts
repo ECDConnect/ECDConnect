@@ -119,8 +119,10 @@ export function getWorkingDays(
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   for (let day = 1; day <= daysInMonth; day++) {
-    const date = new Date(year, month, day);
-    const dayOfWeek = date.getDay(); // 0 = Sunday, 6 = Saturday
+    // Use UTC midnight so that normalizeToStartOfDay (which reads UTC components)
+    // returns the correct calendar day regardless of the browser's timezone offset.
+    const date = new Date(Date.UTC(year, month, day));
+    const dayOfWeek = date.getUTCDay(); // 0 = Sunday, 6 = Saturday
 
     // Skip weekends
     if (dayOfWeek === 0 || dayOfWeek === 6) continue;

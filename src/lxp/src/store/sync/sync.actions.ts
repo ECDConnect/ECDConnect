@@ -70,10 +70,6 @@ const PRINCIPAL_SYNC_STEPS: SyncStep[] = [
     title: 'Classroom group learners',
     action: classroomsThunkActions.upsertClassroomGroupLearners,
   },
-  {
-    title: 'Child progress reports',
-    action: progressTrackingThunkActions.syncChildProgressReports,
-  },
   { title: 'Attendance', action: attendanceThunkActions.trackAttendanceSync },
   { title: 'Programmes', action: programmeThunkActions.updateProgrammes },
   { title: 'Documents', action: documentThunkActions.createDocument },
@@ -82,6 +78,10 @@ const PRINCIPAL_SYNC_STEPS: SyncStep[] = [
   {
     title: 'Child progress report periods',
     action: classroomsThunkActions.upsertChildProgressReportPeriods,
+  },
+  {
+    title: 'Child progress reports',
+    action: progressTrackingThunkActions.syncChildProgressReports,
   },
   {
     title: 'Statements',
@@ -187,7 +187,7 @@ async function runSyncSequence(
         maxAttempts: 3,
         onRetry: (a, e) => console.warn(`[${title}] Retry ${a}/3:`, e),
       });
-      console.log(`[Sync] ✅ Completed: ${title}`);
+      // console.log(`[Sync] ✅ Completed: ${title}`);
     } catch (err) {
       console.error(`[Sync] ❌ Failed at step "${title}":`, err);
       if (!firstError) firstError = err;

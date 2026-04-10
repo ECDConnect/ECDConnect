@@ -122,7 +122,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
   useEffect(() => {
     const storedUserId = localStorage.getItem('currentUserId');
     if (!currentUserId || currentUserId !== storedUserId) {
-      setSuccessMessageVisible(true);
+      setSuccessMessageVisible(false);
       localStorage.setItem('currentUserId', currentUserId);
       localStorage.setItem('summarylastDate', Date());
     } else {
