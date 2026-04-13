@@ -40,7 +40,7 @@ export const Article = ({
   const [availableLanguages, setAvailableLanguages] = useState([
     language.locale as LanguageCode,
   ]);
-  const consent = useSelector(contentConsentSelectors.getConsent);
+  const consent = useSelector(contentConsentSelectors.getConsentSelector);
   const dialog = useDialog();
   const tenant = useTenant();
 
@@ -57,16 +57,24 @@ export const Article = ({
   }, [isOpen, consentEnumType]);
 
   const changeLanugage = async (language: LanguageDto) => {
-    getOpenContent(language.locale);
+    await getOpenContent(language.locale);
   };
 
   const getOpenContent = async (locale: string) => {
-    const content = await appDispatch(
-      contentConsentThunkActions.getOpenConsent({
-        locale: locale,
-        name: consentEnumType,
-      })
-    ).unwrap();
+    let content = [];
+    if (isOnline) {
+      content = await appDispatch(
+        contentConsentThunkActions.getOpenConsent({
+          locale: locale,
+          name: consentEnumType,
+        })
+      ).unwrap();
+    } else {
+      content =
+        consent?.filter(
+          (x) => x.name === consentEnumType && x.locale === locale
+        ) ?? [];
+    }
 
     if (content && content.length > 0) {
       const consentFilter = content?.[0];

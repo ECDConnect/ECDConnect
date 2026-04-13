@@ -55,6 +55,7 @@ export const PointsYearView: React.FC = () => {
     const response = await dispatch(
       pointsThunkActions.yearPointsView({
         userId: practitioner?.userId!,
+        overrideCache: true, //fresh data set needed?
       })
     );
     setPointsYearSummary(response?.payload as PointsUserYearMonthSummary);

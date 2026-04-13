@@ -1,4 +1,3 @@
-import { useTheme } from '@ecdlink/core';
 import {
   Alert,
   BannerWrapper,
@@ -19,8 +18,6 @@ export interface CompletedCaregiverChildRegistrationProps
 export const CompletedCaregiverChildRegistration: React.FC<
   CompletedCaregiverChildRegistrationProps
 > = ({ childDetails }) => {
-  const theme = useTheme();
-
   return (
     <BannerWrapper
       size="large"

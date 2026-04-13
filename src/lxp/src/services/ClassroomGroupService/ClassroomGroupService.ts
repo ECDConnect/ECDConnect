@@ -86,6 +86,53 @@ class ClassroomGroupService {
     return response.data.data.classroomGroupsForUser;
   }
 
+  async getClassroomGroupForClassId(
+    classroomGroupId?: string
+  ): Promise<ClassroomGroupDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { classroomGroupForClassId: ClassroomGroupDto };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetClassroomGroupForClassId($classroomGroupId: UUID!) {
+          classroomGroupForClassId(classroomGroupId: $classroomGroupId) {
+            id
+            classroomId
+            name
+            userId
+            learners {
+              learnerId
+              childUserId
+              startedAttendance
+              stoppedAttendance
+              isActive
+            }
+            classProgrammes {
+              id
+              programmeStartDate
+              meetingDay
+              isFullDay
+              classroomGroupId
+              isActive
+            }
+          }
+        }
+          `,
+      variables: {
+        classroomGroupId: classroomGroupId,
+      },
+    });
+
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error(
+        'GetClassroomGroupForClassId Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.classroomGroupForClassId;
+  }
+
   async updateClassroomGroup(
     id: string,
     input: ClassroomGroupInput

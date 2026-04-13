@@ -27,7 +27,7 @@ export const ProgressCaregiverReportBuildingNonePage: React.FC<
       style={{ height: '1100px', position: 'relative' }}
     >
       <div className="mb-4 flex flex-row">
-        <img src={blueFaceImg} className="mr-4 h-20 w-20" />
+        <img src={blueFaceImg} className="mr-4 h-20 w-20" alt="blueFace" />
         <Typography
           type="h1"
           color="textDark"
@@ -49,7 +49,11 @@ export const ProgressCaregiverReportBuildingNonePage: React.FC<
         </div>
       </div>
       <Divider dividerType="dashed" className="mb-4" />
-      <img src={yellowFaceImg} className="mr-auto ml-auto mt-40 h-40 w-40" />
+      <img
+        src={yellowFaceImg}
+        className="mr-auto ml-auto mt-40 h-40 w-40"
+        alt="yellowFace"
+      />
       <Typography
         type="h1"
         color="textDark"
@@ -72,14 +76,15 @@ export const ProgressCaregiverReportBuildingNonePage: React.FC<
 
       <img
         src={backgroundImg}
-        className=""
+        className="opacity-75"
         style={{
           position: 'absolute',
           bottom: 0,
           left: 0,
-          height: '200px',
+          height: '210px',
           width: '100%',
         }}
+        alt="backGround"
       />
     </div>
   );

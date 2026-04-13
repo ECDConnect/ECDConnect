@@ -13,13 +13,16 @@ export const getStoryBooks = createAsyncThunk<
   ThunkApiType<RootState>
 >(
   StoryBookActions.GET_STORY_BOOKS,
-  async ({ locale, overrideCache }, { getState, rejectWithValue }) => {
+  async ({ locale, overrideCache = false }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       storyBookData: { storyBooks: storyBookCache },
     } = getState();
 
-    if (!storyBookCache || !!overrideCache) {
+    // Force fresh fetch if overrideCache is explicitly true
+    const shouldFetchFresh = overrideCache === true;
+
+    if (shouldFetchFresh || !storyBookCache || storyBookCache.length === 0) {
       try {
         let storyBooks: StoryBookDto[] | undefined;
 

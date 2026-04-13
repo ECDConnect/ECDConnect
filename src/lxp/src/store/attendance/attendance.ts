@@ -1,16 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import {
-  getWeek,
-  getYear,
-  getMonth,
-  isSameDay,
-  parseISO,
-  format,
-  compareAsc,
-} from 'date-fns';
+import { getWeek, getYear } from 'date-fns';
 import localForage from 'localforage';
 import {
   getAttendance,
+  getChildAttendanceRecords,
   getClassroomAttendanceReport,
   getMonthlyAttendanceReport,
   getPreviousWeekAttendance,
@@ -25,6 +18,7 @@ const initialState: AttendanceState = {
   attendanceTracked: undefined,
   monthlyAttendanceRecordsByUser: {},
   classroomAttendanceOverviewReport: [],
+  attendanceByUserId: {},
 };
 
 const attendanceSlice = createSlice({
@@ -34,6 +28,25 @@ const attendanceSlice = createSlice({
     resetAttendanceState: (state) => {
       state.attendance = initialState.attendance;
       state.attendanceTracked = initialState.attendanceTracked;
+    },
+    resetClassAttendanceForUser: (
+      state,
+      action: PayloadAction<{ userId: string }>
+    ) => {
+      const { userId } = action.payload;
+      const group = state.attendanceByUserId[userId];
+
+      if (group) {
+        group.data = {
+          totalExpectedAttendance: 0,
+          totalActualAttendance: 0,
+          attendancePercentage: 0,
+          classGroupAttendance: [],
+        };
+      }
+    },
+    resetClassroomAttendanceOverviewReport: (state) => {
+      state.classroomAttendanceOverviewReport = [];
     },
     trackAttendance: (
       state,
@@ -82,36 +95,58 @@ const attendanceSlice = createSlice({
   extraReducers: (builder) => {
     setThunkActionStatus(builder, getMonthlyAttendanceReport);
     setThunkActionStatus(builder, getClassroomAttendanceReport);
+    setThunkActionStatus(builder, trackAttendanceSync);
+
     builder.addCase(getClassroomAttendanceReport.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
 
-      const startDate = action.meta.arg.startDate;
-      const endDate = action.meta.arg.endDate;
+      // ────────────────────────────────────────────────
+      // 1. Get the requested date range
+      // ────────────────────────────────────────────────
+      const requestedStart = action.meta.arg.startDate; // Date | string
+      const requestedEnd = action.meta.arg.endDate; // Date | string
 
+      // Normalize to consistent format for comparison (YYYY-MM-DD)
+      const normalizeDate = (date: Date | string): string => {
+        const d = typeof date === 'string' ? new Date(date) : date;
+        return d.toISOString().split('T')[0];
+      };
+
+      const reqStartStr = normalizeDate(requestedStart);
+      const reqEndStr = normalizeDate(requestedEnd);
+
+      // ────────────────────────────────────────────────
+      // 2. Find existing report using normalized strings
+      // ────────────────────────────────────────────────
       const index = state.classroomAttendanceOverviewReport.findIndex(
-        (item) =>
-          isSameDay(parseISO(item.startDate), startDate) &&
-          isSameDay(parseISO(item.endDate), endDate)
+        (item) => item.startDate === reqStartStr && item.endDate === reqEndStr
       );
 
-      if (index === -1) {
-        state.classroomAttendanceOverviewReport.push({
-          startDate,
-          endDate,
-          data: action.payload.data,
-          dateRefreshed: new Date().toDateString(),
-        });
-      } else {
-        state.classroomAttendanceOverviewReport[index].data =
-          action.payload.data;
+      // ────────────────────────────────────────────────
+      // 3. Prepare the data we will store
+      //    → decide whether to store local YYYY-MM-DD or UTC
+      // ────────────────────────────────────────────────
+      const storedStart = normalizeDate(requestedStart); // consistent with comparison
+      const storedEnd = normalizeDate(requestedEnd);
 
-        if (!action.payload.retrievedFromCache) {
-          state.classroomAttendanceOverviewReport[index].dateRefreshed =
-            new Date().toDateString();
-        }
+      const newReportEntry = {
+        startDate: storedStart,
+        endDate: storedEnd,
+        data: action.payload.data,
+        dateRefreshed: new Date().toISOString(), // ← better than .toDateString()
+        isRevoked: false,
+      };
+
+      if (index === -1) {
+        state.classroomAttendanceOverviewReport.push(newReportEntry);
+      } else {
+        Object.assign(
+          state.classroomAttendanceOverviewReport[index],
+          newReportEntry
+        );
       }
     });
-    setThunkActionStatus(builder, trackAttendanceSync);
+
     builder.addCase(trackAttendanceSync.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
 
@@ -128,7 +163,7 @@ const attendanceSlice = createSlice({
           state.monthlyAttendanceRecordsByUser[programmeOwnerId].dateRefreshed =
             undefined;
         }
-        state.classroomAttendanceOverviewReport = [];
+        //state.classroomAttendanceOverviewReport = [];
         state.attendanceTracked = state.attendanceTracked?.map((x) => {
           const currentDate = (x.attendanceDate as string).split('T')[0];
           if (currentDate === date) {
@@ -144,22 +179,37 @@ const attendanceSlice = createSlice({
     builder.addCase(getAttendance.fulfilled, (state, action) => {
       state.attendance = action.payload;
     });
+    builder.addCase(getChildAttendanceRecords.fulfilled, (state, action) => {
+      const { userId } = action.meta.arg;
+
+      state.attendanceByUserId[userId] = {
+        ...(state.attendanceByUserId[userId] ?? {
+          data: null,
+        }),
+        data: {
+          attendancePercentage: action.payload.attendancePercentage,
+          totalActualAttendance: action.payload.totalActualAttendance,
+          totalExpectedAttendance: action.payload.totalExpectedAttendance,
+          classGroupAttendance: action.payload.classGroupAttendance,
+        },
+      };
+    });
     builder.addCase(getPreviousWeekAttendance.fulfilled, (state, action) => {
       if (!state.attendance) state.attendance = [];
 
-      for (let i = 0; i < action.payload.length; i++) {
+      for (const element of action.payload) {
         const existingIndex = state.attendance?.findIndex(
           (x) =>
-            x.userId === action.payload[i].userId &&
-            x.weekOfYear === action.payload[i].weekOfYear &&
-            x.year === action.payload[i].year &&
-            x.classroomProgrammeId === action.payload[i].classroomProgrammeId &&
-            x.attendanceDate === action.payload[i].attendanceDate
+            x.userId === element.userId &&
+            x.weekOfYear === element.weekOfYear &&
+            x.year === element.year &&
+            x.classroomProgrammeId === element.classroomProgrammeId &&
+            x.attendanceDate === element.attendanceDate
         );
         if (existingIndex >= 0) {
-          state.attendance[existingIndex] = action.payload[i];
+          state.attendance[existingIndex] = element;
         } else {
-          state.attendance.push(action.payload[i]);
+          state.attendance.push(element);
         }
       }
     });

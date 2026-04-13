@@ -1,9 +1,9 @@
-import { subMonths } from 'date-fns';
+import { endOfMonth, startOfMonth, subMonths } from 'date-fns';
 import React, { useCallback, useEffect, useState } from 'react';
 import Loader from './components/loader/loader';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
 import { useAppDispatch } from './store';
-import { attendanceActions, attendanceThunkActions } from './store/attendance';
+import { attendanceThunkActions } from './store/attendance';
 import { authActions } from './store/auth';
 import { caregiverActions } from './store/caregiver';
 import { childrenActions, childrenThunkActions } from './store/children';
@@ -91,7 +91,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const isPrincipal = userData?.roles?.some(
     (role) => role.systemName === RoleSystemNameEnum.Principal
   );
-
   const [otherLoading, setOtherLoading] = useState(false);
 
   const resetAuth = async () => {
@@ -126,7 +125,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     if (!isSync) {
       appDispatch(userActions.resetUserState());
     }
-    appDispatch(attendanceActions.resetAttendanceState());
     appDispatch(calendarActions.resetCalendarState());
     appDispatch(caregiverActions.resetCaregiverState());
     appDispatch(childrenActions.resetChildrenState());
@@ -169,6 +167,11 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     // SPECIFIC DATA
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    // for attendance overview report
+    const firstDayOfMonth = new Date(
+      startOfMonth(new Date()).setHours(23, 59, 59)
+    );
+    const lastDayOfMonth = endOfMonth(new Date());
     setOtherLoading(true);
 
     const promises: Promise<any>[] = !isCoach
@@ -241,6 +244,14 @@ const InitialStoreSetup: React.FC = ({ children }) => {
           attendanceThunkActions.getAttendance({
             startDate: thirtyDaysAgo,
             endDate: new Date(),
+          })
+        ).unwrap()
+      );
+      promises.push(
+        appDispatch(
+          attendanceThunkActions.getClassroomAttendanceReport({
+            startDate: firstDayOfMonth,
+            endDate: lastDayOfMonth,
           })
         ).unwrap()
       );
@@ -507,6 +518,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
         ).unwrap())();
     }
     if (userData) {
+      // if we have unsynced statements, this will override the values which should not happen
       if (isPrincipal) {
         const startDate = new Date();
         startDate.setFullYear(startDate.getFullYear() - 1);

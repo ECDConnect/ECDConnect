@@ -4,19 +4,22 @@ import Joyride, {
   Step as StepType,
 } from 'react-joyride';
 import { Button, Card, SliderPagination, Typography } from '@ecdlink/ui';
-import WalktroughImage from '../../../../../../assets/iconRobotBlueBg.svg';
+import IconRobotBlue from '@/assets/svg-components/iconRobotBlue';
 import { useAppContext } from '@/walkthrougContext';
 import { useTranslation } from 'react-i18next';
 import {
+  practitionerActions,
   practitionerSelectors,
   practitionerThunkActions,
 } from '@/store/practitioner';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@/store';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export default function StatementsWrapper() {
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const { t } = useTranslation();
+  const { isOnline } = useOnlineStatus();
 
   const appDispatch = useAppDispatch();
 
@@ -136,7 +139,7 @@ export default function StatementsWrapper() {
           <div>
             {step.content && (
               <div className="flex items-center gap-2 align-middle">
-                <img src={WalktroughImage} alt="walkthrough profile" />
+                <IconRobotBlue />
                 <Typography
                   color={'textDark'}
                   type={'h2'}
@@ -197,10 +200,13 @@ export default function StatementsWrapper() {
       setState({ run: false, stepIndex: 0, tourActive: false });
       if (!practitioner?.isCompletedBusinessWalkThrough) {
         appDispatch(
-          practitionerThunkActions.updatePractitionerBusinessWalkThrough({
-            userId: practitioner?.userId!,
-          })
+          practitionerActions.updateBusinessWalkthroughComplete(true)
         );
+        if (isOnline) {
+          await appDispatch(
+            practitionerThunkActions.updatePractitionerBusinessWalkThrough()
+          );
+        }
       }
     }
   };

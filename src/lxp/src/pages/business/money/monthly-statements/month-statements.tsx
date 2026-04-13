@@ -1,5 +1,5 @@
 import ROUTES from '@/routes/routes';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { statementsActions, statementsSelectors } from '@/store/statements';
@@ -102,7 +102,7 @@ export const MonthStatements: React.FC = () => {
               color="quatenary"
               className={'w-full'}
               onClick={() => {
-                setShowConfirmDialog(true);
+                isOnline ? setShowConfirmDialog(true) : showOnlineOnly();
               }}
             >
               {renderIcon('DownloadIcon', 'h-5 w-5 text-white')}

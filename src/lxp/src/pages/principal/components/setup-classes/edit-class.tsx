@@ -156,23 +156,6 @@ export const EditClass = ({
       })
     );
 
-    if (isOnline) {
-      appDispatch(
-        classroomsThunkActions.updateClassroomGroup({
-          id: classToEdit.id,
-          classroomGroup: {
-            classroomId: editClassroomId,
-            id: classToEdit.id,
-            name: name || '',
-            userId: practitionerId!,
-            learners: [],
-          },
-        })
-      );
-
-      appDispatch(classroomsThunkActions.upsertClassroomGroupProgrammes({}));
-    }
-
     onSubmit();
   };
 

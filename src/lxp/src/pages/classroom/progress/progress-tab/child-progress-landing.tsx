@@ -237,10 +237,14 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
     ? (isWithinReportPeriod && percentageReportsCompleted === 100) ||
       (!isWithinReportPeriod && percentageObservationsCompleted === 100)
     : percentageObservationsCompleted === 100;
+
+  const showProgressTabReportPeriodsCompleted =
+    (isAllReportsComplete && isReportWindowSet) || isAfterLastReport;
+
   return (
     <>
       {/* Report period set, all reports completed && current period undefined */}
-      {isAllReportsComplete && isReportWindowSet && isAfterLastReport && (
+      {showProgressTabReportPeriodsCompleted && (
         <ProgressTabReportPeriodsCompleted />
       )}
 
@@ -288,6 +292,7 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
       {isReportWindowSet &&
         !!children.length &&
         !!childrenUnder5Years.length &&
+        !isAfterLastReport &&
         childReports.some((x) => !x.isNotStarted) && (
           <div className="mt-2 flex flex-col p-4">
             <Typography
@@ -436,18 +441,17 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
         )}
       <div hidden={true}>
         <div ref={shareRef}>
-          {childReports &&
-            childReports.map((report) =>
-              report.report.id ? (
-                <div key={report.childId} style={{ letterSpacing: '0.01px' }}>
-                  <ProgressCaregiverReportPdf
-                    childId={report.childId}
-                    reportId={report.report.id as string}
-                    onRendered={() => setIsReportReady(true)}
-                  />
-                </div>
-              ) : null
-            )}
+          {childReports?.map((report) =>
+            report.report.id ? (
+              <div key={report.childId} style={{ letterSpacing: '0.02px' }}>
+                <ProgressCaregiverReportPdf
+                  childId={report.childId}
+                  reportId={report.report.id as string}
+                  onRendered={() => setIsReportReady(true)}
+                />
+              </div>
+            ) : null
+          )}
         </div>
       </div>
     </>

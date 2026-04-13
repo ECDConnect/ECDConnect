@@ -1,17 +1,17 @@
 import { ActionModal, Dialog, DialogPosition, Typography } from '@ecdlink/ui';
 import { useState } from 'react';
-import robot from '@/assets/iconRobot.svg';
-import robotBlueBg from '@/assets/iconRobotBlueBg.svg';
+import IconRobot from '@/assets/svg-components/iconRobot';
+import IconRobotBlue from '@/assets/svg-components/iconRobotBlue';
 import { useAppContext } from '@/walkthrougContext';
 import { WalkthroughModal } from '@/components/walkthrough/modal';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router';
 import { useAppDispatch } from '@/store';
 import {
-  practitionerSelectors,
   practitionerThunkActions,
+  practitionerActions,
 } from '@/store/practitioner';
-import { useSelector } from 'react-redux';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export const ProgressWalkthroughStart = ({
   childId,
@@ -20,13 +20,11 @@ export const ProgressWalkthroughStart = ({
   childId: string;
   onClose: () => void;
 }) => {
+  const { isOnline } = useOnlineStatus();
   const history = useHistory();
   const appDispatch = useAppDispatch();
   const [isSkipped, setIsSkipped] = useState(false);
   const [isLanguageModalOpen, setIsLanguageModalOpen] = useState(false);
-
-  const practitioner = useSelector(practitionerSelectors.getPractitioner);
-
   const { setState } = useAppContext();
 
   if (isLanguageModalOpen) {
@@ -56,7 +54,7 @@ export const ProgressWalkthroughStart = ({
         <ActionModal
           customIcon={
             <div className="flex">
-              <img src={robot} alt="robot" className="mb-2 mr-6 h-24 w-24" />
+              <IconRobot className="mb-2 mr-6 h-24 w-24" />
               <Typography
                 text="Ok, you can always get help by tapping the question mark at the top of the screen!"
                 type="body"
@@ -74,12 +72,14 @@ export const ProgressWalkthroughStart = ({
               type: 'filled',
               onClick: () => {
                 appDispatch(
-                  practitionerThunkActions.updatePractitionerProgressWalkthrough(
-                    {
-                      userId: practitioner?.userId!,
-                    }
-                  )
+                  practitionerActions.updateProgressWalkthroughComplete(true)
                 );
+                if (isOnline) {
+                  appDispatch(
+                    practitionerThunkActions.updatePractitionerProgressWalkthrough()
+                  );
+                }
+
                 onClose();
               },
               leadingIcon: 'XIcon',
@@ -93,7 +93,7 @@ export const ProgressWalkthroughStart = ({
   return (
     <Dialog visible position={DialogPosition.Middle} className="p-4">
       <ActionModal
-        customIcon={<img src={robotBlueBg} alt="robot" className="mb-4" />}
+        customIcon={<IconRobotBlue className="mb-4" />}
         title="Hello!"
         detailText="Can I show you how to use the child progress section?"
         actionButtons={[

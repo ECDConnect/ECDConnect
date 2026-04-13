@@ -36,6 +36,7 @@ export const EditName: React.FC<EditNameProps> = ({ setEditName, user }) => {
         cellphone: user.phoneNumber || '',
         email: user?.email! || '',
         whatsapp: user?.whatsappNumber || '',
+        synced: isOnline,
       };
       return tempPractitioner;
     } else {
@@ -62,8 +63,12 @@ export const EditName: React.FC<EditNameProps> = ({ setEditName, user }) => {
     if (copy) {
       copy.firstName = practitionerForm.name;
       copy.surname = practitionerForm.surname;
+      copy.synced = isOnline;
       appDispatch(userActions.updateUser(copy));
-      appDispatch(userThunkActions.updateUser(copy));
+
+      if (isOnline) {
+        appDispatch(userThunkActions.updateUser(copy));
+      }
       showMessage({ message: 'Name updated!' });
     }
   };

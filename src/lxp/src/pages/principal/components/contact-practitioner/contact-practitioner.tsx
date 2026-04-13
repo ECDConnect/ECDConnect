@@ -16,7 +16,6 @@ import * as styles from './contact-practitioner.styles';
 import ROUTES from '@routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
 import { useSelector } from 'react-redux';
-import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
 import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { PractitionerService } from '@/services/PractitionerService';
@@ -25,6 +24,7 @@ import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { useDialog } from '@ecdlink/core';
 import { ClassroomGroupService } from '@/services/ClassroomGroupService';
 import TransparentLayer from '@/assets/TransparentLayer.png';
+import WhatsAppIcon from '@/assets/logos/whatsapp';
 
 export const ContactPractitioner: React.FC = () => {
   const history = useHistory();
@@ -175,11 +175,7 @@ export const ContactPractitioner: React.FC = () => {
               size="small"
             >
               <div className="flex items-center justify-center">
-                <img
-                  src={getLogo(LogoSvgs.whatsapp)}
-                  alt="whatsapp"
-                  className={styles.buttonIconStyle}
-                />
+                <WhatsAppIcon className={styles.buttonIconStyle} />
                 <Typography
                   text={`WhatsApp ${practitioner?.user?.firstName}`}
                   type="button"

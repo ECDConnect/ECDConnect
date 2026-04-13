@@ -4,9 +4,9 @@ import {
   ComponentBaseProps,
   classNames,
 } from '@ecdlink/ui';
-import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
 import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
 import * as styles from './contact-person.styles';
+import WhatsAppIcon from '@/assets/logos/whatsapp';
 
 interface ContactPersonProps extends ComponentBaseProps {
   name: string;
@@ -72,11 +72,7 @@ export const ContactPerson: React.FC<ContactPersonProps> = ({
           size={'small'}
           onClick={whatsapp}
         >
-          <img
-            src={getLogo(LogoSvgs.whatsapp)}
-            alt="whatsapp"
-            className={styles.buttonIconStyle}
-          />
+          <WhatsAppIcon className={styles.buttonIconStyle} />
           <Typography
             color={'secondary'}
             type={'small'}

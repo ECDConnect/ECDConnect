@@ -121,7 +121,7 @@ export const ProgressTabReportPeriodsCompleted: React.FC = () => {
       .map((report, index) => (
         <div
           key={`${index}_${report.childId}`}
-          style={{ letterSpacing: '0.01px' }}
+          style={{ letterSpacing: '0.02px' }}
         >
           <ProgressCaregiverReportPdf
             childId={report.childId}

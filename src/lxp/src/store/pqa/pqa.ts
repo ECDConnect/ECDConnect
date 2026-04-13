@@ -314,8 +314,6 @@ const pqaSlice = createSlice({
       (state, action) => {
         const { visitId } = action.payload.visitId;
 
-        console.log('pqa.submitJourneyAssessmentFormData', action.payload);
-
         // Initialize the array if it's not defined
         if (!Array.isArray(state.journeyAssessmentReport)) {
           state.journeyAssessmentReport = [];

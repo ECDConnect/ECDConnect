@@ -30,6 +30,8 @@ import { useAppContext } from '@/walkthrougContext';
 import { useMemo, useState } from 'react';
 import { ChildProgressDetailedReport } from '@/models/progress/child-progress-report';
 import { ProgressSkillValues } from '@/enums/ProgressSkillValues';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 
 export type ObservationsForChildLandingIncompleteProps = {
   childId: string;
@@ -62,8 +64,21 @@ export const ObservationsForChildLandingIncomplete: React.FC<
   const dialog = useDialog();
   const [showDetails, setShowDetails] = useState(false);
   const userAuth = useSelector(authSelectors.getAuthUser);
+  const { isOnline } = useOnlineStatus();
+
+  const showOfflineDialog = () => {
+    return dialog({
+      color: 'bg-white',
+      position: DialogPosition.Middle,
+      blocking: true,
+      render: (onSubmit) => {
+        return <OnlineOnlyModal onSubmit={onSubmit} />;
+      },
+    });
+  };
 
   const changeLanguage = async (language: LanguageDto) => {
+    console.log('changeLanguage', language);
     if (!language?.locale) return;
 
     const hasTranslations = await new ContentService(
@@ -80,7 +95,7 @@ export const ObservationsForChildLandingIncomplete: React.FC<
           locale: language.locale,
         })
       ).unwrap();
-      await appDispatch(
+      appDispatch(
         progressTrackingActions.setLocale({ localeId: language.locale })
       );
     } else {
@@ -196,7 +211,11 @@ export const ObservationsForChildLandingIncomplete: React.FC<
             labelClassName="font-medium font-body text-textDark pr-2"
             currentLocale={currentReportLocale}
             selectLanguage={(data) => {
-              changeLanguage(data);
+              if (!isOnline) {
+                showOfflineDialog();
+              } else {
+                changeLanguage(data);
+              }
             }}
           />
         </>

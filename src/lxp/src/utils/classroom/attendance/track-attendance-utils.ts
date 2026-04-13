@@ -27,6 +27,10 @@ import {
   startOfMonth,
   startOfWeek,
   subDays,
+  startOfDay,
+  endOfDay,
+  isSameDay,
+  isAfter,
 } from 'date-fns';
 import {
   averageScoreThreshold,
@@ -143,7 +147,8 @@ export const getMissedClassAttendance = (
   classroomGroups: SimpleClassroomGroupDto[],
   classProgrammes: ClassProgrammeDto[],
   attendance: AttendanceDto[],
-  date: Date
+  date: Date,
+  holidays: HolidayDto[]
 ) => {
   const dayOfWeek = getDay(date);
   const currentDayFilter = dayOfWeek === 0 ? 7 : dayOfWeek;
@@ -201,7 +206,7 @@ export const getMissedClassAttendance = (
   if (last30DaysProgrammes)
     for (const day of last30DaysProgrammes) {
       const programme = day.programme;
-      const missedDayDate = new Date(day.date.setHours(0, 0, 0, 0));
+      const missedDayDate = normalizeToStartOfDay(day.date);
 
       const classGroups = classroomGroups.filter((x) => {
         return x.id === programme?.classroomGroupId;
@@ -213,16 +218,17 @@ export const getMissedClassAttendance = (
       const classLearners = classGroups
         .flatMap((x) => x.learners)
         .filter((x) => {
-          const checkEndOfDay = new Date(day.date.setHours(23, 59, 59));
+          const dayEnd = normalizeToStartOfDay(day.date); // or endOfDay if you prefer, but normalized
+          const learnerStart = normalizeToStartOfDay(x.startedAttendance);
+
           const isValidDay =
-            isValidAttendableDate(missedDayDate, meetingDays || [], []) &&
-            checkEndOfDay.getTime() >= new Date(x.startedAttendance).getTime();
+            isValidAttendableDate(missedDayDate, meetingDays || [], holidays) &&
+            !isAfter(learnerStart, dayEnd);
 
           return (
             isValidDay &&
             (!x.stoppedAttendance ||
-              new Date(x.stoppedAttendance).getTime() >=
-                checkEndOfDay.getTime())
+              !isAfter(normalizeToStartOfDay(x.stoppedAttendance), dayEnd))
           );
         });
 
@@ -230,15 +236,12 @@ export const getMissedClassAttendance = (
         const hasNoLearnerAttendance = !classLearners.every((learner) => {
           const hasAttendance = programmeAttendance.some((att) => {
             if (att.attendanceDate && att.userId === learner.childUserId) {
-              const isMatch =
-                missedDayDate.getTime() ===
-                new Date(
-                  new Date(att.attendanceDate).setHours(0, 0, 0, 0)
-                ).getTime();
-              return isMatch;
-            } else {
-              return false;
+              return isSameDay(
+                normalizeToStartOfDay(missedDayDate),
+                normalizeToStartOfDay(att.attendanceDate!)
+              );
             }
+            return false;
           });
           return hasAttendance;
         });
@@ -442,7 +445,8 @@ export const getMissedAttendanceSummaryGroups = (
         classroomGroups,
         classProgrammes,
         attendance,
-        currentDate
+        currentDate,
+        holidays
       );
 
       for (const classroomGroup of classroomGroups) {
@@ -694,53 +698,89 @@ export const mergeMonthlyAttendanceReportWithSameClassroomGroupId = (
 
 export function calculateDaysOfClassForMonth(
   month: Date,
-  day: number, // 0 = Sunday, 6 = Saturday
+  day: number, // 0=Sun ... 6=Sat
   validClassDays: Date[],
   startBound?: Date,
   endBound?: Date
 ): Date[] {
-  const isInSameMonth = (d1: Date, d2: Date) =>
-    d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth();
+  const today = normalizeToStartOfDay(new Date());
 
-  const endOfM = new Date(month.getFullYear(), month.getMonth() + 1, 0);
-  const endOfDay = (d: Date) =>
-    new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
+  let actualStart = normalizeToStartOfDay(month);
+  let actualEnd = normalizeToStartOfDay(endOfMonth(month));
 
-  const today = new Date();
-
-  let actualStart = new Date(month);
-  let actualEnd = endOfM;
-
-  // Apply start bound
-  if (startBound && startBound > actualStart) {
-    if (isInSameMonth(actualStart, startBound)) {
-      actualStart = startBound;
-    } else {
-      return [];
+  // Apply startBound (programme start date)
+  if (startBound) {
+    const normStart = normalizeToStartOfDay(startBound);
+    if (normStart > actualStart) {
+      if (isSameMonth(actualStart, normStart)) {
+        actualStart = normStart;
+      } else {
+        return [];
+      }
     }
   }
 
-  // Apply end bound
-  if (endBound && endBound < actualEnd) {
-    if (isInSameMonth(actualEnd, endBound)) {
-      actualEnd = endBound;
-    } else {
-      return [];
+  // Apply endBound
+  if (endBound) {
+    const normEnd = normalizeToStartOfDay(endBound);
+    if (normEnd < actualEnd) {
+      if (isSameMonth(actualEnd, normEnd)) {
+        actualEnd = normEnd;
+      } else {
+        return [];
+      }
     }
   }
 
-  // ✅ Ensure we never count dates beyond today
+  // Never go beyond today
   if (actualEnd > today) {
-    if (isInSameMonth(actualEnd, today)) {
+    if (isSameMonth(actualEnd, today)) {
       actualEnd = today;
     } else if (today < actualStart) {
-      // If today is before the current month, no valid days
       return [];
     }
   }
 
-  // Filter only valid days within actualStart–actualEnd
+  // Filter and normalize every validClassDay.
+  // Use getUTCDay() (not getDay()) because normalizeToStartOfDay produces UTC
+  // midnight dates — getDay() would return the local weekday which is off by one
+  // in UTC-negative timezones.
   return validClassDays
-    .filter((d) => d >= actualStart && d <= endOfDay(actualEnd))
-    .filter((d) => d.getDay() === day);
+    .map((d) => normalizeToStartOfDay(d))
+    .filter((d) => d >= actualStart && d <= actualEnd)
+    .filter((d) => d.getUTCDay() === day);
 }
+
+function isSameMonth(d1: Date, d2: Date): boolean {
+  return (
+    d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth()
+  );
+}
+
+export const normalizeToStartOfDay = (
+  dateInput: Date | string | undefined
+): Date => {
+  if (!dateInput) {
+    return new Date(Date.UTC(1970, 0, 1));
+  }
+
+  const date = new Date(dateInput);
+
+  // Use LOCAL date components so that "2026-04-07T00:00:00+02:00" and
+  // "2026-04-07T00:00:00Z" both normalise to the same UTC midnight for April 7.
+  // Using getUTCDate() would return April 6 for the +02:00 form, because the
+  // server in UTC+0 serialises the same DB value as plain "Z" while a local
+  // backend serialises it with the timezone offset — getDate() gives the same
+  // local calendar day regardless of which form was used.
+  return new Date(
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0)
+  );
+};
+
+export const getDateKey = (date: Date | string): string => {
+  const d = new Date(date);
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(
+    2,
+    '0'
+  )}-${String(d.getUTCDate()).padStart(2, '0')}`;
+};

@@ -8,30 +8,39 @@ import {
 } from '@ecdlink/graphql';
 import { PointsService } from '@/services/PointsService';
 import { differenceInDays } from 'date-fns';
+import { OverrideCache } from '@/models/sync/override-cache';
 
 export const getPointsSummaryForUser = createAsyncThunk<
   PointsUserSummary[],
   // eslint-disable-next-line @typescript-eslint/ban-types
-  { userId: string; startDate: Date; endDate: Date },
+  { userId: string; startDate: Date; endDate: Date } & OverrideCache,
   ThunkApiType<RootState>
 >(
   'getPointsSummaryForUser',
   // eslint-disable-next-line no-empty-pattern
-  async ({ userId, startDate, endDate }, { getState, rejectWithValue }) => {
+  async (
+    { userId, startDate, endDate, overrideCache = false },
+    { getState, rejectWithValue }
+  ) => {
     const {
       auth: { userAuth },
+      points: { pointsSummary: pointsSummaryCache },
     } = getState();
 
-    try {
-      let pointsSummary: PointsUserSummary[] | undefined;
+    // === CACHE CHECK ===
+    if (!overrideCache && pointsSummaryCache?.length) {
+      return pointsSummaryCache;
+    }
 
-      if (userAuth?.auth_token) {
-        pointsSummary = await new PointsService(
-          userAuth?.auth_token
-        ).getPointsSummaryForUser(userId, startDate, endDate);
-      } else {
+    // === FETCH FROM API ===
+    try {
+      if (!userAuth?.auth_token) {
         return rejectWithValue('no access token, profile check required');
       }
+
+      const pointsSummary = await new PointsService(
+        userAuth.auth_token
+      ).getPointsSummaryForUser(userId, startDate, endDate);
 
       return pointsSummary;
     } catch (err) {
@@ -43,12 +52,15 @@ export const getPointsSummaryForUser = createAsyncThunk<
 export const getUserPointsSummaryForCoach = createAsyncThunk<
   PointsUserSummary[],
   // eslint-disable-next-line @typescript-eslint/ban-types
-  { userId: string; startDate: Date; endDate: Date },
+  { userId: string; startDate: Date; endDate: Date } & OverrideCache,
   ThunkApiType<RootState>
 >(
   'getPointsSummaryForUser',
   // eslint-disable-next-line no-empty-pattern
-  async ({ userId, startDate, endDate }, { getState, rejectWithValue }) => {
+  async (
+    { userId, startDate, endDate, overrideCache = false },
+    { getState, rejectWithValue }
+  ) => {
     const {
       auth: { userAuth },
       practitionerForCoach: { pointsForPractitionerUser },
@@ -87,26 +99,31 @@ export const getUserPointsSummaryForCoach = createAsyncThunk<
 export const yearPointsView = createAsyncThunk<
   PointsUserYearMonthSummary,
   // eslint-disable-next-line @typescript-eslint/ban-types
-  { userId: string },
+  { userId: string } & OverrideCache,
   ThunkApiType<RootState>
 >(
   'yearPointsView',
   // eslint-disable-next-line no-empty-pattern
-  async ({ userId }, { getState, rejectWithValue }) => {
+  async ({ userId, overrideCache = false }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
+      points: { yearPoints: yearPointsCache },
     } = getState();
 
-    try {
-      let yearPoints: PointsUserYearMonthSummary | undefined;
+    // === CACHE CHECK ===
+    if (!overrideCache && !!yearPointsCache) {
+      return yearPointsCache;
+    }
 
-      if (userAuth?.auth_token) {
-        yearPoints = await new PointsService(
-          userAuth?.auth_token
-        ).yearPointsView(userId);
-      } else {
+    // === FETCH FROM API ===
+    try {
+      if (!userAuth?.auth_token) {
         return rejectWithValue('no access token, profile check required');
       }
+
+      const yearPoints: PointsUserYearMonthSummary = await new PointsService(
+        userAuth?.auth_token
+      ).yearPointsView(userId);
 
       return yearPoints;
     } catch (err) {
@@ -118,26 +135,32 @@ export const yearPointsView = createAsyncThunk<
 export const pointsTodoItems = createAsyncThunk<
   PointsToDoItemModel,
   // eslint-disable-next-line @typescript-eslint/ban-types
-  { userId: string },
+  { userId: string } & OverrideCache,
   ThunkApiType<RootState>
 >(
   'pointsTodoItems',
   // eslint-disable-next-line no-empty-pattern
-  async ({ userId }, { getState, rejectWithValue }) => {
+  async ({ userId, overrideCache = false }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
+      points: { pointsToDo: pointsToDoCache },
     } = getState();
 
-    try {
-      let todoPoints: PointsToDoItemModel | undefined;
+    // === CACHE CHECK ===
+    if (!overrideCache && !!pointsToDoCache) {
+      return pointsToDoCache;
+    }
 
-      if (userAuth?.auth_token) {
-        todoPoints = await new PointsService(
-          userAuth?.auth_token
-        ).pointsTodoItems(userId);
-      } else {
+    // === FETCH FROM API ===
+    try {
+      if (!userAuth?.auth_token) {
         return rejectWithValue('no access token, profile check required');
       }
+
+      const todoPoints: PointsToDoItemModel = await new PointsService(
+        userAuth?.auth_token
+      ).pointsTodoItems(userId);
+
       return todoPoints;
     } catch (err) {
       return rejectWithValue(err);
@@ -148,31 +171,36 @@ export const pointsTodoItems = createAsyncThunk<
 export const sharedData = createAsyncThunk<
   PointsUserDateSummary | undefined,
   // eslint-disable-next-line @typescript-eslint/ban-types
-  { userId: string; isMonthly: boolean },
+  { userId: string; isMonthly: boolean } & OverrideCache,
   ThunkApiType<RootState>
 >(
   'sharedData',
   // eslint-disable-next-line no-empty-pattern
-  async ({ userId, isMonthly }, { getState, rejectWithValue }) => {
+  async (
+    { userId, isMonthly, overrideCache = false },
+    { getState, rejectWithValue }
+  ) => {
     const {
       auth: { userAuth },
+      points: { shareData: shareDataCache },
     } = getState();
 
-    try {
-      let pointShareData: PointsUserDateSummary | undefined;
+    // === CACHE CHECK ===
+    if (!overrideCache && !!shareDataCache) {
+      return shareDataCache;
+    }
 
-      if (userAuth?.auth_token) {
-        pointShareData = await new PointsService(
-          userAuth?.auth_token
-        ).sharedData(userId, isMonthly);
-      } else {
+    // === FETCH FROM API ===
+    try {
+      if (!userAuth?.auth_token) {
         return rejectWithValue('no access token, profile check required');
       }
-      if (pointShareData) {
-        return pointShareData;
-      } else {
-        return undefined;
-      }
+
+      const pointShareData: PointsUserDateSummary = await new PointsService(
+        userAuth?.auth_token
+      ).sharedData(userId, isMonthly);
+
+      return pointShareData;
     } catch (err) {
       return rejectWithValue(err);
     }

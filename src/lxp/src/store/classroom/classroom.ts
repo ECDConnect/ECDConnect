@@ -10,6 +10,8 @@ import {
   upsertClassroomGroupLearners,
   upsertClassroomGroupProgrammes,
   addChildProgressReportPeriods,
+  getClassroomGroupForClassId,
+  upsertChildProgressReportPeriods,
 } from './classroom.actions';
 import { ClassroomState } from './classroom.types';
 import { ClassroomDto as SimpleClassroomDto } from '@/models/classroom/classroom.dto';
@@ -192,21 +194,36 @@ const classroomsSlice = createSlice({
           id: string;
           startDate: string;
           endDate: string;
+          synced: boolean;
         }>;
       }>
     ) => {
-      if (state.classroom) {
-        state.classroom = {
-          ...state.classroom,
-          childProgressReportPeriods:
-            action.payload.childProgressReportPeriods.map((x) => ({
-              id: x.id,
-              startDate: x.startDate,
-              endDate: x.endDate,
-              synced: false,
-            })),
-        };
-      }
+      if (!state.classroom) return;
+
+      const existingPeriods = state.classroom.childProgressReportPeriods || [];
+
+      const newPeriods = action.payload.childProgressReportPeriods.filter(
+        (newPeriod) => {
+          return !existingPeriods.some(
+            (existing) => existing.id === newPeriod.id
+          );
+        }
+      );
+
+      if (newPeriods.length === 0) return; // Nothing to add
+
+      state.classroom = {
+        ...state.classroom,
+        childProgressReportPeriods: [
+          ...existingPeriods,
+          ...newPeriods.map((x) => ({
+            id: x.id,
+            startDate: x.startDate,
+            endDate: x.endDate,
+            synced: x.synced,
+          })),
+        ],
+      };
     },
   },
   extraReducers: (builder) => {
@@ -217,6 +234,19 @@ const classroomsSlice = createSlice({
           dateRefreshed: new Date().toDateString(),
           synced: true,
         };
+      }
+    });
+    builder.addCase(getClassroomGroupForClassId.fulfilled, (state, action) => {
+      if (!action.payload) return;
+
+      const classIndex = state.classroomGroupData.classroomGroups.findIndex(
+        (item) => item.id === action.payload.id
+      );
+
+      if (classIndex === -1) {
+        state.classroomGroupData.classroomGroups.push(action.payload);
+      } else {
+        state.classroomGroupData.classroomGroups[classIndex] = action.payload;
       }
     });
     builder.addCase(getClassroomGroups.fulfilled, (state, action) => {
@@ -357,6 +387,22 @@ const classroomsSlice = createSlice({
               })),
           };
         }
+      }
+    );
+    builder.addCase(
+      upsertChildProgressReportPeriods.fulfilled,
+      (state, action) => {
+        if (state.classroom) {
+          state.classroom = {
+            ...state.classroom,
+            childProgressReportPeriods:
+              state.classroom.childProgressReportPeriods!.map((period) => ({
+                ...period,
+                synced: true,
+              })),
+          };
+        }
+        setFulfilledThunkActionStatus(state, action);
       }
     );
   },

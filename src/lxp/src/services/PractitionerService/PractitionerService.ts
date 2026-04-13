@@ -13,7 +13,6 @@ import {
   NotificationDisplay,
   PractitionerInput,
   PractitionerRemovalHistory,
-  PractitionerReportDetails,
   PrincipalInvitationStatus,
 } from '@ecdlink/graphql';
 
@@ -597,40 +596,6 @@ class PractitionerService {
     }
 
     return response.data.data.promotePractitionerToPrincipal;
-  }
-
-  async getReportDetailsForPractitioner(
-    userId: string
-  ): Promise<PractitionerReportDetails> {
-    const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
-      query: `
-      query reportDetailsForPractitioner($userId: String) {
-          reportDetailsForPractitioner(userId: $userId) { 
-          classroomGroupName
-          name
-          principalName
-          classroomGroupId
-          programmeTypeName
-          idNumber
-          insertedDate
-          programmeDays
-          phone classSiteAddress
-          }     
-        }
-      `,
-      variables: {
-        userId,
-      },
-    });
-
-    if (response.status !== 200) {
-      throw new Error(
-        'Get Practitioner by ID number Failed - Server connection error'
-      );
-    }
-
-    return response.data.data.reportDetailsForPractitioner;
   }
 
   // Used only by coach stuff, we should refactor and remove this when we work on coach functionality
@@ -1487,21 +1452,15 @@ class PractitionerService {
     return response.data.data.switchPrincipal;
   }
 
-  async UpdatePractitionerBusinessWalkthrough(
-    userId: string
-  ): Promise<boolean> {
+  async UpdatePractitionerBusinessWalkthrough(): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      mutation UpdatePractitionerBusinessWalkthrough($userId: String) {
-        updatePractitionerBusinessWalkthrough(userId: $userId) {
-          
+      mutation UpdatePractitionerBusinessWalkthrough() {
+        updatePractitionerBusinessWalkthrough() {
         }
       }
       `,
-      variables: {
-        userId,
-      },
     });
 
     if (response.status !== 200) {
@@ -1513,21 +1472,15 @@ class PractitionerService {
     return response.data.data.updatePractitionerBusinessWalkthrough;
   }
 
-  async UpdatePractitionerProgressWalkthrough(
-    userId: string
-  ): Promise<boolean> {
+  async UpdatePractitionerProgressWalkthrough(): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      mutation UpdatePractitionerProgressWalkthrough($userId: String) {
-        updatePractitionerProgressWalkthrough(userId: $userId) {
-          
+      mutation UpdatePractitionerProgressWalkthrough() {
+        updatePractitionerProgressWalkthrough() {
         }
       }
       `,
-      variables: {
-        userId,
-      },
     });
 
     if (response.status !== 200) {
