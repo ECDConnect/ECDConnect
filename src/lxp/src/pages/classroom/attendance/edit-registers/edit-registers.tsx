@@ -1,23 +1,35 @@
-import { BannerWrapper, Button, Divider, Typography } from '@ecdlink/ui';
+import {
+  BannerWrapper,
+  Button,
+  DialogPosition,
+  Divider,
+  Typography,
+} from '@ecdlink/ui';
 import { useHistory, useLocation } from 'react-router';
 import { EditRegistersRouteState } from './edit-registers.types';
 import { useSelector } from 'react-redux';
 import { format, subDays } from 'date-fns';
 import { classroomsSelectors } from '@/store/classroom';
-import { ChildAttendanceOverallReportModel } from '@ecdlink/core';
-import { Fragment, useState } from 'react';
+import { ChildAttendanceOverallReportModel, useDialog } from '@ecdlink/core';
+import { Fragment, useCallback, useState } from 'react';
 import { EditRegistersAttendanceList } from './attendance-list/attendance-list';
 import { EditRegistersAttendanceListProps } from './attendance-list/attendance-list.types';
 import { attendanceSelectors } from '@/store/attendance';
 import ROUTES from '@/routes/routes';
 import { MonthlyAttendanceReportRouteState } from '../components/attendance-report/components/attendance-monthly-report/attendance-report.types';
 import { newGuid } from '@/utils/common/uuid.utils';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+import { TabsItems } from '../../class-dashboard/class-dashboard.types';
 
 export const EditRegisters = () => {
   const [selectedRegister, setSelectedRegister] =
     useState<EditRegistersAttendanceListProps['selectedRegister']>();
 
   const location = useLocation<EditRegistersRouteState>();
+  const { isOnline } = useOnlineStatus();
+  const dialog = useDialog();
+  const history = useHistory();
 
   const startDate = location.state.startDate;
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
@@ -29,9 +41,6 @@ export const EditRegisters = () => {
   );
 
   const monthName = format(startDate ?? new Date(), 'MMM');
-
-  const history = useHistory();
-
   const today = new Date();
   const isCurrentMonth =
     today.getMonth() === startDate.getMonth() &&
@@ -67,6 +76,27 @@ export const EditRegisters = () => {
     };
   });
 
+  const openOfflineDialog = useCallback(() => {
+    dialog({
+      color: 'bg-white',
+      position: DialogPosition.Middle,
+      render: (onSubmit) => (
+        <OnlineOnlyModal
+          onSubmit={() => {
+            history.replace(ROUTES.CLASSROOM.ROOT, {
+              activeTabIndex: TabsItems.ATTENDANCE,
+            });
+            onSubmit();
+          }}
+        />
+      ),
+    });
+  }, [dialog, history.push]);
+
+  if (!monthlyReport && !isOnline) {
+    openOfflineDialog();
+  }
+
   return (
     <BannerWrapper
       title="Edit registers"
@@ -78,6 +108,7 @@ export const EditRegisters = () => {
           selectedMonth: location.state.selectedMonth,
         } as MonthlyAttendanceReportRouteState)
       }
+      displayOffline={!isOnline}
     >
       <Typography
         type="h2"

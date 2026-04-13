@@ -4,6 +4,8 @@ export const useProgressGenerateSummaryPdfReport = () => {
   // Convert jsPDF to Blob
   const htmlToPdfBlob = (src: HTMLElement, width: number): Promise<Blob> => {
     const doc = new jsPDF('portrait', 'pt', 'a4');
+    doc.setFont('Helvetica', 'normal', 'normal');
+    doc.setFontSize(10);
 
     return new Promise((resolve, reject) => {
       doc.html(src, {
@@ -85,6 +87,8 @@ export const useProgressGenerateSummaryPdfReport = () => {
     filenameSuffix?: string
   ) => {
     const doc = new jsPDF('portrait', 'pt', 'a4');
+    doc.setFont('Helvetica', 'normal', 'normal');
+    doc.setFontSize(10);
 
     return doc.html(src, {
       callback: function (doc) {

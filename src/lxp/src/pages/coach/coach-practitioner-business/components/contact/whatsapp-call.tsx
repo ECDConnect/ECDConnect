@@ -3,7 +3,7 @@ import { useParams } from 'react-router';
 import { useSelector } from 'react-redux';
 import { PractitionerBusinessParams } from '../../coach-practitioner-business.types';
 import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
-import { LogoSvgs, getLogo } from '@/utils/common/svg.utils';
+import WhatsAppIcon from '@/assets/logos/whatsapp';
 
 export const WhatsappCall = () => {
   const { userId } = useParams<PractitionerBusinessParams>();
@@ -46,11 +46,7 @@ export const WhatsappCall = () => {
           size={'small'}
           onClick={whatsapp}
         >
-          <img
-            src={getLogo(LogoSvgs.whatsapp)}
-            alt="whatsapp"
-            className="text-secondary mr-1 h-5 w-5"
-          />
+          <WhatsAppIcon className="text-secondary mr-1 h-5 w-5" />
           <Typography
             color={'secondary'}
             type={'small'}

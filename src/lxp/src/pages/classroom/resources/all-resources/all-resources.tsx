@@ -135,33 +135,19 @@ export const AllResources: React.FC<AllResourcesprops> = ({
     [filteredByUserLiked, resourceTypeItem, resources]
   );
 
-  const resourcesSorted = useMemo(
-    () =>
-      resourceTypeItem
-        ? filteredByType?.sort((a, b) =>
-            Number(a.numberLikes) > Number(b.numberLikes)
-              ? -1
-              : Number(a.numberLikes) < Number(b.numberLikes)
-              ? 1
-              : 0
-          )
-        : filteredByUserLiked?.length > 0
-        ? filteredByUserLiked?.sort((a, b) =>
-            Number(a.numberLikes) > Number(b.numberLikes)
-              ? -1
-              : Number(a.numberLikes) < Number(b.numberLikes)
-              ? 1
-              : 0
-          )
-        : resources?.sort((a, b) =>
-            Number(a.numberLikes) > Number(b.numberLikes)
-              ? -1
-              : Number(a.numberLikes) < Number(b.numberLikes)
-              ? 1
-              : 0
-          ),
-    [filteredByType, filteredByUserLiked, resourceTypeItem, resources]
-  );
+  const resourcesSorted = useMemo(() => {
+    const baseArray = resourceTypeItem
+      ? filteredByType
+      : filteredByUserLiked?.length > 0
+      ? filteredByUserLiked
+      : resources;
+
+    return [...(baseArray ?? [])].sort((a, b) => {
+      const likesA = Number(a?.numberLikes) || 0;
+      const likesB = Number(b?.numberLikes) || 0;
+      return likesB - likesA; // descending order
+    });
+  }, [resourceTypeItem, filteredByType, filteredByUserLiked, resources]);
 
   const [resourcesData, setResourcesData] = useState(resourcesSorted);
 

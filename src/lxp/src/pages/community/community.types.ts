@@ -13,4 +13,5 @@ export const ConnectionsTypes = {
 export type CommunityRouteState = {
   activeTabIndex?: number;
   isFromDashboard?: boolean;
+  isFromAboutPage?: boolean;
 };

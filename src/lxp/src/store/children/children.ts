@@ -9,6 +9,7 @@ import {
   updateChild,
   upsertChildren,
   getChildrenForClassroom,
+  getChildById,
 } from './children.actions';
 import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 import { CaregiverContactHistory, ChildrenState } from './children.types';
@@ -49,27 +50,7 @@ const childrenSlice = createSlice({
 
       state.childData.children[childIndex] = payloadUpdated;
     },
-    // This might need to merge with create child, or update the child
-    // Will be part of registration though
-    // createChildUser: (state, action: PayloadAction<UserDto>) => {
-    //   const isOnline = navigator.onLine;
-    //   const payloadUpdated = { ...action.payload, isOnline };
-
-    //   if (!state.childUser) state.childUser = [];
-    //   state.childUser?.push(payloadUpdated);
-    // // },
-    // // TODO - just remove this
-    // updateChildUser: (state, action: PayloadAction<UserDto>) => {
-    //   //const isOnline = navigator.onLine;
-    //   const payloadUpdated = { ...action.payload, synced: false };
-    //   for (let i = 0; i < state.childData.children.length; i++) {
-    //     if (state.childData.children[i].userId === action.payload.id)
-    //       state.childData.children[i].user = payloadUpdated;
-    //   }
-    // },
-    // TODO - refactor so it doesn't require the full DTO, otherwise might as well just use udpate child
     deactivateChild: (state, action: PayloadAction<ChildDto>) => {
-      //const isOnline = navigator.onLine;
       const payloadUpdated = { ...action.payload, synced: false };
 
       const childIndex = state.childData.children.findIndex(
@@ -101,6 +82,21 @@ const childrenSlice = createSlice({
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(findCreatedChild.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(getChildById.fulfilled, (state, action) => {
+      if (!action.payload) return;
+
+      const childIndex = state.childData.children.findIndex(
+        (child) => child.id === action.payload.child.id
+      );
+
+      if (childIndex === -1) {
+        state.childData.children.push(action.payload.child);
+      } else {
+        state.childData.children[childIndex] = action.payload.child;
+      }
+
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(getChildren.fulfilled, (state, action) => {

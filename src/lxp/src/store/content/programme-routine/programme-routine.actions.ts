@@ -14,13 +14,19 @@ export const getProgrammeRoutines = createAsyncThunk<
 >(
   ProgrammeRoutineActions.GET_PROGRAMME_ROUTINES,
   // eslint-disable-next-line no-empty-pattern
-  async ({ locale, overrideCache }, { getState, rejectWithValue }) => {
+  async ({ locale, overrideCache = false }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       programmeRoutineData: { programmeRoutines: programmeRoutineCache },
     } = getState();
 
-    if (!programmeRoutineCache || !!overrideCache) {
+    const shouldFetchFresh = overrideCache === true;
+
+    if (
+      shouldFetchFresh ||
+      !programmeRoutineCache ||
+      programmeRoutineCache.length === 0
+    ) {
       try {
         let programmeRoutines: ProgrammeRoutineDto[] | undefined;
 

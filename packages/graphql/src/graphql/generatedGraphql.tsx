@@ -8678,21 +8678,6 @@ export type PractitionerRemovalHistorySortInput = {
   userId?: InputMaybe<SortEnumType>;
 };
 
-export type PractitionerReportDetails = {
-  __typename?: 'PractitionerReportDetails';
-  classSiteAddress?: Maybe<Scalars['String']>;
-  classroomGroupId?: Maybe<Scalars['String']>;
-  classroomGroupName?: Maybe<Scalars['String']>;
-  id?: Maybe<Scalars['String']>;
-  idNumber?: Maybe<Scalars['String']>;
-  insertedDate: Scalars['DateTime'];
-  name?: Maybe<Scalars['String']>;
-  phone?: Maybe<Scalars['String']>;
-  principalName?: Maybe<Scalars['String']>;
-  programmeDays?: Maybe<Scalars['String']>;
-  programmeTypeName?: Maybe<Scalars['String']>;
-};
-
 export type PractitionerSortInput = {
   attendanceRegisterLink?: InputMaybe<SortEnumType>;
   clickedCommunityTab?: InputMaybe<SortEnumType>;
@@ -9674,6 +9659,7 @@ export type Query = {
   classroomActionItems?: Maybe<Array<Maybe<NotificationDisplay>>>;
   classroomAttendanceOverviewReport?: Maybe<ClassroomGroupChildAttendanceReportOverviewModel>;
   classroomForUser?: Maybe<ClassroomModel>;
+  classroomGroupForClassId?: Maybe<ClassroomGroupModel>;
   classroomGroupsForUser?: Maybe<Array<Maybe<ClassroomGroupModel>>>;
   cmsSyncStatus?: Maybe<CmsSyncStatus>;
   coachByCoachUserId?: Maybe<Coach>;
@@ -9836,7 +9822,6 @@ export type Query = {
   >;
   removeHolidays?: Maybe<Array<Scalars['DateTime']>>;
   removeWeekendDays?: Maybe<Array<Scalars['DateTime']>>;
-  reportDetailsForPractitioner?: Maybe<PractitionerReportDetails>;
   resourceByLanguage?: Maybe<ResourceModel>;
   resourceLikedStatusForUser?: Maybe<UserResourceLikes>;
   resources: Array<Maybe<ClassroomBusinessResource>>;
@@ -11355,11 +11340,14 @@ export type QueryClassroomActionItemsArgs = {
 export type QueryClassroomAttendanceOverviewReportArgs = {
   endDate: Scalars['DateTime'];
   startDate: Scalars['DateTime'];
-  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryClassroomForUserArgs = {
   userId: Scalars['UUID'];
+};
+
+export type QueryClassroomGroupForClassIdArgs = {
+  classroomGroupId: Scalars['UUID'];
 };
 
 export type QueryClassroomGroupsForUserArgs = {
@@ -11945,7 +11933,6 @@ export type QueryMonthlyAttendanceRecordCsvArgs = {
 export type QueryMonthlyAttendanceReportArgs = {
   endMonth: Scalars['DateTime'];
   startMonth: Scalars['DateTime'];
-  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryMoreInformationArgs = {
@@ -12049,10 +12036,6 @@ export type QueryRemoveHolidaysArgs = {
 
 export type QueryRemoveWeekendDaysArgs = {
   days?: InputMaybe<Array<Scalars['DateTime']>>;
-};
-
-export type QueryReportDetailsForPractitionerArgs = {
-  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryResourceByLanguageArgs = {

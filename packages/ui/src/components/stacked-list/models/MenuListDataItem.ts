@@ -22,4 +22,5 @@ export interface MenuListDataItem<T = {}> extends Omit<ListItem, 'subTitle'> {
   subTitle?: string | ReactElement;
   hideRightIcon?: boolean;
   likesItem?: ReactElement;
+  svgIcon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
 }

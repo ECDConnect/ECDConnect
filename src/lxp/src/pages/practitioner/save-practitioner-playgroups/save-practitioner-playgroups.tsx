@@ -123,19 +123,6 @@ export const EditPlaygroups: React.FC = () => {
     removeNotifications();
   };
 
-  // const updateClassroomData = async () => {
-  //   try {
-  //     if (isOnline) {
-  //       setIsLoading(true);
-  //       await syncClassroom();
-  //     }
-  //   } catch (e) {
-  //     console.error(e);
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-
   const createPlayGroup = async (playgroup: EditPlaygroupModel) => {
     const classroomGroupId = newGuid();
     const today = new Date().toISOString();
@@ -242,7 +229,7 @@ export const EditPlaygroups: React.FC = () => {
       const daysRemoved = [...currentDays].filter((d) => !newDays.has(d));
 
       const hasProgrammeChanges =
-        daysAdded.length > 0 || daysRemoved.length > 0;
+        daysAdded.length > 0 || daysRemoved.length > 0 || teacherChanged;
 
       if (!hasMetaChanges && !hasProgrammeChanges) {
         continue; // nothing to do
@@ -254,7 +241,7 @@ export const EditPlaygroups: React.FC = () => {
         return {
           ...p,
           isActive: !isBeingRemoved,
-          synced: !isBeingRemoved,
+          synced: !isBeingRemoved || !teacherChanged,
         };
       });
 

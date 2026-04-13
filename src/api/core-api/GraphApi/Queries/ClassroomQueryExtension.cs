@@ -71,6 +71,42 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
+        public ClassroomGroupModel GetClassroomGroupForClassId(
+            [Service] IClassroomService classroomService,
+            [Service] IHttpContextAccessor httpContextAccessor,
+            Guid classroomGroupId)
+        {
+            var userId = httpContextAccessor.HttpContext.GetUser().Id;
+            
+            var classroomGroup = classroomService.GetClassroomGroupsForUser(userId)?
+                .FirstOrDefault(x => x.Id == classroomGroupId);
+            
+            if (classroomGroup == null)
+            {
+                return null;  // Early return for not found
+            }
+            
+            // Map to model with simplified assignments
+            return new ClassroomGroupModel
+            {
+                Id = classroomGroup.Id,
+                ClassroomId = classroomGroup.ClassroomId,
+                Name = classroomGroup.Name,
+                UserId = classroomGroup.UserId,  
+                Learners = classroomGroup.Learners.Select(y => new BaseLearnerModel
+                {
+                    LearnerId = y.Id,
+                    ChildUserId = y.UserId.Value,
+                    StartedAttendance = y.StartedAttendance,
+                    StoppedAttendance = y.StoppedAttendance,
+                    IsActive = y.IsActive,
+                }).ToList(),
+                ClassProgrammes = classroomGroup.ClassProgrammes.Where(x => x.IsActive).ToList(),
+            };
+        }
+
+
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
         public List<ClassroomGroupModel> GetClassroomGroupsForUser(
             [Service] IClassroomService classroomService,
             Guid userId)

@@ -114,11 +114,13 @@ export const PointsSummary: React.FC = () => {
   }, [dispatch, practitioner?.userId]);
 
   const getYearPoints = useCallback(async () => {
-    const response = await new PointsService(
-      userAuth?.auth_token!
-    ).yearPointsView(practitioner?.userId!);
+    const response = await dispatch(
+      pointsThunkActions.yearPointsView({
+        userId: practitioner?.userId!,
+      })
+    );
     return response;
-  }, [practitioner?.userId, userAuth?.auth_token]);
+  }, [dispatch, practitioner?.userId]);
 
   const todoListFiltered = practitioner?.isPrincipal
     ? principalActivitiesItems
@@ -139,6 +141,15 @@ export const PointsSummary: React.FC = () => {
             return f.activity !== el.activity;
           });
         });
+
+  const clickInfluencerHandler = () => {
+    if (isOnline) {
+      history.push(ROUTES.COMMUNITY.WELCOME);
+    } else {
+      showOnlineOnly();
+      return;
+    }
+  };
 
   const getPhase1StackedMenuList = (): MenuListDataItem[] => {
     const titleStyle = 'text-textDark font-semibold text-base leading-snug';
@@ -320,7 +331,7 @@ export const PointsSummary: React.FC = () => {
       } rounded-full h-12 w-12 p-2.5`,
       showIcon: true,
       onActionClick: canClickInfluencer
-        ? () => history.push(ROUTES.COMMUNITY.WELCOME)
+        ? () => clickInfluencerHandler()
         : () => {},
       hideRightIcon: true,
       backgroundColor: pointsToDo?.viewedCommunitySection

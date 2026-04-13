@@ -342,7 +342,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
            DateTime lastSync, Guid classroomId)
         {
             var userId = contextAccessor.HttpContext.GetUser().Id;
+            var practitioner = await dbContext.Practitioners
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.UserId == userId);
 
+            bool isPrincipal = practitioner?.IsPrincipal ?? false;
+            
             var childrenCount = await dbContext.Children.FromSql($@"
             SELECT c.""Id""
             FROM ""Child"" c 
@@ -363,16 +368,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var pointsCount = await dbContext.PointsUserSummary.FromSql($@"
             SELECT pus.""Id""
             FROM ""PointsUserSummary"" pus 
-            WHERE pus.""UserId"" = {userId}::uuid  and pus.""UpdatedBy"" != {userId}::text
+            WHERE pus.""UserId"" = {userId}::uuid
             AND pus.""UpdatedDate"" > {lastSync}
             ").CountAsync();
 
-            var periodCount = await dbContext.ChildProgressReportPeriod.FromSql($@"
-            SELECT cprp.""Id""
-            FROM ""ChildProgressReportPeriod"" cprp 
-            WHERE cprp.""ClassroomId"" = {classroomId}::uuid 
-            AND cprp.""InsertedDate"" > {lastSync}
-            ").CountAsync();
+            var periodCount = 0;
+            if (!isPrincipal)
+            {
+                periodCount = await dbContext.ChildProgressReportPeriod.FromSql($@"
+                SELECT cprp.""Id""
+                FROM ""ChildProgressReportPeriod"" cprp 
+                WHERE cprp.""ClassroomId"" = {classroomId}::uuid 
+                AND cprp.""InsertedDate"" > {lastSync}
+                ").CountAsync();    
+            }
 
             var permissionsCount = await dbContext.UserPermissions.FromSql($@"
             SELECT up.""Id""
@@ -387,7 +396,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 SyncClassroom = classroomCount >= 1,
                 SyncReportingPeriods = periodCount >= 1,
                 SyncPoints = pointsCount >= 1,
-                SyncPermissions = permissionsCount >= 1
+                SyncPermissions = permissionsCount >= 1,
             };
         }
     }

@@ -7,6 +7,8 @@ import {
 import { IncomeTypeIds } from '@ecdlink/core';
 import { RootState } from '../types';
 import { createSelector } from '@reduxjs/toolkit';
+import { OfflineUpdate } from '@/models/sync/offline-update';
+import { OfflineCache } from '@/models/sync/offline-cache';
 
 // Statements types
 export const getExpensesTypes = (state: RootState): ExpensesStatementsTypes[] =>

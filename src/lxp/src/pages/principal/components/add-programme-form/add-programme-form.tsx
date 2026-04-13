@@ -17,7 +17,6 @@ import {
   OnNext,
   PractitionerSetupSteps,
 } from '../../setup-principal/setup-principal.types';
-import { useEffect } from 'react';
 import { ClassroomDto } from '@/models/classroom/classroom.dto';
 import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
 

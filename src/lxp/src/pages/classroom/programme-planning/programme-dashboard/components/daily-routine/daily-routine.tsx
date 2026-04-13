@@ -47,15 +47,11 @@ import { PublicHolidayIndicator } from '../../../programme-routine/components/pu
 import ROUTES from '@routes/routes';
 import { ProgrammePlanningHeaderUpdated } from '../../../components/programme-planning-header-updated/programme-planning-header-updated';
 import { ProgrammePlanningRoutineListItemUpdated } from '../../../components/programme-planning-routine-list-item-updated/programme-planning-routine-list-item-updated';
-import {
-  programmeThemeSelectors,
-  programmeThemeThunkActions,
-} from '@/store/content/programme-theme';
+import { programmeThemeSelectors } from '@/store/content/programme-theme';
 import { useProgrammePlanning } from '@hooks/useProgrammePlanning';
 import { WeekendDayIndicator } from '../../../programme-routine/components/weekend-day-indicator/weekend-day-indicator';
 import {
   addWeeks,
-  isSameDay,
   isSameWeek,
   isWeekend,
   nextMonday,
@@ -625,6 +621,10 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
       ).unwrap();
     }
   };
+
+  if (!isOnline && !currentDailyProgramme && !programmeRoutine?.routineItems) {
+    showOnlineOnly();
+  }
 
   if (
     (isPastDay() && !currentDailyProgramme) ||

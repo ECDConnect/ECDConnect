@@ -1,7 +1,12 @@
 import { UserConsentDto, UserDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
-import { getUser, getUserConsents, upsertUserConsents } from './user.actions';
+import {
+  getUser,
+  getUserConsents,
+  syncUser,
+  upsertUserConsents,
+} from './user.actions';
 import { UserState } from './user.types';
 
 const initialState: UserState = {
@@ -50,7 +55,11 @@ const userSlice = createSlice({
     builder.addCase(getUser.fulfilled, (state, action) => {
       state.user = action.payload;
     });
-
+    builder.addCase(syncUser.fulfilled, (state, action) => {
+      if (state.user) {
+        state.user.synced = true;
+      }
+    });
     builder.addCase(getUserConsents.fulfilled, (state, action) => {
       state.userConsent = action.payload.map((consent) => ({
         ...consent,

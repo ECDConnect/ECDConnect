@@ -201,6 +201,96 @@ class ChildService {
     return response.data.data.childrenForClassroom;
   }
 
+  async getChildById(childId: string): Promise<ChildDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { GetChildById: ChildDto };
+      errors?: {};
+    }>(``, {
+      query: `query($id: UUID!) {
+          GetChildById(id: $id) {
+            id
+            workflowStatusId
+            insertedDate
+            allergies
+            disabilities
+            otherHealthConditions
+            otherLanguages
+            isActive
+            insertedBy
+            userId
+            user {
+              id
+              firstName
+              surname
+              fullName
+              email
+              genderId
+              dateOfBirth
+              profileImageUrl
+              isActive
+              isSouthAfricanCitizen
+              verifiedByHomeAffairs
+              userLanguages {
+                languageId
+              }
+            }
+            caregiverId 
+            caregiver {
+              id
+              phoneNumber
+              idNumber
+              firstName
+              surname
+              fullName  
+              siteAddressId          
+              siteAddress {
+                id
+                provinceId
+                province {
+                  id
+                  description
+                }
+                name
+                addressLine1
+                addressLine2
+                addressLine3
+                postalCode
+                ward
+                isActive
+              }
+              relationId
+              educationId
+              emergencyContactFirstName
+              emergencyContactSurname
+              emergencyContactPhoneNumber
+              additionalFirstName
+              additionalSurname
+              additionalPhoneNumber
+              joinReferencePanel
+              contribution
+              grants {
+                id
+                description
+              }
+              isActive
+              isAllowedCustody
+            }
+          }
+        }
+      `,
+      variables: {
+        id: childId,
+      },
+    });
+
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error('getChildById Failed - Server connection error');
+    }
+
+    return response.data.data.GetChildById;
+  }
+
   async getChildren(): Promise<ChildDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{

@@ -103,6 +103,18 @@ export const ProgressReportingPeriods: React.FC = () => {
 
   const onSubmit = () => {
     const save = async () => {
+      // always save periods locally
+      appDispatch(
+        await classroomsActions.addChildProgressReportPeriod({
+          childProgressReportPeriods: reportingPeriods.map((x) => ({
+            id: x.id,
+            startDate: new Date(x.startDate).toISOString(),
+            endDate: new Date(x.endDate).toISOString(),
+            synced: isOnline,
+          })),
+        })
+      );
+
       if (isOnline) {
         appDispatch(
           await classroomsThunkActions.addChildProgressReportPeriods({
@@ -115,15 +127,6 @@ export const ProgressReportingPeriods: React.FC = () => {
           })
         );
       } else {
-        appDispatch(
-          await classroomsActions.addChildProgressReportPeriod({
-            childProgressReportPeriods: reportingPeriods.map((x) => ({
-              id: x.id,
-              startDate: new Date(x.startDate).toISOString(),
-              endDate: new Date(x.endDate).toISOString(),
-            })),
-          })
-        );
       }
 
       const notificationsToRemove = notifications?.filter(

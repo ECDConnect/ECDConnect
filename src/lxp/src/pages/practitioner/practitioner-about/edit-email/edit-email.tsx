@@ -67,9 +67,12 @@ export const EditEmail: React.FC<EditEmailProps> = ({ setEditEmail, user }) => {
       copy.surname = practitionerForm.surname;
       copy.phoneNumber = practitionerForm.cellphone;
       copy.email = practitionerForm.email!;
+      copy.synced = isOnline;
 
       appDispatch(userActions.updateUser(copy));
-      appDispatch(userThunkActions.updateUser(copy));
+      if (isOnline) {
+        appDispatch(userThunkActions.updateUser(copy));
+      }
     }
   };
 

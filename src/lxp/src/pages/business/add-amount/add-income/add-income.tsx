@@ -19,7 +19,7 @@ import DonationsOrVouchers from './components/donations-or-vouchers/donations-or
 import OtherIncome from './components/other-income/other-income';
 import StatementsWrapper from '../../money/submit-income-statements/components/walkthrough-statements-wrapper/StatementsWrapper';
 import { useAppContext } from '@/walkthrougContext';
-import { statementsActions } from '@/store/statements';
+import { statementsActions, statementsThunkActions } from '@/store/statements';
 import { IncomeItemDto, useDialog } from '@ecdlink/core';
 import DbeSubsidy from './components/dbe-subsidy/dbe-subsidy';
 import { BusinessTabItems } from '../../business.types';
@@ -49,9 +49,15 @@ export const AddIncome: React.FC = () => {
   )?.filter((x) => x.workflowStatusId === activeWorkflowStatus?.id);
 
   const onSubmit = useCallback((incomeItem: IncomeItemDto) => {
+    // update redux
     appDispatch(
       statementsActions.addOrUpdateIncomeItems({ incomeItems: [incomeItem] })
     );
+    if (isOnline) {
+      // send change to backend
+      appDispatch(statementsThunkActions.upsertIncomeStatements({})).unwrap();
+    }
+
     removeNotifications();
     history.push(ROUTES.BUSINESS, {
       activeTabIndex: BusinessTabItems.MONEY,

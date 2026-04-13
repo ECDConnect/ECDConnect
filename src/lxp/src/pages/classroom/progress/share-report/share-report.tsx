@@ -284,7 +284,7 @@ export const ProgressShareReport: React.FC = () => {
       </div>
       {!!selectedReport && (
         <div hidden={true}>
-          <div ref={shareRef} style={{ letterSpacing: '0.01px' }}>
+          <div ref={shareRef} style={{ letterSpacing: '0.02px' }}>
             <ProgressCaregiverReportPdf
               childId={routeState.childId}
               reportId={selectedReport}

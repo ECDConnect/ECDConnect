@@ -8,17 +8,15 @@ import {
 } from '@ecdlink/ui';
 import { PhoneIcon } from '@heroicons/react/solid';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
 import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
 import { PractitionerProfileRouteState } from './other-colleagues.types';
 import * as styles from './other-colleagues.styles';
-import { useTheme } from '@ecdlink/core';
 import TransparentLayer from '../../../../../assets/TransparentLayer.png';
+import WhatsAppIcon from '@/assets/logos/whatsapp';
 
 export const OtherPractitionerProfile: React.FC<
   PractitionerProfileRouteState
 > = ({ setPractitionerInfo, colleagueProfile }) => {
-  const { theme } = useTheme();
   const { isOnline } = useOnlineStatus();
 
   const call = () => {
@@ -107,11 +105,7 @@ export const OtherPractitionerProfile: React.FC<
             size="small"
           >
             <div className="flex items-center justify-center">
-              <img
-                src={getLogo(LogoSvgs.whatsapp)}
-                alt="whatsapp"
-                className={styles.buttonIconStyle}
-              />
+              <WhatsAppIcon className={styles.buttonIconStyle} />
               <Typography
                 text={`WhatsApp ${colleagueProfile?.name}`}
                 type="button"

@@ -16,10 +16,10 @@ import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { useDialog } from '@ecdlink/core';
 import { NotificationDisplay } from '@ecdlink/graphql';
 import ROUTES from '@/routes/routes';
-import { LogoSvgs, getLogo } from '@/utils/common/svg.utils';
 import { HighlightedCount } from '@/components/highlighted-count/highlighted-count';
 import { coachThunkActions } from '@store/coach';
 import { useAppDispatch } from '@store';
+import WhatsAppIcon from '@/assets/logos/whatsapp';
 
 interface ContactPractitionerProps {
   practitionerId: string;
@@ -227,11 +227,7 @@ export const ContactPractitioner: React.FC<ContactPractitionerProps> = ({
                 disabled={!phone}
                 className="w-full justify-start"
               >
-                <img
-                  src={getLogo(LogoSvgs.whatsapp)}
-                  alt="WhatsApp"
-                  className="mr-3 h-5 w-5"
-                />
+                <WhatsAppIcon className="mr-3 h-5 w-5" />
                 <Typography
                   type="small"
                   weight="bold"

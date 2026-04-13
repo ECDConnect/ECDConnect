@@ -13,13 +13,19 @@ export const getProgrammeThemes = createAsyncThunk<
   ThunkApiType<RootState>
 >(
   ProgrammeThemeActions.GET_PROGRAMME_THEMES,
-  async ({ locale, overrideCache }, { getState, rejectWithValue }) => {
+  async ({ locale, overrideCache = false }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       programmeThemeData: { programmeThemes: programmeThemeCache },
     } = getState();
 
-    if (!programmeThemeCache || !!overrideCache) {
+    const shouldFetchFresh = overrideCache === true;
+
+    if (
+      shouldFetchFresh ||
+      !programmeThemeCache ||
+      programmeThemeCache.length === 0
+    ) {
       try {
         let programmeThemes: ProgrammeThemeDto[] | undefined;
 

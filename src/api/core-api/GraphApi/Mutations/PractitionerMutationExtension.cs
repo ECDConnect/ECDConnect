@@ -437,16 +437,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         }
 
         [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.Update)]
-        public bool UpdatePractitionerBusinessWalkthrough([Service] PersonnelService personnelService, string userId)
+        public bool UpdatePractitionerBusinessWalkthrough([Service] PersonnelService personnelService)
         {
-            return personnelService.UpdatePractitionerBusinessWalkthrough(userId);
+            return personnelService.UpdatePractitionerBusinessWalkthrough();
         }
 
         [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.Update)]
-        public bool UpdatePractitionerProgressWalkthrough([Service] PersonnelService personnelService, string userId)
+        public bool UpdatePractitionerProgressWalkthrough([Service] PersonnelService personnelService)
         {
-            personnelService.UpdatePractitioneProgressWalkthrough(userId);
-            return true;
+            return personnelService.UpdatePractitioneProgressWalkthrough();
         }
 
         // For some reason beyond my understanding, this permission does not work!!!???

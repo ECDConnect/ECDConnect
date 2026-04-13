@@ -1,9 +1,4 @@
-import {
-  ChildDto,
-  useDialog,
-  getAvatarColor,
-  usePrevious,
-} from '@ecdlink/core';
+import { ChildDto, getAvatarColor, usePrevious } from '@ecdlink/core';
 import {
   FADButton,
   SearchDropDown,
@@ -19,7 +14,7 @@ import { format, isBefore } from 'date-fns';
 import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
-import { childrenSelectors, childrenThunkActions } from '@store/children';
+import { childrenSelectors } from '@store/children';
 import { classroomsSelectors } from '@store/classroom';
 import { getChildAlertModel } from '@utils/child/child-alert-message-util';
 import SearchHeader from '../../../components/search-header/search-header';
@@ -42,8 +37,8 @@ import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { ChildProfileRouteState } from '@/pages/child/child-profile/child-profile.types';
 import { useTenantModules } from '@/hooks/useTenantModules';
 import { useTenant } from '@/hooks/useTenant';
-import { AnyAction } from '@reduxjs/toolkit';
 import { useAppDispatch } from '@/store';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 const sortOptions: SearchSortOptions = {
   columns: [
@@ -87,12 +82,9 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const childExternalWorkflowStatusId = getWorkflowStatusIdByEnum(
     WorkflowStatusEnum.ChildExternalLink
   );
+  const { isOnline } = useOnlineStatus();
 
   const { state } = useLocation<ChildListRouteState>();
-
-  const classroomGroupId = state?.classroomGroupId;
-
-  const dispatch = useAppDispatch();
 
   const previousChildrenClassroomGroupId = usePrevious(state?.classroomGroupId);
 
@@ -352,6 +344,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
         } as ClassDashboardRouteState)
       }
       size="small"
+      displayOffline={!isOnline}
     >
       {children &&
         children.length > 0 &&

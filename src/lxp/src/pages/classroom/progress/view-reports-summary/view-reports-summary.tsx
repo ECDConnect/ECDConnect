@@ -96,6 +96,7 @@ export const ProgressViewReportsSummary: React.FC = () => {
           userId: userAuth?.id!,
           startDate: oneYearAgo,
           endDate: currentDate,
+          overrideCache: true,
         })
       ).unwrap();
     }
@@ -197,7 +198,7 @@ export const ProgressViewReportsSummary: React.FC = () => {
         ))}
         {/* Hidden PDF content */}
         <div hidden={true}>
-          <div ref={shareRef} style={{ letterSpacing: '0.01px' }}>
+          <div ref={shareRef} style={{ letterSpacing: '0.02px' }}>
             <ProgresseportsSummaryPdf
               ageGroup={ageGroup}
               classroomGroupName={classroomGroup?.name || ''}
