@@ -20,6 +20,7 @@ import {
   MutationAddPractitionerToPrincipalArgs,
 } from '@ecdlink/graphql';
 import PermissionsService from '@/services/PermissionsService/PermissionsService';
+import { OverrideCache } from '@/models/sync/override-cache';
 
 export const PractitionerActions = {
   UPDATE_PRACTITIONER_REGISTERED: 'updatePractitionerRegistered',
