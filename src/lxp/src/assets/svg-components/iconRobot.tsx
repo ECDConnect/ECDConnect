@@ -27,7 +27,7 @@ const iconRobot = (props: React.SVGProps<SVGSVGElement>) => (
         height="176.044"
         fill="#FFD525"
       />
-      <g clip-path="url(#clip0_3534_35440)">
+      <g clipPath="url(#clip0_3534_35440)">
         <path
           d="M61.7924 70.0964C61.7924 72.0437 57.3513 73.5834 51.8679 73.5834C46.3845 73.5834 41.9434 71.9984 41.9434 70.0964C41.9434 68.1944 46.3845 66.6094 51.8679 66.6094C57.3513 66.6094 61.7924 68.1491 61.7924 70.0964Z"
           fill="#83BB26"
@@ -147,8 +147,8 @@ const iconRobot = (props: React.SVGProps<SVGSVGElement>) => (
         <path
           d="M42.6221 56.737C43.3018 60.4505 48.0148 62.7601 53.181 61.8544C58.3472 60.9486 62.0179 57.1899 61.3835 53.4312"
           stroke="#FF2180"
-          stroke-width="2"
-          stroke-linecap="round"
+          strokeWidth="2"
+          strokeLinecap="round"
         />
       </g>
     </g>

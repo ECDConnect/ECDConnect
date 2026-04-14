@@ -115,6 +115,7 @@ export const AddOrEditPractitioner = ({
       practitionerDetails = await appDispatch(
         practitionerThunkActions.getPractitionerByUserId({
           userId: practitionerUserDetails.id,
+          overrideCache: true,
         })
       ).unwrap();
     }

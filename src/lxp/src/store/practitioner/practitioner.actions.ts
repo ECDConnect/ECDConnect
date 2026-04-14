@@ -139,14 +139,15 @@ export const getPractitionerById = createAsyncThunk<
 
 export const getPractitionerByUserId = createAsyncThunk<
   PractitionerDto,
-  { userId: string },
+  { userId: string } & OverrideCache,
   ThunkApiType<RootState>
 >(
   'getPractitionerByUserId',
   // eslint-disable-next-line no-empty-pattern
-  async ({ userId }, { getState, rejectWithValue }) => {
+  async ({ userId, overrideCache = false }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
+      practitioner: { practitioner: practitionerCache },
     } = getState();
 
     try {
@@ -156,6 +157,14 @@ export const getPractitionerByUserId = createAsyncThunk<
         return rejectWithValue('no user id supplied');
       }
 
+      const isUserLoggedInPractitioner = userId === userAuth?.id;
+
+      // === CACHE CHECK ===
+      if (!overrideCache && isUserLoggedInPractitioner && practitionerCache) {
+        return practitionerCache;
+      }
+
+      // === FETCH FROM API ===
       if (userAuth?.auth_token) {
         practitioner = await new PractitionerService(
           userAuth?.auth_token

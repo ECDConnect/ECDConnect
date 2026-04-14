@@ -12,7 +12,7 @@ import { PractitionerColleagues } from '@ecdlink/graphql';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   PractitionerListProps,
   PractitionerListRouteState,
@@ -61,11 +61,11 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
   const tenant = useTenant();
   const appDispatch = useAppDispatch();
   const isOpenAccess = tenant?.isOpenAccess;
+  const isMounted = useRef(true);
 
   const getPractitionerColleagues = async () => {
     // Check if the practitioner exists
     let practitionerColleagues: PractitionerColleagues[] = [];
-    let invites: InviteDto[] = [];
     let practitionerInvites: PractitionerColleagues[] = [];
 
     if (userAuth) {
@@ -76,13 +76,12 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
         })
       ).unwrap();
       if (isOpenAccess) {
-        setInvites(
-          await appDispatch(
-            invitesThunkActions.getInvitesByPrincipalId({})
-          ).unwrap()
-        );
-      }
+        const invites = await appDispatch(
+          invitesThunkActions.getInvitesByPrincipalId({})
+        ).unwrap();
 
+        setInvites(invites || []);
+      }
       setIsLoading(false);
     }
 
@@ -107,8 +106,13 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
   };
 
   useEffect(() => {
+    isMounted.current = true;
+
     getPractitionerColleagues();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    return () => {
+      isMounted.current = false;
+    };
   }, []);
 
   useEffect(() => {

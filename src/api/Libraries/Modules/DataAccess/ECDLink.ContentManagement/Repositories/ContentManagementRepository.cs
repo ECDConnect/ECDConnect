@@ -1124,6 +1124,7 @@ namespace ECDLink.ContentManagement.Repositories
             var progressTrackingAgeGroupId = ContentTypeConstants.ProgressTrackingAgeGroupId;
             var programmeRoutineId = ContentTypeConstants.ProgrammeRoutineId;
             var programmeThemeId = ContentTypeConstants.ThemeId;
+            var connectItemId = ContentTypeConstants.ConnectItemId;
 
             var activitiesCount = await _context.ContentValues.FromSql($@"
             SELECT DISTINCT c.""Id""
@@ -1198,6 +1199,14 @@ namespace ECDLink.ContentManagement.Repositories
             AND cv.""UpdatedDate"" > {lastSync}
             ").CountAsync();
 
+            var connectItemCount = await _context.ContentValues.FromSql($@"
+            SELECT DISTINCT c.""Id""
+            FROM ""ContentValue"" cv 
+            INNER JOIN ""Content"" c ON c.""Id"" = cv.""ContentId""
+            WHERE (cv.""TenantId"" = {tenantId} AND c.""IsActive"" = true AND c.""ContentTypeId"" = {connectItemId})
+            AND cv.""UpdatedDate"" > {lastSync}
+            ").CountAsync();
+
             return new CmsSyncStatus
             {
                 SyncActivities = activitiesCount >= 1,
@@ -1208,7 +1217,8 @@ namespace ECDLink.ContentManagement.Repositories
                 SyncResources = resourceCount >= 1,
                 SyncAgeGroups = progressTrackingAgeGroupCount >= 1,
                 SyncProgrammeRoutines = programmeRoutineCount >= 1,
-                SyncProgrammeThemes = programmeThemeCount >= 1
+                SyncProgrammeThemes = programmeThemeCount >= 1,
+                SyncConnectItem = connectItemCount >= 1
             };
         }
     }

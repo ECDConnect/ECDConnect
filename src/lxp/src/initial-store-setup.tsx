@@ -365,6 +365,12 @@ const InitialStoreSetup: React.FC = ({ children }) => {
               overrideCache: cmsStatus?.syncResources,
             })
           ).unwrap(),
+          appDispatch(
+            communityThunkActions.getAllConnectItem({
+              locale: 'en-za',
+              overrideCache: cmsStatus?.syncConnectItem,
+            })
+          ).unwrap(),
         ];
 
     // clear non persistent activity planning data if data changed in the database

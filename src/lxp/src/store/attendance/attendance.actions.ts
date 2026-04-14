@@ -20,6 +20,8 @@ export const AttendanceActions = {
   GET_MONTHLY_ATTENDANCE_REPORT: 'getMonthlyAttendanceReport',
   TRACK_ATTENDANCE_SYNC: 'trackAttendanceSync',
   GET_CLASSROOM_ATTENDANCE_REPORT: 'getClassroomAttendanceReport',
+  GET_PREVIOUS_WEEK_ATTENDANCE: 'getPreviousWeekAttendance',
+  GET_CHILD_ATTENDANCE_RECORDS: 'getChildAttendanceRecords',
 };
 
 export const getAttendance = createAsyncThunk<
@@ -64,7 +66,7 @@ export const getPreviousWeekAttendance = createAsyncThunk<
   { startDate: Date; endDate: Date },
   ThunkApiType<RootState>
 >(
-  'getPreviousWeekAttendance',
+  AttendanceActions.GET_PREVIOUS_WEEK_ATTENDANCE,
   async ({ startDate, endDate }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
@@ -135,7 +137,7 @@ export const getChildAttendanceRecords = createAsyncThunk<
   { userId: string; classgroupId: string; startDate: Date; endDate: Date },
   ThunkApiType<RootState>
 >(
-  'attendance/getChildAttendanceRecords', // ← more specific & conventional prefix
+  AttendanceActions.GET_CHILD_ATTENDANCE_RECORDS,
   async (
     { userId, classgroupId, startDate, endDate },
     { getState, rejectWithValue }
@@ -145,9 +147,7 @@ export const getChildAttendanceRecords = createAsyncThunk<
 
     const cachedData = state.attendanceData.attendanceByUserId?.[userId]?.data;
 
-    console.log('cachedData', cachedData);
-
-    // Early return from cache (most common happy path should be fast)
+    // === CACHE CHECK ===
     if (cachedData) {
       if (
         cachedData.attendancePercentage !== 0 &&
@@ -158,7 +158,7 @@ export const getChildAttendanceRecords = createAsyncThunk<
       }
     }
 
-    // Normalize userId – use current authenticated user when empty
+    // === FETCH FROM API ===
     const effectiveUserId = userId || userAuth?.id;
 
     if (!effectiveUserId) {
@@ -185,7 +185,6 @@ export const getChildAttendanceRecords = createAsyncThunk<
 
       return report;
     } catch (err: any) {
-      // Usually better to pass meaningful message + original error
       return rejectWithValue(
         err?.message || 'Failed to fetch child attendance records'
       );
@@ -250,7 +249,7 @@ export const getClassroomAttendanceReport = createAsyncThunk<
   { startDate: Date | string; endDate: Date | string },
   ThunkApiType<RootState>
 >(
-  'attendance/getClassroomAttendanceReport',
+  AttendanceActions.GET_CLASSROOM_ATTENDANCE_REPORT,
   async ({ startDate, endDate }, { getState, rejectWithValue }) => {
     const state = getState();
     const { userAuth } = state.auth;

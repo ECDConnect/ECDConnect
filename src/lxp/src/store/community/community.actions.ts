@@ -8,7 +8,6 @@ import {
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState, ThunkApiType } from '../types';
 import { CommunityService } from '@/services/CommunityService';
-import { CommunityProfileDto } from '@ecdlink/core';
 import { OverrideCache } from '@/models/sync/override-cache';
 
 export interface CommunityConnectDataForGGWithLocale {
@@ -40,6 +39,7 @@ export const getAllConnect = createAsyncThunk<
   async ({ locale }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
+      community: { connect: connectCache },
     } = getState();
 
     try {
@@ -61,27 +61,30 @@ export const getAllConnect = createAsyncThunk<
 
 export const getAllConnectItem = createAsyncThunk<
   ConnectItem[],
-  { locale: string },
+  { locale: string } & OverrideCache,
   ThunkApiType<RootState>
 >(
   CommunityActions.GET_ALL_CONNECT_ITEM,
-  async ({ locale }, { getState, rejectWithValue }) => {
+  async ({ locale, overrideCache = false }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
+      community: { connectItem: connectItemCache },
     } = getState();
 
+    // === CACHE CHECK ===
+    if (connectItemCache?.length) {
+      return connectItemCache;
+    }
+
+    // === FETCH FROM API ===
     try {
-      let content: ConnectItem[] | undefined = undefined;
-
-      if (userAuth?.auth_token) {
-        content = await new CommunityService(
-          userAuth?.auth_token ?? ''
-        ).getAllConnectItem(locale);
-
-        return content;
-      } else {
+      if (!userAuth?.auth_token) {
         return rejectWithValue('no access token, profile check required');
       }
+
+      return await new CommunityService(
+        userAuth?.auth_token ?? ''
+      ).getAllConnectItem(locale);
     } catch (err) {
       return rejectWithValue(err);
     }

@@ -12,6 +12,7 @@
         public bool SyncProgrammeRoutines { get; set; }
         public bool SyncProgrammeThemes { get; set; }
         public bool SyncHolidays { get; set; }
+        public bool SyncConnectItem {get; set; }
 
     }
 }
