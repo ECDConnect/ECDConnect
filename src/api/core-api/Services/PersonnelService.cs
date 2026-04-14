@@ -200,6 +200,11 @@ namespace ECDLink.Api.CoreApi.Services
         // Load related data asynchronously
         model.Absentees = _absenteeService.GetAbsenteeByUser(practitioner.UserId.ToString());
 
+         model.EcdRegistration = _dbContext.EcdRegistrations
+                .Where(x => x.PractitionerId == practitioner.Id && x.IsActive)
+                .OrderByDescending(x => x.InsertedDate)
+                .FirstOrDefault();
+
         // Get full ApplicationUser (avoid .Result)
         if (practitioner.UserId.HasValue)
         {
@@ -426,6 +431,11 @@ namespace ECDLink.Api.CoreApi.Services
                         }
                     };
                     _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PromotedToPrincipalOrFAA, DateTime.Now.Date, practitionerToPromote.User, null, MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7), false, true);
+                }
+
+                if (practitionerToPromote.EcdRegistration == null)
+                {
+                     _notificationService.SendNotificationAsync(null, TemplateTypeConstants.DbeRegistration, DateTime.Now.Date, practitionerToPromote.User, null, MessageStatusConstants.Blue, null, null, false, true);
                 }
 
             }

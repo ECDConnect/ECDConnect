@@ -11,6 +11,7 @@ interface NotificationTagConfigParams {
   SeeClasses: Partial<Message>;
   GetFeedback: Partial<Message>;
   SeePractitioners: Partial<Message>;
+  DbeRegistration: Partial<Message>;
 }
 export const notificationTagConfig: NotificationTagConfigParams = {
   AddedToProgramme: {
@@ -51,6 +52,9 @@ export const notificationTagConfig: NotificationTagConfigParams = {
   },
   SeePractitioners: {
     cta: '[[SeePractitioners]]',
+  },
+  DbeRegistration: {
+    cta: '[[DbeRegistration]]',
   },
 };
 

@@ -1138,6 +1138,23 @@ export type CaregiverSortInput = {
   whatsAppNumber?: InputMaybe<SortEnumType>;
 };
 
+export enum ChallengeType {
+  DontKnowWhereToStart = 'DONT_KNOW_WHERE_TO_START',
+  LackOfInfrastructureOrResources = 'LACK_OF_INFRASTRUCTURE_OR_RESOURCES',
+  MissingDocuments = 'MISSING_DOCUMENTS',
+  MissingRequirements = 'MISSING_REQUIREMENTS',
+  Other = 'OTHER',
+  ProcessTooLongOrComplicated = 'PROCESS_TOO_LONG_OR_COMPLICATED',
+  UnreachableOfficials = 'UNREACHABLE_OFFICIALS',
+}
+
+export type ChallengeTypeOperationFilterInput = {
+  eq?: InputMaybe<ChallengeType>;
+  in?: InputMaybe<Array<ChallengeType>>;
+  neq?: InputMaybe<ChallengeType>;
+  nin?: InputMaybe<Array<ChallengeType>>;
+};
+
 export type Child = {
   __typename?: 'Child';
   allergies?: Maybe<Scalars['String']>;
@@ -3219,6 +3236,171 @@ export type DocumentTypeSortInput = {
   updatedDate?: InputMaybe<SortEnumType>;
 };
 
+export type EcdRegistration = {
+  __typename?: 'EcdRegistration';
+  challenges: ChallengeType;
+  challengesOtherReason?: Maybe<Scalars['String']>;
+  hasBronzeCertificate: Scalars['Boolean'];
+  hasGoldCertificate: Scalars['Boolean'];
+  hasSilverCertificate: Scalars['Boolean'];
+  history?: Maybe<Array<Maybe<EcdRegistrationHistory>>>;
+  id: Scalars['UUID'];
+  insertedDate: Scalars['DateTime'];
+  isActive: Scalars['Boolean'];
+  practitioner?: Maybe<Practitioner>;
+  practitionerId?: Maybe<Scalars['UUID']>;
+  problemDescription?: Maybe<Scalars['String']>;
+  registrationType?: Maybe<NonSubsidyRegistrationType>;
+  subsidy: SubsidyStatus;
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+  user?: Maybe<ApplicationUser>;
+  userId: Scalars['UUID'];
+};
+
+export type EcdRegistrationFilterInput = {
+  and?: InputMaybe<Array<EcdRegistrationFilterInput>>;
+  challenges?: InputMaybe<ChallengeTypeOperationFilterInput>;
+  challengesOtherReason?: InputMaybe<StringOperationFilterInput>;
+  hasBronzeCertificate?: InputMaybe<BooleanOperationFilterInput>;
+  hasGoldCertificate?: InputMaybe<BooleanOperationFilterInput>;
+  hasSilverCertificate?: InputMaybe<BooleanOperationFilterInput>;
+  history?: InputMaybe<ListFilterInputTypeOfEcdRegistrationHistoryFilterInput>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  or?: InputMaybe<Array<EcdRegistrationFilterInput>>;
+  practitioner?: InputMaybe<PractitionerFilterInput>;
+  practitionerId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  problemDescription?: InputMaybe<StringOperationFilterInput>;
+  registrationType?: InputMaybe<NullableOfNonSubsidyRegistrationTypeOperationFilterInput>;
+  subsidy?: InputMaybe<SubsidyStatusOperationFilterInput>;
+  updatedBy?: InputMaybe<StringOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  user?: InputMaybe<ApplicationUserFilterInput>;
+  userId?: InputMaybe<ComparableGuidOperationFilterInput>;
+};
+
+export type EcdRegistrationHistory = {
+  __typename?: 'EcdRegistrationHistory';
+  changeReason?: Maybe<Scalars['String']>;
+  ecdRegistration: EcdRegistration;
+  ecdRegistrationId: Scalars['UUID'];
+  id: Scalars['UUID'];
+  insertedDate: Scalars['DateTime'];
+  isActive: Scalars['Boolean'];
+  propertyName: Scalars['String'];
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+  user: ApplicationUser;
+  userId?: Maybe<Scalars['UUID']>;
+};
+
+export type EcdRegistrationHistoryFilterInput = {
+  and?: InputMaybe<Array<EcdRegistrationHistoryFilterInput>>;
+  changeReason?: InputMaybe<StringOperationFilterInput>;
+  ecdRegistration?: InputMaybe<EcdRegistrationFilterInput>;
+  ecdRegistrationId?: InputMaybe<ComparableGuidOperationFilterInput>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  or?: InputMaybe<Array<EcdRegistrationHistoryFilterInput>>;
+  propertyName?: InputMaybe<StringOperationFilterInput>;
+  updatedBy?: InputMaybe<StringOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  user?: InputMaybe<ApplicationUserFilterInput>;
+  userId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+};
+
+export type EcdRegistrationHistoryInput = {
+  ChangeReason?: InputMaybe<Scalars['String']>;
+  EcdRegistration?: InputMaybe<EcdRegistrationInput>;
+  EcdRegistrationId: Scalars['UUID'];
+  Id?: InputMaybe<Scalars['UUID']>;
+  IsActive: Scalars['Boolean'];
+  PropertyName?: InputMaybe<Scalars['String']>;
+  UpdatedBy?: InputMaybe<Scalars['String']>;
+  User?: InputMaybe<ApplicationUserInput>;
+  UserId?: InputMaybe<Scalars['UUID']>;
+};
+
+export type EcdRegistrationHistorySortInput = {
+  changeReason?: InputMaybe<SortEnumType>;
+  ecdRegistration?: InputMaybe<EcdRegistrationSortInput>;
+  ecdRegistrationId?: InputMaybe<SortEnumType>;
+  id?: InputMaybe<SortEnumType>;
+  insertedDate?: InputMaybe<SortEnumType>;
+  isActive?: InputMaybe<SortEnumType>;
+  propertyName?: InputMaybe<SortEnumType>;
+  updatedBy?: InputMaybe<SortEnumType>;
+  updatedDate?: InputMaybe<SortEnumType>;
+  user?: InputMaybe<ApplicationUserSortInput>;
+  userId?: InputMaybe<SortEnumType>;
+};
+
+export type EcdRegistrationInput = {
+  Challenges: ChallengeType;
+  ChallengesOtherReason?: InputMaybe<Scalars['String']>;
+  HasBronzeCertificate: Scalars['Boolean'];
+  HasGoldCertificate: Scalars['Boolean'];
+  HasSilverCertificate: Scalars['Boolean'];
+  History?: InputMaybe<Array<InputMaybe<EcdRegistrationHistoryInput>>>;
+  Id?: InputMaybe<Scalars['UUID']>;
+  IsActive: Scalars['Boolean'];
+  Practitioner?: InputMaybe<PractitionerInput>;
+  PractitionerId?: InputMaybe<Scalars['UUID']>;
+  ProblemDescription?: InputMaybe<Scalars['String']>;
+  RegistrationType?: InputMaybe<NonSubsidyRegistrationType>;
+  Subsidy: SubsidyStatus;
+  UpdatedBy?: InputMaybe<Scalars['String']>;
+  User?: InputMaybe<ApplicationUserInput>;
+  UserId: Scalars['UUID'];
+};
+
+export type EcdRegistrationInputModelInput = {
+  challenges?: InputMaybe<Scalars['String']>;
+  challengesOtherReason?: InputMaybe<Scalars['String']>;
+  hasBronzeCertificate: Scalars['Boolean'];
+  hasGoldCertificate: Scalars['Boolean'];
+  hasSilverCertificate: Scalars['Boolean'];
+  practitionerId: Scalars['UUID'];
+  problemDescription?: InputMaybe<Scalars['String']>;
+  registrationType?: InputMaybe<NonSubsidyRegistrationType>;
+  subsidy: SubsidyStatus;
+};
+
+export type EcdRegistrationSortInput = {
+  challenges?: InputMaybe<SortEnumType>;
+  challengesOtherReason?: InputMaybe<SortEnumType>;
+  hasBronzeCertificate?: InputMaybe<SortEnumType>;
+  hasGoldCertificate?: InputMaybe<SortEnumType>;
+  hasSilverCertificate?: InputMaybe<SortEnumType>;
+  id?: InputMaybe<SortEnumType>;
+  insertedDate?: InputMaybe<SortEnumType>;
+  isActive?: InputMaybe<SortEnumType>;
+  practitioner?: InputMaybe<PractitionerSortInput>;
+  practitionerId?: InputMaybe<SortEnumType>;
+  problemDescription?: InputMaybe<SortEnumType>;
+  registrationType?: InputMaybe<SortEnumType>;
+  subsidy?: InputMaybe<SortEnumType>;
+  updatedBy?: InputMaybe<SortEnumType>;
+  updatedDate?: InputMaybe<SortEnumType>;
+  user?: InputMaybe<ApplicationUserSortInput>;
+  userId?: InputMaybe<SortEnumType>;
+};
+
+export type EcdRegistrationUpdateInputModelInput = {
+  challenges?: InputMaybe<Scalars['String']>;
+  challengesOtherReason?: InputMaybe<Scalars['String']>;
+  hasBronzeCertificate?: InputMaybe<Scalars['Boolean']>;
+  hasGoldCertificate?: InputMaybe<Scalars['Boolean']>;
+  hasSilverCertificate?: InputMaybe<Scalars['Boolean']>;
+  id: Scalars['UUID'];
+  problemDescription?: InputMaybe<Scalars['String']>;
+  registrationType?: InputMaybe<NonSubsidyRegistrationType>;
+  subsidy?: InputMaybe<SubsidyStatus>;
+};
+
 export type Education = {
   __typename?: 'Education';
   description?: Maybe<Scalars['String']>;
@@ -4105,6 +4287,13 @@ export type ListFilterInputTypeOfDocumentFilterInput = {
   some?: InputMaybe<DocumentFilterInput>;
 };
 
+export type ListFilterInputTypeOfEcdRegistrationHistoryFilterInput = {
+  all?: InputMaybe<EcdRegistrationHistoryFilterInput>;
+  any?: InputMaybe<Scalars['Boolean']>;
+  none?: InputMaybe<EcdRegistrationHistoryFilterInput>;
+  some?: InputMaybe<EcdRegistrationHistoryFilterInput>;
+};
+
 export type ListFilterInputTypeOfGrantFilterInput = {
   all?: InputMaybe<GrantFilterInput>;
   any?: InputMaybe<Scalars['Boolean']>;
@@ -4676,6 +4865,8 @@ export type Mutation = {
   createDailyProgramme?: Maybe<DailyProgramme>;
   createDocument?: Maybe<Document>;
   createDocumentType?: Maybe<DocumentType>;
+  createEcdRegistration?: Maybe<EcdRegistration>;
+  createEcdRegistrationHistory?: Maybe<EcdRegistrationHistory>;
   createEducation?: Maybe<Education>;
   createFeedbackType?: Maybe<FeedbackType>;
   createForm?: Maybe<Scalars['String']>;
@@ -4796,6 +4987,8 @@ export type Mutation = {
   deleteDailyProgramme?: Maybe<Scalars['Boolean']>;
   deleteDocument?: Maybe<Scalars['Boolean']>;
   deleteDocumentType?: Maybe<Scalars['Boolean']>;
+  deleteEcdRegistration?: Maybe<Scalars['Boolean']>;
+  deleteEcdRegistrationHistory?: Maybe<Scalars['Boolean']>;
   deleteEducation?: Maybe<Scalars['Boolean']>;
   deleteFeedbackType?: Maybe<Scalars['Boolean']>;
   deleteForm?: Maybe<Scalars['Boolean']>;
@@ -4975,6 +5168,8 @@ export type Mutation = {
   updateDailyProgramme?: Maybe<DailyProgramme>;
   updateDocument?: Maybe<Document>;
   updateDocumentType?: Maybe<DocumentType>;
+  updateEcdRegistration?: Maybe<EcdRegistration>;
+  updateEcdRegistrationHistory?: Maybe<EcdRegistrationHistory>;
   updateEducation?: Maybe<Education>;
   updateFeedbackType?: Maybe<FeedbackType>;
   updateForm?: Maybe<Form>;
@@ -5438,6 +5633,14 @@ export type MutationCreateDocumentArgs = {
 
 export type MutationCreateDocumentTypeArgs = {
   input?: InputMaybe<DocumentTypeInput>;
+};
+
+export type MutationCreateEcdRegistrationArgs = {
+  input?: InputMaybe<EcdRegistrationInputModelInput>;
+};
+
+export type MutationCreateEcdRegistrationHistoryArgs = {
+  input?: InputMaybe<EcdRegistrationHistoryInput>;
 };
 
 export type MutationCreateEducationArgs = {
@@ -5983,6 +6186,14 @@ export type MutationDeleteDocumentArgs = {
 };
 
 export type MutationDeleteDocumentTypeArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDeleteEcdRegistrationArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDeleteEcdRegistrationHistoryArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
 
@@ -6834,6 +7045,16 @@ export type MutationUpdateDocumentTypeArgs = {
   input?: InputMaybe<DocumentTypeInput>;
 };
 
+export type MutationUpdateEcdRegistrationArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  input?: InputMaybe<EcdRegistrationUpdateInputModelInput>;
+};
+
+export type MutationUpdateEcdRegistrationHistoryArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  input?: InputMaybe<EcdRegistrationHistoryInput>;
+};
+
 export type MutationUpdateEducationArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<EducationInput>;
@@ -7505,6 +7726,14 @@ export type NavigationSortInput = {
   updatedDate?: InputMaybe<SortEnumType>;
 };
 
+export enum NonSubsidyRegistrationType {
+  FullyRegistered = 'FULLY_REGISTERED',
+  NotStartedRegistration = 'NOT_STARTED_REGISTRATION',
+  NotSure = 'NOT_SURE',
+  PartiallyRegistered = 'PARTIALLY_REGISTERED',
+  StartedRegistration = 'STARTED_REGISTRATION',
+}
+
 export type Note = {
   __typename?: 'Note';
   bodyText?: Maybe<Scalars['String']>;
@@ -7688,6 +7917,13 @@ export type NotificationSortInput = {
   subject?: InputMaybe<SortEnumType>;
   to?: InputMaybe<SortEnumType>;
   toGroups?: InputMaybe<SortEnumType>;
+};
+
+export type NullableOfNonSubsidyRegistrationTypeOperationFilterInput = {
+  eq?: InputMaybe<NonSubsidyRegistrationType>;
+  in?: InputMaybe<Array<InputMaybe<NonSubsidyRegistrationType>>>;
+  neq?: InputMaybe<NonSubsidyRegistrationType>;
+  nin?: InputMaybe<Array<InputMaybe<NonSubsidyRegistrationType>>>;
 };
 
 export type PqaRating = {
@@ -8384,6 +8620,7 @@ export type Practitioner = {
   dateLinked?: Maybe<Scalars['DateTime']>;
   dateToBeRemoved?: Maybe<Scalars['DateTime']>;
   documents?: Maybe<Array<Maybe<Document>>>;
+  ecdRegistration?: Maybe<EcdRegistration>;
   filterDocumentsByType?: Maybe<Array<Maybe<Document>>>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
@@ -8483,6 +8720,7 @@ export type PractitionerFilterInput = {
   dateLinked?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   dateToBeRemoved?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   documents?: InputMaybe<ListFilterInputTypeOfDocumentFilterInput>;
+  ecdRegistration?: InputMaybe<EcdRegistrationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
@@ -8526,6 +8764,7 @@ export type PractitionerInput = {
   DateLinked?: InputMaybe<Scalars['DateTime']>;
   DateToBeRemoved?: InputMaybe<Scalars['DateTime']>;
   Documents?: InputMaybe<Array<InputMaybe<DocumentInput>>>;
+  EcdRegistration?: InputMaybe<EcdRegistrationInput>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   IsCompletedBusinessWalkThrough?: InputMaybe<Scalars['Boolean']>;
@@ -8580,6 +8819,7 @@ export type PractitionerModel = {
   dateLinked?: Maybe<Scalars['DateTime']>;
   dateToBeRemoved?: Maybe<Scalars['DateTime']>;
   daysAbsentLastMonth: Scalars['Int'];
+  ecdRegistration?: Maybe<EcdRegistration>;
   id: Scalars['UUID'];
   isActive: Scalars['Boolean'];
   isCompletedBusinessWalkThrough?: Maybe<Scalars['Boolean']>;
@@ -8702,6 +8942,7 @@ export type PractitionerSortInput = {
   dateAccepted?: InputMaybe<SortEnumType>;
   dateLinked?: InputMaybe<SortEnumType>;
   dateToBeRemoved?: InputMaybe<SortEnumType>;
+  ecdRegistration?: InputMaybe<EcdRegistrationSortInput>;
   id?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
@@ -9407,6 +9648,8 @@ export type Query = {
   GetAllDailyProgramme?: Maybe<Array<Maybe<DailyProgramme>>>;
   GetAllDocument?: Maybe<Array<Maybe<Document>>>;
   GetAllDocumentType?: Maybe<Array<Maybe<DocumentType>>>;
+  GetAllEcdRegistration?: Maybe<Array<Maybe<EcdRegistration>>>;
+  GetAllEcdRegistrationHistory?: Maybe<Array<Maybe<EcdRegistrationHistory>>>;
   GetAllEducation?: Maybe<Array<Maybe<Education>>>;
   GetAllFeedbackType?: Maybe<Array<Maybe<FeedbackType>>>;
   GetAllForm: Array<Maybe<Form>>;
@@ -9535,6 +9778,8 @@ export type Query = {
   GetDailyProgrammeById?: Maybe<DailyProgramme>;
   GetDocumentById?: Maybe<Document>;
   GetDocumentTypeById?: Maybe<DocumentType>;
+  GetEcdRegistrationById?: Maybe<EcdRegistration>;
+  GetEcdRegistrationHistoryById?: Maybe<EcdRegistrationHistory>;
   GetEducationById?: Maybe<Education>;
   GetFeedbackTypeById?: Maybe<FeedbackType>;
   GetFormById: Array<Maybe<Form>>;
@@ -9711,6 +9956,8 @@ export type Query = {
   countDailyProgramme?: Maybe<Scalars['Int']>;
   countDocument?: Maybe<Scalars['Int']>;
   countDocumentType?: Maybe<Scalars['Int']>;
+  countEcdRegistration?: Maybe<Scalars['Int']>;
+  countEcdRegistrationHistory?: Maybe<Scalars['Int']>;
   countEducation?: Maybe<Scalars['Int']>;
   countFeedbackType?: Maybe<Scalars['Int']>;
   countGender?: Maybe<Scalars['Int']>;
@@ -10054,6 +10301,18 @@ export type QueryGetAllDocumentTypeArgs = {
   order?: InputMaybe<Array<DocumentTypeSortInput>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<DocumentTypeFilterInput>;
+};
+
+export type QueryGetAllEcdRegistrationArgs = {
+  order?: InputMaybe<Array<EcdRegistrationSortInput>>;
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<EcdRegistrationFilterInput>;
+};
+
+export type QueryGetAllEcdRegistrationHistoryArgs = {
+  order?: InputMaybe<Array<EcdRegistrationHistorySortInput>>;
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<EcdRegistrationHistoryFilterInput>;
 };
 
 export type QueryGetAllEducationArgs = {
@@ -10692,6 +10951,16 @@ export type QueryGetDocumentByIdArgs = {
 export type QueryGetDocumentTypeByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<DocumentTypeFilterInput>;
+};
+
+export type QueryGetEcdRegistrationByIdArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  where?: InputMaybe<EcdRegistrationFilterInput>;
+};
+
+export type QueryGetEcdRegistrationHistoryByIdArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  where?: InputMaybe<EcdRegistrationHistoryFilterInput>;
 };
 
 export type QueryGetEducationByIdArgs = {
@@ -11533,6 +11802,16 @@ export type QueryCountDocumentArgs = {
 };
 
 export type QueryCountDocumentTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountEcdRegistrationArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountEcdRegistrationHistoryArgs = {
   pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ComparableInt32OperationFilterInput>;
 };
@@ -13354,6 +13633,19 @@ export type SubCategoryViewModel = {
   imageHexColor?: Maybe<Scalars['String']>;
   imageUrl?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
+};
+
+export enum SubsidyStatus {
+  No = 'NO',
+  NotSure = 'NOT_SURE',
+  Yes = 'YES',
+}
+
+export type SubsidyStatusOperationFilterInput = {
+  eq?: InputMaybe<SubsidyStatus>;
+  in?: InputMaybe<Array<SubsidyStatus>>;
+  neq?: InputMaybe<SubsidyStatus>;
+  nin?: InputMaybe<Array<SubsidyStatus>>;
 };
 
 export type SupportRating = {

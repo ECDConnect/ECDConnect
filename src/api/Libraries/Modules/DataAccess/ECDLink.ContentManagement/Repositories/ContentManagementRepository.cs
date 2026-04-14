@@ -307,14 +307,13 @@ namespace ECDLink.ContentManagement.Repositories
                         cv.ContentId,
                         cv.LocaleId
                     })
-                    .AsEnumerable()
                     .GroupBy(x => x.ContentId)
                     .ToDictionary(
                         g => g.Key,
                         g => g
                             .Select(x => x.LocaleId)
                             .Where(lang => lang != null)
-                            .DistinctBy(lang => lang) 
+                            .Distinct()
                             .ToList()
                     );
 
@@ -387,6 +386,28 @@ namespace ECDLink.ContentManagement.Repositories
             string key = string.Format("Content.{0}.{1}.{2}.Ids.{3}", currentTenant, contentTypeId, localeId, string.Join(',', contentIds));
             if (!_memoryCache.TryGetValue<List<Object>>(key, out results))
             {
+                // Before hitting the DB, check whether the full GetAll list for this
+                // content type is already cached — if so, filter from there instead.
+                string allKey = string.Format("Content.{0}.{1}.{2}.All", currentTenant, contentTypeId, localeId);
+                if (_memoryCache.TryGetValue<List<object>>(allKey, out var allCached))
+                {
+                    var idSet = new HashSet<int>(contentIds);
+                    var fromAll = allCached
+                        .OfType<IDictionary<string, object>>()
+                        .Where(item => item.TryGetValue(ObjectFieldConstants.Identifier, out var idVal)
+                                    && int.TryParse(idVal?.ToString(), out var parsedId)
+                                    && idSet.Contains(parsedId))
+                        .Cast<object>()
+                        .ToList();
+
+                    if (fromAll.Count == idSet.Count)
+                    {
+                        _logger.LogDebug("Fetching from GetAll CACHE: {0}", key);
+                        _memoryCache.Set(key, fromAll, GetCacheOptions());
+                        return fromAll;
+                    }
+                }
+
                 _logger.LogDebug("Fetching from DB: {0}", key);
                 // TODO: Do we need to selectively skip the IsActive check?
                 var content = _context.Contents
@@ -485,17 +506,24 @@ namespace ECDLink.ContentManagement.Repositories
                 applicationName = argumentTenant.ApplicationName;
             }
             
+            var cacheKey = string.Format("Content.{0}.ByValueKey.{1}.{2}.{3}.{4}", tenantId, contentType, key, value, localeId);
+            if (_memoryCache.TryGetValue<List<object>>(cacheKey, out var cachedResult))
+            {
+                _logger.LogDebug("Fetching from CACHE: {0}", cacheKey);
+                return cachedResult;
+            }
+
+            _logger.LogDebug("Fetching from DB: {0}", cacheKey);
             var content = _context.Contents
                     .Include(i => i.ContentType)
                     .Include(i => i.ContentValues)
                         .ThenInclude(ti => ti.ContentTypeField)
-                    .Where(x =>  x.ContentType.Name == contentType
+                    .Where(x => x.ContentType.Name == contentType
                             && x.IsActive
-                            && x.ContentValues.Any(y => y.LocaleId == localeId)
-                            && x.ContentValues.Any(y => y.ContentTypeField.FieldName == key)
-                            && x.ContentValues.Any(y => y.Value == value)
-                            && x.ContentValues.Any(y => y.TenantId == tenantId || y.TenantId == null)
-                            )
+                            && x.ContentValues.Any(y => y.LocaleId == localeId
+                                && y.ContentTypeField.FieldName == key
+                                && y.Value == value
+                                && (y.TenantId == tenantId || y.TenantId == null)))
                     .ToList();
 
             // Use global tenant as a fallback, mostly for static and dynamic links
@@ -507,11 +535,9 @@ namespace ECDLink.ContentManagement.Repositories
                         .Where(x => x.TenantId == null
                                 && x.ContentType.Name == contentType
                                 && x.IsActive
-                                && x.ContentValues.Any(y => y.LocaleId == localeId)
-                                && x.ContentValues.Any(y => y.ContentTypeField.FieldName == key)
-                                && x.ContentValues.Any(y => y.Value == value)
-                                && x.ContentValues.Any(y => y.TenantId == tenantId)
-                                )
+                                && x.ContentValues.Any(y => y.LocaleId == localeId
+                                    && y.ContentTypeField.FieldName == key
+                                    && y.Value == value))
                         .ToList();
 
             // No Content Found
@@ -599,6 +625,7 @@ namespace ECDLink.ContentManagement.Repositories
                 }
             }
 
+            _memoryCache.Set(cacheKey, allContentValuePairs, GetCacheOptions());
             return allContentValuePairs;
         }
 
