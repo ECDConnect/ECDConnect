@@ -33,7 +33,6 @@ import { staticDataSelectors } from '@store/static-data';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useHistory, useLocation } from 'react-router-dom';
 import { PractitionerProfileRouteState } from '../../../../../../coach/practitioner-profile-info/practitioner-profile-info.types';
-import { PractitionerService } from '@/services/PractitionerService';
 import ROUTES from '@routes/routes';
 import { RemovePractitionerFromProgrammePrompt } from './remove-practitioner-from-programme-prompt';
 import { classroomsSelectors } from '@/store/classroom';
@@ -211,9 +210,12 @@ export const RemovePractitionerFromProgramme: React.FC<
     useState<any[]>();
 
   const getRemovalForPractitioner = async () => {
-    const removalDetails = await new PractitionerService(
-      authUser?.auth_token!
-    ).getRemovalForPractitioner(practitioner?.userId!);
+    const removalDetails = await appDispatch(
+      practitionerThunkActions.getRemovalForPractitioner({
+        userId: practitioner?.userId!,
+      })
+    ).unwrap();
+
     if (removalDetails) {
       const reassignments = (removalDetails.classReassignments || []).reduce(
         (obj, item) => {
@@ -269,29 +271,30 @@ export const RemovePractitionerFromProgramme: React.FC<
       });
 
       if (existingRemovalId) {
-        await new PractitionerService(
-          authUser?.auth_token || ''
-        ).updateRemovePractitionerFromProgramme(
-          existingRemovalId,
-          formValues.removeReasonId,
-          formValues.reasonDetail,
-          new Date(formValues.removalDate),
-          reassignments
+        await appDispatch(
+          practitionerThunkActions.updateRemovePractitionerFromProgramme({
+            removalId: existingRemovalId,
+            reasonForPractitionerLeavingProgrammeId: formValues.removeReasonId,
+            reasonDetails: formValues.reasonDetail,
+            dateOfRemoval: new Date(formValues.removalDate),
+            classroomGroupReassignments: reassignments,
+          })
         );
       } else {
-        await new PractitionerService(
-          authUser?.auth_token || ''
-        ).RemovePractitionerFromProgramme(
-          practitioner?.userId!,
-          formValues.removeReasonId,
-          formValues.reasonDetail,
-          classroom?.id || '',
-          new Date(formValues.removalDate),
-          reassignments
+        await appDispatch(
+          practitionerThunkActions.removePractitionerFromProgramme({
+            practitionerUserId: practitioner?.userId!,
+            reasonForPractitionerLeavingProgrammeId: formValues.removeReasonId,
+            reasonDetails: formValues.reasonDetail,
+            classroomId: classroom?.id || '',
+            dateOfRemoval: new Date(formValues.removalDate),
+            classroomGroupReassignments: reassignments,
+          })
         );
       }
+
       await appDispatch(
-        practitionerThunkActions.getAllPractitioners({})
+        practitionerThunkActions.getAllPractitioners({ overrideCache: true })
       ).unwrap();
     }
   };

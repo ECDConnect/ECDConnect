@@ -141,12 +141,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                                                                         .Include(x => x.Classroom).Where(x => x.Classroom.UserId != practitionerUser.Id)
                                                                         .Select(x => x.Classroom)
                                                                         .Count() != 0;
-                                var startDate = practitioner.StartDate.Value.Date;
-                                var endDate = DateTime.Today;
-                                var trailPeriodDays = (endDate - startDate).TotalDays;
-                                var isTrialPeriod = trailPeriodDays < 31; 
-                                var isDummySchool = classroom?.PreschoolCode == null;
-                                hasPreschool = classroom == null ? false : !isDummySchool || belongToOtherSchool || !isTrialPeriod;
+                                if (practitioner.StartDate != null)
+                                {
+                                    var startDate = practitioner.StartDate.Value.Date;
+                                    var endDate = DateTime.Today;
+                                    var trailPeriodDays = (endDate - startDate).TotalDays;
+                                    var isTrialPeriod = trailPeriodDays < 31; 
+                                    var isDummySchool = classroom?.PreschoolCode == null;
+                                    hasPreschool = classroom == null ? false : !isDummySchool || belongToOtherSchool || !isTrialPeriod;
+                                } else
+                                {
+                                    return new PractitionerUserAndNote() { 
+                                        AppUser = null, 
+                                        Note = "Not on " + TenantExecutionContext.Tenant.ApplicationName + " app", 
+                                        IsRegistered = false, 
+                                        BelongsToPreschool = false };
+                                }
+                                
                             }
 
                             return new PractitionerUserAndNote() { 
@@ -389,9 +400,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.View)]
-        public List<PractitionerModel> GetAllPractitioners([Service] PersonnelService personnelService)
+        public async Task<List<PractitionerModel>> GetAllPractitioners([Service] PersonnelService personnelService)
         {
-            return personnelService.GetAllPractitioners();
+            return await personnelService.GetAllPractitionersAsync();
         }
 
         

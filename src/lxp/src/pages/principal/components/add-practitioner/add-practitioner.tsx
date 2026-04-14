@@ -12,10 +12,7 @@ import {
   Dialog,
   DialogPosition,
 } from '@ecdlink/ui';
-import {
-  MutationAddPractitionerToPrincipalArgs,
-  UpdateUserPermissionInputModelInput,
-} from '@ecdlink/graphql';
+import { MutationAddPractitionerToPrincipalArgs } from '@ecdlink/graphql';
 import { useHistory } from 'react-router-dom';
 import { UserDto, useSnackbar } from '@ecdlink/core';
 import { useState, useEffect } from 'react';
@@ -27,7 +24,6 @@ import {
   addPractitionerSchema,
   initialAddPractitionerValues,
 } from '@/schemas/practitioner/add-practitioner';
-import { PractitionerService } from '@/services/PractitionerService';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import { RegisterPractitioner } from '../../setup-principal/setup-principal.types';
@@ -50,7 +46,6 @@ import { practitionerThunkActions } from '@/store/practitioner';
 import { useTenant } from '@/hooks/useTenant';
 import { staticDataSelectors } from '@/store/static-data';
 import { HelpForm } from '@/components/help-form/help-form';
-import PermissionsService from '@/services/PermissionsService/PermissionsService';
 import { useTenantModules } from '@/hooks/useTenantModules';
 
 export const AddPractitioner = ({
@@ -135,16 +130,20 @@ export const AddPractitioner = ({
 
     if (userAuth && idNumber) {
       setIsloading(true);
-      _practitioner = await new PractitionerService(
-        userAuth.auth_token
-      ).getPractitionerByIdNumber(idNumber);
+      _practitioner = await appDispatch(
+        practitionerThunkActions.getPractitionerByIdNumber({
+          idNumber: idNumber,
+        })
+      ).unwrap();
       setIsloading(false);
     }
 
     if (userAuth && passport) {
-      _practitioner = await new PractitionerService(
-        userAuth.auth_token
-      ).getPractitionerByIdNumber(passport);
+      _practitioner = await appDispatch(
+        practitionerThunkActions.getPractitionerByIdNumber({
+          idNumber: passport,
+        })
+      ).unwrap();
     }
 
     return _practitioner;
@@ -215,16 +214,16 @@ export const AddPractitioner = ({
         return;
       } else {
         setIsloading(true);
-        const principalInvite = await new PractitionerService(
-          userAuth?.auth_token!
+        const principalInvite = await appDispatch(
+          practitionerThunkActions.sendPractitionerInviteToPreschool({
+            practitionerPhoneNumber: practitionerPhoneNumber,
+            preSchoolNameCode: classroom?.preschoolCode!,
+            preSchoolName: classroom?.name!,
+            principalUserId: user?.id!,
+            idOrPassport: idNumber || passport,
+          })
         )
-          .sendPractitionerInviteToPreschool(
-            practitionerPhoneNumber,
-            classroom?.preschoolCode!,
-            classroom?.name!,
-            user?.id!,
-            idNumber || passport
-          )
+          .unwrap()
           .catch((error) => {
             console.log(error);
             showMessage({
@@ -253,23 +252,26 @@ export const AddPractitioner = ({
       preschoolCode: '',
     };
 
-    const updatePermissionInput: UpdateUserPermissionInputModelInput = {
-      userId: newPractitioner?.userId,
-      permissionIds: permissionsAdded,
-    };
     // also set the progress for this newly assigned user to 0
-    await new PractitionerService(
-      userAuth?.auth_token!
-    ).UpdatePractitionerProgress(newPractitioner?.userId!, 0);
-
-    const updatePermissions = await new PermissionsService(
-      userAuth?.auth_token!
-    ).UpdateUserPermission(updatePermissionInput);
-    await new PractitionerService(
-      userAuth?.auth_token!
-    ).AddPractitionerToPrincipal(input);
     await appDispatch(
-      practitionerThunkActions.getAllPractitioners({})
+      practitionerThunkActions.updatePractitionerProgress({
+        practitionerId: newPractitioner?.userId!,
+        progress: 0,
+      })
+    );
+
+    await appDispatch(
+      practitionerThunkActions.updatePractitionerPermissions({
+        userId: newPractitioner?.userId!,
+        permissionsIds: permissionsAdded,
+      })
+    );
+
+    await appDispatch(
+      practitionerThunkActions.addPractitionerToPrincipal(input)
+    );
+    await appDispatch(
+      practitionerThunkActions.getAllPractitioners({ overrideCache: true })
     ).unwrap();
 
     setIsloading(false);
@@ -437,7 +439,7 @@ export const AddPractitioner = ({
                 <div>
                   <Alert
                     type={'error'}
-                    title={`You cannot add this practitioner -  they are already linked to a different preschool.`}
+                    title={`You cannot add this practitioner - they are already linked to a different preschool.`}
                     list={[
                       'Make sure you have entered the correct ID number above.',
                       'Ask the practitioner to update their preschool information.',
@@ -482,28 +484,26 @@ export const AddPractitioner = ({
               {isValidPractitioner === false &&
                 !isOpenAccess &&
                 !isOwnUserId && (
-                  <>
-                    <div className="mb-8">
-                      <Alert
-                        type={'error'}
-                        title={`Oops, practitioner not found! Only ${appName} practitioners can be added.`}
-                        list={[
-                          `Check the practitioner ID and try again. Only ${appName} practitioners can be added.`,
-                          `You can add a different practitioner or exit.`,
-                        ]}
-                        button={
-                          <Button
-                            text="Get help"
-                            icon="ClipboardListIcon"
-                            type={'filled'}
-                            color={'quatenary'}
-                            textColor={'white'}
-                            onClick={() => setOpenHelp(true)}
-                          />
-                        }
-                      />
-                    </div>
-                  </>
+                  <div className="mb-8">
+                    <Alert
+                      type={'error'}
+                      title={`Oops, practitioner not found! Only ${appName} practitioners can be added.`}
+                      list={[
+                        `Check the practitioner ID and try again. Only ${appName} practitioners can be added.`,
+                        `You can add a different practitioner or exit.`,
+                      ]}
+                      button={
+                        <Button
+                          text="Get help"
+                          icon="ClipboardListIcon"
+                          type={'filled'}
+                          color={'quatenary'}
+                          textColor={'white'}
+                          onClick={() => setOpenHelp(true)}
+                        />
+                      }
+                    />
+                  </div>
                 )}
               {isValidPractitioner === true && !isPrincipal && !addNote && (
                 <div className="mb-8">
@@ -523,39 +523,6 @@ export const AddPractitioner = ({
                   />
                 </div>
               )}
-              {/* {!addNote &&
-                isPractitionerRegistered !== undefined &&
-                !isPrincipal && (
-                  <div>
-                    <Alert
-                      type={isPractitionerRegistered ? 'success' : 'error'}
-                      title={
-                        isPractitionerRegistered
-                          ? 'This practitioner is registered on Funda app.'
-                          : 'This practitioner is not registered on Funda App. Ask all of your SmartStart practitioners to register.'
-                      }
-                      list={[
-                        isPractitionerRegistered
-                          ? 'Practitioner has been notified.'
-                          : 'If your practitioner needs help, please contact the SmartStart call centre.',
-                      ]}
-                      button={
-                        !isPractitionerRegistered ? (
-                          <Button
-                            text="Contact call centre"
-                            icon="PhoneIcon"
-                            type={'filled'}
-                            color={'primary'}
-                            textColor={'white'}
-                            onClick={() => callForHelp()}
-                          />
-                        ) : (
-                          <></>
-                        )
-                      }
-                    />
-                  </div>
-                )} */}
               {isValidPractitioner === true && !addNote && (
                 <div>
                   <Typography

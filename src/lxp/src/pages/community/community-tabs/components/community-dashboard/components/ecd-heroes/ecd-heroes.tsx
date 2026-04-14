@@ -275,6 +275,7 @@ export const ECDHeroes: React.FC<ECDHeroesProps> = ({ onClose }) => {
     await dispatch(
       communityThunkActions.getCommunityProfile({
         userId: communityProfile?.userId!,
+        overrideCache: true,
       })
     );
   };

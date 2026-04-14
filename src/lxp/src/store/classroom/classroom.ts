@@ -3,7 +3,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
   getClassroomGroups,
-  getClassroom,
+  getClassroomForUser,
   upsertClassroom,
   upsertClassroomGroups,
   updateClassroomGroup,
@@ -227,7 +227,7 @@ const classroomsSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(getClassroom.fulfilled, (state, action) => {
+    builder.addCase(getClassroomForUser.fulfilled, (state, action) => {
       if (action.payload) {
         state.classroom = {
           ...action.payload,

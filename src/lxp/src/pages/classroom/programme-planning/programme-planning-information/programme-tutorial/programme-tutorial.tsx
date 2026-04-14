@@ -22,19 +22,16 @@ import ROUTES from '@routes/routes';
 import ProgressReport from '../../components/progress-report/progress-report';
 import { useSelector } from 'react-redux';
 import { staticDataSelectors } from '@/store/static-data';
-import {
-  progressTrackingSelectors,
-  progressTrackingThunkActions,
-} from '@/store/progress-tracking';
+import { progressTrackingSelectors } from '@/store/progress-tracking';
 import { useAppDispatch } from '@/store';
 import { MoreInformation } from '@ecdlink/graphql';
-import InfoService from '@/services/InfoService/InfoService';
 import { ProgrammeDashboardRouteParams } from '../../programme-dashboard/programme-dashboard.types';
 import { useTenant } from '@/hooks/useTenant';
 import { useAppContext } from '@/walkthrougContext';
 import { WalkthroughModal } from '@/components/walkthrough/modal';
 import { MoreInformationTypeEnum, useDialog } from '@ecdlink/core';
 import { ProgrammeThemeRouteState } from '../../programme-theme/programme-theme.types';
+import { informationThunkActions } from '@/store/content/information';
 const { usePDF } = require('react-to-pdf');
 
 interface ProgrammeTutorialProps extends ComponentBaseProps {
@@ -129,11 +126,14 @@ export const ProgrammeTutorial: React.FC<ProgrammeTutorialProps> = ({
 
   useEffect(() => {
     setIsLoading(true);
-    new InfoService()
-      .getMoreInformation(
-        MoreInformationTypeEnum.LearningThroughPlay,
-        selectedLanguage
-      )
+
+    appDispatch(
+      informationThunkActions.getMoreInformation({
+        section: MoreInformationTypeEnum.LearningThroughPlay,
+        locale: selectedLanguage,
+      })
+    )
+      .unwrap()
       .then((info) => {
         setData(info);
         setIsLoading(false);

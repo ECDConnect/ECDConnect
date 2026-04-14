@@ -35,7 +35,6 @@ import {
 import ROUTES from '@/routes/routes';
 import { PointsShare } from '../points-share/points-share';
 import { PointsInfoPage } from '../info/points-info-page';
-import { PointsService } from '@/services/PointsService';
 import { authSelectors } from '@/store/auth';
 import { PointsTodoItem } from './components/points-todo-item/points-todo-item';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';

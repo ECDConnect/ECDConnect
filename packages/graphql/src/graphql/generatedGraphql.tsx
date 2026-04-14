@@ -2002,6 +2002,7 @@ export type CmsSyncStatus = {
   syncActivities: Scalars['Boolean'];
   syncAgeGroups: Scalars['Boolean'];
   syncCalendarEventTypes: Scalars['Boolean'];
+  syncConnectItem: Scalars['Boolean'];
   syncConsent: Scalars['Boolean'];
   syncHolidays: Scalars['Boolean'];
   syncProgrammeRoutines: Scalars['Boolean'];
@@ -4520,6 +4521,12 @@ export type MonthlyAttendanceReportModel = {
 export type MoreInformation = {
   __typename?: 'MoreInformation';
   availableLanguages?: Maybe<Array<Maybe<Language>>>;
+  buttonlinkA?: Maybe<Scalars['String']>;
+  buttonlinkADescription?: Maybe<Scalars['String']>;
+  buttonlinkB?: Maybe<Scalars['String']>;
+  buttonlinkBDescription?: Maybe<Scalars['String']>;
+  buttonlinkC?: Maybe<Scalars['String']>;
+  buttonlinkCDescription?: Maybe<Scalars['String']>;
   descriptionA?: Maybe<Scalars['String']>;
   descriptionAColor?: Maybe<Scalars['String']>;
   descriptionB?: Maybe<Scalars['String']>;
@@ -4539,6 +4546,10 @@ export type MoreInformation = {
   headerC?: Maybe<Scalars['String']>;
   headerD?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
+  infoBoxBDescription?: Maybe<Scalars['String']>;
+  infoBoxBLink?: Maybe<Scalars['String']>;
+  infoBoxBLinkDescription?: Maybe<Scalars['String']>;
+  infoBoxBTitle?: Maybe<Scalars['String']>;
   infoBoxDescription?: Maybe<Scalars['String']>;
   infoBoxIcon?: Maybe<Scalars['String']>;
   infoBoxTitle?: Maybe<Scalars['String']>;
@@ -4553,6 +4564,12 @@ export type MoreInformation = {
 
 export type MoreInformationInput = {
   availableLanguages?: InputMaybe<Scalars['String']>;
+  buttonlinkA?: InputMaybe<Scalars['String']>;
+  buttonlinkADescription?: InputMaybe<Scalars['String']>;
+  buttonlinkB?: InputMaybe<Scalars['String']>;
+  buttonlinkBDescription?: InputMaybe<Scalars['String']>;
+  buttonlinkC?: InputMaybe<Scalars['String']>;
+  buttonlinkCDescription?: InputMaybe<Scalars['String']>;
   descriptionA?: InputMaybe<Scalars['String']>;
   descriptionAColor?: InputMaybe<Scalars['String']>;
   descriptionB?: InputMaybe<Scalars['String']>;
@@ -4571,6 +4588,10 @@ export type MoreInformationInput = {
   headerB?: InputMaybe<Scalars['String']>;
   headerC?: InputMaybe<Scalars['String']>;
   headerD?: InputMaybe<Scalars['String']>;
+  infoBoxBDescription?: InputMaybe<Scalars['String']>;
+  infoBoxBLink?: InputMaybe<Scalars['String']>;
+  infoBoxBLinkDescription?: InputMaybe<Scalars['String']>;
+  infoBoxBTitle?: InputMaybe<Scalars['String']>;
   infoBoxDescription?: InputMaybe<Scalars['String']>;
   infoBoxIcon?: InputMaybe<Scalars['String']>;
   infoBoxTitle?: InputMaybe<Scalars['String']>;
@@ -6997,10 +7018,6 @@ export type MutationUpdatePractitionerArgs = {
   input?: InputMaybe<PractitionerInput>;
 };
 
-export type MutationUpdatePractitionerBusinessWalkthroughArgs = {
-  userId?: InputMaybe<Scalars['String']>;
-};
-
 export type MutationUpdatePractitionerCommunityTabStatusArgs = {
   practitionerUserId: Scalars['UUID'];
 };
@@ -7023,10 +7040,6 @@ export type MutationUpdatePractitionerEmergencyContactArgs = {
 export type MutationUpdatePractitionerProgressArgs = {
   practitionerId?: InputMaybe<Scalars['String']>;
   progress: Scalars['Decimal'];
-};
-
-export type MutationUpdatePractitionerProgressWalkthroughArgs = {
-  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationUpdatePractitionerRegisteredArgs = {
@@ -9823,7 +9836,7 @@ export type Query = {
   removeHolidays?: Maybe<Array<Scalars['DateTime']>>;
   removeWeekendDays?: Maybe<Array<Scalars['DateTime']>>;
   resourceByLanguage?: Maybe<ResourceModel>;
-  resourceLikedStatusForUser?: Maybe<UserResourceLikes>;
+  resourceLikedStatusForUser: Scalars['Boolean'];
   resources: Array<Maybe<ClassroomBusinessResource>>;
   roleForUser?: Maybe<Scalars['String']>;
   roles?: Maybe<Array<Maybe<ApplicationIdentityRole>>>;
@@ -11264,10 +11277,6 @@ export type QueryAllPractitionersForPrincipalArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
-export type QueryAllResourceLikesForUserArgs = {
-  userId: Scalars['UUID'];
-};
-
 export type QueryAllTemplatesArgs = {
   templateId?: InputMaybe<Scalars['String']>;
 };
@@ -11343,7 +11352,7 @@ export type QueryClassroomAttendanceOverviewReportArgs = {
 };
 
 export type QueryClassroomForUserArgs = {
-  userId: Scalars['UUID'];
+  userId?: InputMaybe<Scalars['UUID']>;
 };
 
 export type QueryClassroomGroupForClassIdArgs = {
@@ -11351,7 +11360,7 @@ export type QueryClassroomGroupForClassIdArgs = {
 };
 
 export type QueryClassroomGroupsForUserArgs = {
-  userId: Scalars['UUID'];
+  userId?: InputMaybe<Scalars['UUID']>;
 };
 
 export type QueryCmsSyncStatusArgs = {
@@ -14196,7 +14205,6 @@ export type UserSyncStatus = {
   __typename?: 'UserSyncStatus';
   syncChildren: Scalars['Boolean'];
   syncClassroom: Scalars['Boolean'];
-  syncMoney: Scalars['Boolean'];
   syncPermissions: Scalars['Boolean'];
   syncPoints: Scalars['Boolean'];
   syncReportingPeriods: Scalars['Boolean'];

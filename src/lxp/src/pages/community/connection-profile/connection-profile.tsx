@@ -20,7 +20,7 @@ import { ConnectionProfileRouteState } from './connection-profile.types';
 import { ExclamationCircleIcon, HandIcon } from '@heroicons/react/solid';
 import { useAppDispatch } from '@/store';
 import { communitySelectors, communityThunkActions } from '@/store/community';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { ConnectionContactDetails } from './connection-contact-details/connection-contact-details';
 import { AcceptRejectCommunityRequestsInputModelInput } from '@ecdlink/graphql';
 import TransparentLayer from '../../../assets/TransparentLayer.png';
@@ -38,7 +38,6 @@ export const ConnectionProfile = () => {
   const isFromReceivedConnections = state?.isFromReceivedConnections;
   const isConnectedScreen = state?.isConnectedScreen;
   const isFromDashboard = state?.isFromDashboard;
-  const { theme } = useTheme();
   const history = useHistory();
   const { showMessage } = useSnackbar();
   const [connectionAccepted, setConnectionAccepted] = useState<
@@ -124,6 +123,7 @@ export const ConnectionProfile = () => {
       await dispatch(
         communityThunkActions.getCommunityProfile({
           userId: loggedUserCommunityProfile?.userId!,
+          overrideCache: true,
         })
       ).then(() => {
         setAcceptOrRejectIsLoading(false);
@@ -150,6 +150,7 @@ export const ConnectionProfile = () => {
         await dispatch(
           communityThunkActions.getCommunityProfile({
             userId: loggedUserCommunityProfile?.userId!,
+            overrideCache: true,
           })
         ).then(() => {
           setAcceptOrRejectIsLoading(false);

@@ -1,5 +1,6 @@
-import InfoService from '@/services/InfoService/InfoService';
+import { useAppDispatch } from '@/store';
 import { authSelectors } from '@/store/auth';
+import { informationThunkActions } from '@/store/content/information';
 import { staticDataSelectors } from '@/store/static-data';
 import { MoreInformation } from '@ecdlink/graphql';
 import { MoreInformationPage, MoreInformationPageProps } from '@ecdlink/ui';
@@ -31,6 +32,7 @@ export const InfoPage = ({
   const [data, setData] = useState<MoreInformation[]>([]);
   const [selectedLanguage, setSelectedLanguage] = useState('en-za');
   const [isLoading, setIsLoading] = useState(false);
+  const appDispatch = useAppDispatch();
 
   const userAuth = useSelector(authSelectors.getAuthUser);
   const languages = useSelector(staticDataSelectors.getLanguages);
@@ -41,10 +43,12 @@ export const InfoPage = ({
   const fetchMoreInformation = useCallback(async () => {
     try {
       setIsLoading(true);
-      const info = await new InfoService().getMoreInformation(
-        section,
-        selectedLanguage
-      );
+      const info = await appDispatch(
+        informationThunkActions.getMoreInformation({
+          section: section,
+          locale: selectedLanguage,
+        })
+      ).unwrap();
       setData(info);
     } catch (error) {
       console.error('Error fetching information:', error);

@@ -10,9 +10,7 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { InvitedPractitionerRouteState } from './invited-practitioner.types';
 import { addDays, differenceInMinutes, format } from 'date-fns';
 import { useEffect, useState } from 'react';
-import { authSelectors } from '@/store/auth';
 import { useSelector } from 'react-redux';
-import { PractitionerService } from '@/services/PractitionerService';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { useDialog, useSnackbar } from '@ecdlink/core';
 import { useAppDispatch } from '@/store';
@@ -39,7 +37,6 @@ export const InvitedPractitioner: React.FC<InvitedPractitionerRouteState> = ({
   const [showAlert, setShowAlert] = useState(false);
   const [inviteDates, setInviteDates] = useState<Date[]>();
   const [isLoading, setIsLoading] = useState(false);
-  const userAuth = useSelector(authSelectors.getAuthUser);
   const [timeSinceLastInvite, setTimeSinceLastInvite] = useState<number>(1000);
   const [isSending, setIsSending] = useState(false);
 
@@ -58,10 +55,9 @@ export const InvitedPractitioner: React.FC<InvitedPractitionerRouteState> = ({
   const getInviteDetails = async () => {
     setIsLoading(true);
     if (!!userId) {
-      const dates = await new PractitionerService(
-        userAuth?.auth_token || ''
-      ).GetAllPractitionerInvites(userId);
-
+      const dates = await appDispatch(
+        practitionerThunkActions.getAllPractitionerInvites({ userId: userId })
+      ).unwrap();
       dates.sort();
 
       if (!!dates.length) {
@@ -97,9 +93,11 @@ export const InvitedPractitioner: React.FC<InvitedPractitionerRouteState> = ({
       ) {
         setShowAlert(true);
         setIsSending(true);
-        await new PractitionerService(
-          userAuth?.auth_token || ''
-        ).SendPractitionerInviteToApplication(userId);
+        await appDispatch(
+          practitionerThunkActions.sendPractitionerInviteToApplication({
+            userId: userId,
+          })
+        );
         await getInviteDetails();
         setShowAlert(false);
       }
@@ -109,12 +107,15 @@ export const InvitedPractitioner: React.FC<InvitedPractitionerRouteState> = ({
   };
 
   const removePractitioner = async () => {
-    await new PractitionerService(
-      userAuth?.auth_token || ''
-    ).UpdatePrincipalInvitation(userId!, practitioner?.id!, false);
-
     await appDispatch(
-      practitionerThunkActions.getAllPractitioners({})
+      practitionerThunkActions.updatePrincipalInvitation({
+        userId: userId!,
+        principalHierarchy: practitioner?.id!,
+        accepted: false,
+      })
+    );
+    await appDispatch(
+      practitionerThunkActions.getAllPractitioners({ overrideCache: true })
     ).unwrap();
 
     setInvites(
