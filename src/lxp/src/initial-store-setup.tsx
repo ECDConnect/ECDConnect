@@ -224,12 +224,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     }
     if (!isCoach) {
       promises.push(
-        appDispatch(classroomsThunkActions.getClassroom({})).unwrap()
-      );
-      promises.push(
-        appDispatch(
-          communityThunkActions.getCommunityProfile({ userId: userData?.id! })
-        ).unwrap()
+        appDispatch(classroomsThunkActions.getClassroomForUser({})).unwrap()
       );
       promises.push(
         appDispatch(classroomsThunkActions.getClassroomGroups({})).unwrap()
@@ -370,6 +365,12 @@ const InitialStoreSetup: React.FC = ({ children }) => {
               overrideCache: cmsStatus?.syncResources,
             })
           ).unwrap(),
+          appDispatch(
+            communityThunkActions.getAllConnectItem({
+              locale: 'en-za',
+              overrideCache: cmsStatus?.syncConnectItem,
+            })
+          ).unwrap(),
         ];
 
     // clear non persistent activity planning data if data changed in the database
@@ -453,7 +454,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const refreshClassroom = async () => {
     appDispatch(classroomsActions.resetClassroomState());
     appDispatch(
-      classroomsThunkActions.getClassroom({ overrideCache: true })
+      classroomsThunkActions.getClassroomForUser({ overrideCache: true })
     ).unwrap();
     appDispatch(
       classroomsThunkActions.getClassroomGroups({ overrideCache: true })

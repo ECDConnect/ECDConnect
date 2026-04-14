@@ -172,16 +172,22 @@ export const useProgressForChildren = (
   }, [childReports]);
 
   const isAllReportsComplete = useMemo(() => {
+    if (children?.length === 0) {
+      return false;
+    }
     // Report complete, or no age group (so no report can be created)
     return childReports.every((x) => !!x.report?.dateCompleted || !x.ageGroup);
-  }, [baseChildren, reportingPeriod, childReports]);
+  }, [children, reportingPeriod, childReports]);
 
   const isAllObservationsComplete = useMemo(() => {
+    if (children?.length === 0) {
+      return false;
+    }
     // Report complete, or no age group (so no report can be created)
     return childReports.every(
       (x) => !!x.report?.observationsCompleteDate || !x.ageGroup
     );
-  }, [baseChildren, reportingPeriod, childReports]);
+  }, [children, reportingPeriod, childReports]);
 
   const lastReport = useMemo(() => {
     if (!allReportingPeriods || allReportingPeriods.length === 0) return null;

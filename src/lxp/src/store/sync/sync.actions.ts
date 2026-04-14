@@ -277,7 +277,7 @@ export const pullRemoteChanges = createAsyncThunk<
         );
         await retryWithExponentialBackoff(() =>
           dispatch(
-            classroomsThunkActions.getClassroom({ overrideCache: true })
+            classroomsThunkActions.getClassroomForUser({ overrideCache: true })
           ).unwrap()
         );
         await retryWithExponentialBackoff(() =>
@@ -309,7 +309,9 @@ export const pullRemoteChanges = createAsyncThunk<
         otherPromises.push(
           retryWithExponentialBackoff(() =>
             dispatch(
-              classroomsThunkActions.getClassroom({ overrideCache: true })
+              classroomsThunkActions.getClassroomForUser({
+                overrideCache: true,
+              })
             ).unwrap()
           )
         );

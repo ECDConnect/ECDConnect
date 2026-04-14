@@ -1,12 +1,16 @@
 import { BannerWrapper, TabItem, TabList } from '@ecdlink/ui';
 import { useHistory, useLocation } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import format from 'date-fns/format';
 import ROUTES from '@/routes/routes';
 import { CommunityItem } from './components/community-item/community-item';
 import { CommunityLinks } from './components/community-links/community-links';
 import { CommunityRouteState } from '../community.types';
+import { useAppDispatch } from '@/store';
+import { communityThunkActions } from '@/store/community';
+import { useSelector } from 'react-redux';
+import { userSelectors } from '@/store/user';
 
 export const COMMUNITY_TABS = {
   CONNECT: 0,
@@ -25,6 +29,15 @@ export const CommunityTabs = ({
   const date = format(new Date(), 'dd LLLL y');
   const { state } = useLocation<CommunityRouteState>();
   const [selectedTabIndex, setSelectedTabIndex] = useState<number>(0);
+  const appDispatch = useAppDispatch();
+  const userData = useSelector(userSelectors.getUser);
+
+  // only fetch once
+  useEffect(() => {
+    appDispatch(
+      communityThunkActions.getCommunityProfile({ userId: userData?.id! })
+    ).unwrap();
+  }, []);
 
   const tabItems: TabItem[] = [
     {

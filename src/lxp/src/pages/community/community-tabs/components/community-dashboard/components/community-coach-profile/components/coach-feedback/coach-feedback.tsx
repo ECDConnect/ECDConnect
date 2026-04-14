@@ -15,23 +15,19 @@ import { ReactComponent as Happy } from '@/assets/ECD_Connect_emoji1.svg';
 import { ReactComponent as Neutral } from '@/assets/ECD_Connect_emoji_neutral.svg';
 import { ReactComponent as Unhappy } from '@/assets/ECD_Connect_emoji_unhappy.svg';
 import { ReactComponent as VeryUnhappy } from '@/assets/red_rating.svg';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNotifications, useSnackbar } from '@ecdlink/core';
+import { useCallback, useEffect, useState } from 'react';
+import { useSnackbar } from '@ecdlink/core';
 import { useTenant } from '@/hooks/useTenant';
 import { useSelector } from 'react-redux';
 import { coachSelectors } from '@/store/coach';
 import {
-  CoachFeedbackInputModelInput,
   FeedbackTypeSortInput,
-  SupportRatingModel,
   SupportRatingSortInput,
 } from '@ecdlink/graphql';
 import { useAppDispatch } from '@/store';
 import { communityThunkActions } from '@/store/community';
 import { CoachSupportRatingsTypes } from './coach-feedback.types';
 import { userSelectors } from '@/store/user';
-import { CommunityService } from '@/services/CommunityService';
-
 interface HelpFormProps {
   closeAction?: (item: boolean) => void;
 }

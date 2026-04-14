@@ -10,7 +10,6 @@ import { DynamicFormProps, SectionQuestions } from '../../../dynamic-form';
 import { useCallback, useEffect, useState } from 'react';
 import { ClassroomGroup } from '@ecdlink/graphql';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { PractitionerService } from '@/services/PractitionerService';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import { options } from './options';
@@ -19,7 +18,11 @@ import { usePrevious, useSessionStorage } from '@ecdlink/core';
 import { practitionerVisitIdKey } from '@/pages/practitioner/practitioner-profile/practitioner-journey/forms';
 import { getSectionsQuestionsByStep } from '@/store/pqa/pqa.selectors';
 import { userSelectors } from '@/store/user';
-import { practitionerSelectors } from '@/store/practitioner';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
+import { useAppDispatch } from '@/store';
 
 export const step12VisitSection = 'Step 12';
 
@@ -29,6 +32,7 @@ export const Step12 = ({
   setEnableButton,
   isView,
 }: DynamicFormProps) => {
+  const appDispatch = useAppDispatch();
   const [practitionerClassroomDetails, setPractitionerClassroomDetails] =
     useState<ClassroomGroup[]>();
   const [question, setAnswers] = useState({
@@ -114,12 +118,11 @@ export const Step12 = ({
   };
 
   const classroomsDetailsForPractitioner = useCallback(async () => {
-    // Needs to be updated
-    const classroomDetails = (await new PractitionerService(
-      userAuth?.auth_token!
-    ).getClassroomGroupClassroomsForPractitioner(
-      isPractitionerUser ? user?.id! : smartStarter?.userId!
-    )) as unknown;
+    const classroomDetails = await appDispatch(
+      practitionerThunkActions.getClassroomGroupClassroomsForPractitioner({
+        userId: isPractitionerUser ? user?.id! : smartStarter?.userId!,
+      })
+    ).unwrap();
 
     setPractitionerClassroomDetails(classroomDetails as ClassroomGroup[]);
     return classroomDetails;

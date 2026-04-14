@@ -5,8 +5,9 @@ import { useHistory } from 'react-router-dom';
 
 import { useEffect, useState } from 'react';
 import { staticDataSelectors } from '@/store/static-data';
-import InfoService from '@/services/InfoService/InfoService';
 import { MoreInformation } from '@ecdlink/graphql';
+import { useAppDispatch } from '@/store';
+import { informationThunkActions } from '@/store/content/information';
 
 export const ProgrammePlanningDailyRoutine = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -15,14 +16,17 @@ export const ProgrammePlanningDailyRoutine = () => {
   const [data, setData] = useState<MoreInformation[]>();
 
   const history = useHistory();
+  const appDispatch = useAppDispatch();
 
   useEffect(() => {
     setIsLoading(true);
-    new InfoService()
-      .getMoreInformation(
-        MoreInformationTypeEnum.TheDailyRoutine,
-        selectedLanguage
-      )
+    appDispatch(
+      informationThunkActions.getMoreInformation({
+        section: MoreInformationTypeEnum.TheDailyRoutine,
+        locale: selectedLanguage,
+      })
+    )
+      .unwrap()
       .then((info) => {
         setData(info);
         setIsLoading(false);

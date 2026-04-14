@@ -12,9 +12,7 @@ import {
 } from './edit-practitioner-profile.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
-import { authSelectors } from '@/store/auth';
 import { WelcomePage } from '@/components/welcome-page';
-import { PractitionerService } from '@/services/PractitionerService';
 import {
   practitionerSelectors,
   practitionerThunkActions,
@@ -30,7 +28,6 @@ import { classroomsSelectors, classroomsThunkActions } from '@/store/classroom';
 import TransparentLayer from '../../../assets/TransparentLayer.png';
 import { usePractitionerNotification } from '@/hooks/usePractitionerNotification';
 import { ClassroomDto } from '@/models/classroom/classroom.dto';
-import { ClassroomService } from '@/services/ClassroomService';
 
 export const EditPractitionerProfile: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -41,7 +38,6 @@ export const EditPractitionerProfile: React.FC = () => {
   const tenant = useTenant();
   const isOpenAccess = tenant?.isOpenAccess;
 
-  const userAuth = useSelector(authSelectors.getAuthUser);
   const user = useSelector(userSelectors.getUser);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const classroom = useSelector(classroomsSelectors?.getClassroom);
@@ -61,10 +57,11 @@ export const EditPractitionerProfile: React.FC = () => {
   }, [practitioner?.principalHierarchy]);
 
   const getPrincipalClassroom = useCallback(async () => {
-    const classroom = await new ClassroomService(
-      userAuth?.auth_token!
-    ).getClassroomForUser(practitioner?.principalHierarchy!);
-
+    const classroom = await appDispatch(
+      classroomsThunkActions.getClassroomForUser({
+        userId: practitioner?.principalHierarchy!,
+      })
+    ).unwrap();
     if (classroom) {
       setPrincipalClassroom(classroom);
     }
@@ -126,34 +123,40 @@ export const EditPractitionerProfile: React.FC = () => {
 
   const onAllStepsComplete = async () => {
     if (isOnline) {
-      if (
-        userAuth?.auth_token &&
-        user?.id &&
-        practitioner?.principalHierarchy
-      ) {
+      if (user?.id && practitioner?.principalHierarchy) {
         if (formData.allowPermissions) {
           // explicitly checking that the user concent to share info
-          await new PractitionerService(
-            userAuth.auth_token
-          ).UpdatePractitionerShareInfo(user.id);
-          await new PractitionerService(
-            userAuth.auth_token
-          ).UpdatePractitionerRegistered(user.id, true);
+          await appDispatch(
+            practitionerThunkActions.updatePractitionerShareInfo({
+              practitionerId: user?.id,
+            })
+          ).unwrap();
+          await appDispatch(
+            practitionerThunkActions.updatePractitionerRegistered({
+              practitionerId: user.id,
+              status: true,
+            })
+          ).unwrap();
+
           if (practitioner?.progress === 1.0 && !practitioner?.isPrincipal) {
             history.push(ROUTES.DASHBOARD, { isFromCompleteProfile: true });
             return;
           }
-          await new PractitionerService(
-            userAuth.auth_token
-          ).UpdatePractitionerProgress(user.id, 2.0);
+
+          await appDispatch(
+            practitionerThunkActions.updatePractitionerProgress({
+              practitionerId: user.id,
+              progress: 2.0,
+            })
+          ).unwrap();
         }
-        appDispatch(notificationActions.resetNotificationState());
-        appDispatch(
+        await appDispatch(notificationActions.resetNotificationState());
+        await appDispatch(
           practitionerThunkActions.getPractitionerByUserId({ userId: user.id })
         );
-        appDispatch(practitionerThunkActions.getAllPractitioners({}));
-        appDispatch(
-          classroomsThunkActions.getClassroom({ overrideCache: true })
+        await appDispatch(practitionerThunkActions.getAllPractitioners({}));
+        await appDispatch(
+          classroomsThunkActions.getClassroomForUser({ overrideCache: true })
         ).unwrap();
         stopService();
         history.push(ROUTES.ROOT);

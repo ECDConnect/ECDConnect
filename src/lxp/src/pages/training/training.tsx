@@ -2,31 +2,31 @@ import { useState, useEffect, useRef } from 'react';
 import { BannerWrapper, LoadingSpinner } from '@ecdlink/ui';
 import { useHistory } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { authSelectors } from '@store/auth';
 import { useSelector } from 'react-redux';
 
 import React from 'react';
 import { userSelectors } from '@store/user';
-import { PractitionerService } from '@/services/PractitionerService';
 import { useTenant } from '@/hooks/useTenant';
 import ROUTES from '@/routes/routes';
+import { useAppDispatch } from '@/store';
+import { practitionerThunkActions } from '@/store/practitioner';
 
 export const Training: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
   const userData = useSelector(userSelectors.getUser);
-  const userAuth = useSelector(authSelectors.getAuthUser);
   const [moodleUserCreated, setMoodleUserCreated] = useState(false);
   const [loginPosted, setLoginPosted] = useState(false);
   const tenant = useTenant();
+  const appDispatch = useAppDispatch();
 
   const formRef = useRef(null);
 
   const createMoodleUser = async () => {
     if (userData?.id) {
-      const data = await new PractitionerService(
-        userAuth?.auth_token!
-      ).getMoodleSessionForCurrentUser();
+      const data = await appDispatch(
+        practitionerThunkActions.getMoodleSessionForCurrentUser()
+      ).unwrap();
       const bData = Boolean(data);
       setMoodleUserCreated(bData);
     }

@@ -2,10 +2,13 @@ import ROUTES from '@/routes/routes';
 import React, { useState, useCallback } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { statementsActions, statementsSelectors } from '@/store/statements';
+import {
+  statementsActions,
+  statementsSelectors,
+  statementsThunkActions,
+} from '@/store/statements';
 import { authSelectors } from '@/store/auth';
 import { MonthStatementsDetails } from '../../components/month-statements-details';
-import { IncomeStatementsService } from '@/services/IncomeStatementsService';
 import { useDialog } from '@ecdlink/core';
 import { useAppDispatch } from '@/store';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
@@ -65,10 +68,11 @@ export const MonthStatements: React.FC = () => {
     }
 
     const getPdf = async () => {
-      const report = await new IncomeStatementsService(
-        userAuth?.auth_token || ''
-      ).getIncomeStatementPdf(statementId);
-
+      const report = appDispatch(
+        statementsThunkActions.getIncomeStatementPdf({
+          statementId: statementId,
+        })
+      ).unwrap;
       return report;
     };
 

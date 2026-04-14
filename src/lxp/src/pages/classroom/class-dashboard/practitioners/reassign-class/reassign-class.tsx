@@ -29,10 +29,9 @@ import {
   practitionerThunkActions,
 } from '@/store/practitioner';
 import { useSelector } from 'react-redux';
-import { ClassroomGroupService } from '@/services/ClassroomGroupService';
 import { authSelectors } from '@/store/auth';
 import { userSelectors } from '@store/user';
-import { classroomsSelectors } from '@/store/classroom';
+import { classroomsSelectors, classroomsThunkActions } from '@/store/classroom';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useAppDispatch } from '@/store';
 import { PractitionerDto } from '@ecdlink/core';
@@ -442,33 +441,36 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
     setIsLoading(true);
 
     const processReassignment = async (item: any) => {
-      const service = new ClassroomGroupService(userAuth.auth_token);
       const startDate = new Date(new Date(selectedDate).setHours(12, 0, 0, 0));
       const endDateToUse = isOneDayLeave ? startDate : endDate || startDate;
 
       if (item?.absenteeId) {
-        await service.editAbsentee(
-          item.absenteeId,
-          false,
-          item.practitioner,
-          reasonPayload,
-          startDate,
-          endDateToUse,
-          !!principalOrFundaAppAdmin,
-          principalOrFundaAppAdmin
+        await appDispatch(
+          classroomsThunkActions.editAbsentee({
+            absenteeId: item.absenteeId,
+            deleteAbsentee: false,
+            reassignedToPractitioner: item.practitioner,
+            reason: reasonPayload,
+            absentDate: startDate,
+            absentDateEnd: endDateToUse,
+            isRoleAssign: !!principalOrFundaAppAdmin,
+            roleAssignedToUser: principalOrFundaAppAdmin,
+          })
         );
       } else {
-        await service.updateReassignClassroomGroup(
-          practitioner,
-          item?.practitioner,
-          reasonPayload,
-          startDate,
-          userData.id!,
-          item?.classroomId,
-          endDateToUse,
-          '',
-          '',
-          principalOrFundaAppAdmin
+        await appDispatch(
+          classroomsThunkActions.updateReassignClassroomGroup({
+            practitionerId: practitioner,
+            reassignedToPractitioner: item?.practitioner,
+            reason: reasonPayload,
+            absentDate: startDate,
+            loggedByUser: userData.id!,
+            classProgram: item?.classroomId,
+            absentDateEnd: endDateToUse,
+            fromRole: '',
+            toRole: '',
+            roleAssignedToUser: principalOrFundaAppAdmin,
+          })
         );
       }
     };
@@ -481,23 +483,24 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
       } else if (allAbsenteeClasses?.[0]?.absenteeId) {
         await processReassignment(allAbsenteeClasses[0]);
       } else {
-        const service = new ClassroomGroupService(userAuth.auth_token);
         const startDate = new Date(
           new Date(selectedDate).setHours(12, 0, 0, 0)
         );
         const endDateToUse = isOneDayLeave ? startDate : endDate || startDate;
 
-        await service.updateReassignClassroomGroup(
-          practitioner,
-          practitioner2,
-          reasonPayload,
-          startDate,
-          userData.id!,
-          '',
-          endDateToUse,
-          '',
-          '',
-          principalOrFundaAppAdmin
+        await appDispatch(
+          classroomsThunkActions.updateReassignClassroomGroup({
+            practitionerId: practitioner,
+            reassignedToPractitioner: practitioner2,
+            reason: reasonPayload,
+            absentDate: startDate,
+            loggedByUser: userData.id!,
+            classProgram: '',
+            absentDateEnd: endDateToUse,
+            fromRole: '',
+            toRole: '',
+            roleAssignedToUser: principalOrFundaAppAdmin,
+          })
         );
       }
     };
@@ -512,6 +515,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
       await appDispatch(
         practitionerThunkActions.getPractitionerByUserId({
           userId: pracOnLeaveId!,
+          overrideCache: true,
         })
       ).unwrap();
     }
