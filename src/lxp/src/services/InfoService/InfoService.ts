@@ -39,6 +39,20 @@ class InfoService {
             showDividerC
             type
             visit
+            availableLanguages {
+              id
+              locale
+            }
+            buttonlinkA
+            buttonlinkADescription
+            buttonlinkB
+            buttonlinkBDescription
+            buttonlinkC
+            buttonlinkCDescription
+            infoBoxBTitle
+            infoBoxBDescription
+            infoBoxBLink
+            infoBoxBLinkDescription
           }
         }    
         `,

@@ -170,6 +170,11 @@ namespace ECDLink.Api.CoreApi.Services
 
             practitionerRecord.Absentees = _absenteeService.GetAbsenteeByUser(practitioner.UserId.ToString());
 
+         model.EcdRegistration = _dbContext.EcdRegistrations
+                .Where(x => x.PractitionerId == practitioner.Id && x.IsActive)
+                .OrderByDescending(x => x.InsertedDate)
+                .FirstOrDefault();
+
             ApplicationUser practitionerUser = _userManager.FindByIdAsync(practitioner.UserId).Result;
             if (practitionerUser != null) {
                  practitionerRecord.User = practitionerUser;
@@ -386,6 +391,11 @@ namespace ECDLink.Api.CoreApi.Services
                         }
                     };
                     _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PromotedToPrincipalOrFAA, DateTime.Now.Date, practitionerToPromote.User, null, MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7), false, true);
+                }
+
+                if (practitionerToPromote.EcdRegistration == null)
+                {
+                     _notificationService.SendNotificationAsync(null, TemplateTypeConstants.DbeRegistration, DateTime.Now.Date, practitionerToPromote.User, null, MessageStatusConstants.Blue, null, null, false, true);
                 }
 
             }

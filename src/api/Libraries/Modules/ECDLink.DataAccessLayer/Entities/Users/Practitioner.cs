@@ -71,6 +71,8 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public bool ProgressWalkthroughComplete { get; set; }
         public DateTime? CoachLinkDate { get; set; }
 
+        public virtual EcdRegistration EcdRegistration { get; set; }
+
         public bool IsPrincipalOrAdmin()
         {
             return IsPrincipal.HasValue && IsPrincipal.Value;

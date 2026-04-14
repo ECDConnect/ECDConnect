@@ -32,5 +32,7 @@
         public const string ROLES = "Roles";
         public const string PORTAL = "Portal";
         public const string USERCONSENT = "UserConsent";
+
+        public const string ECDREGISTRATION = "Registration";
     }
 }

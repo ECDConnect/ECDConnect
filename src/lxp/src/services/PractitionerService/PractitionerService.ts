@@ -5,9 +5,12 @@ import {
   PractitionerDto,
   PractitionerColleagues,
   ClassroomGroupDto,
+  EcdRegistrationDto,
 } from '@ecdlink/core';
 import {
   ClassroomGroupReassignmentsInput,
+  EcdRegistrationInputModelInput,
+  EcdRegistrationUpdateInputModelInput,
   MutationAddPractitionerToPrincipalArgs,
   MutationUpdatePractitionerContactInfoArgs,
   NotificationDisplay,
@@ -267,6 +270,17 @@ class PractitionerService {
             progress
             usePhotoInReport
             isCompletedBusinessWalkThrough
+            ecdRegistration {
+              id
+              subsidy
+              registrationType
+              challenges
+              challengesOtherReason
+              hasBronzeCertificate
+              hasSilverCertificate
+              hasGoldCertificate
+              problemDescription
+            }
           }
         }
       `,
@@ -361,6 +375,17 @@ class PractitionerService {
               permissionName
               permissionNormalizedName
               permissionGrouping
+            }
+            ecdRegistration {
+              id
+              subsidy
+              registrationType
+              challenges
+              challengesOtherReason
+              hasBronzeCertificate
+              hasSilverCertificate
+              hasGoldCertificate
+              problemDescription
             }
           }
         }
@@ -1596,6 +1621,78 @@ class PractitionerService {
     }
 
     return response.data.data.updateClickedECDHeros;
+  }
+
+  async createPractitionerEcdRegistration(
+    input: EcdRegistrationInputModelInput
+  ): Promise<EcdRegistrationDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation CreateEcdRegistration(
+          $input: EcdRegistrationInputModelInput
+        ) {
+          createEcdRegistration(input: $input) {
+            id
+            subsidy
+            registrationType
+            challenges
+            challengesOtherReason
+            hasBronzeCertificate
+            hasSilverCertificate
+            hasGoldCertificate
+            problemDescription
+          }
+        }
+      `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Create ECD registration Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.createEcdRegistration;
+  }
+
+  async updatePractitionerEcdRegistration(
+    input: EcdRegistrationUpdateInputModelInput
+  ): Promise<EcdRegistrationDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation UpdateEcdRegistration(
+          $input: EcdRegistrationUpdateInputModelInput
+        ) {
+          updateEcdRegistration(input: $input) {
+            id
+            subsidy
+            registrationType
+            challenges
+            challengesOtherReason
+            hasBronzeCertificate
+            hasSilverCertificate
+            hasGoldCertificate
+            problemDescription
+          }
+        }
+      `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Update ECD registration Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updateEcdRegistration;
   }
 }
 

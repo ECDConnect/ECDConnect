@@ -4,6 +4,7 @@ using ECDLink.DataAccessLayer.Context;
 using ECDLink.EGraphQL.Resolvers;
 using HotChocolate.Resolvers;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -11,6 +12,9 @@ namespace ECDLink.ContentManagement.GraphQL.Resolvers.FieldResolvers
 {
     public class StaticRelationFieldResolver : FieldResolverBase, IDynamicFieldResolver
     {
+        // Assembly scanning is expensive — cache the result per entity name across all requests
+        private static readonly ConcurrentDictionary<string, Type> _typeCache = new();
+
         public object ResolveField(IPureResolverContext ctx, FieldDefinitionModel definition, int? contentTypeId = null)
         {
             var fieldValue = base.GetFieldValue(ctx, definition.Name);
@@ -24,12 +28,13 @@ namespace ECDLink.ContentManagement.GraphQL.Resolvers.FieldResolvers
 
             var ids = base.ValueToGuidList(fieldValue);
 
-            var entitiyName = definition.GraphDataTypeName.Substring(1, definition.GraphDataTypeName.Length - 2);
+            var entityName = definition.GraphDataTypeName.Substring(1, definition.GraphDataTypeName.Length - 2);
 
-            Type type = AppDomain.CurrentDomain
-                        .GetAssemblies()
-                        .SelectMany(t => t.GetTypes())
-                        .Where(t => String.Equals(t.Name, entitiyName, StringComparison.Ordinal)).First();
+            var type = _typeCache.GetOrAdd(entityName, name =>
+                AppDomain.CurrentDomain
+                    .GetAssemblies()
+                    .SelectMany(a => a.GetTypes())
+                    .First(t => string.Equals(t.Name, name, StringComparison.Ordinal)));
 
             var list = new List<object>();
 

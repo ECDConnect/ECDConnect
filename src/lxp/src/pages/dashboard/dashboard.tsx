@@ -779,6 +779,14 @@ export const Dashboard: React.FC = () => {
                 hideItem: !businessEnabled && isWhiteLabel,
               },
               {
+                name: NavigationNames.Business.Registration,
+                href: ROUTES.BUSINESS,
+                onNavigation: onNavigation,
+                params: { activeTabIndex: BusinessTabItems.REGISTRATION },
+                current: false,
+                hideItem: !businessEnabled,
+              },
+              {
                 name: NavigationNames.Business.Resources,
                 href: ROUTES.BUSINESS,
                 onNavigation: onNavigation,
