@@ -61,7 +61,6 @@ export const ObservationsForChildLandingIncomplete: React.FC<
   const appDispatch = useAppDispatch();
   const dialog = useDialog();
   const [showDetails, setShowDetails] = useState(false);
-  const userAuth = useSelector(authSelectors.getAuthUser);
   const { isOnline } = useOnlineStatus();
 
   const showOfflineDialog = () => {
@@ -76,7 +75,6 @@ export const ObservationsForChildLandingIncomplete: React.FC<
   };
 
   const changeLanguage = async (language: LanguageDto) => {
-    console.log('changeLanguage', language);
     if (!language?.locale) return;
 
     const hasTranslations = await appDispatch(

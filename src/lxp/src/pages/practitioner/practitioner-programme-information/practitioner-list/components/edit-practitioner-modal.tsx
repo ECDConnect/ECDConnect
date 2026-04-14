@@ -46,7 +46,7 @@ export const EditPractitionerModal = ({
     if (practitioners) {
       const removalDetails = await appDispatch(
         practitionerThunkActions.getRemovalsForPractitioners({
-          userIds: practitioners!.map((x) => x.userId as string),
+          userIds: practitioners.map((x) => x.userId as string),
         })
       ).unwrap();
       setExisitingRemovals(removalDetails || []);

@@ -439,7 +439,7 @@ export const AddPractitioner = ({
                 <div>
                   <Alert
                     type={'error'}
-                    title={`You cannot add this practitioner -  they are already linked to a different preschool.`}
+                    title={`You cannot add this practitioner - they are already linked to a different preschool.`}
                     list={[
                       'Make sure you have entered the correct ID number above.',
                       'Ask the practitioner to update their preschool information.',
@@ -484,28 +484,26 @@ export const AddPractitioner = ({
               {isValidPractitioner === false &&
                 !isOpenAccess &&
                 !isOwnUserId && (
-                  <>
-                    <div className="mb-8">
-                      <Alert
-                        type={'error'}
-                        title={`Oops, practitioner not found! Only ${appName} practitioners can be added.`}
-                        list={[
-                          `Check the practitioner ID and try again. Only ${appName} practitioners can be added.`,
-                          `You can add a different practitioner or exit.`,
-                        ]}
-                        button={
-                          <Button
-                            text="Get help"
-                            icon="ClipboardListIcon"
-                            type={'filled'}
-                            color={'quatenary'}
-                            textColor={'white'}
-                            onClick={() => setOpenHelp(true)}
-                          />
-                        }
-                      />
-                    </div>
-                  </>
+                  <div className="mb-8">
+                    <Alert
+                      type={'error'}
+                      title={`Oops, practitioner not found! Only ${appName} practitioners can be added.`}
+                      list={[
+                        `Check the practitioner ID and try again. Only ${appName} practitioners can be added.`,
+                        `You can add a different practitioner or exit.`,
+                      ]}
+                      button={
+                        <Button
+                          text="Get help"
+                          icon="ClipboardListIcon"
+                          type={'filled'}
+                          color={'quatenary'}
+                          textColor={'white'}
+                          onClick={() => setOpenHelp(true)}
+                        />
+                      }
+                    />
+                  </div>
                 )}
               {isValidPractitioner === true && !isPrincipal && !addNote && (
                 <div className="mb-8">
@@ -525,39 +523,6 @@ export const AddPractitioner = ({
                   />
                 </div>
               )}
-              {/* {!addNote &&
-                isPractitionerRegistered !== undefined &&
-                !isPrincipal && (
-                  <div>
-                    <Alert
-                      type={isPractitionerRegistered ? 'success' : 'error'}
-                      title={
-                        isPractitionerRegistered
-                          ? 'This practitioner is registered on Funda app.'
-                          : 'This practitioner is not registered on Funda App. Ask all of your SmartStart practitioners to register.'
-                      }
-                      list={[
-                        isPractitionerRegistered
-                          ? 'Practitioner has been notified.'
-                          : 'If your practitioner needs help, please contact the SmartStart call centre.',
-                      ]}
-                      button={
-                        !isPractitionerRegistered ? (
-                          <Button
-                            text="Contact call centre"
-                            icon="PhoneIcon"
-                            type={'filled'}
-                            color={'primary'}
-                            textColor={'white'}
-                            onClick={() => callForHelp()}
-                          />
-                        ) : (
-                          <></>
-                        )
-                      }
-                    />
-                  </div>
-                )} */}
               {isValidPractitioner === true && !addNote && (
                 <div>
                   <Typography

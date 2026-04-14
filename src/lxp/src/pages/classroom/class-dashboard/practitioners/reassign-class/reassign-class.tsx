@@ -515,6 +515,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
       await appDispatch(
         practitionerThunkActions.getPractitionerByUserId({
           userId: pracOnLeaveId!,
+          overrideCache: true,
         })
       ).unwrap();
     }

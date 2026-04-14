@@ -46,6 +46,7 @@ export const ContactPractitioner: React.FC = () => {
         await appDispatch(
           practitionerThunkActions.getPractitionerByUserId({
             userId: practitionerId,
+            overrideCache: true,
           })
         ).unwrap()
       );
