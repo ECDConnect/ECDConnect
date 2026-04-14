@@ -20,8 +20,10 @@ import {
   getWorkflowStatuses,
   getRoles,
   getCommunitySkills,
+  getMoreInformation,
 } from './static-data.actions';
 import { StaticDataState } from './static-data.types';
+import { setThunkActionStatus, setFulfilledThunkActionStatus } from '../utils';
 
 const initialState: StaticDataState = {
   relations: undefined,
@@ -43,6 +45,8 @@ const initialState: StaticDataState = {
   permissions: undefined,
   roles: undefined,
   communitySkills: undefined,
+  moreInformation: {},
+  status: [],
 };
 
 const staticDataSlice = createSlice({
@@ -71,6 +75,7 @@ const staticDataSlice = createSlice({
       state.permissions = initialState.permissions;
       state.roles = initialState.roles;
       state.communitySkills = initialState.communitySkills;
+      state.moreInformation = {};
     },
     resetHolidayState: (state) => {
       state.holidays = initialState.holidays;
@@ -142,6 +147,12 @@ const staticDataSlice = createSlice({
     });
     builder.addCase(getCommunitySkills.fulfilled, (state, action) => {
       state.communitySkills = action.payload;
+    });
+    setThunkActionStatus(builder, getMoreInformation);
+    builder.addCase(getMoreInformation.fulfilled, (state, action) => {
+      const { section, locale } = action.meta.arg;
+      state.moreInformation[`${section}_${locale}`] = action.payload;
+      setFulfilledThunkActionStatus(state, action);
     });
   },
 });

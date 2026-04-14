@@ -20,7 +20,7 @@ import {
   RoleDto,
   ProfileSkillsDto,
 } from '@ecdlink/core';
-import { ProgrammeTypeEnum } from '@ecdlink/graphql';
+import { MoreInformation, ProgrammeTypeEnum } from '@ecdlink/graphql';
 import { createSelector } from 'reselect';
 import { RootState } from '../types';
 
@@ -161,3 +161,8 @@ export const geCoachRole = (state: RootState): RoleDto => {
 
 export const getCommunitySkills = (state: RootState): ProfileSkillsDto[] =>
   state.staticData.communitySkills || [];
+
+export const getMoreInformationSelector =
+  (section: string, locale: string) =>
+  (state: RootState): MoreInformation[] | undefined =>
+    state.staticData.moreInformation[`${section}_${locale}`];

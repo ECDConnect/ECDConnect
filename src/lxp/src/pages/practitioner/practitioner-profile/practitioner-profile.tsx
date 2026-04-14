@@ -20,7 +20,6 @@ import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import ROUTES from '@routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
-import { usePrevious } from 'react-use';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 import { PractitionerProfileRouteState } from './practitioner-profile.types';
@@ -56,9 +55,15 @@ export const PractitionerProfile: React.FC = () => {
   const isOpenAccess = tenant?.isOpenAccess;
   const location = useLocation<PractitionerProfileRouteState>();
 
-  const [selectedTabIndex, setSelectedTabIndex] = useState<number>(
-    location.state?.tabIndex !== undefined ? location.state?.tabIndex : 0
-  );
+  const [selectedTabIndex, setSelectedTabIndex] = useState<number>(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const incomingTabIndex = searchParams.get('tabIndex');
+    if (incomingTabIndex) {
+      const parsed = Number.parseInt(incomingTabIndex, 10);
+      if (!Number.isNaN(parsed)) return parsed;
+    }
+    return location.state?.tabIndex ?? 0;
+  });
 
   useEffect(() => {
     if (!isOnline) {
@@ -228,7 +233,7 @@ export const PractitionerProfile: React.FC = () => {
   const tabItem: TabItem[] = [
     {
       title: 'Profile',
-      initActive: true,
+      initActive: selectedTabIndex === 0,
       child: (
         <div>
           <StackedList
@@ -241,7 +246,7 @@ export const PractitionerProfile: React.FC = () => {
     },
     {
       title: 'Journey',
-      initActive: false,
+      initActive: selectedTabIndex === 1,
       child: (
         <JourneyTimeline
           onIsDisplayFormChange={setIsJourneyFormOpen}

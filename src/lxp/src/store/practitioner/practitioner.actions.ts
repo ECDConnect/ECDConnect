@@ -1,4 +1,5 @@
 import {
+  EcdRegistrationDto,
   ClassroomGroupDto,
   PractitionerColleagues,
   PractitionerDto,
@@ -18,6 +19,8 @@ import {
   PractitionerRemovalHistory,
   ClassroomGroupReassignmentsInput,
   MutationAddPractitionerToPrincipalArgs,
+  EcdRegistrationInputModelInput,
+  EcdRegistrationUpdateInputModelInput,
 } from '@ecdlink/graphql';
 import PermissionsService from '@/services/PermissionsService/PermissionsService';
 import { OverrideCache } from '@/models/sync/override-cache';
@@ -62,6 +65,8 @@ export const PractitionerActions = {
   GET_PRACTITIONER_BY_ID_NUMBER: 'getPractitionerByIdNumber',
   GET_REMOVALS_FOR_PRACTITIONERS: 'getRemovalsForPractitioners',
   GET_MOODLE_SESSION_FOR_CURRENT_USER: 'getMoodleSessionForCurrentUser',
+  CREATE_PRACTITIONER_ECD_REGISTRATION: 'createPractitionerEcdRegistration',
+  UPDATE_PRACTITIONER_ECD_REGISTRATION: 'updatePractitionerEcdRegistration',
 };
 
 export const getPractitionersForCoach = createAsyncThunk<
@@ -1251,6 +1256,56 @@ export const getMoodleSessionForCurrentUser = createAsyncThunk<
           err?.message ||
           'Failed to get Moodle Session For Current User'
       );
+    }
+  }
+);
+
+export const createPractitionerEcdRegistration = createAsyncThunk<
+  EcdRegistrationDto,
+  { data: EcdRegistrationInputModelInput },
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.CREATE_PRACTITIONER_ECD_REGISTRATION,
+  async ({ data }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (!userAuth?.auth_token) {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return await new PractitionerService(
+        userAuth?.auth_token
+      ).createPractitionerEcdRegistration(data);
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const updatePractitionerEcdRegistration = createAsyncThunk<
+  EcdRegistrationDto,
+  { data: EcdRegistrationUpdateInputModelInput },
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.UPDATE_PRACTITIONER_ECD_REGISTRATION,
+  async ({ data }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (!userAuth?.auth_token) {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return await new PractitionerService(
+        userAuth.auth_token
+      ).updatePractitionerEcdRegistration(data);
+    } catch (err) {
+      return rejectWithValue(err);
     }
   }
 );

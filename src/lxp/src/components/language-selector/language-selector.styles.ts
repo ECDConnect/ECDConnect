@@ -1,5 +1,5 @@
 export const localeDropDownWrapper =
-  'flex items-center justify-start px-4 py-2';
+  'font-body text-textDark font-medium flex items-center justify-start px-4 py-2';
 export const contentWrapper = 'fixed top-0 w-full h-full flex-col bg-uiBg z-10';
 
 export const bannerContentWrapper =
