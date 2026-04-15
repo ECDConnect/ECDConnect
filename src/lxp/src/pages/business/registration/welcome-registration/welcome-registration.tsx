@@ -24,7 +24,7 @@ import { ChallengesStep } from './components/step3/challengesStep';
 import { ExclamationCircleIcon } from '@heroicons/react/solid';
 
 interface WelcomeRegistrationProps extends ComponentBaseProps {
-  onSubmit: (value: any) => void;
+  onSubmit: (value: WelcomeMessageModel) => void;
 }
 
 export const WelcomeRegistration: React.FC<WelcomeRegistrationProps> = ({
@@ -97,7 +97,9 @@ export const WelcomeRegistration: React.FC<WelcomeRegistrationProps> = ({
               type: 'filled',
               onClick: () => {
                 onClose();
-                setHasStarted(false);
+                history.push(ROUTES.BUSINESS, {
+                  activeTabIndex: BusinessTabItems.REGISTRATION,
+                });
               },
               leadingIcon: 'ArrowLeftIcon',
             },

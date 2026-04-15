@@ -5,8 +5,7 @@ import {
   Radio,
   Typography,
 } from '@ecdlink/ui';
-import { set } from 'date-fns';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { UseFormSetValue } from 'react-hook-form';
 
 interface SubsidyStepProps {
@@ -21,27 +20,12 @@ const yesNoOptions = [
   { text: 'Not sure', value: 'unsure' },
 ];
 
-const options = [
-  {
-    id: '1',
-    text: `Yes - fully registered`,
-  },
-  {
-    id: '2',
-    text: `Yes - conditionally registered`,
-  },
-  {
-    id: '3',
-    text: `No - I started the process of registering`,
-  },
-  {
-    id: '4',
-    text: `No - I have not started the process of registering`,
-  },
-  {
-    id: '5',
-    text: `I'm not sure`,
-  },
+const registrationOptions = [
+  { id: '1', text: `Yes - fully registered` },
+  { id: '2', text: `Yes - conditionally registered` },
+  { id: '3', text: `No - I started the process of registering` },
+  { id: '4', text: `No - I have not started the process of registering` },
+  { id: '5', text: `I'm not sure` },
 ];
 
 export const SubsidyStep: React.FC<SubsidyStepProps> = ({
@@ -51,9 +35,12 @@ export const SubsidyStep: React.FC<SubsidyStepProps> = ({
 }) => {
   const [selectedOption, setSelectedOption] = useState('');
 
-  const handleNextAction = () => {
-    onNext();
-  };
+  useEffect(() => {
+    if (subsidy !== 'false') {
+      setSelectedOption('');
+      setValue('registration', undefined);
+    }
+  }, [subsidy, setValue]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedOption(e.target.value);
@@ -94,7 +81,7 @@ export const SubsidyStep: React.FC<SubsidyStepProps> = ({
               color={'textDark'}
             />
             <fieldset className="flex flex-col gap-2">
-              {options.map((option) => (
+              {registrationOptions.map((option) => (
                 <Radio
                   key={option.id}
                   id={option.id}
@@ -120,7 +107,7 @@ export const SubsidyStep: React.FC<SubsidyStepProps> = ({
           subsidy === undefined ||
           (subsidy === 'false' && selectedOption === '')
         }
-        onClick={handleNextAction}
+        onClick={onNext}
       />
     </div>
   );

@@ -1,5 +1,5 @@
 import { Button, CoreRadioGroup, Typography } from '@ecdlink/ui';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useHistory, useLocation } from 'react-router';
 import { format } from 'date-fns';
 import { useSelector } from 'react-redux';
@@ -27,12 +27,35 @@ export const ProgressViewReportsSummarySelectClassroomGroupAndAgeGroup: React.FC
 
     const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
 
+    // ────────────────────────────────────────────────
+    // Manual selections (must be declared before the hook so we can pass
+    // selectedPeriod into it — the hook needs the period's endDate to compute
+    // each child's ageGroup, which drives the age-group options downstream)
+    // ────────────────────────────────────────────────
+
+    const [selectedPeriod, setSelectedPeriod] = useState<string | undefined>(
+      routeState?.reportPeriodId
+    );
+
+    const [manualClassroom, setManualClassroom] = useState<string | undefined>(
+      undefined
+    );
+
+    const [manualAgeGroup, setManualAgeGroup] = useState<number | undefined>(
+      undefined
+    );
+
+    // Pass selectedPeriod into the hook so that children receive an ageGroup
+    // computed from that period's endDate. Without this, children.ageGroup is
+    // always undefined when there is no active/expired reporting period (e.g.
+    // viewing last year's data), which left filteredAgeGroupOptions empty and
+    // caused the Next button to silently do nothing.
     const {
       allReportingPeriods,
       allReportsForYear,
       children,
       currentReportingPeriod,
-    } = useProgressForChildren();
+    } = useProgressForChildren(false, selectedPeriod);
 
     // ────────────────────────────────────────────────
     // Base derived data
@@ -74,26 +97,17 @@ export const ProgressViewReportsSummarySelectClassroomGroupAndAgeGroup: React.FC
       [classroomGroups, reportChildUserIds]
     );
 
-    // ────────────────────────────────────────────────
-    // Manual selections (what the user explicitly picked)
-    // ────────────────────────────────────────────────
-
-    const [selectedPeriod, setSelectedPeriod] = useState<string | undefined>(
-      () => {
-        if (routeState?.reportPeriodId) return routeState.reportPeriodId;
-        if (availablePeriods?.length === 1) return availablePeriods[0].id;
-        if (currentReportingPeriod?.id) return currentReportingPeriod.id;
-        return undefined;
+    // Auto-select the period when the route didn't supply one. Mirrors the
+    // original lazy-init logic that previously lived in the useState call, but
+    // kept here as an effect so it runs after availablePeriods is computed.
+    useEffect(() => {
+      if (selectedPeriod) return;
+      if (availablePeriods.length === 1) {
+        setSelectedPeriod(availablePeriods[0].id);
+      } else if (currentReportingPeriod?.id) {
+        setSelectedPeriod(currentReportingPeriod.id);
       }
-    );
-
-    const [manualClassroom, setManualClassroom] = useState<string | undefined>(
-      undefined
-    );
-
-    const [manualAgeGroup, setManualAgeGroup] = useState<number | undefined>(
-      undefined
-    );
+    }, [availablePeriods, currentReportingPeriod, selectedPeriod]);
 
     // ────────────────────────────────────────────────
     // Options (filtered by upstream selections)

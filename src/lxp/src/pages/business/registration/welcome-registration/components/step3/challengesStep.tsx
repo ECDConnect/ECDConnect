@@ -7,47 +7,41 @@ interface ChallengesStepProps {
   setValue: UseFormSetValue<any>;
 }
 
+// Static — defined outside the component so it isn't recreated on every render.
+const challengeOptions = [
+  { id: '1', text: `I don't know where to start` },
+  { id: '2', text: `The process takes too long or is too complicated` },
+  { id: '3', text: `I don't understand what requirements or documents I need` },
+  { id: '4', text: `I don't have or cannot get the right documents` },
+  { id: '5', text: `I cannot reach the officials who can help` },
+  {
+    id: '6',
+    text: `I don't have the infrastructure or resources to meet requirements`,
+  },
+  { id: '7', text: `Other` },
+];
+
 export const ChallengesStep: React.FC<ChallengesStepProps> = ({
   onSubmit,
   setValue,
 }) => {
   const [selectedOption, setSelectedOption] = useState('');
-
-  const options = [
-    {
-      id: '1',
-      text: `I don't know where to start`,
-    },
-    {
-      id: '2',
-      text: `The process takes too long or is too complicated`,
-    },
-    {
-      id: '3',
-      text: `I don't understand what requirements or documents I need`,
-    },
-    {
-      id: '4',
-      text: `I don't have or cannot get the right documents`,
-    },
-    {
-      id: '5',
-      text: `I cannot reach the officials who can help`,
-    },
-    {
-      id: '6',
-      text: `I don't have the infrastructure or resources to meet requirements`,
-    },
-    {
-      id: '7',
-      text: `Other`,
-    },
-  ];
+  const [otherDetail, setOtherDetail] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedOption(e.target.value);
-    setValue('challenge', e.target.value);
+    const value = e.target.value;
+    setSelectedOption(value);
+    setValue('challenge', value);
+    // Clear the 'Other' detail when switching away from that option.
+    if (value !== 'Other') {
+      setOtherDetail('');
+      setValue('otherDetail', '');
+    }
   };
+
+  const canSubmit =
+    selectedOption !== '' &&
+    (selectedOption !== 'Other' || otherDetail.trim() !== '');
 
   return (
     <div className="flex h-full w-full flex-col bg-white p-4">
@@ -64,7 +58,7 @@ export const ChallengesStep: React.FC<ChallengesStepProps> = ({
         color={'textDark'}
       />
       <fieldset className="flex flex-col gap-2">
-        {options.map((option) => (
+        {challengeOptions.map((option) => (
           <Radio
             key={option.id}
             id={option.id}
@@ -86,7 +80,12 @@ export const ChallengesStep: React.FC<ChallengesStepProps> = ({
           <FormInput
             textInputType="textarea"
             placeholder="Add text..."
-            onChange={(e) => setValue('otherDetail', e?.target?.value)}
+            value={otherDetail}
+            onChange={(e) => {
+              const val = e?.target?.value ?? '';
+              setOtherDetail(val);
+              setValue('otherDetail', val);
+            }}
           />
         </div>
       )}
@@ -111,6 +110,7 @@ export const ChallengesStep: React.FC<ChallengesStepProps> = ({
         text="Save"
         textColor="white"
         icon="SaveIcon"
+        disabled={!canSubmit}
         onClick={onSubmit}
       />
     </div>

@@ -10,9 +10,6 @@ interface WelcomeStepProps {
 }
 
 export const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
-  const handleNextAction = () => {
-    onNext();
-  };
   const history = useHistory();
 
   return (
@@ -23,12 +20,12 @@ export const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
       title={`DBE registration helper`}
       onBack={() =>
         history.push(ROUTES.BUSINESS, {
-          activeTabIndex: BusinessTabItems.STAFF,
+          activeTabIndex: BusinessTabItems.REGISTRATION,
         })
       }
       onClose={() =>
         history.push(ROUTES.BUSINESS, {
-          activeTabIndex: BusinessTabItems.STAFF,
+          activeTabIndex: BusinessTabItems.REGISTRATION,
         })
       }
       backgroundColour={'white'}
@@ -91,7 +88,7 @@ export const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
               text="Start"
               textColor="white"
               icon="ArrowCircleRightIcon"
-              onClick={handleNextAction}
+              onClick={onNext}
             />
           </div>
         </div>

@@ -1,116 +1,52 @@
 import { EcdRegistrationDto } from '@ecdlink/core';
 import { StepItem } from '@ecdlink/ui';
 
+type RegistrationSection = 'Apply' | 'Comply';
+
 export interface RegistrationTimelineStepsProps {
   isLoading?: boolean;
-  onView: (section: string) => void;
+  onView: (section: RegistrationSection) => void;
   ecdRegistration: EcdRegistrationDto | undefined;
 }
 
 export const registrationTimelineSteps = ({
-  isLoading = false,
   onView,
   ecdRegistration,
 }: RegistrationTimelineStepsProps): StepItem[] => {
-  const steps: StepItem[] = [];
+  const hasBronze = ecdRegistration?.hasBronzeCertificate ?? false;
+  const hasSilverOrGold =
+    (ecdRegistration?.hasSilverCertificate ?? false) ||
+    (ecdRegistration?.hasGoldCertificate ?? false);
 
-  if (
-    !ecdRegistration?.hasBronzeCertificate &&
-    !ecdRegistration?.hasSilverCertificate &&
-    !ecdRegistration?.hasGoldCertificate
-  ) {
-    steps.push(
-      {
-        title: `Apply`,
-        subTitle: 'Get a Bronze certificate',
-        subTitleColor: 'textMid',
-        completedStepIcon: 'CheckIcon',
-        type: 'todo',
-        showActionButton: true,
-        actionButtonText: 'Info',
-        actionButtonColor: 'secondaryAccent2',
-        actionButtonTextColor: 'secondary',
-        actionButtonOnClick: () => onView?.('Apply'),
-      },
-      {
-        title: `Comply`,
-        subTitle: 'Meet the standards',
-        subTitleColor: 'textMid',
-        completedStepIcon: 'CheckIcon',
-        type: 'todo',
-        showActionButton: true,
-        actionButtonText: 'Info',
-        actionButtonColor: 'secondaryAccent2',
-        actionButtonTextColor: 'secondary',
-        actionButtonOnClick: () => onView?.('Comply'),
-      }
-    );
-  }
+  const applyCompleted = hasBronze || hasSilverOrGold;
+  const complyCompleted = hasSilverOrGold;
 
-  if (
-    ecdRegistration?.hasBronzeCertificate &&
-    !ecdRegistration?.hasSilverCertificate &&
-    !ecdRegistration?.hasGoldCertificate
-  ) {
-    steps.push(
-      {
-        title: `Apply`,
-        subTitle: 'Bronze certificate',
-        subTitleColor: 'textMid',
-        completedStepIcon: 'CheckIcon',
-        type: 'completed',
-        showActionButton: true,
-        actionButtonText: 'View',
-        actionButtonColor: 'secondaryAccent2',
-        actionButtonTextColor: 'secondary',
-        actionButtonOnClick: () => onView?.('Apply'),
-      },
-      {
-        title: `Comply`,
-        subTitle: 'Meet the standards',
-        subTitleColor: 'textMid',
-        completedStepIcon: 'CheckIcon',
-        type: 'todo',
-        showActionButton: true,
-        actionButtonText: 'Info',
-        actionButtonColor: 'secondaryAccent2',
-        actionButtonTextColor: 'secondary',
-        actionButtonOnClick: () => onView?.('Comply'),
-      }
-    );
-  }
-
-  if (
-    ecdRegistration?.hasSilverCertificate ||
-    ecdRegistration?.hasGoldCertificate
-  ) {
-    steps.push(
-      {
-        title: `Apply`,
-        subTitle: 'Bronze certificate',
-        subTitleColor: 'textMid',
-        completedStepIcon: 'CheckIcon',
-        type: 'completed',
-        showActionButton: true,
-        actionButtonText: 'View',
-        actionButtonColor: 'secondaryAccent2',
-        actionButtonTextColor: 'secondary',
-        actionButtonOnClick: () => onView?.('Apply'),
-      },
-      {
-        title: `Comply`,
-        subTitle: 'Silver certificate',
-        subTitleColor: 'textMid',
-        completedStepIcon: 'CheckIcon',
-        type: 'completed',
-        showActionButton: true,
-        actionButtonText: 'View',
-        actionButtonColor: 'secondaryAccent2',
-        actionButtonTextColor: 'secondary',
-        actionButtonOnClick: () => onView?.('Comply'),
-      }
-    );
-  }
-
-  return steps;
+  return [
+    {
+      title: 'Apply',
+      subTitle: applyCompleted
+        ? 'Bronze certificate'
+        : 'Get a Bronze certificate',
+      subTitleColor: 'textMid',
+      completedStepIcon: 'CheckIcon',
+      type: applyCompleted ? 'completed' : 'todo',
+      showActionButton: true,
+      actionButtonText: applyCompleted ? 'View' : 'Info',
+      actionButtonColor: 'secondaryAccent2',
+      actionButtonTextColor: 'secondary',
+      actionButtonOnClick: () => onView('Apply'),
+    },
+    {
+      title: 'Comply',
+      subTitle: complyCompleted ? 'Silver certificate' : 'Meet the standards',
+      subTitleColor: 'textMid',
+      completedStepIcon: 'CheckIcon',
+      type: complyCompleted ? 'completed' : 'todo',
+      showActionButton: true,
+      actionButtonText: complyCompleted ? 'View' : 'Info',
+      actionButtonColor: 'secondaryAccent2',
+      actionButtonTextColor: 'secondary',
+      actionButtonOnClick: () => onView('Comply'),
+    },
+  ];
 };
