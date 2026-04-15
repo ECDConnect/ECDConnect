@@ -1,7 +1,7 @@
 -- =============================================
 -- 1. Create new ContentTypeFields (run once)
 -- =============================================
-/*INSERT INTO public."ContentTypeField"
+INSERT INTO public."ContentTypeField"
 ("Id", "FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", 
  "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName", "DisplayMainTable", "DisplayPage", "IsRequired")
 VALUES
@@ -15,7 +15,7 @@ VALUES
 (nextval('public."ContentTypeField_Id_seq"'), 38, 'infoBoxBDescription',    2, true, '', 15, current_date, current_date, NULL, NULL, 'Info Box B Description', true, true, true),
 (nextval('public."ContentTypeField_Id_seq"'), 39, 'infoBoxBLink',           1, true, '', 15, current_date, current_date, NULL, NULL, 'Info Box B Link', true, true, true),
 (nextval('public."ContentTypeField_Id_seq"'), 40, 'infoBoxBLinkDescription',1, true, '', 15, current_date, current_date, NULL, NULL, 'Info Box B Link Description', true, true, true);
-*/
+
 -- =============================================
 -- 2. Main script with JSON translations
 -- =============================================
@@ -51,10 +51,8 @@ DECLARE
     infoBoxB_description_field_id integer;
     infoBoxB_link_field_id integer;
     infoBoxB_link_description_field_id integer;
-    siteAddress TEXT;
-    practitionerProfilePath TEXT := '/practitioner-profile?tabIndex=1';
+    practitionerProfilePath TEXT := '/practitioner/profile?tabIndex=1';
     availableLanguages_field_id integer;
-
 
     -- Locales (add more here when needed)
     locales TEXT[] := ARRAY['en', 'afr', 'zul', 'xho', 'nso', 'sot'];
@@ -416,14 +414,6 @@ BEGIN
     FOREACH tenant_id IN ARRAY tenant_ids LOOP
         RAISE NOTICE 'Processing tenant: %', tenant_id;
 
-        SELECT "SiteAddress" INTO siteAddress 
-        FROM "Tenant" WHERE "Id" = tenant_id::uuid LIMIT 1;
-
-        IF siteAddress IS NULL THEN
-            RAISE NOTICE 'Warning: No SiteAddress for tenant %', tenant_id;
-            siteAddress := '';
-        END IF;
-
         -- Create ONE Content record per tenant (shared by all languages) for apply
         INSERT INTO public."Content" ("ContentTypeId", "IsActive", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "IsReadOnly")
         VALUES (15, true, CURRENT_DATE, CURRENT_DATE, '', tenant_id::uuid, false)
@@ -499,7 +489,7 @@ BEGIN
                             locale_uuid,
                             field_id,
                             CASE 
-                                WHEN field_name = 'buttonlinkA' THEN 'https://' || siteAddress || '/practitioner-profile?tabIndex=1'
+                                WHEN field_name = 'buttonlinkA' THEN '/practitioner/profile?tabIndex=1'
                                 ELSE field_value 
                             END,
                             null,
