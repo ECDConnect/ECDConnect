@@ -19,7 +19,6 @@ import { useHistory } from 'react-router-dom';
 
 export const InformationPage = ({
   section,
-  client,
   subTitle,
   onClose,
   onSubmit,
@@ -27,7 +26,6 @@ export const InformationPage = ({
 }: {
   subTitle?: string;
   section: string;
-  client?: string;
   onClose: () => void;
   onSubmit: () => void;
   title?: string;
@@ -74,7 +72,7 @@ export const InformationPage = ({
     );
   };
 
-  const renderContent = useMemo(() => {
+  const renderContent = () => {
     const moreInformation = moreInformationList?.find(
       (item) => item.type === section
     );
@@ -277,9 +275,9 @@ export const InformationPage = ({
     }
 
     return 'Unavailable translation';
-  }, [client, isLoading, moreInformationList, section]);
+  };
 
-  const getContent = useCallback(async () => {
+  const fetchContent = useCallback(async () => {
     if (!isOnline) return;
     const result = await appDispatch(
       staticDataThunkActions.getMoreInformation({
@@ -287,14 +285,14 @@ export const InformationPage = ({
         locale: language.locale,
       })
     ).unwrap();
-    if (!result?.length) {
+    if (!result?.length && language.locale !== 'en-za') {
       setLanguage({ locale: 'en-za' });
     }
   }, [appDispatch, isOnline, language.locale, section]);
 
   useEffect(() => {
-    getContent();
-  }, [getContent]);
+    fetchContent();
+  }, [fetchContent]);
 
   return (
     <BannerWrapper
@@ -315,7 +313,7 @@ export const InformationPage = ({
         />
       </div>
       <div className="flex h-full flex-col p-4">
-        {renderContent}
+        {renderContent()}
 
         <Button
           className="mt-auto"

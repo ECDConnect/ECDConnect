@@ -12,6 +12,7 @@ import {
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
+import { useCallback, useEffect, useState } from 'react';
 import { useDialog, useSnackbar } from '@ecdlink/core';
 import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg';
 import { ReactComponent as EmojiBlueSmile } from '@ecdlink/ui/src/assets/emoji/emoji_blue_smileEyes.svg';
@@ -21,11 +22,12 @@ import {
 } from '@/store/practitioner';
 import { registrationTimelineSteps } from './components/registration-timeline-steps';
 import { OnlineOnlyModal } from '@/modals/offline-sync/online-only-modal';
-import { useEffect, useState } from 'react';
 import { InformationPage } from './components/information-page';
 import { BusinessTabItems } from '../../business.types';
 import { EcdRegistrationUpdateInputModelInput } from '@ecdlink/graphql';
 import { useAppDispatch } from '@/store/config/config';
+
+type RegistrationSection = 'Apply' | 'Comply';
 
 export const RegistrationLanding = () => {
   const history = useHistory();
@@ -34,24 +36,34 @@ export const RegistrationLanding = () => {
   const { isOnline } = useOnlineStatus();
   const [showApply, setShowApply] = useState(false);
   const [showComply, setShowComply] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const dispatch = useAppDispatch();
 
-  const showOnlineOnly = () => {
+  const showOnlineOnly = useCallback(() => {
     dialog({
       position: DialogPosition.Middle,
-      render: (onSubmit) => {
-        return (
-          <OnlineOnlyModal
-            overrideText={'You need to go online to use this feature.'}
-            onSubmit={onSubmit}
-          ></OnlineOnlyModal>
-        );
-      },
+      render: (onSubmit) => (
+        <OnlineOnlyModal
+          overrideText={'You need to go online to use this feature.'}
+          onSubmit={onSubmit}
+        />
+      ),
     });
-  };
+  }, [dialog]);
 
-  const onUpdate = async (section: string) => {
+  useEffect(() => {
+    if (!isOnline) {
+      showOnlineOnly();
+      history.push(ROUTES.BUSINESS, {
+        activeTabIndex: BusinessTabItems.REGISTRATION,
+      });
+    }
+  }, [isOnline, showOnlineOnly, history]);
+
+  const onUpdate = async (section: RegistrationSection) => {
+    setIsUpdating(true);
+
     const registrationDto: EcdRegistrationUpdateInputModelInput = {
       id: practitioner?.ecdRegistration?.id || '',
       hasBronzeCertificate:
@@ -66,48 +78,43 @@ export const RegistrationLanding = () => {
         practitioner?.ecdRegistration?.hasGoldCertificate || false,
     };
 
-    await dispatch(
-      practitionerThunkActions.updatePractitionerEcdRegistration({
-        data: registrationDto,
-      })
-    );
+    try {
+      await dispatch(
+        practitionerThunkActions.updatePractitionerEcdRegistration({
+          data: registrationDto,
+        })
+      ).unwrap();
 
-    if (section === 'Apply') {
-      setShowApply(false);
-    } else if (section === 'Comply') {
-      setShowComply(false);
+      if (section === 'Apply') setShowApply(false);
+      else setShowComply(false);
+
+      showMessage({
+        message: 'Stage updated',
+        type: 'success',
+        duration: 3000,
+      });
+      history.push(ROUTES.BUSINESS, {
+        activeTabIndex: BusinessTabItems.REGISTRATION,
+      });
+    } catch {
+      showMessage({
+        message: 'Failed to update. Please try again.',
+        type: 'error',
+        duration: 3000,
+      });
+    } finally {
+      setIsUpdating(false);
     }
-
-    showMessage({
-      message: 'Stage updated',
-      type: 'success',
-      duration: 3000,
-    });
-
-    history.push(ROUTES.BUSINESS, {
-      activeTabIndex: BusinessTabItems.REGISTRATION,
-    });
   };
 
-  const onView = (section: string) => {
+  const onView = (section: RegistrationSection) => {
     if (!isOnline) {
       showOnlineOnly();
       return;
     }
-    if (section === 'Apply') {
-      setShowApply(true);
-    } else if (section === 'Comply') {
-      setShowComply(true);
-    }
+    if (section === 'Apply') setShowApply(true);
+    else setShowComply(true);
   };
-
-  useEffect(() => {
-    if (!isOnline) {
-      showOnlineOnly();
-      history.push(ROUTES.BUSINESS_REGISTRATION_UPDATE);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
     <div className="flex h-screen w-full flex-col gap-2 overflow-auto overflow-y-scroll p-4">
@@ -129,6 +136,7 @@ export const RegistrationLanding = () => {
                 type="filled"
                 color="quatenary"
                 textColor="white"
+                disabled={isUpdating}
                 onClick={() => setShowApply(true)}
               />
             }
@@ -151,6 +159,7 @@ export const RegistrationLanding = () => {
                 type="filled"
                 color="quatenary"
                 textColor="white"
+                disabled={isUpdating}
                 onClick={() => setShowComply(true)}
               />
             }
@@ -200,6 +209,7 @@ export const RegistrationLanding = () => {
           text={`Update my stage`}
           icon="ClipboardListIcon"
           iconPosition="start"
+          disabled={isUpdating}
           onClick={() => history.push(ROUTES.BUSINESS_REGISTRATION_UPDATE)}
         />
       </div>
