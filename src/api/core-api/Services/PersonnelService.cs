@@ -170,7 +170,7 @@ namespace ECDLink.Api.CoreApi.Services
 
             practitionerRecord.Absentees = _absenteeService.GetAbsenteeByUser(practitioner.UserId.ToString());
 
-         model.EcdRegistration = _dbContext.EcdRegistrations
+            practitionerRecord.EcdRegistration = _dbContext.EcdRegistrations
                 .Where(x => x.PractitionerId == practitioner.Id && x.IsActive)
                 .OrderByDescending(x => x.InsertedDate)
                 .FirstOrDefault();
