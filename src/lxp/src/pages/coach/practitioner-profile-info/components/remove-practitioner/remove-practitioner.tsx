@@ -2,6 +2,7 @@ import {
   ClassroomGroupDto,
   ReasonForLeavingDto,
   ReasonsForPractitionerLeaving,
+  useDialog,
 } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
@@ -42,6 +43,7 @@ import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
 import { RemovePractitionerPrompt } from './remove-practitioner-prompt';
 import { notificationsSelectors } from '@/store/notifications';
 import { disableBackendNotification } from '@/store/notifications/notifications.actions';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 
 export const RemovePractioner: React.FC<RemovePractionerProps> = ({
   removeReasonId,
@@ -51,6 +53,7 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const tenant = useTenant();
+  const dialog = useDialog();
   const orgName = tenant?.tenant?.organisationName;
   const location = useLocation<PractitionerProfileRouteState>();
   const reasonsForLeaving = useSelector(
@@ -83,6 +86,15 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
     // Push it to the last position
     tempReasonsForLeaving?.push(itemToMove);
   }
+
+  const showOnlineOnly = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit) => {
+        return <OnlineOnlyModal onSubmit={onSubmit} />;
+      },
+    });
+  };
 
   const classroomGroups =
     useSelector(
@@ -370,7 +382,11 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
             <Divider></Divider>
           </div>
           <Button
-            onClick={() => setRemovePractionerPromptVisible(true)}
+            onClick={() =>
+              isOnline
+                ? setRemovePractionerPromptVisible(true)
+                : showOnlineOnly()
+            }
             className="w-full"
             size="small"
             color="quatenary"

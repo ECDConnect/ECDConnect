@@ -298,11 +298,15 @@ export const InvitedPractitioner: React.FC<InvitedPractitionerRouteState> = ({
             textColor="quatenary"
             icon="TrashIcon"
             onClick={() => {
-              removePractitioner();
-              setPractitionerInviteModal(false);
-              history.push(ROUTES.BUSINESS, {
-                activeTabIndex: BusinessTabItems.STAFF,
-              });
+              if (isOnline) {
+                removePractitioner();
+                setPractitionerInviteModal(false);
+                history.push(ROUTES.BUSINESS, {
+                  activeTabIndex: BusinessTabItems.STAFF,
+                });
+              } else {
+                showOnlineOnly();
+              }
             }}
           />
         </div>
