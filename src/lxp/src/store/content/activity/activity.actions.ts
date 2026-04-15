@@ -19,30 +19,22 @@ export const getActivities = createAsyncThunk<
       activityData: { activities: activitiesCache },
     } = getState();
 
-    // Force fresh fetch if overrideCache is explicitly true
-    const shouldFetchFresh = overrideCache === true;
-
-    if (shouldFetchFresh || !activitiesCache || activitiesCache.length === 0) {
-      try {
-        if (!userAuth?.auth_token) {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        const activities = await new ContentActivityService(
-          userAuth.auth_token
-        ).getActivities(locale);
-
-        if (!activities) {
-          return rejectWithValue('Error getting activities');
-        }
-
-        return activities;
-      } catch (err: any) {
-        return rejectWithValue(err?.message ?? err ?? 'Unknown error');
-      }
+    // === CACHE CHECK ===
+    if (!overrideCache && activitiesCache && activitiesCache.length > 0) {
+      return activitiesCache;
     }
 
-    // Return cached value (fulfilled with cache)
-    return activitiesCache;
+    // === FETCH FROM API ===
+    try {
+      if (!userAuth?.auth_token) {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return await new ContentActivityService(
+        userAuth?.auth_token
+      ).getActivities(locale);
+    } catch (err) {
+      return rejectWithValue(err);
+    }
   }
 );

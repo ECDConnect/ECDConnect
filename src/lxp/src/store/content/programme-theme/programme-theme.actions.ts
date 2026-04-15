@@ -19,34 +19,26 @@ export const getProgrammeThemes = createAsyncThunk<
       programmeThemeData: { programmeThemes: programmeThemeCache },
     } = getState();
 
-    const shouldFetchFresh = overrideCache === true;
-
+    // === CACHE CHECK ===
     if (
-      shouldFetchFresh ||
-      !programmeThemeCache ||
-      programmeThemeCache.length === 0
+      !overrideCache &&
+      programmeThemeCache &&
+      programmeThemeCache.length > 0
     ) {
-      try {
-        let programmeThemes: ProgrammeThemeDto[] | undefined;
-
-        if (userAuth?.auth_token) {
-          programmeThemes = await new ContentProgrammeThemeService(
-            userAuth?.auth_token
-          ).getProgrammeThemes(locale);
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        if (!programmeThemes) {
-          return rejectWithValue('Error getting programme themes');
-        }
-
-        return programmeThemes;
-      } catch (err) {
-        return rejectWithValue(err);
-      }
-    } else {
       return programmeThemeCache;
+    }
+
+    // === FETCH FROM API ===
+    try {
+      if (!userAuth?.auth_token) {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return await new ContentProgrammeThemeService(
+        userAuth?.auth_token
+      ).getProgrammeThemes(locale);
+    } catch (err) {
+      return rejectWithValue(err);
     }
   }
 );
