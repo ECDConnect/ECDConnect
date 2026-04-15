@@ -85,23 +85,31 @@ export const Registration: React.FC = () => {
       problemDescription: data.problem || '',
     };
 
-    await dispatch(
-      practitionerThunkActions.createPractitionerEcdRegistration({
-        data: registrationDto,
-      })
-    );
+    try {
+      await dispatch(
+        practitionerThunkActions.createPractitionerEcdRegistration({
+          data: registrationDto,
+        })
+      ).unwrap();
 
-    removeNotifications();
+      removeNotifications();
 
-    showMessage({
-      message: 'Information added',
-      type: 'success',
-      duration: 3000,
-    });
+      showMessage({
+        message: 'Information added',
+        type: 'success',
+        duration: 3000,
+      });
 
-    history.push(ROUTES.BUSINESS, {
-      activeTabIndex: BusinessTabItems.REGISTRATION,
-    });
+      history.push(ROUTES.BUSINESS, {
+        activeTabIndex: BusinessTabItems.REGISTRATION,
+      });
+    } catch {
+      showMessage({
+        message: 'Failed to save. Please try again.',
+        type: 'error',
+        duration: 3000,
+      });
+    }
   };
 
   return <WelcomeRegistration onSubmit={onSubmit} />;
