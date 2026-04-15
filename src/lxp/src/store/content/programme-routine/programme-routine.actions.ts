@@ -20,34 +20,26 @@ export const getProgrammeRoutines = createAsyncThunk<
       programmeRoutineData: { programmeRoutines: programmeRoutineCache },
     } = getState();
 
-    const shouldFetchFresh = overrideCache === true;
-
+    // === CACHE CHECK ===
     if (
-      shouldFetchFresh ||
-      !programmeRoutineCache ||
-      programmeRoutineCache.length === 0
+      !overrideCache &&
+      programmeRoutineCache &&
+      programmeRoutineCache.length > 0
     ) {
-      try {
-        let programmeRoutines: ProgrammeRoutineDto[] | undefined;
-
-        if (userAuth?.auth_token) {
-          programmeRoutines = await new ContentRoutineService(
-            userAuth?.auth_token
-          ).getProgrammeRoutines(locale);
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        if (!programmeRoutines) {
-          return rejectWithValue('Error getting programme routines');
-        }
-
-        return programmeRoutines;
-      } catch (err) {
-        return rejectWithValue(err);
-      }
-    } else {
       return programmeRoutineCache;
+    }
+
+    // === FETCH FROM API ===
+    try {
+      if (!userAuth?.auth_token) {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return await new ContentRoutineService(
+        userAuth?.auth_token
+      ).getProgrammeRoutines(locale);
+    } catch (err) {
+      return rejectWithValue(err);
     }
   }
 );
