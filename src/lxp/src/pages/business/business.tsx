@@ -131,14 +131,12 @@ export const Business: React.FC = () => {
         onHelp={() => setShowInfo(true)}
         displayOffline={!isOnline}
       >
-        <div className="h-screen overflow-y-scroll p-4">
-          <TabList
-            className="bg-uiBg"
-            tabItems={tabItemsForPrincipal}
-            setSelectedIndex={selectedTabIndex}
-            tabSelected={(_, tabIndex: number) => setTabSelected(tabIndex)}
-          />
-        </div>
+        <TabList
+          className="bg-uiBg"
+          tabItems={tabItemsForPrincipal}
+          setSelectedIndex={selectedTabIndex}
+          tabSelected={(_, tabIndex: number) => setTabSelected(tabIndex)}
+        />
       </BannerWrapper>
       <Dialog fullScreen visible={showInfo} position={DialogPosition.Full}>
         <InfoPage
