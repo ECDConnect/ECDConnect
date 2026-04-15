@@ -140,7 +140,7 @@ export const InformationPage = ({
               type="filled"
               size="small"
               onClick={() => {
-                moreInformation.buttonlinkA?.includes('practitioner-profile')
+                moreInformation.buttonlinkA?.includes('practitioner/profile')
                   ? history.push(moreInformation.buttonlinkA)
                   : window.open(moreInformation.buttonlinkA || '', '_blank');
               }}
