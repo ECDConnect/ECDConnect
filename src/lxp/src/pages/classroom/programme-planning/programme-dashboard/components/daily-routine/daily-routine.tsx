@@ -389,10 +389,12 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
       return;
     }
     if (currentDailyProgramme) {
-      openActivityItem(routineItem, currentDailyProgramme);
+      isOnline
+        ? openActivityItem(routineItem, currentDailyProgramme)
+        : showOnlineOnly();
       return;
     }
-    openActivityItem(routineItem);
+    isOnline ? openActivityItem(routineItem) : showOnlineOnly();
   };
 
   const onStoryAndActivitySelected = async (
