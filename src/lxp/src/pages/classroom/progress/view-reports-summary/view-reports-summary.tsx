@@ -41,8 +41,7 @@ export const ProgressViewReportsSummary: React.FC = () => {
     classroomGroup,
     ageGroup,
     childReports,
-    currentReportingPeriodForSummary,
-    currentReportingPeriod,
+    selectedReportingPeriod,
   } = useProgressForClassAndAgeGroup(
     routeState.classroomGroupId,
     routeState.ageGroupId,
@@ -204,9 +203,7 @@ export const ProgressViewReportsSummary: React.FC = () => {
             <ProgresseportsSummaryPdf
               ageGroup={ageGroup}
               classroomGroupName={classroomGroup?.name || ''}
-              currentReportingPeriod={
-                currentReportingPeriodForSummary! || currentReportingPeriod
-              }
+              currentReportingPeriod={selectedReportingPeriod!}
               practitionerName={`${classPractitioner?.user?.firstName} ${
                 classPractitioner?.user?.surname || ''
               }`}
@@ -219,9 +216,7 @@ export const ProgressViewReportsSummary: React.FC = () => {
                 <ProgresseportsSummaryPdf
                   ageGroup={ageGroup}
                   classroomGroupName={classroomGroup?.name || ''}
-                  currentReportingPeriod={
-                    currentReportingPeriodForSummary! || currentReportingPeriod
-                  }
+                  currentReportingPeriod={selectedReportingPeriod!}
                   practitionerName={`${classPractitioner?.user?.firstName} ${
                     classPractitioner?.user?.surname || ''
                   }`}

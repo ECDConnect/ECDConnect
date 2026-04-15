@@ -1,5 +1,5 @@
 import { ActionModal, ComponentBaseProps, DialogPosition } from '@ecdlink/ui';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
@@ -29,11 +29,9 @@ import {
 } from './components/update-registration-types';
 import { EcdRegistrationUpdateInputModelInput } from '@ecdlink/graphql';
 
-interface RegistrationUpdateProps extends ComponentBaseProps {
-  onSubmit: (value: any) => void;
-}
+interface RegistrationUpdateProps extends ComponentBaseProps {}
 
-export const RegistrationUpdate: React.FC<RegistrationUpdateProps> = ({}) => {
+export const RegistrationUpdate: React.FC<RegistrationUpdateProps> = () => {
   const dialog = useDialog();
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
@@ -51,36 +49,6 @@ export const RegistrationUpdate: React.FC<RegistrationUpdateProps> = ({}) => {
     RegistrationSteps.subsidy
   );
 
-  useEffect(() => {
-    if (!isOnline) {
-      openOfflineDialog();
-    }
-  }, [isOnline]);
-
-  const onSubmit = async (data: UpdateRegistrationModel) => {
-    const registrationDto: EcdRegistrationUpdateInputModelInput = {
-      id: practitioner?.ecdRegistration?.id || '',
-      hasBronzeCertificate: data.certificates?.includes('Bronze') || false,
-      hasSilverCertificate: data.certificates?.includes('Silver') || false,
-      hasGoldCertificate: data.certificates?.includes('Gold') || false,
-    };
-
-    await dispatch(
-      practitionerThunkActions.updatePractitionerEcdRegistration({
-        data: registrationDto,
-      })
-    );
-
-    showMessage({
-      message: 'Stage updated',
-      type: 'success',
-      duration: 3000,
-    });
-
-    history.push(ROUTES.BUSINESS, {
-      activeTabIndex: BusinessTabItems.REGISTRATION,
-    });
-  };
   const openOfflineDialog = useCallback(() => {
     dialog({
       color: 'bg-white',
@@ -97,6 +65,44 @@ export const RegistrationUpdate: React.FC<RegistrationUpdateProps> = ({}) => {
       ),
     });
   }, [dialog, history]);
+
+  useEffect(() => {
+    if (!isOnline) {
+      openOfflineDialog();
+    }
+  }, [isOnline, openOfflineDialog]);
+
+  const onSubmit = async (data: UpdateRegistrationModel) => {
+    const registrationDto: EcdRegistrationUpdateInputModelInput = {
+      id: practitioner?.ecdRegistration?.id || '',
+      hasBronzeCertificate: data.certificates?.includes('Bronze') || false,
+      hasSilverCertificate: data.certificates?.includes('Silver') || false,
+      hasGoldCertificate: data.certificates?.includes('Gold') || false,
+    };
+
+    try {
+      await dispatch(
+        practitionerThunkActions.updatePractitionerEcdRegistration({
+          data: registrationDto,
+        })
+      ).unwrap();
+
+      showMessage({
+        message: 'Stage updated',
+        type: 'success',
+        duration: 3000,
+      });
+      history.push(ROUTES.BUSINESS, {
+        activeTabIndex: BusinessTabItems.REGISTRATION,
+      });
+    } catch {
+      showMessage({
+        message: 'Failed to update. Please try again.',
+        type: 'error',
+        duration: 3000,
+      });
+    }
+  };
 
   const exitRegistrationPrompt = () => {
     dialog({
@@ -135,12 +141,20 @@ export const RegistrationUpdate: React.FC<RegistrationUpdateProps> = ({}) => {
     });
   };
 
+  const handleBack = () => {
+    if (canGoBack()) {
+      goBackOneStep();
+    } else {
+      history.push(ROUTES.BUSINESS, {
+        activeTabIndex: BusinessTabItems.REGISTRATION,
+      });
+    }
+  };
+
   return (
     <StepViewer
       title="Update my stage"
-      onBack={() => {
-        if (canGoBack()) goBackOneStep();
-      }}
+      onBack={handleBack}
       activeStep={activeStepKey}
       onClose={exitRegistrationPrompt}
       isOnline={isOnline}

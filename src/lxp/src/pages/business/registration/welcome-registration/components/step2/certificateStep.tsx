@@ -1,5 +1,4 @@
-import { Button, CheckboxGroup, Typography } from '@ecdlink/ui';
-import { set } from 'date-fns';
+import { Button, CheckboxChange, CheckboxGroup, Typography } from '@ecdlink/ui';
 import { useState } from 'react';
 import { UseFormSetValue } from 'react-hook-form';
 
@@ -10,6 +9,14 @@ interface CertificateStepProps {
   initialCertificates?: string[];
 }
 
+// Static — defined outside the component so it isn't recreated on every render.
+const optionList = [
+  { id: '1', title: 'Bronze' },
+  { id: '2', title: 'Silver' },
+  { id: '3', title: 'Gold' },
+  { id: '4', title: 'None' },
+];
+
 export const CertificateStep: React.FC<CertificateStepProps> = ({
   onNext,
   setValue,
@@ -18,56 +25,27 @@ export const CertificateStep: React.FC<CertificateStepProps> = ({
 }) => {
   const [certificatesAdded, setCertificatesAdded] =
     useState<string[]>(initialCertificates);
+
   const handleNextAction = () => {
     setValue('certificates', certificatesAdded);
     if (onNext) onNext();
     if (onSubmit) onSubmit({ certificatesAdded });
   };
 
-  const optionList = [
-    {
-      id: '1',
-      title: 'Bronze',
-      checked: false,
-      disabled: false,
-    },
-    {
-      id: '2',
-      title: 'Silver',
-      checked: false,
-      disabled: false,
-    },
-    {
-      id: '3',
-      title: 'Gold',
-      checked: false,
-      disabled: false,
-    },
-    {
-      id: '4',
-      title: 'None',
-      checked: false,
-      disabled: false,
-    },
-  ];
-
-  function updateArray(checkbox: any, id: string) {
-    if (checkbox.checked) {
+  const updateArray = (event: CheckboxChange, id: string) => {
+    if (event.checked) {
       if (id === 'None') {
         setCertificatesAdded(['None']);
         return;
       }
       setCertificatesAdded([
-        ...(certificatesAdded?.filter((item) => item !== 'None') ?? []),
+        ...certificatesAdded.filter((item) => item !== 'None'),
         id,
       ]);
     } else {
-      const filteredCertificates = certificatesAdded?.filter(
-        (item) => item !== id
-      );
-      setCertificatesAdded(filteredCertificates);
+      setCertificatesAdded(certificatesAdded.filter((item) => item !== id));
     }
-  }
+  };
 
   return (
     <div className="flex h-full w-full flex-col bg-white p-4">
@@ -86,20 +64,22 @@ export const CertificateStep: React.FC<CertificateStepProps> = ({
               : `Have you received any of these certificates?`
           }
         />
-        {optionList.map((item, index) => (
+        {optionList.map((item) => (
           <CheckboxGroup
             checkboxColor="primary"
             id={item.id}
             key={item.id}
             title={item.title}
-            checked={certificatesAdded?.some((option) => option === item.title)}
+            checked={certificatesAdded.some((option) => option === item.title)}
             disabled={
-              certificatesAdded?.includes('None') ? item?.disabled : false
+              // Mutual exclusion: selecting 'None' disables the certificate
+              // options and vice versa.
+              item.title === 'None'
+                ? certificatesAdded.some((c) => c !== 'None')
+                : certificatesAdded.includes('None')
             }
             value={item.title}
-            onChange={(event) => {
-              updateArray(event, item?.title!);
-            }}
+            onChange={(event) => updateArray(event, item.title)}
           />
         ))}
       </div>
