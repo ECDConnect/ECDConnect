@@ -63,6 +63,12 @@ export const Business: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTabIndex]);
 
+  useEffect(() => {
+    if (state?.activeTabIndex !== undefined) {
+      setSelectedTabIndex(state.activeTabIndex);
+    }
+  }, [state?.activeTabIndex]);
+
   const goBackFromResources = () => {
     setSelectedTabIndex(previousTabIndex!);
   };
