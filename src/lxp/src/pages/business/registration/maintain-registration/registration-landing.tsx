@@ -110,7 +110,7 @@ export const RegistrationLanding = () => {
   }, []);
 
   return (
-    <div className="flex w-full flex-col gap-2 overflow-auto p-4">
+    <div className="flex h-screen w-full flex-col gap-2 overflow-auto overflow-y-scroll p-4">
       <Typography
         type={'h1'}
         text={'DBE registration helper'}
