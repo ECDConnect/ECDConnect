@@ -59,6 +59,7 @@ namespace ECDLink.Abstractrions.Constants
         public const string ChildNotAssignedToClass = "child-unassigned-to-class"; // hub, push
         // row 20
         public const string SubmitWeeksAttendance = "submit-weekly-attendance"; // hub, push
+        public const string DbeRegistration = "dbe-registration";// hub, push
         // row 22
         public const string FinishProgressReport = "finish-progress-report"; // hub, push
         // row 23

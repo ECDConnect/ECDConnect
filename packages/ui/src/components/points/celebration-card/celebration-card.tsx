@@ -14,6 +14,7 @@ export const CelebrationCard: React.FC<CelebrationCardProps> = ({
   primaryMessage,
   secondaryMessage,
   backgroundColour,
+  button,
   onDismiss,
 }) => {
   return (
@@ -56,7 +57,9 @@ export const CelebrationCard: React.FC<CelebrationCardProps> = ({
               />
             </div>
           )}
+          {button && <div className={'mt-2'}>{button}</div>}
         </div>
+
         {!!onDismiss && (
           <div
             className="items-top mb-2 flex pr-1"

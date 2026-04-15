@@ -19,6 +19,8 @@ export enum MoreInformationTypeEnum {
   TheDailyRoutine = 'The daily routine',
   DevelopingChildrenHolistically = 'Developing children holistically',
   TrackingProgress = 'Tracking Progress',
+  Apply = 'Apply',
+  Comply = 'Comply',
 }
 
 export enum ContentTypeEnum {

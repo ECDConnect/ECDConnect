@@ -3,6 +3,7 @@ import { EntityBase } from '../entity-base';
 import { SiteAddressDto } from '../SiteAddress';
 import { AbsenteeDto } from './absentee.dto';
 import { UserDto } from './user.dto';
+import { EcdRegistrationDto } from '../EcdRegistration';
 
 export interface PractitionerDto extends EntityBase {
   user?: UserDto;
@@ -42,6 +43,7 @@ export interface PractitionerDto extends EntityBase {
   clickedCommunityTab?: boolean;
   progressWalkthroughComplete?: boolean;
   syncedProgressWalkThrough?: boolean;
+  ecdRegistration?: EcdRegistrationDto;
 }
 
 export interface UserPermissionDto {

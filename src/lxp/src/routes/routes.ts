@@ -29,6 +29,8 @@ const ROUTES = {
   BUSINESS_UPDATE_EXPENSE: '/business-update-expense',
   BUSINESS_PREVIOUS_STATEMENTS_LIST: '/business-previous-statements-list',
   BUSINESS_MONTH_STATEMENTS_DETAILS: '/month-statements-details',
+  BUSINESS_REGISTRATION: '/registration',
+  BUSINESS_REGISTRATION_UPDATE: '/registration-update',
   CALENDAR: '/calendar',
   CLASSROOM: addPrefix('/classroom', {
     CHILDREN: '/children',
