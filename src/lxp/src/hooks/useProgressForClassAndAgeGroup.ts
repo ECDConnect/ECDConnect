@@ -26,7 +26,16 @@ export const useProgressForClassAndAgeGroup = (
     childReports: allChildReports,
     currentReportingPeriod,
     currentReportingPeriodForSummary,
+    allReportingPeriods,
   } = useProgressForChildren(false, reportPeriodId);
+
+  // Resolve the period the caller explicitly requested. The current/expired
+  // period selectors only reflect today's date and are undefined when viewing
+  // historical periods (e.g. last year), so we look it up by ID directly.
+  const selectedReportingPeriod = useMemo(
+    () => allReportingPeriods.find((p) => p.id === reportPeriodId) ?? null,
+    [allReportingPeriods, reportPeriodId]
+  );
 
   const childReports = useMemo(() => {
     return allChildReports.filter((report) =>
@@ -80,9 +89,10 @@ export const useProgressForClassAndAgeGroup = (
   return {
     classroomGroup,
     currentReportingPeriod,
+    currentReportingPeriodForSummary,
+    selectedReportingPeriod,
     childReports,
     reportsSummary,
     ageGroup,
-    currentReportingPeriodForSummary,
   };
 };
