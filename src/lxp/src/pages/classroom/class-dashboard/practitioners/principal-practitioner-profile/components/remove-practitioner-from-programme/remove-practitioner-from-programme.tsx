@@ -1,6 +1,7 @@
 import {
   ReasonForLeavingDto,
   ReasonsForPractitionerLeavingProgramme,
+  useDialog,
   useSnackbar,
 } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -46,6 +47,7 @@ import { disableBackendNotification } from '@/store/notifications/notifications.
 import { PractitionerNotRegistered } from '../../practitioner-not-registered/practitioner-not-registered';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { BusinessTabItems } from '@/pages/business/business.types';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 
 export const RemovePractitionerFromProgramme: React.FC<
   RemovePractionerFromProgrammeProps
@@ -53,8 +55,8 @@ export const RemovePractitionerFromProgramme: React.FC<
   const appDispatch = useAppDispatch();
   const { showMessage } = useSnackbar();
   const history = useHistory();
-  const authUser = useSelector(authSelectors.getAuthUser);
   const { isOnline } = useOnlineStatus();
+  const dialog = useDialog();
   const location = useLocation<PractitionerProfileRouteState>();
   const reasonsForLeavingProgramme = useSelector(
     staticDataSelectors.getReasonsForPractitionerLeavingProgramme
@@ -125,6 +127,19 @@ export const RemovePractitionerFromProgramme: React.FC<
             notificationId: notification.message.reference ?? '',
           })
         );
+      });
+    }
+  };
+
+  const showOfflineDialog = () => {
+    if (!isOnline) {
+      return dialog({
+        color: 'bg-white',
+        position: DialogPosition.Middle,
+        blocking: true,
+        render: (onSubmit) => {
+          return <OnlineOnlyModal onSubmit={onSubmit} />;
+        },
       });
     }
   };
@@ -510,7 +525,11 @@ export const RemovePractitionerFromProgramme: React.FC<
               </div>
               <div className={'py-4'}></div>
               <Button
-                onClick={() => setRemovePractionerPromptVisible(true)}
+                onClick={() =>
+                  isOnline
+                    ? setRemovePractionerPromptVisible(true)
+                    : showOfflineDialog()
+                }
                 className="mb-2 w-full"
                 size="small"
                 color="quatenary"

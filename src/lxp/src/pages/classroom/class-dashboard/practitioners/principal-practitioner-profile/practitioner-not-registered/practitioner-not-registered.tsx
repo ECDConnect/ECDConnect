@@ -251,7 +251,9 @@ export const PractitionerNotRegistered: React.FC<
             color={'quatenary'}
             textColor={'quatenary'}
             className="mt-4 w-11/12"
-            onClick={removePractitioner}
+            onClick={() => {
+              isOnline ? removePractitioner() : showOnlineOnly();
+            }}
           />
         </div>
 

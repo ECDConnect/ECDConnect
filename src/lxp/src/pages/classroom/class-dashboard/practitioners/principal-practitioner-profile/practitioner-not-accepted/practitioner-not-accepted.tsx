@@ -1,4 +1,4 @@
-import { BannerWrapper, Button, Alert } from '@ecdlink/ui';
+import { BannerWrapper, Button, Alert, DialogPosition } from '@ecdlink/ui';
 import { format, addDays } from 'date-fns';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useHistory } from 'react-router';
@@ -6,10 +6,11 @@ import { useSelector } from 'react-redux';
 import { practitionerThunkActions } from '@/store/practitioner';
 import { useAppDispatch } from '@/store';
 import ROUTES from '@/routes/routes';
-import { PractitionerDto, useSnackbar } from '@ecdlink/core';
+import { PractitionerDto, useDialog, useSnackbar } from '@ecdlink/core';
 import { useTenant } from '@/hooks/useTenant';
 import { classroomsSelectors } from '@/store/classroom';
 import { BusinessTabItems } from '@/pages/business/business.types';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 
 export interface PractitionerNotAcceptedProps {
   practitioner: PractitionerDto;
@@ -20,12 +21,26 @@ export const PractitionerNotAccepted: React.FC<
 > = ({ practitioner }) => {
   const history = useHistory();
   const tenant = useTenant();
+  const dialog = useDialog();
   const { showMessage } = useSnackbar();
   const { isOnline } = useOnlineStatus();
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const appDispatch = useAppDispatch();
   const userName =
     practitioner?.user?.firstName || practitioner?.user?.userName;
+
+  const showOfflineDialog = () => {
+    if (!isOnline) {
+      return dialog({
+        color: 'bg-white',
+        position: DialogPosition.Middle,
+        blocking: true,
+        render: (onSubmit) => {
+          return <OnlineOnlyModal onSubmit={onSubmit} />;
+        },
+      });
+    }
+  };
 
   const removePractitioner = async () => {
     await appDispatch(
@@ -84,7 +99,9 @@ export const PractitionerNotAccepted: React.FC<
           color={'quatenary'}
           textColor={'white'}
           className="mt-4 w-11/12"
-          onClick={removePractitioner}
+          onClick={() => {
+            isOnline ? removePractitioner() : showOfflineDialog();
+          }}
         />
       </div>
     </BannerWrapper>
