@@ -112,7 +112,6 @@ class AttendanceService {
         $startMonth: DateTime!
         $endMonth: DateTime!) {
         monthlyAttendanceReport(
-          userId: $userId
           startMonth: $startMonth
           endMonth: $endMonth          
         ) {
