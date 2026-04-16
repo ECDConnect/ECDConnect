@@ -18,7 +18,7 @@ export const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
       renderBorder={true}
       showBackground={true}
       title={`DBE registration helper`}
-      onBack={() => history.goBack()}
+      onBack={() => history.push('/')}
       backgroundColour={'white'}
       className={'relative'}
       backgroundUrl={TransparentLayer}
