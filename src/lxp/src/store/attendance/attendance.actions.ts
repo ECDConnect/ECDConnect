@@ -106,10 +106,10 @@ export const getMonthlyAttendanceReport = createAsyncThunk<
       attendanceData: { monthlyAttendanceRecordsByUser },
     } = getState();
 
-    const records = monthlyAttendanceRecordsByUser[userId].data;
+    const records = monthlyAttendanceRecordsByUser[userId]?.data;
 
     if (!overrideCache && records && records.length !== 0) {
-      return monthlyAttendanceRecordsByUser[userId].data;
+      return records;
     }
 
     try {
