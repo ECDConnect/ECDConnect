@@ -72,7 +72,7 @@ export const SubsidyStep: React.FC<SubsidyStepProps> = ({
         textColor="secondary"
       />
       <div className="mt-2">
-        {subsidy === 'false' && (
+        {(subsidy === 'false' || subsidy === 'unsure') && (
           <>
             <Typography
               type={'h4'}
@@ -89,6 +89,7 @@ export const SubsidyStep: React.FC<SubsidyStepProps> = ({
                   description={option.text}
                   checked={selectedOption === option.text}
                   onChange={handleChange}
+                  variant="slim"
                 />
               ))}
             </fieldset>
