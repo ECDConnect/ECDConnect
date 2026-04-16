@@ -121,6 +121,21 @@ export const WelcomeRegistration: React.FC<WelcomeRegistrationProps> = ({
     setHasStarted(true);
   };
 
+  const getNextStepAfterSubsidy = () => {
+    if (subsidy === 'true') {
+      return RegistrationSteps.challenges;
+    }
+
+    const needsCertificateInfo =
+      registration === 'No - I started the process of registering' ||
+      registration === 'No - I have not started the process of registering' ||
+      registration === "I'm not sure";
+
+    return needsCertificateInfo
+      ? RegistrationSteps.certificate
+      : RegistrationSteps.challenges;
+  };
+
   if (!hasStarted) {
     return <WelcomeStep onNext={handleStartRegistration} />;
   }
@@ -138,11 +153,7 @@ export const WelcomeRegistration: React.FC<WelcomeRegistrationProps> = ({
     >
       <Step stepKey={RegistrationSteps.subsidy} viewBannerWapper={true}>
         <SubsidyStep
-          onNext={() =>
-            subsidy && subsidy === 'true'
-              ? goToStep(RegistrationSteps.challenges)
-              : goToStep(RegistrationSteps.certificate)
-          }
+          onNext={() => goToStep(getNextStepAfterSubsidy())}
           setValue={setValue}
           subsidy={subsidy}
         />
