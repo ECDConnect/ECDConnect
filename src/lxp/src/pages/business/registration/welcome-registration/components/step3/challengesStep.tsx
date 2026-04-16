@@ -48,14 +48,14 @@ export const ChallengesStep: React.FC<ChallengesStepProps> = ({
       <Typography
         type={'h1'}
         text={`Challenges`}
-        className={'text-sm font-bold'}
+        className={'text-sm'}
         color={'textDark'}
       />
       <Typography
-        type={'h4'}
+        type={'h3'}
         text={`What is the biggest challenge you face with DBE registration right now?`}
-        className={'text-sm font-normal'}
-        color={'textDark'}
+        className={'mt-3 text-sm font-normal'}
+        color={'textMid'}
       />
       <fieldset className="flex flex-col gap-2">
         {challengeOptions.map((option) => (
@@ -66,16 +66,17 @@ export const ChallengesStep: React.FC<ChallengesStepProps> = ({
             description={option.text}
             checked={selectedOption === option.text}
             onChange={handleChange}
+            variant="slim"
           />
         ))}
       </fieldset>
       {selectedOption === 'Other' && (
         <div className="py-4">
           <Typography
-            type={'h4'}
+            type={'h3'}
             text={`Please give more detail`}
             className={'text-sm font-normal'}
-            color={'textDark'}
+            color={'textMid'}
           />
           <FormInput
             textInputType="textarea"
@@ -91,10 +92,10 @@ export const ChallengesStep: React.FC<ChallengesStepProps> = ({
       )}
       <div className="py-4">
         <Typography
-          type={'h4'}
+          type={'h3'}
           text={`What is the biggest issue you are facing when it comes to funding for your ECD programme?`}
           className={'text-sm font-normal'}
-          color={'textDark'}
+          color={'textMid'}
         />
         <FormInput
           textInputType="textarea"

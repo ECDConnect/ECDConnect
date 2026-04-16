@@ -52,12 +52,13 @@ export const CertificateStep: React.FC<CertificateStepProps> = ({
       <Typography
         type={'h1'}
         text={`Certificate information`}
-        className={'text-sm font-bold'}
+        className={'text-sm'}
         color={'textDark'}
       />
       <div className="flex flex-col gap-2 py-4">
         <Typography
-          type="h4"
+          type="h3"
+          color={'textMid'}
           text={
             onSubmit
               ? `Which certificates have you received?`
@@ -66,19 +67,18 @@ export const CertificateStep: React.FC<CertificateStepProps> = ({
         />
         {optionList.map((item) => (
           <CheckboxGroup
-            checkboxColor="primary"
+            checkboxColor="quatenary"
             id={item.id}
             key={item.id}
             title={item.title}
             checked={certificatesAdded.some((option) => option === item.title)}
             disabled={
-              // Mutual exclusion: selecting 'None' disables the certificate
-              // options and vice versa.
               item.title === 'None'
                 ? certificatesAdded.some((c) => c !== 'None')
                 : certificatesAdded.includes('None')
             }
             value={item.title}
+            titleWeight="normal"
             onChange={(event) => updateArray(event, item.title)}
           />
         ))}
@@ -93,6 +93,7 @@ export const CertificateStep: React.FC<CertificateStepProps> = ({
         textColor="white"
         icon="ArrowCircleRightIcon"
         onClick={handleNextAction}
+        disabled={certificatesAdded.length === 0}
       />
     </div>
   );
