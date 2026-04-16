@@ -61,12 +61,12 @@ export const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
               color={'textMid'}
             />
             <Typography
-              type={'body'}
+              type={'h4'}
               text={
                 'This app shows you the steps. You will need to submit your information to the DBE.'
               }
-              className={'mb-2 font-bold'}
-              color={'textMid'}
+              className={'mt-3 mb-3 font-semibold'}
+              color={'textDark'}
             />
           </div>
 
