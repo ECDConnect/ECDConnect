@@ -57,8 +57,9 @@ export const CertificateStep: React.FC<CertificateStepProps> = ({
       />
       <div className="flex flex-col gap-2 py-4">
         <Typography
-          type="h3"
-          color={'textMid'}
+          type="h4"
+          className={'mt-3 mb-3 font-semibold'}
+          color={'textDark'}
           text={
             onSubmit
               ? `Which certificates have you received?`

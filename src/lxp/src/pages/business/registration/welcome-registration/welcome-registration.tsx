@@ -156,6 +156,7 @@ export const WelcomeRegistration: React.FC<WelcomeRegistrationProps> = ({
           onNext={() => goToStep(getNextStepAfterSubsidy())}
           setValue={setValue}
           subsidy={subsidy}
+          registration={registration}
         />
       </Step>
 
@@ -163,6 +164,7 @@ export const WelcomeRegistration: React.FC<WelcomeRegistrationProps> = ({
         <CertificateStep
           onNext={() => goToStep(RegistrationSteps.challenges)}
           setValue={setValue}
+          initialCertificates={certificates ?? []}
         />
       </Step>
 

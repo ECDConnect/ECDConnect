@@ -12,6 +12,7 @@ interface SubsidyStepProps {
   onNext: () => void;
   setValue: UseFormSetValue<any>;
   subsidy: string | undefined;
+  registration: string | undefined;
 }
 
 const yesNoOptions = [
@@ -32,11 +33,15 @@ export const SubsidyStep: React.FC<SubsidyStepProps> = ({
   onNext,
   setValue,
   subsidy,
+  registration,
 }) => {
-  const [selectedOption, setSelectedOption] = useState('');
+  const [selectedOption, setSelectedOption] = useState(registration ?? '');
 
   useEffect(() => {
-    if (subsidy !== 'false') {
+    // Only clear the registration answer when the registration question is hidden
+    // (subsidy = 'true'). For 'false' and 'unsure' the question is shown, so the
+    // existing answer should be preserved.
+    if (subsidy === 'true') {
       setSelectedOption('');
       setValue('registration', undefined);
     }
@@ -58,13 +63,14 @@ export const SubsidyStep: React.FC<SubsidyStepProps> = ({
       <Typography
         type={'h4'}
         text={`Are you receiving a subsidy from the DBE?`}
-        className={'mt-3 mb-3 text-sm font-normal'}
+        className={'mt-3 mb-3 font-semibold'}
         color={'textDark'}
       />
       <ButtonGroup<string>
         color="secondary"
         type={ButtonGroupTypes.Button}
         options={yesNoOptions}
+        selectedOptions={subsidy}
         onOptionSelected={(option: string | string[]) => {
           setValue('subsidy', option);
         }}
@@ -77,7 +83,7 @@ export const SubsidyStep: React.FC<SubsidyStepProps> = ({
             <Typography
               type={'h4'}
               text={`Are you registered with the DBE?`}
-              className={'mt-3 mb-3 text-sm font-normal'}
+              className={'mt-3 mb-3 font-semibold'}
               color={'textDark'}
             />
             <fieldset className="flex flex-col gap-2">
