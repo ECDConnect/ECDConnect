@@ -18,16 +18,7 @@ export const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
       renderBorder={true}
       showBackground={true}
       title={`DBE registration helper`}
-      onBack={() =>
-        history.push(ROUTES.BUSINESS, {
-          activeTabIndex: BusinessTabItems.REGISTRATION,
-        })
-      }
-      onClose={() =>
-        history.push(ROUTES.BUSINESS, {
-          activeTabIndex: BusinessTabItems.REGISTRATION,
-        })
-      }
+      onBack={() => history.goBack()}
       backgroundColour={'white'}
       className={'relative'}
       backgroundUrl={TransparentLayer}
@@ -58,7 +49,7 @@ export const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
             <Typography
               type={'h1'}
               text={`What is ECD registration?`}
-              className={'mb-4 text-sm font-bold'}
+              className={'mb-4 text-sm'}
               color={'textDark'}
             />
             <Typography
@@ -75,7 +66,7 @@ export const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
                 'This app shows you the steps. You will need to submit your information to the DBE.'
               }
               className={'mb-2 text-sm font-bold'}
-              color={'textMid'}
+              color={'textDark'}
             />
           </div>
 
