@@ -1,59 +1,67 @@
 const plugin = require('tailwindcss/plugin');
 
 module.exports = {
-  // purge: {
-  //   enabled: true, // force it even if you want to test
-  //   content: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
-  //   //content: ['./**/*.{js,ts,jsx,tsx}',],
-  //   safelist: [
-  //     'h-360',
-  //     'h-244',
-  //     'h-116',
-  //     'w-96',
-  //     'fixed',
-  //     'inset-0',
-  //     'flex',
-  //     'items-center',
-  //     'justify-center',
-  //     'grid',
-  //     'place-items-center',
-  //     // add others you suspect are used, e.g.:
-  //     'mx-auto',
-  //     'my-auto',
-  //     'min-h-screen',
-  //     // logo styles
-  //     'inline-block', 'text-left', 'z-0', 'w-10/12', 'justify-start', 'bg-bannerx2', 'h-10', 'w-10',
-  //     'w-3/12', 'flex', 'justify-start',
-  //     // carousel
-  //     'relative', 'h-360px', 'md:h-96', 'w-full',
-  //     // dialog
-  //     'align-bottom', 'max-h-screen', 'overflow-y-auto', 'rounded-2xl', 'max-w-sm', 'text-left', 'shadow-xl', 'transform', 'transition-all', 'align-middle', 'w-full', 'bg-uiBg',
-  //     'rounded-lg bg-white', 'relative', 'w-96', 'sm:w-full',
-  //     'py-6', 'px-4', 'flex', 'flex-col', 'justify-evenly', 'items-center',
-  //     'justify-center', 'flex', 'overflow-hidden', 'fixed', 'inset-0', 'z-50', 'outline-none', 'focus:outline-none',
-  //     'justify-center', 'flex', 'overflow-hidden', 'fixed', 'inset-0', 'outline-none', 'focus:outline-none',
-  //     // walkthrough
-  //     'rounded-lg', 'bg-white', 'relative', 'w-96', 'sm:w-full',
-  //     'opacity-50', 'fixed', 'inset-0', 'z-40', 'bg-black', 'bg-modalBg',
-  //     //offline
-  //     'font-body','font-bold ','text-center','text-alertMain', 'leading-4',
-  //     'flex', 'flex-shrink-0', 'flex-row', 'items-center', 'justify-between', 'px-1', 'py-0', 'rounded-full', 'border', 'border-uiMidDark', 'bg-uiMidDark', 'absolute', 'z-50', 'top-54', 'left-1/2', 'transform -translate-x-1/2',
-  //     // side menu & button
-  //    'fixed', 'inset-0', 'z-40', 'flex',
-  //    'fixed', 'inset-0', 'bg-gray-600', 'bg-opacity-75',
-  //     'relative', 'flex', 'w-full', 'max-w-xs', 'flex-1', 'flex-col' ,'bg-white', 'pt-5', 'pb-4',
-  //     'absolute', 'top-0', 'right-0', '-mr-12' ,'pt-2',
-  //     // robot
-  //     'relative', 'rounded-full', 'cursor-pointer' ,
-  //     // forms
-  //     'relative', 'flex', 'gap-5', 'pb-6',
-  //     // button
-  //     'cursor-pointer', 'inline-flex', 'items-center', 'border-2', 'border-transparent', 'text-sm', 'font-normal', 'shadow-sm', 'justify-center', 'outline-none', 'bg-secondaryAccent2' ,'text-white', 'py-2.5', 'px-17', 'rounded-15', 'h-9', 'w-auto',
-  //     // borders
-  //     'border', 'border-t-0', 'border-r-0', 'border-l-0', 'border-dashed', 'border-color-uiLight', 'block',
+  purge: {
+  enabled: true,//process.env.NODE_ENV === 'production',
+  content: [
+    './src/**/*.{js,jsx,ts,tsx}',
+    './public/index.html',
+  ],
+  options: {
+    safelist: [
+      // text- colours
+      'text-primary', 'text-primaryAccent1', 'text-primaryAccent2',
+      'text-secondary', 'text-secondaryAccent1', 'text-secondaryAccent2', 'text-secondaryMain',
+      'text-tertiary', 'text-tertiaryAccent1', 'text-tertiaryAccent2',
+      'text-textDark', 'text-textMid', 'text-textLight',
+      'text-uiMidDark', 'text-uiMid', 'text-uiLight', 'text-uiBg',
+      'text-errorMain', 'text-errorDark', 'text-errorBg',
+      'text-alertMain', 'text-alertDark', 'text-alertBg',
+      'text-successMain', 'text-successDark', 'text-successBg',
+      'text-infoMain', 'text-infoDark', 'text-infoBb', 'text-infographicBg',
+      'text-quatenary', 'text-quatenaryBg', 'text-quatenaryMain',
+      'text-quinary', 'text-darkBlue', 'text-darkBackground',
+      'text-modalBg', 'text-pointsCardBg', 'text-pointsCardBarBg',
+      'text-adminPortalBg', 'text-adminBackground',
+      'text-warning', 'text-warningBg',
+      'text-white', 'text-black', 'text-transparent',
 
-  //   ]
-  // },
+      // bg- colours
+      'bg-primary', 'bg-primaryAccent1', 'bg-primaryAccent2',
+      'bg-secondary', 'bg-secondaryAccent1', 'bg-secondaryAccent2', 'bg-secondaryMain',
+      'bg-tertiary', 'bg-tertiaryAccent1', 'bg-tertiaryAccent2',
+      'bg-textDark', 'bg-textMid', 'bg-textLight',
+      'bg-uiMidDark', 'bg-uiMid', 'bg-uiLight', 'bg-uiBg',
+      'bg-errorMain', 'bg-errorDark', 'bg-errorBg',
+      'bg-alertMain', 'bg-alertDark', 'bg-alertBg',
+      'bg-successMain', 'bg-successDark', 'bg-successBg',
+      'bg-infoMain', 'bg-infoDark', 'bg-infoBb', 'bg-infographicBg',
+      'bg-quatenary', 'bg-quatenaryBg', 'bg-quatenaryMain',
+      'bg-quinary', 'bg-darkBlue', 'bg-darkBackground',
+      'bg-modalBg', 'bg-pointsCardBg', 'bg-pointsCardBarBg',
+      'bg-adminPortalBg', 'bg-adminBackground',
+      'bg-warning', 'bg-warningBg',
+      'bg-white', 'bg-black',
+
+      // border- colours
+      'border-primary', 'border-primaryAccent1', 'border-primaryAccent2',
+      'border-secondary', 'border-secondaryAccent1', 'border-secondaryAccent2', 'border-secondaryMain',
+      'border-tertiary', 'border-tertiaryAccent1', 'border-tertiaryAccent2',
+      'border-textDark', 'border-textMid', 'border-textLight',
+      'border-uiMidDark', 'border-uiMid', 'border-uiLight', 'border-uiBg',
+      'border-errorMain', 'border-errorDark', 'border-errorBg',
+      'border-alertMain', 'border-alertDark', 'border-alertBg',
+      'border-successMain', 'border-successDark', 'border-successBg',
+      'border-infoMain', 'border-infoDark', 'border-infoBb', 'border-infographicBg',
+      'border-quatenary', 'border-quatenaryBg', 'border-quatenaryMain',
+      'border-quinary', 'border-darkBlue', 'border-darkBackground',
+      'border-modalBg', 'border-pointsCardBg', 'border-pointsCardBarBg',
+      'border-adminPortalBg', 'border-adminBackground',
+      'border-warning', 'border-warningBg',
+      'border-white', 'border-black',
+    ],
+  },
+},
   important: true,
   mode: 'aot',
   darkMode: false, // or 'media' or 'class'
