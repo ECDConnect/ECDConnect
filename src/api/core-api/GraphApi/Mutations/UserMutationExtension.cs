@@ -7,6 +7,7 @@ using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -159,14 +160,27 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           [Service] ILogger<UserMutationExtension> logger,
           [Service] IHttpContextAccessor httpContextAccessor,
           [Service] IFileService fileService,
+          [Service] HierarchyEngine hierarchyEngine,
           string id,
           UserModel input)
         {
+        
             var user = await userManager.FindByIdAsync(id);
-            var userIsAdmin = await userManager.IsInRoleAsync(user, Roles.ADMINISTRATOR);
+            if (user == null || input == null)
+            {
+                throw new UnauthorizedAccessException();
+            }
+           
+            var userRoles = await userManager.GetRolesAsync(user);
+            var userIsAdmin = userRoles.Contains(Roles.ADMINISTRATOR);
+            var updatingChild = userRoles.Contains(Roles.CHILD);
+            var updatingPractitioner = userRoles.Contains(Roles.PRACTITIONER);
+            var updatingPrincipal = userRoles.Contains(Roles.PRINCIPAL);
+            var updatingCoach = userRoles.Contains(Roles.COACH);
 
             // Check role of user requesting the change
-            var currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id;
+            var currentUserId = httpContextAccessor.HttpContext.GetUserId().Value;
+
             ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId.ToString());
             var currentUserIsSuperAdmin = await userManager.IsInRoleAsync(currentUser, Roles.SUPER_ADMINISTRATOR);
 
@@ -184,15 +198,38 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 }
             }
 
-            if (user is null || currentUserId is null)
-                throw new QueryException("User not found.");
+             if (user == null || input == null)
+            {
+                throw new UnauthorizedAccessException();
+            }
 
             Guid tenantId = TenantExecutionContext.Tenant.Id;
 
-            // Cross tenant, but allow admin user which has no tenant... 
+            // Cross tenant, but allow admin user which has no tenant...
             if (user.TenantId != tenantId && user.TenantId != null)
             {
                 throw new QueryException("Cross tenant access denied.");
+            }
+
+            // Caller must be the user themselves, an admin/super-admin, or have hierarchy authority
+            if (user.Id != currentUserId)
+            {
+                if (!(updatingPractitioner || updatingPrincipal || updatingCoach || updatingChild))
+                {
+                    // They can only update themselves.
+                    throw new UnauthorizedAccessException();
+                }
+                if (updatingChild)
+                {
+                    if (!hierarchyEngine.UserInHierarchy(currentUserId, user.Id))
+                    {
+                        throw new UnauthorizedAccessException();
+                    }
+                }
+                else
+                {
+                    throw new UnauthorizedAccessException();
+                }
             }
 
             input.Id = id;
@@ -386,11 +423,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return string.IsNullOrWhiteSpace(@new) ? original : @new;
         }
 
-        // TODO: Don't let users disable each other
         [Permission(PermissionGroups.USER, GraphActionEnum.Delete)]
         public async Task<bool> DeleteUser(
           [Service] IHttpContextAccessor httpContextAccessor,
           ApplicationUserManager userManager,
+          [Service] HierarchyEngine engine,
           string id)
         {
             var user = await userManager.FindByIdAsync(id);
@@ -401,17 +438,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 return false;
             }
 
-            // Don't let normal users disable admins...
-            var isAdmin = await userManager.IsInRoleAsync(user, Roles.ADMINISTRATOR);
-            if (isAdmin)
-            {
-                var currentUser = await userManager.FindByIdAsync(currentUserId.ToString());
-                var isAlsoAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
+            var currentUser = await userManager.FindByIdAsync(currentUserId.ToString());
+            var currentUserIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR)
+                || await userManager.IsInRoleAsync(currentUser, Roles.SUPER_ADMINISTRATOR);
 
-                if (!isAlsoAdmin)
-                {
-                    throw new QueryException("You may not disable an administrator.");
-                }
+            // Don't let non-admins disable admin users
+            var isAdmin = await userManager.IsInRoleAsync(user, Roles.ADMINISTRATOR);
+            if (isAdmin && !currentUserIsAdmin)
+            {
+                throw new QueryException("You may not disable an administrator.");
+            }
+
+            // Caller must be the user themselves, an admin, or have hierarchy authority
+            if (user.Id != currentUserId && !currentUserIsAdmin
+                && !engine.IsCallerAuthorizedForUser(currentUserId, user.Id))
+            {
+                throw new QueryException("You are not authorized to disable this user.");
             }
 
             user.LockoutEnabled = true;
@@ -563,29 +605,35 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return true;
         }
 
-        // TODO: Shouldn't we check Hierarchy here?
-        // TODO: Should a user be able to reset another user's password?
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public async Task<bool> ResetUserPassword(
           ApplicationUserManager userManager,
           [Service] IHttpContextAccessor httpContextAccessor,
           [Service] SecurityNotificationManager securityNotificationManager,
+          [Service] HierarchyEngine engine,
           string id,
           string newPassword)
         {
             var user = await userManager.FindByIdAsync(id);
             user.UpdatedDate = DateTime.UtcNow;
-            // Don't let normal users reset admin passwords...
-            var isAdmin = await userManager.IsInRoleAsync(user, Roles.ADMINISTRATOR);
-            if (isAdmin)
-            {
-                var currentUser = await userManager.FindByIdAsync(httpContextAccessor.HttpContext.GetUser().Id.ToString());
-                var isAlsoAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
 
-                if (!isAlsoAdmin)
-                {
-                    throw new QueryException("You may not disable an administrator.");
-                }
+            var currentUserId = httpContextAccessor.HttpContext.GetUser().Id;
+            var currentUser = await userManager.FindByIdAsync(currentUserId.ToString());
+            var currentUserIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR)
+                || await userManager.IsInRoleAsync(currentUser, Roles.SUPER_ADMINISTRATOR);
+
+            // Don't let non-admins reset admin passwords
+            var isAdmin = await userManager.IsInRoleAsync(user, Roles.ADMINISTRATOR);
+            if (isAdmin && !currentUserIsAdmin)
+            {
+                throw new QueryException("You are not authorized to reset an administrator's password.");
+            }
+
+            // Caller must be the user themselves, an admin, or have hierarchy authority
+            if (user.Id != currentUserId && !currentUserIsAdmin
+                && !engine.IsCallerAuthorizedForUser(currentUserId, user.Id))
+            {
+                throw new QueryException("You are not authorized to reset this user's password.");
             }
 
             var passwordToken = await userManager.GeneratePasswordResetTokenAsync(user);

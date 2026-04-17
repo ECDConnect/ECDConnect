@@ -15,6 +15,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 using EcdLink.Api.CoreApi.GraphApi.Models.Visits;
+using ECDLink.DataAccessLayer.Hierarchy;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -66,9 +67,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             IGenericRepositoryFactory repoFactory,
             [Service] VisitManager visitManager,
             [Service] VisitDataManager visitDataManager,
+            [Service] HierarchyEngine engine,
             SupportVisitModel input)
         {
             var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
+            if (input.PractitionerId == null || !Guid.TryParse(input.PractitionerId.ToString(), out Guid practitionerGuid))
+            {
+                throw new ArgumentException("Invalid PractitionerId");
+            }
+            if (!engine.UserInHierarchy(applicationUserId, practitionerGuid, true))
+            {
+                throw new UnauthorizedAccessException("You do not have permission to perform this action.");
+            }
+
             var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: applicationUserId);
             VisitType visitType;
@@ -108,12 +119,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         [Permission(PermissionGroups.VISITS, GraphActionEnum.Create)]
         public Visit AddFollowUpVisitForPractitioner(
             [Service] IHttpContextAccessor httpContextAccessor,
+            [Service] HierarchyEngine engine,
             IGenericRepositoryFactory repoFactory,
             [Service] VisitManager visitManager,
             [Service] VisitDataManager visitDataManager,
             FollowUpVisitModel input)
         {
             var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
+
+            if (input.PractitionerId == null || !Guid.TryParse(input.PractitionerId.ToString(), out Guid practitionerGuid))
+            {
+                throw new ArgumentException("Invalid PractitionerId");
+            }
+            if (!engine.UserInHierarchy(applicationUserId, practitionerGuid, true))
+            {
+                throw new UnauthorizedAccessException("You do not have permission to perform this action.");
+            }
+
             var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: applicationUserId);
             var visitRepo = repoFactory.CreateGenericRepository<Visit>(userContext: applicationUserId);
@@ -150,12 +172,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         [Permission(PermissionGroups.VISITS, GraphActionEnum.Create)]
         public Visit AddReAccreditationFollowUpVisitForPractitioner(
             [Service] IHttpContextAccessor httpContextAccessor,
+            [Service] HierarchyEngine engine,
             IGenericRepositoryFactory repoFactory,
             [Service] VisitManager visitManager,
             [Service] VisitDataManager visitDataManager,
             FollowUpVisitModel input)
         {
             var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
+            if (input.PractitionerId == null || !Guid.TryParse(input.PractitionerId.ToString(), out Guid practitionerGuid))
+            {
+                throw new ArgumentException("Invalid PractitionerId");
+            }
+            if (!engine.UserInHierarchy(applicationUserId, practitionerGuid, true))
+            {
+                throw new UnauthorizedAccessException("You do not have permission to perform this action.");
+            }
             var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
             var visitRepo = repoFactory.CreateGenericRepository<Visit>(userContext: applicationUserId);
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: applicationUserId);
@@ -192,12 +223,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         [Permission(PermissionGroups.VISITS, GraphActionEnum.Create)]
         public Visit AddReAccreditationVisitForPractitioner(
             [Service] IHttpContextAccessor httpContextAccessor,
+            [Service] HierarchyEngine engine,
             IGenericRepositoryFactory repoFactory,
             [Service] VisitManager visitManager,
             [Service] VisitDataManager visitDataManager,
             ReAccreditationVisitModel input)
         {
             var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
+
+            if (input.PractitionerId == null || !Guid.TryParse(input.PractitionerId.ToString(), out Guid practitionerGuid))
+            {
+                throw new ArgumentException("Invalid PractitionerId");
+            }
+            if (!engine.UserInHierarchy(applicationUserId, practitionerGuid, true))
+            {
+                throw new UnauthorizedAccessException("You do not have permission to perform this action.");
+            }
             var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
             var visitRepo = repoFactory.CreateGenericRepository<Visit>(userContext: applicationUserId);
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: applicationUserId);
@@ -238,12 +279,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         [Permission(PermissionGroups.VISITS, GraphActionEnum.Create)]
         public Visit AddSelfAssessmentForPractitioner(
             [Service] IHttpContextAccessor httpContextAccessor,
+            [Service] HierarchyEngine engine,
             IGenericRepositoryFactory repoFactory,
             [Service] VisitManager visitManager,
             [Service] VisitDataManager visitDataManager,
             SupportVisitModel input)
         {
             var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
+            if (input.PractitionerId == null || !Guid.TryParse(input.PractitionerId.ToString(), out Guid practitionerGuid))
+            {
+                throw new ArgumentException("Invalid PractitionerId");
+            }
+            if (!engine.UserInHierarchy(applicationUserId, practitionerGuid, true))
+            {
+                throw new UnauthorizedAccessException("You do not have permission to perform this action.");
+            }
             var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: applicationUserId);
 
@@ -291,6 +341,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public Visit AddCoachVisitInviteForPractitioner(
             [Service] IHttpContextAccessor httpContextAccessor,
             [Service] INotificationService notificationService,
+            [Service] HierarchyEngine engine,
             IGenericRepositoryFactory repoFactory,
             [Service] VisitManager visitManager,
             VisitModel input)
@@ -299,6 +350,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
             var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: applicationUserId);
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: applicationUserId);
+
+            if (input.PractitionerId == null || !Guid.TryParse(input.PractitionerId.ToString(), out Guid practitionerGuid))
+            {
+                throw new ArgumentException("Invalid PractitionerId");
+            }
+            if (!engine.UserInHierarchy(applicationUserId, practitionerGuid, true))
+            {
+                throw new UnauthorizedAccessException("You do not have permission to perform this action.");
+            }
 
             VisitType visitType;
             if (input.EventId.HasValue)

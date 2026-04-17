@@ -31,28 +31,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     public class ClassroomMutationExtension
     {
         [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Update)]
-        public ClassroomGroup UpdatePractitionerToTeachClassroom(
-            [Service] IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory,
-            [Service] IReassignmentService reassignmentService,
-            string classroomId,
-            string userId)
-        {
-            var uId = contextAccessor.HttpContext.GetUser().Id.ToString();
-            var classRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
-            ClassroomGroup classRoom = (ClassroomGroup)classRepo.GetAll().Where(x => x.Id == Guid.Parse(classroomId));
-            if (classRoom != null)
-            {
-
-                reassignmentService.AddReassignmentForPractitioner(uId, userId, "Principal Linked Practitioner", DateTime.Now, uId, classroomId, true);
-                return classRoom;
-            }
-
-            // TODO - Why is this returning blank??? It should probably error if it does not find the group to update
-            return new ClassroomGroup();
-        }
-
-        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Update)]
         public ClassroomGroup UpdateClassroomGroup(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -63,7 +41,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             Guid id,
             ClassroomGroup input)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var uId = contextAccessor?.HttpContext?.GetUserId() ?? throw new GraphQLException("Unauthorized");
             var classRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
             var schoolRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
             var pracRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
@@ -72,6 +50,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             Guid? programmeType = input.ProgrammeTypeId;
 
             var hierarchy = engine.GetUserHierarchy(input.UserId.HasValue ? input.UserId : uId);
+            if (input.UserId != uId && !engine.UserInHierarchy(uId, input.UserId.Value, true))
+            {
+                throw new UnauthorizedAccessException("You do not have permission to update this classroom group.");
+            }
+
             if (classRoomGroup == null)
             {
                 if (!string.IsNullOrEmpty(hierarchy))
@@ -114,7 +97,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             var classroom = schoolRepo.GetById(input.ClassroomId);
                             var principalToSend = userManager.FindByIdAsync(classroom.UserId.Value.ToString()).Result;
                             var userToSend = userManager.FindByIdAsync(input.UserId.Value.ToString()).Result;
-                            if (classroom.UserId.Value.ToString() != input.UserId.Value.ToString()) {
+                            if (classroom.UserId.Value.ToString() != input.UserId.Value.ToString())
+                            {
                                 List<TagsReplacements> replacements = new List<TagsReplacements>
                             {
                                 new TagsReplacements()
@@ -242,7 +226,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             // add points for adding a new class for the principal
             pointsService.CalculateAddNewClassToPreschool(uId);
-            
+
             return new ClassroomGroup();
         }
 
@@ -260,7 +244,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             IGenericRepository<SiteAddress, Guid> addressRepo = repoFactory.CreateGenericRepository<SiteAddress>(userContext: uId);
             IGenericRepository<Classroom, Guid> dbRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
 
-            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+            if (input.UserId != uId && !engine.UserInHierarchy(uId, input.UserId.Value, true))
+            {
+                throw new UnauthorizedAccessException("You do not have permission to update this classroom group.");
+            }
 
             Classroom updateClass = dbRepo.GetById(input.Id);
 
@@ -486,7 +473,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             List<ChildProgressReportPeriodModel> childProgressReportPeriods)
         {
             var user = contextAccessor.HttpContext.GetUser() as ApplicationUser;
-            var uId = user.Id; 
+            var uId = user.Id;
 
             if (childProgressReportPeriods == null || childProgressReportPeriods.Count < 2 || childProgressReportPeriods.Count > 4)
             {
@@ -538,10 +525,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var uId = contextAccessor.HttpContext.GetUser().Id.ToString();
             var learnerRepo = repoFactory.CreateRepository<Learner>(userContext: uId);
 
-            var learnerToUpdate = learnerRepo.GetAll().Where(x => x.UserId == input.UserId 
-                                                             && x.IsActive 
+            var learnerToUpdate = learnerRepo.GetAll().Where(x => x.UserId == input.UserId
+                                                             && x.IsActive
                                                              && x.ClassroomGroupId == input.ClassroomGroupId).FirstOrDefault();
-            if (learnerToUpdate != null) {
+            if (learnerToUpdate != null)
+            {
                 learnerToUpdate.IsActive = input.IsActive;
                 learnerToUpdate.StoppedAttendance = input.StoppedAttendance;
                 return learnerRepo.Update(learnerToUpdate);
@@ -583,7 +571,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             string childHierarchy = "";
-            
+
             if (learnerUser != null && childUser != null && newHierarchy != null)
             {
                 if (hierarchyEntry != null)
