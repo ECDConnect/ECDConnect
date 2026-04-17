@@ -70,12 +70,12 @@ class CommunityService {
     return response.data.data.GetAllConnectItem;
   }
 
-  async getCommunityProfile(userId: string): Promise<CommunityProfile> {
+  async getCommunityProfile(): Promise<CommunityProfile> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post(``, {
       query: `
-      query GetCommunityProfile($userId: UUID!) {
-          communityProfile(userId: $userId) {            
+      query GetCommunityProfile() {
+          communityProfile() {            
             id
             userId
             aboutShort
@@ -209,9 +209,7 @@ class CommunityService {
           }
         }
       `,
-      variables: {
-        userId,
-      },
+      variables: {},
     });
 
     if (response.status !== 200 || response.data.errors) {
@@ -342,16 +340,15 @@ class CommunityService {
   }
 
   async getUsersToConnectWith(
-    userId: string,
     provinceIds: string[],
     communitySkillIds: string[],
     connectionTypes: string[]
-  ): Promise<CommunityProfile[]> {
+  ): Promise<CommunityProfileDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post(``, {
       query: `
-      query GetUsersToConnectWith($userId: UUID!, $provinceIds: [UUID!], $communitySkillIds: [UUID!], $connectionTypes: [String]) {
-    usersToConnectWith(userId: $userId, provinceIds: $provinceIds, communitySkillIds: $communitySkillIds, connectionTypes: $connectionTypes) {
+      query GetUsersToConnectWith($provinceIds: [UUID!], $communitySkillIds: [UUID!], $connectionTypes: [String]) {
+    usersToConnectWith(provinceIds: $provinceIds, communitySkillIds: $communitySkillIds, connectionTypes: $connectionTypes) {
         id
             userId
             aboutShort
@@ -387,7 +384,6 @@ class CommunityService {
 }
       `,
       variables: {
-        userId,
         provinceIds,
         communitySkillIds,
         connectionTypes,
@@ -403,15 +399,14 @@ class CommunityService {
   }
 
   async getOtherConnections(
-    userId: string,
     provinceIds: string[],
     communitySkillIds: string[]
   ): Promise<CommunityProfile[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post(``, {
       query: `
-      query GetOtherConnections($userId: UUID!, $provinceIds: [UUID!], $communitySkillIds: [UUID!]) {
-    otherConnections(userId: $userId, provinceIds: $provinceIds, communitySkillIds: $communitySkillIds) {
+      query GetOtherConnections($provinceIds: [UUID!], $communitySkillIds: [UUID!]) {
+    otherConnections(provinceIds: $provinceIds, communitySkillIds: $communitySkillIds) {
  id
             userId
             aboutShort
@@ -438,7 +433,6 @@ class CommunityService {
 }
       `,
       variables: {
-        userId,
         provinceIds,
         communitySkillIds,
       },
