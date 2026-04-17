@@ -12,7 +12,6 @@ namespace ECDLink.Core.Services.Interfaces
         #region Practitioners
         public List<Practitioner> GetPractitionerPeers(string practitionerId);
         public Practitioner GetPractitionerForChild(string childUserId);        
-        public List<Practitioner> GetAllPractitionersForPrincipal(string userId);
         public string GetSiteNameForPractitioner(string userId);
         public Practitioner SwitchPrincipal(string oldPrincipalUserId, string newPrincipalUserId);
         public Practitioner PromotePractitionerToPrincipal(string userId,bool sendComm = false);
