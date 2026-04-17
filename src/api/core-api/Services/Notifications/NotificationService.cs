@@ -25,7 +25,6 @@ namespace EcdLink.Api.CoreApi.Services
     public class NotificationService : INotificationService
     {
         private INotificationProviderFactory<ApplicationUser> _notificationProviderFactory;
-        private ISystemSetting<InvitationOptions> _options;
         private readonly IGenericRepositoryFactory _repositoryFactory;
         private readonly HierarchyEngine _hierarchyEngine;
         private IGenericRepository<MessageLog, Guid> _messageRepo;
@@ -41,18 +40,17 @@ namespace EcdLink.Api.CoreApi.Services
         3 - if its a hub or a push message - signalr is invoked
         4 - the TO can be a user or a role like practitioners/coach/principal etc
          */
-        public NotificationService(INotificationProviderFactory<ApplicationUser> notificationProviderFactory, 
-            ISystemSetting<InvitationOptions> optionAccessor, 
-            IHttpContextAccessor contextAccessor, 
-            IGenericRepositoryFactory repositoryFactory, 
-            HierarchyEngine hierarchyEngine, 
+        public NotificationService(INotificationProviderFactory<ApplicationUser> notificationProviderFactory,
+            ISystemSetting<InvitationOptions> optionAccessor,
+            IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repositoryFactory,
+            HierarchyEngine hierarchyEngine,
             [Service] ApplicationUserManager userManager,
             [Service] ILogger<NotificationService> logger
             )
         {
             _contextAccessor = contextAccessor;
             _notificationProviderFactory = notificationProviderFactory;
-            _options = optionAccessor;
             _repositoryFactory = repositoryFactory;
             _hierarchyEngine = hierarchyEngine;
             _uId = _contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId().GetValueOrDefault();
@@ -63,8 +61,9 @@ namespace EcdLink.Api.CoreApi.Services
         }
 
         public async Task<List<MessageTemplate>> RetrieveTemplate(string template, string protocol)
-        {            
-            if (protocol != "") {
+        {
+            if (protocol != "")
+            {
                 return _templateRepo.GetAll().Where(x => string.Equals(x.TemplateType, template) && x.IsActive == true && x.Protocol == protocol).OrderBy(x => x.Protocol).ToList();
             }
             return _templateRepo.GetAll().Where(x => string.Equals(x.TemplateType, template) && x.IsActive == true).OrderBy(x => x.Protocol).ToList();
@@ -72,7 +71,7 @@ namespace EcdLink.Api.CoreApi.Services
 
         public async Task<bool> NotificationExists(Notification notification, bool excludeDates = false, string searchCriteria = null)
         {
-            var relatedEntityIds = notification.RelatedEntities != null 
+            var relatedEntityIds = notification.RelatedEntities != null
                 ? notification.RelatedEntities.Select(x => x.RelatedToEntityId).ToList()
                 : new List<Guid>();
 
@@ -108,31 +107,37 @@ namespace EcdLink.Api.CoreApi.Services
         }
 
         public async Task<bool> SendNotificationAsync(
-            string userType, 
-            string templatetype, 
-            DateTime messageDate, 
-            ApplicationUser user = null, 
-            string message = "", 
-            string status = MessageStatusConstants.Blue, 
-            List<TagsReplacements> replacements = null, 
-            DateTime? messageEndDate = null, 
-            bool expireOldMessagesOfType = false, 
-            bool excludeDates = false, 
-            string searchCriteria = null, 
+            string userType,
+            string templatetype,
+            DateTime messageDate,
+            ApplicationUser user = null,
+            string message = "",
+            string status = MessageStatusConstants.Blue,
+            List<TagsReplacements> replacements = null,
+            DateTime? messageEndDate = null,
+            bool expireOldMessagesOfType = false,
+            bool excludeDates = false,
+            string searchCriteria = null,
             List<RelatedEntity> relatedEntities = null,
             Guid? groupingId = null,
             string protocol = "")
         {
             try
-            {                
+            {
                 var templates = await RetrieveTemplate(templatetype, protocol);
+
+                if (_uId == Guid.Empty)
+                {
+                    throw new InvalidOperationException("User not authenticated");
+                }
 
                 if (templates != null)
                 {
                     foreach (var item in templates)
                     {
                         //expire older messages of the same type when new ones are sent
-                        if (expireOldMessagesOfType && user != null) {
+                        if (expireOldMessagesOfType && user != null)
+                        {
                             await this.ExpireNotificationsTypesForUser(user.Id.ToString(), item.TemplateType, null, item.Protocol);
                         }
 
@@ -183,7 +188,8 @@ namespace EcdLink.Api.CoreApi.Services
                         }
                     }
                 }
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 _logger.LogError("Issue in SendNotificationAsync for template " + templatetype + " message: " + ex.Message, ex);
                 return false;
@@ -203,7 +209,7 @@ namespace EcdLink.Api.CoreApi.Services
             await CommitNotification(notification, template);
         }
 
-        private async Task SendSMSAsync(Notification notification, ApplicationUser user,  MessageTemplate template)
+        private async Task SendSMSAsync(Notification notification, ApplicationUser user, MessageTemplate template)
         {
             await CommitNotification(notification, template); //commit first, entities are null after sms has been sent
             //convert str to enum
@@ -235,7 +241,7 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 return null;
             }
-                
+
             return _messageRepo.Insert(new MessageLog()
             {
                 Id = Guid.NewGuid(),
@@ -268,6 +274,11 @@ namespace EcdLink.Api.CoreApi.Services
 
         public async Task<bool> SendGenericMessage(string to, string toGroups, string message, string subject, DateTime sendDate, MessageTemplate template, DateTime? messageEndDate = null)
         {
+            if (_uId == Guid.Empty)
+            {
+                throw new InvalidOperationException("User not authenticated");
+            }
+
             Notification notification = new Notification()
             {
                 To = to,
@@ -327,7 +338,7 @@ namespace EcdLink.Api.CoreApi.Services
         {
             if (userId != null)
             {
-                var notifications = _messageRepo.GetAll().Where(x => x.To.Equals(userId) && 
+                var notifications = _messageRepo.GetAll().Where(x => x.To.Equals(userId) &&
                                                                 x.MessageTemplateType == templatetype &&
                                                                 x.MessageDate.HasValue && x.MessageDate.Value.Date == messageDate.Value.Date).ToArray();
                 foreach (var notification in notifications)
@@ -343,10 +354,10 @@ namespace EcdLink.Api.CoreApi.Services
             var notifications = _messageRepo.GetAll().Where(x => x.MessageLogRelatedTos.Any(x => x.RelatedEntityId == entityId)).ToList();
             foreach (var notification in notifications)
             {
-               notification.MessageEndDate = DateTime.Now;
-               notification.UpdatedDate = DateTime.Now;
-               notification.IsActive = false;
-               _messageRepo.Update(notification);
+                notification.MessageEndDate = DateTime.Now;
+                notification.UpdatedDate = DateTime.Now;
+                notification.IsActive = false;
+                _messageRepo.Update(notification);
             }
             return true;
         }
@@ -363,8 +374,8 @@ namespace EcdLink.Api.CoreApi.Services
         public void DeleteGroupNotifications(string templateType, Guid relatedToEntityId)
         {
             var notifications = _messageRepo.GetAll()
-                .Where(x => 
-                    x.MessageTemplateType == templateType 
+                .Where(x =>
+                    x.MessageTemplateType == templateType
                     && x.MessageLogRelatedTos.Any(x => x.RelatedEntityId == relatedToEntityId))
                 .ToList();
 
@@ -379,18 +390,18 @@ namespace EcdLink.Api.CoreApi.Services
             if (userId != null && templateType != null)
             {
                 var notifications = _messageRepo.GetAll()
-                    .Where(n => 
-                        n.To == userId 
-                        && n.MessageTemplateType == templateType 
-                        && (string.IsNullOrWhiteSpace(searchCriteria) || n.Subject.Contains(searchCriteria) || n.Message.Contains(searchCriteria) || n.Action.Contains(searchCriteria)) 
-                        && (!relatedToUserId.HasValue || n.MessageLogRelatedTos.Any(x => x.RelatedEntityId == relatedToUserId) ))
+                    .Where(n =>
+                        n.To == userId
+                        && n.MessageTemplateType == templateType
+                        && (string.IsNullOrWhiteSpace(searchCriteria) || n.Subject.Contains(searchCriteria) || n.Message.Contains(searchCriteria) || n.Action.Contains(searchCriteria))
+                        && (!relatedToUserId.HasValue || n.MessageLogRelatedTos.Any(x => x.RelatedEntityId == relatedToUserId)))
                     .ToList();
-                
+
                 if (notifications.Any())
                 {
                     foreach (var notification in notifications)
                     {
-                        if (protocol == null || (protocol != null && notification.MessageProtocol == protocol))                        
+                        if (protocol == null || (protocol != null && notification.MessageProtocol == protocol))
                             await DisableNotification(notification.Id.ToString());
                     }
                 }
@@ -432,11 +443,11 @@ namespace EcdLink.Api.CoreApi.Services
             string message = template.Message;
             string ctaText = (template.CTAText != null ? template.CTAText : "");
             string cta = (template.CTA != null ? template.CTA : "");
-            string action = (template.Action != null ? template.Action : "") ;//for replacing state guids
+            string action = (template.Action != null ? template.Action : "");//for replacing state guids
 
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
             var organisationName = TenantExecutionContext.Tenant.OrganisationName;
-            var loginLink = TenantExecutionContext.Tenant.SiteAddress ;
+            var loginLink = TenantExecutionContext.Tenant.SiteAddress;
             if (user != null)
             {
                 string firstName = user.FirstName;
@@ -460,14 +471,14 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     subject = subject.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
                 }
-               
-               message = message.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
+
+                message = message.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
                 if (ctaText != "")
                     ctaText = ctaText.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
                 if (cta != "")
                     cta = cta.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
                 //replace action and state items
-               if (action!="")
+                if (action != "")
                     action = action.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
             }
 
@@ -541,7 +552,7 @@ namespace EcdLink.Api.CoreApi.Services
                        n.MessageTemplateType == templateType
                        && n.IsActive == true
                        && n.ReadDate.HasValue == false
-                       &&  n.MessageLogRelatedTos.Any(x => x.RelatedEntityId == relatedEntityId))
+                       && n.MessageLogRelatedTos.Any(x => x.RelatedEntityId == relatedEntityId))
                    .ToList();
 
             return messages;
@@ -553,7 +564,7 @@ namespace EcdLink.Api.CoreApi.Services
                    .Where(n =>
                        n.MessageTemplateType == templateType
                        && n.To == userId
-                       &&  n.MessageLogRelatedTos.Any(x => x.RelatedEntityId == relatedEntityId))
+                       && n.MessageLogRelatedTos.Any(x => x.RelatedEntityId == relatedEntityId))
                    .ToList();
 
             return messages;

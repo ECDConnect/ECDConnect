@@ -252,13 +252,6 @@ namespace ECDLink.Api.CoreApi.Services
             else return null;
         }
 
-        public List<Practitioner> GetAllPractitionersForPrincipal(string userId)
-        {
-            List<Practitioner> practitioners = _practiRepo.GetAll().Where(x => x.PrincipalHierarchy == Guid.Parse(userId)).ToList();
-
-            return practitioners;
-        }
-
         public string GetSiteNameForPractitioner(string userId)
         {
             string siteName = "N/A";
