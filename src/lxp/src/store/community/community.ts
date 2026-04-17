@@ -10,6 +10,7 @@ import {
   getAllConnect,
   getAllConnectItem,
   getCommunityProfile,
+  getUsersToConnectWith,
   saveCommunityProfile,
 } from './community.actions';
 

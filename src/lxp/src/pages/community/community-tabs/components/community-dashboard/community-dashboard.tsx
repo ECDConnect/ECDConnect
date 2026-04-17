@@ -58,11 +58,7 @@ export const CommunityDashboard = () => {
   }, [practitioner]);
 
   const updateCommunityProfile = useCallback(async () => {
-    dispatch(
-      communityThunkActions.getCommunityProfile({
-        userId: practitioner?.userId!,
-      })
-    ).unwrap();
+    dispatch(communityThunkActions.getCommunityProfile({})).unwrap();
   }, []);
 
   const coachItem: UserAlertListDataItem = {
