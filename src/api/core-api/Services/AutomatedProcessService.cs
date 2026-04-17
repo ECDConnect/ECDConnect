@@ -106,7 +106,7 @@ namespace EcdLink.Api.CoreApi.Services
 
                 if (practitioner != null && user != null)
                 {
-                    practitioner.CoachHierarchy = null;
+                    //practitioner.CoachHierarchy = null;
                     practitioner.PrincipalHierarchy = null;
                     practitioner.DateToBeRemoved = DateTime.Now;
                     practitioner.IsLeaving = true;
