@@ -399,12 +399,14 @@ namespace EcdLink.Api.CoreApi.Services
                 .Where(x => x.IsActive 
                         && x.ShareContactInfo == true 
                         && x.UserId != userId)
+                .AsNoTracking()
                 .ToList(); // Materialize once
 
             // 2. Get all relevant connections for the current user (materialize once)
             var userConnections = _communityProfileConnectionRepo.GetAll()
                 .Where(x => x.IsActive 
                         && (x.FromProfile.UserId == userId || x.ToProfile.UserId == userId))
+                .AsNoTracking()
                 .ToList();
 
             // 3. Build connection status dictionary
@@ -492,6 +494,7 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 var accepted = _communityProfileConnectionRepo.GetAll()
                                 .Where(x => x.IsActive && x.ToProfile.UserId == input.UserId && input.UserIdsToAccept.Contains((Guid)x.FromProfile.UserId))
+                                .AsNoTracking()
                                 .ToList();
                 foreach (var item in accepted)
                 {
@@ -511,7 +514,10 @@ namespace EcdLink.Api.CoreApi.Services
             }
             if (input.UserIdsToReject != null && input.UserIdsToReject.Any())
             {
-                var rejected = _communityProfileConnectionRepo.GetAll().Where(x => x.IsActive && x.ToProfile.UserId == input.UserId && input.UserIdsToReject.Contains((Guid)x.FromProfile.UserId)).ToList();
+                var rejected = _communityProfileConnectionRepo.GetAll()
+                                .Where(x => x.IsActive && x.ToProfile.UserId == input.UserId && input.UserIdsToReject.Contains((Guid)x.FromProfile.UserId))
+                                .AsNoTracking()
+                                .ToList();
                 foreach (var item in rejected)
                 {
                     item.InviteAccepted = false;
@@ -584,7 +590,7 @@ namespace EcdLink.Api.CoreApi.Services
 
             // Single query to get all connected profile IDs
             var connectedProfileIds = _communityProfileConnectionRepo.GetAll()
-                .Where(x => x.IsActive && (x.FromProfile.UserId == userId || x.ToProfile.UserId == userId))
+                .Where(x => x.IsActive && (x.FromProfile.UserId == userId || x.ToProfile.UserId == userId)).AsNoTracking()
                 .Select(x => x.FromProfile.UserId == userId ? x.ToCommunityProfileId : x.FromCommunityProfileId)
                 .Distinct()
                 .ToHashSet();
@@ -600,7 +606,7 @@ namespace EcdLink.Api.CoreApi.Services
                 .Where(x => x.IsActive
                         && x.ShareContactInfo == true
                         && x.UserId != userId
-                        && !connectedProfileIds.Contains(x.Id));
+                        && !connectedProfileIds.Contains(x.Id)).AsNoTracking();
 
             // Push filters down to the DB query where possible
             if (hasProvinceFilter && !hasSkillFilter)
