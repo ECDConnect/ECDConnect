@@ -62,7 +62,7 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
     defaultValues: {
       classroomId: '',
       name: '',
-      practitionerId: '',
+      practitionerId: currentPractitioner?.id,
       isFullDay: true,
     },
     reValidateMode: 'onBlur',
@@ -182,6 +182,8 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
     });
   };
 
+  console.log('practitionersList', practitionersList);
+
   return (
     <div>
       <div className=" flex flex-col gap-4 pb-8">
@@ -200,8 +202,8 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
           hint="Optional"
           placeholder={'e.g. Elephant'}
         />
-
-        <div>
+        {/* hiding this dropdown during setup - EC-4401 */}
+        <div className="hidden">
           <Controller
             name={'practitionerId'}
             defaultValue={''}
