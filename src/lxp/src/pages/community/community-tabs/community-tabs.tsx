@@ -25,6 +25,12 @@ export const CommunityTabs = ({
   const date = format(new Date(), 'dd LLLL y');
   const { state } = useLocation<CommunityRouteState>();
   const [selectedTabIndex, setSelectedTabIndex] = useState<number>(0);
+  const appDispatch = useAppDispatch();
+
+  // only fetch once
+  useEffect(() => {
+    appDispatch(communityThunkActions.getCommunityProfile({})).unwrap();
+  }, []);
 
   const tabItems: TabItem[] = [
     {
