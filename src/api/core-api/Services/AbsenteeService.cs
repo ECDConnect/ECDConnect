@@ -69,6 +69,11 @@ namespace ECDLink.Api.CoreApi.Services
             string roleAssignedToUser = null,
             Guid? practitionerRemovalHistory = null)
         {
+             if (Guid.Parse(loggedByUser) != _applicationUserId || !_hierarchyEngine.UserInHierarchy(_applicationUserId, Guid.Parse(practitionerId)))
+            {
+                throw new UnauthorizedAccessException("You do not have permission to add this absentee");
+            }
+
             reason = string.IsNullOrEmpty(reason) ? "Practitioner Marked Absent" : reason;
             var absentee = new Absentees
             {
@@ -196,6 +201,10 @@ namespace ECDLink.Api.CoreApi.Services
             if (absenteeId != null)
             {
                 var absentee = _absenteeRepo.GetById(Guid.Parse(absenteeId));
+                if (Guid.Parse(absentee.LoggedBy) != _applicationUserId || !_hierarchyEngine.UserInHierarchy(_applicationUserId, absentee.UserId.Value))
+                {
+                    throw new UnauthorizedAccessException("You do not have permission to edit this absentee.");
+                }
 
                 var userId = _userManager.FindByIdAsync(absentee.UserId.ToString()).Result?.Id.ToString();
 
