@@ -20,50 +20,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class UserRoleMutationExtension
     {
-[Permission(PermissionGroups.ROLES, GraphActionEnum.Update)]
-
-        public async Task<bool> AddUsersToRoleAsync(
-          [Service] ApplicationUserManager userManager,
-          [Service] HierarchyEngine engine,
-          [Service] IHttpContextAccessor httpContextAccessor,
-          [Service] ApplicationRoleManager roleManager,
-          string userId,
-          List<string> roleNames)
-        {
-            // No reason to look this up from DB, it's all hardcoded already...
-            var validRoleNames = roleManager.Roles.Select(r => r.Name).ToList();
-            var distinctRoleNamesToBeAdded = roleNames?.Distinct().Where(r => validRoleNames.Contains(r));
-            var user = await userManager.FindByIdAsync(userId);
-
-            if (user == default(ApplicationUser))
-            {
-                throw new Exception("User does not exist");
-            }
-
-            var systemUserIsAdmin = await userManager.IsInRoleAsync(new ApplicationUser() { Id = httpContextAccessor.HttpContext.GetUser().Id }, Roles.ADMINISTRATOR);
-
-            // Remove admin from list if user adding roles is not an admin.
-            if (!systemUserIsAdmin)
-            {
-                distinctRoleNamesToBeAdded = distinctRoleNamesToBeAdded?.Where(r => r != Roles.ADMINISTRATOR.ToString());
-            }
-
-            var result = await userManager.AddToRolesAsync(user, distinctRoleNamesToBeAdded);
-
-            // If user is being added as an admin, add them to the hierarchy.
-            if (distinctRoleNamesToBeAdded.Contains(Roles.ADMINISTRATOR))
-            {
-                if (string.IsNullOrEmpty(engine.GetUserHierarchy(Guid.Parse(userId))))
-                {
-                    engine.AddHierarchyEntity<ApplicationUser>(Guid.Parse(userId), Guid.Parse(userId));
-                }
-            }
-
-            return result.Succeeded;
-        }
-
-        // TODO: Refactor
-[Permission(PermissionGroups.ROLES, GraphActionEnum.Update)]
+        [Permission(PermissionGroups.ROLES, GraphActionEnum.Update)]
 
         public async Task<bool> RemoveUserFromRolesAsync(
           [Service] ApplicationUserManager userManager,
@@ -82,7 +39,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             if (user == default(ApplicationUser) || currentUserId is null)
             {
-                throw new Exception("User does not exist");
+                throw new InvalidOperationException("User does not exist");
             }
 
             var distinctRoleNames = roleNames?.Distinct();
@@ -101,10 +58,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 }
             }
 
-            // If user having its roles removed is not an admin, remove them... no this is still not right.
-            // TODO: Use hierarchy to check if user has authority to remove target users roles...
             if (!userIsAdmin)
             {
+                //check if user is in the hierarchy
+                if (!engine.UserInHierarchy(currentUserId.Value, Guid.Parse(userId), true))
+                {
+                    throw new InvalidOperationException("Cannot remove roles from user in hierarchy");
+                }
                 _logger.LogInformation("Roles: Remove {0} from user {1} by {2} [UserRoleMutationExtension.RemoveUserFromRolesAsync(2)]", string.Join(',', distinctRoleNames), user.Id, currentUserId);
                 result = await userManager.RemoveFromRolesAsync(user, distinctRoleNames);
             }

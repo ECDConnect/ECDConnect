@@ -1,5 +1,7 @@
 ﻿using ECDLink.Abstractrions.Services;
 using ECDLink.Core.Caching;
+using ECDLink.Core.Models;
+using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -9,6 +11,7 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security;
 using ECDLink.Tenancy.Context;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -24,6 +27,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
         private readonly ICacheService<ITenantCache> _cacheService;
         private readonly IGenericRepositoryFactory _repoFactory;
         private readonly ILogger<HierarchyEngine> _logger;
+        private readonly AuthenticationDbContext _dbContext;
 
         private IEnumerable<HierarchyEntity> HierarchyCache
         {
@@ -40,13 +44,12 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             }
         }
 
-        public HierarchyEngine(ICacheService<ITenantCache> cacheService, IGenericRepositoryFactory repoFactory, ILogger<HierarchyEngine> logger)
+        public HierarchyEngine(ICacheService<ITenantCache> cacheService, IGenericRepositoryFactory repoFactory, ILogger<HierarchyEngine> logger, AuthenticationDbContext dbContext)
         {
             _cacheService = cacheService;
             _repoFactory = repoFactory;
             _logger = logger;
-            //_logger.LogInformation("HierarchyEngine constructed");
-
+            _dbContext = dbContext;
         }
 
         public UserHierarchyEntity AddHierarchyEntity<TChild>(Guid parentId, Guid childId)
@@ -395,6 +398,121 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Returns the user IDs of all practitioners in the caller's management hierarchy.
+        /// Coach → practitioners where CoachHierarchy == callerId.
+        /// Principal/Practitioner → practitioners where PrincipalHierarchy == callerId, or themselves.
+        /// </summary>
+        public List<Guid> GetPractitionerUserIdsInMyHierarchy(Guid parentUserId)
+        {
+            var role = (from ur in _dbContext.Set<IdentityUserRole<Guid>>().AsNoTracking()
+                        join r in _dbContext.Set<ApplicationIdentityRole>().AsNoTracking() on ur.RoleId equals r.Id
+                        where ur.UserId == parentUserId
+                        select r.Name).SingleOrDefault();
+
+            var practitionerUserIds = new List<Guid>();
+
+            if (role == Roles.COACH)
+            {
+                practitionerUserIds = (from p in _dbContext.Set<Practitioner>().AsNoTracking()
+                                       where p.CoachHierarchy == parentUserId
+                                       select p.UserId.Value).ToList();
+            }
+            else if (role == Roles.PRINCIPAL || role == Roles.PRACTITIONER)
+            {
+                practitionerUserIds = (from p in _dbContext.Set<Practitioner>().AsNoTracking()
+                                       where p.PrincipalHierarchy == parentUserId || p.UserId == parentUserId
+                                       select p.UserId.Value).ToList();
+            }
+
+            return practitionerUserIds;
+        }
+
+        /// <summary>
+        /// Returns true if userId is within the management hierarchy of parentUserId.
+        ///
+        /// Scenario A — practitioner/principal: userId is a practitioner whose CoachHierarchy or
+        ///   PrincipalHierarchy points to parentUserId (or a practitioner in their chain).
+        ///
+        /// Scenario B — child entity (Child.Id): userId is treated as a Child entity ID.
+        ///   The method resolves the practitioners under parentUserId, fetches their hierarchy
+        ///   path strings, then checks whether the child's Hierarchy path starts with any of them.
+        ///   Works for both coach→child and principal→child.
+        ///
+        /// Fallback — child as ApplicationUser: for children who also have a user account,
+        ///   checks UserHierarchyEntity for a direct parent→child link.
+        /// </summary>
+        public bool UserInHierarchy(Guid parentUserId, Guid userId, bool checkChildUserIds = true)
+        {
+            if (parentUserId == userId)
+                return true;
+
+            // ── Scenario A: practitioner/principal directly under parent ──────────────
+            var practitionerUserIds = GetPractitionerUserIdsInMyHierarchy(parentUserId);
+
+            if (practitionerUserIds.Contains(userId))
+                return true;
+
+            if (!checkChildUserIds || !practitionerUserIds.Any())
+                return false;
+
+            // ── Scenario B: child entity — compare Hierarchy path strings ─────────────
+            // Get the hierarchy path strings for every practitioner under this parent.
+            var practitionerHierarchies = (from uh in _dbContext.Set<UserHierarchyEntity>().AsNoTracking()
+                                           where practitionerUserIds.Contains(uh.UserId.Value) && uh.IsActive
+                                           select uh.Hierarchy)
+                                           .Where(h => !string.IsNullOrEmpty(h))
+                                           .ToList();
+
+            if (practitionerHierarchies.Any())
+            {
+                // Look up the child record by its entity Id.
+                var childHierarchy = (from c in _dbContext.Set<Child>().AsNoTracking()
+                                      where c.Id == userId && c.IsActive
+                                      select c.Hierarchy)
+                                      .FirstOrDefault();
+
+                if (!string.IsNullOrEmpty(childHierarchy))
+                {
+                    // Child's path must start with a practitioner's path followed by '.'
+                    // e.g. child "0.1.5.12.47" is under practitioner "0.1.5.12"
+                    return practitionerHierarchies.Any(ph =>
+                        childHierarchy.StartsWith(ph.TrimEnd('.') + "."));
+                }
+            }
+
+            // ── Fallback: child linked as ApplicationUser via UserHierarchyEntity ──────
+            var childUserIdCount = (from uh in _dbContext.Set<UserHierarchyEntity>().AsNoTracking()
+                                    where practitionerUserIds.Contains(uh.ParentId)
+                                        && uh.UserType == "Child"
+                                        && uh.UserId.HasValue
+                                        && uh.UserId == userId
+                                        && uh.IsActive
+                                    select uh.UserId).Count();
+
+            return childUserIdCount == 1;
+        }
+
+        /// <summary>
+        /// Returns true if the calling user is authorized to act on behalf of the target user.
+        /// Granted when caller == target, or the target sits within the caller's hierarchy subtree.
+        /// Admin role bypass must be checked separately for operations that require it.
+        /// </summary>
+        public bool IsCallerAuthorizedForUser(Guid callerUserId, Guid targetUserId)
+        {
+            if (callerUserId == targetUserId)
+                return true;
+
+            var callerHierarchy = GetUserHierarchy(callerUserId);
+            var targetHierarchy = GetUserHierarchy(targetUserId);
+
+            if (string.IsNullOrEmpty(callerHierarchy) || string.IsNullOrEmpty(targetHierarchy))
+                return false;
+
+            // Use a trailing dot to avoid partial-segment false matches (e.g. "0.1.2" vs "0.1.20")
+            return targetHierarchy.StartsWith(callerHierarchy.TrimEnd('.') + ".");
         }
     }
 }

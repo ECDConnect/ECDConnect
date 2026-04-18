@@ -51,21 +51,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             IGenericRepositoryFactory repoFactory,
             string userId)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var dbRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            var practitioners = dbRepo.GetAll().Where(x => x.IsActive && x.CoachHierarchy.HasValue && x.CoachHierarchy.Value == Guid.Parse(userId)).ToList();
-            var coachPractitioners = new List<CoachPractitioner>();
-
-            foreach (var practitioner in practitioners)
+            var uId = contextAccessor?.HttpContext?.GetUserId() ?? throw new GraphQLException("Unauthorized");
+            
+            if (contextAccessor?.HttpContext?.IsInRole(Roles.COACH) != true)
             {
-                coachPractitioners.Add(new CoachPractitioner
-                {
-                    Id = practitioner.Id,
-                    UserId = practitioner.UserId.Value,
-                    ProgrammeType = practitioner.ProgrammeType,
-                    timeline = personnelService.GetPractitionerTimeline(practitioner.UserId.ToString())
-                });
+                throw new GraphQLException("Unauthorized");
             }
+
+            var dbRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            var coachPractitioners = dbRepo.GetAll()
+                .Where(x => x.IsActive && x.CoachHierarchy.HasValue && x.CoachHierarchy.Value == uId)
+                .Select(x => new CoachPractitioner()
+                {
+                    Id = x.Id,
+                    UserId = x.UserId.Value,
+                    ProgrammeType = x.ProgrammeType
+                })
+                .ToList();
 
             return coachPractitioners;
         }
