@@ -396,11 +396,13 @@ namespace EcdLink.Api.CoreApi.Services
 
             // 1. Get all active profiles (excluding current user)
             var allCommunityProfiles = _communityProfileRepo.GetAll()
+                .Include(x => x.User)
                 .Where(x => x.IsActive 
                         && x.ShareContactInfo == true 
-                        && x.UserId != userId)
+                        && x.UserId != userId
+                        && !(x.User.FirstName == null && x.User.Surname == null))
                 .AsNoTracking()
-                .ToList(); // Materialize once
+                .ToList();
 
             // 2. Get all relevant connections for the current user (materialize once)
             var userConnections = _communityProfileConnectionRepo.GetAll()
