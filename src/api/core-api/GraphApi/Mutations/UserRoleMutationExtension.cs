@@ -5,6 +5,7 @@ using ECDLink.DataAccessLayer.Managers;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
@@ -21,7 +22,56 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     public class UserRoleMutationExtension
     {
         [Permission(PermissionGroups.ROLES, GraphActionEnum.Update)]
+        public async Task<bool> AddUsersToRoleAsync(
+                  [Service] ApplicationUserManager userManager,
+                  [Service] HierarchyEngine engine,
+                  [Service] IHttpContextAccessor httpContextAccessor,
+                  [Service] ApplicationRoleManager roleManager,
+                  string userId,
+                  List<string> roleNames)
+        {
+            var isAdminPortal = CheckHostUrlForAdminPortal(
+                TenantExecutionContext.Tenant.AdminSiteAddress,
+                TenantExecutionContext.Tenant.AdminTestSiteAddress,
+                httpContextAccessor.HttpContext?.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri ?? (httpContextAccessor.HttpContext?.Request.Host.Value ?? String.Empty));
+            if (!isAdminPortal)
+            {
+                throw new UnauthorizedAccessException();
+            }
 
+            // No reason to look this up from DB, it's all hardcoded already...
+            var validRoleNames = roleManager.Roles.Select(r => r.Name).ToList();
+            var distinctRoleNamesToBeAdded = roleNames?.Distinct().Where(r => validRoleNames.Contains(r));
+            var user = await userManager.FindByIdAsync(userId);
+
+            if (user == default(ApplicationUser))
+            {
+                throw new Exception("User does not exist");
+            }
+
+            var systemUserIsAdmin = await userManager.IsInRoleAsync(new ApplicationUser() { Id = httpContextAccessor.HttpContext.GetUserId().Value }, Roles.ADMINISTRATOR);
+
+            // Remove admin from list if user adding roles is not an admin.
+            if (!systemUserIsAdmin)
+            {
+                distinctRoleNamesToBeAdded = distinctRoleNamesToBeAdded?.Where(r => r != Roles.ADMINISTRATOR.ToString());
+            }
+
+            var result = await userManager.AddToRolesAsync(user, distinctRoleNamesToBeAdded);
+
+            // If user is being added as an admin, add them to the hierarchy.
+            if (distinctRoleNamesToBeAdded.Contains(Roles.ADMINISTRATOR))
+            {
+                if (string.IsNullOrEmpty(engine.GetUserHierarchy(Guid.Parse(userId))))
+                {
+                    engine.AddHierarchyEntity<ApplicationUser>(Guid.Parse(userId), Guid.Parse(userId));
+                }
+            }
+
+            return result.Succeeded;
+        }
+
+        [Permission(PermissionGroups.ROLES, GraphActionEnum.Update)]
         public async Task<bool> RemoveUserFromRolesAsync(
           [Service] ApplicationUserManager userManager,
           [Service] ILogger<UserMutationExtension> _logger,
@@ -30,6 +80,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           string userId,
           List<string> roleNames)
         {
+            var isAdminPortal = CheckHostUrlForAdminPortal(
+                TenantExecutionContext.Tenant.AdminSiteAddress,
+                TenantExecutionContext.Tenant.AdminTestSiteAddress,
+                httpContextAccessor.HttpContext?.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri ?? (httpContextAccessor.HttpContext?.Request.Host.Value ?? String.Empty));
+            if (!isAdminPortal)
+            {
+                throw new UnauthorizedAccessException();
+            }
+
             // If nothing to remove, just return
             if (!(roleNames?.Any() ?? false))
                 return true;
@@ -78,6 +137,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             return (result?.Succeeded ?? false) && hierarchySuccess;
+        }
+
+        private static bool CheckHostUrlForAdminPortal(string adminSiteAddress, string testAdminSiteAddress, string hostAddress)
+        {
+            return hostAddress.Contains(adminSiteAddress) || hostAddress.Contains(testAdminSiteAddress);
         }
     }
 }
