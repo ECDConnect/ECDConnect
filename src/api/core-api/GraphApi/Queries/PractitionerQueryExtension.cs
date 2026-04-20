@@ -32,7 +32,6 @@ using HotChocolate.Data;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Org.BouncyCastle.Crypto.Engines;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -97,13 +96,24 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] PersonnelService personnelService,
+            [Service] HierarchyEngine engine,
             string id)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
+            if (!contextAccessor.HttpContext.IsInRole(new[] { Roles.COACH, Roles.PRINCIPAL, Roles.ADMINISTRATOR, Roles.PRACTITIONER }))
+            {
+                throw new UnauthorizedAccessException("You do not have permission to retrieve practitioner data.");
+            }
+
             var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             Practitioner practitioner = practiRepo.GetById(new Guid(id));
             if (practitioner != null)
             {
+                if (contextAccessor.HttpContext.IsInRole(new[] { Roles.COACH, Roles.PRINCIPAL, Roles.PRACTITIONER })
+                    && !engine.UserInHierarchy(uId, Guid.Parse(id), false))
+                {
+                    throw new UnauthorizedAccessException("You do not have permission to retrieve this practitioner's data.");
+                }
                 return personnelService.GetPractitionerDetails(practitioner);
             }
             return null;
