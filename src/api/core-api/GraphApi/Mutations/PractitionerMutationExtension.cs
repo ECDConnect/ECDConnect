@@ -262,7 +262,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             if (inviteCount < 6)
             {
                 SendInvitationMutationExtension invite = new SendInvitationMutationExtension();
-                return await invite.SendInviteToApplication(invitationManager, notificationManager, userManager, userId);
+                return await invite.SendInviteToApplication(invitationManager, notificationManager, userManager, contextAccessor, engine, userId);
             }
 
             return false;

@@ -4,6 +4,7 @@ using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -28,11 +29,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           [Service] InvitationNotificationManager notificationManager,
           [Service] ApplicationUserManager userManager,
+          [Service] IHttpContextAccessor contextAccessor,
+          [Service] HierarchyEngine engine,
           string userId)
         {
+            var callerId = contextAccessor.HttpContext.GetUser().Id;
+            var callerIsAdmin = await userManager.IsInRoleAsync(new ApplicationUser { Id = callerId }, Roles.ADMINISTRATOR);
+            if (!callerIsAdmin && !engine.UserInHierarchy(callerId, Guid.Parse(userId)))
+                throw new HotChocolate.Execution.QueryException("You are not authorized to send an invitation to this user.");
+
             // TODO: Make a service for invitations.
             SendInvitationMutationExtension invite = new SendInvitationMutationExtension();
-            return await invite.SendInviteToApplication(invitationManager, notificationManager, userManager, userId);
+            return await invite.SendInviteToApplication(invitationManager, notificationManager, userManager, contextAccessor, engine, userId);
         }
 
         [Permission(PermissionGroups.COACH, GraphActionEnum.Update)]
