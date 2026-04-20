@@ -30,17 +30,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
           [Service] InvitationNotificationManager notificationManager,
           [Service] ApplicationUserManager userManager,
           [Service] IHttpContextAccessor contextAccessor,
-          [Service] HierarchyEngine engine,
           string userId)
         {
-            var callerId = contextAccessor.HttpContext.GetUser().Id;
-            var callerIsAdmin = await userManager.IsInRoleAsync(new ApplicationUser { Id = callerId }, Roles.ADMINISTRATOR);
-            if (!callerIsAdmin && !engine.UserInHierarchy(callerId, Guid.Parse(userId)))
-                throw new HotChocolate.Execution.QueryException("You are not authorized to send an invitation to this user.");
-
             // TODO: Make a service for invitations.
             SendInvitationMutationExtension invite = new SendInvitationMutationExtension();
-            return await invite.SendInviteToApplication(invitationManager, notificationManager, userManager, contextAccessor, engine, userId);
+            return await invite.SendInviteToApplication(invitationManager, notificationManager, userManager, userId);
         }
 
         [Permission(PermissionGroups.COACH, GraphActionEnum.Update)]
