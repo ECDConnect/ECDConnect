@@ -27,6 +27,7 @@ export const ChallengesStep: React.FC<ChallengesStepProps> = ({
 }) => {
   const [selectedOption, setSelectedOption] = useState('');
   const [otherDetail, setOtherDetail] = useState('');
+  const [problemDetail, setProblemDetail] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -41,7 +42,8 @@ export const ChallengesStep: React.FC<ChallengesStepProps> = ({
 
   const canSubmit =
     selectedOption !== '' &&
-    (selectedOption !== 'Other' || otherDetail.trim() !== '');
+    (selectedOption !== 'Other' || otherDetail.trim() !== '') &&
+    problemDetail.trim() !== '';
 
   return (
     <div className="flex h-full w-full flex-col bg-white p-4">
@@ -100,7 +102,11 @@ export const ChallengesStep: React.FC<ChallengesStepProps> = ({
         <FormInput
           textInputType="textarea"
           placeholder="Add text..."
-          onChange={(e) => setValue('problem', e?.target?.value)}
+          onChange={(e) => {
+            const val = e?.target?.value ?? '';
+            setProblemDetail(val);
+            setValue('problem', val);
+          }}
         />
       </div>
       <Button
