@@ -62,7 +62,7 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
     defaultValues: {
       classroomId: '',
       name: '',
-      practitionerId: currentPractitioner?.id,
+      practitionerId: currentPractitioner?.userId,
       isFullDay: true,
     },
     reValidateMode: 'onBlur',

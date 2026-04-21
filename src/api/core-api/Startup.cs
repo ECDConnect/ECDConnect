@@ -136,22 +136,14 @@ namespace EcdLink.Api.CoreApi
             //"https://smartstart-ecdconnect-co-za-funda.datafree.co"};
 
             var corsAllowedDomains = corsAllowedDomainsEnv.Split(",");
-            services.AddCors(options =>
-            {
-                options.AddPolicy("CorsPolicy", builder => builder
-                    .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowCredentials()
-                    .SetIsOriginAllowedToAllowWildcardSubdomains()
-                    .WithOrigins(corsAllowedDomains)
-                    .WithExposedHeaders("WWW-Authenticate"));
-
-                // AllowAnyOrigin is safe here because this endpoint is anonymous and returns no sensitive data
-                options.AddPolicy("PublicPolicy", builder => builder
-                    .AllowAnyOrigin()
-                    .AllowAnyMethod()
-                    .AllowAnyHeader());
-            });
+            services.AddCors(options => options.AddPolicy("CorsPolicy", builder => builder
+                            .AllowAnyMethod()
+                            .AllowAnyHeader()
+                            .AllowCredentials()
+                            .SetIsOriginAllowedToAllowWildcardSubdomains()
+                            .WithOrigins(corsAllowedDomains)
+                            .WithExposedHeaders("WWW-Authenticate")
+                        ));
 
             //services.AddHttpLogging(logging =>
             //{
@@ -361,30 +353,9 @@ namespace EcdLink.Api.CoreApi
                 app.UseResponseCompression();
             }
 
-            app.UseCookiePolicy();
-
-            // Handle online-check before CORS middleware — it's anonymous, returns nothing sensitive,
-            // and must be reachable from any origin (including white-label domains not in the allowlist)
-            app.Use(async (context, next) =>
-            {
-                if (context.Request.Path.StartsWithSegments("/api/authentication/online-check"))
-                {
-                    context.Response.Headers["Access-Control-Allow-Origin"] = "*";
-                    if (context.Request.Method == "OPTIONS")
-                    {
-                        context.Response.Headers["Access-Control-Allow-Methods"] = "GET, OPTIONS";
-                        context.Response.Headers["Access-Control-Allow-Headers"] = "Accept, Cache-Control";
-                        context.Response.StatusCode = 204;
-                        return;
-                    }
-                    context.Response.StatusCode = 200;
-                    return;
-                }
-                await next();
-            });
-
-            app.UseRouting();
             app.UseCors("CorsPolicy");
+            app.UseCookiePolicy();
+            app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseTenancy();
