@@ -7,7 +7,6 @@ using ECDLink.Security.Helpers;
 using ECDLink.Security.JwtSecurity.Enums;
 using ECDLink.Tenancy.Context;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -20,7 +19,6 @@ namespace ECDLink.Security.Api
     //[Route("api/authentication/online")]
     [AllowAnonymous]
     [ApiController]
-    [EnableCors("PublicPolicy")]
     public class OnlineCheckController : ControllerBase
     {
         public OnlineCheckController()
