@@ -141,7 +141,6 @@ namespace EcdLink.Api.CoreApi
                             .AllowAnyHeader()
                             .AllowCredentials()
                             .SetIsOriginAllowedToAllowWildcardSubdomains()
-                            .SetIsOriginAllowed(origin => true)
                             .WithOrigins(corsAllowedDomains)
                             .WithExposedHeaders("WWW-Authenticate")
                         ));
