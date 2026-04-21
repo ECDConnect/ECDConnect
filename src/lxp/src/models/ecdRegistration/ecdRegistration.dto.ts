@@ -1,13 +1,9 @@
-import {
-  NonSubsidyRegistrationType,
-  ChallengeType,
-  SubsidyStatus,
-} from '@ecdlink/graphql';
+import { NonSubsidyRegistrationType, ChallengeType } from '@ecdlink/graphql';
 
 export type EcdRegistrationDto = {
   userId?: string;
   practitionerId: string;
-  subsidy: SubsidyStatus;
+  subsidy: string;
   registrationType?: NonSubsidyRegistrationType;
   challenges: ChallengeType;
   challengesOtherReason?: string;

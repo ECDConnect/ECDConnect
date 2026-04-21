@@ -2,8 +2,6 @@ import { BannerWrapper, Button, Card, Typography } from '@ecdlink/ui';
 import { ReactComponent as EmojiYellowHappy } from '../../../../../../assets/iconRobot.svg';
 import TransparentLayer from '../../../../../../assets/TransparentLayer.png';
 import { useHistory } from 'react-router-dom';
-import ROUTES from '@/routes/routes';
-import { BusinessTabItems } from '@/pages/business/business.types';
 
 interface WelcomeStepProps {
   onNext: () => void;

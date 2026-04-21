@@ -229,9 +229,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         public async Task<ApplicationUser> GetUserById(
             [Service] ApplicationUserManager userManager,
             [Service] ApplicationRoleManager roleManager,
+            [Service] IHttpContextAccessor httpContextAccessor,
             IGenericRepositoryFactory repoFactory,
             string userId)
         {
+            if (string.IsNullOrEmpty(userId))
+            {
+                userId = httpContextAccessor.HttpContext.GetUserId().ToString();
+            }
             var user = await userManager.FindByIdAsync(userId);
 
             if (user is null)

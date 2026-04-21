@@ -250,13 +250,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
          [Service] InvitationNotificationManager notificationManager,
          [Service] ApplicationUserManager userManager,
          [Service] ShortUrlManager shortUrlManager,
-         [Service] HierarchyEngine engine,
          string userId)
         {
-             var callerId = contextAccessor.HttpContext.GetUserId().Value;
-             if (!engine.UserInHierarchy(callerId, Guid.Parse(userId))){
-                throw new HotChocolate.Execution.QueryException("You are not authorized to send an invite to this practitioner.");
-             }      
              var inviteCount = await shortUrlManager.GetMessageCountForUser(Guid.Parse(userId), TemplateTypeConstants.Invitation);
 
             if (inviteCount < 6)

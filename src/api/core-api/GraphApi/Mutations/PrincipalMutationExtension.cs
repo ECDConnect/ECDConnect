@@ -232,64 +232,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return user;
         }
 
-        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.Delete)]
-        public Practitioner DeletePractitionerFromPrincipal([Service] IHttpContextAccessor contextAccessor,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-            IGenericRepositoryFactory repoFactory,
-            [Service] INotificationService notificationService,
-            [Service] ApplicationUserManager userManager,
-            string userId, string principalId)
-        {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId == Guid.Parse(userId)).Where(y => y.PrincipalHierarchy.HasValue && y.PrincipalHierarchy.Value == Guid.Parse(principalId)).OrderBy(x => x.Id).FirstOrDefault();
-            {
-                practitioner.PrincipalHierarchy = null;
-                practitioner.ShareInfo = false;
-                practitionerRepo.Update(practitioner);
-            }
-            //principaluser to send
-            var userToSend = userManager.FindByIdAsync(principalId).Result;
-            if (userToSend != null && practitioner != null && practitioner.User != null)
-            {
-                notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerRemovedFromProgramme, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, new List<TagsReplacements>() { new TagsReplacements() { FindValue = "PractitionerName", ReplacementValue = practitioner.User.FirstName } }, DateTime.Now.AddDays(7), false, true, null,
-                    relatedEntities: new List<RelatedEntity> { new RelatedEntity(practitioner.UserId.Value, "ApplicationUser") });
-            }
-
-            return practitioner;
-        }
-
-        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.Update)]
-        public Practitioner RemapPrincipalToPrincipal([Service] IHttpContextAccessor contextAccessor,
-     IGenericRepositoryFactory repoFactory,
-     string oldPrincipalId, string newPrincipalId)
-        {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            Practitioner oldPrincipal = practitionerRepo.GetByUserId(oldPrincipalId);
-            Practitioner newPrincipal = practitionerRepo.GetByUserId(newPrincipalId);
-
-            //reassign all practitioners to the new principal
-            if (oldPrincipal != null && newPrincipal != null)
-            {
-                List<Practitioner> allPrincipalPractitioners = practitionerRepo.GetAll().Where(x => x.PrincipalHierarchy == oldPrincipal.UserId).ToList();
-                if (allPrincipalPractitioners.Count > 0)
-                {
-                    foreach (var practi in allPrincipalPractitioners)
-                    {
-                        practi.PrincipalHierarchy = newPrincipal.UserId;
-                        practi.CoachHierarchy = newPrincipal.CoachHierarchy;
-                        practi.ShareInfo = true;
-                        practi.CoachLinkDate = DateTime.Now.Date;
-                        practitionerRepo.Update(practi);
-                    }
-                }
-            }
-            return newPrincipal;
-        }
-
         [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.Update)]
         public bool SwitchPrincipal([Service] PersonnelService personnelManager,
             [Service] ApplicationUserManager userManager,
@@ -306,14 +248,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         {
             Practitioner practitionerToPromote = personnelManager.PromotePractitionerToPrincipal(userId, sendComm);
             return personnelManager.MapPractitionerToPrincipal(practitionerToPromote);
-        }
-
-        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.Update)]
-        public Practitioner DemotePractitionerAsPrincipal([Service] PersonnelService personnelManager,
-             string userId)
-        {
-            Practitioner practitionerToDemote = personnelManager.DemotePractitionerAsPrincipal(userId);
-            return practitionerToDemote;
         }
 
         [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Update)]
