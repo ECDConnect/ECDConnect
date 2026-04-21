@@ -362,8 +362,29 @@ namespace EcdLink.Api.CoreApi
             }
 
             app.UseCookiePolicy();
+
+            // Handle online-check before CORS middleware — it's anonymous, returns nothing sensitive,
+            // and must be reachable from any origin (including white-label domains not in the allowlist)
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Path.StartsWithSegments("/api/authentication/online-check"))
+                {
+                    context.Response.Headers["Access-Control-Allow-Origin"] = "*";
+                    if (context.Request.Method == "OPTIONS")
+                    {
+                        context.Response.Headers["Access-Control-Allow-Methods"] = "GET, OPTIONS";
+                        context.Response.Headers["Access-Control-Allow-Headers"] = "Accept, Cache-Control";
+                        context.Response.StatusCode = 204;
+                        return;
+                    }
+                    context.Response.StatusCode = 200;
+                    return;
+                }
+                await next();
+            });
+
             app.UseRouting();
-            app.UseCors();
+            app.UseCors("CorsPolicy");
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseTenancy();
@@ -374,8 +395,7 @@ namespace EcdLink.Api.CoreApi
             {
                 endpoints.MapControllerRoute(
                 name: "default",
-                pattern: "{controller}/{action}/{id?}")
-                .RequireCors("CorsPolicy");
+                pattern: "{controller}/{action}/{id?}");
             });
 
             SecurityStartup.AddSecurityConfiguration(app);
