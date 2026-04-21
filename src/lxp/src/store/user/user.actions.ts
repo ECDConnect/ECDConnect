@@ -29,9 +29,7 @@ export const getUser = createAsyncThunk<
         let user: UserDto | undefined;
 
         if (userAuth?.auth_token) {
-          user = await new UserService(userAuth?.auth_token).getUserById(
-            userAuth.id
-          );
+          user = await new UserService(userAuth?.auth_token).getUser();
         } else {
           return rejectWithValue('no access token, profile check required');
         }
