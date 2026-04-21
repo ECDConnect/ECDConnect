@@ -18,7 +18,14 @@
     <None Remove="Tenancy\TempScripts\**" />
     <None Remove="Middleware\" />
     <None Remove="HtmlSanitizer" />
+    <None Remove="PersistedQueries\userById.graphql" />
     <None Remove="SQLUpgradeScripts" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Content Include="PersistedQueries\**\*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   
  

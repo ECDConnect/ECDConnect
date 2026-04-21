@@ -14,53 +14,10 @@ class UserService {
     this._accessToken = accessToken;
   }
 
-  async getUserById(userId: string): Promise<UserDto> {
+  async getUser(): Promise<UserDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query userById($userId: String) {
-          userById(userId: $userId) {
-            id
-            userName
-            email
-            isSouthAfricanCitizen
-            verifiedByHomeAffairs
-            dateOfBirth
-            idNumber   
-            isImported   
-            resetData      
-            firstName
-            surname
-            fullName
-            raceId
-            languageId
-            emergencyContactFirstName
-            emergencyContactSurname
-            emergencyContactPhoneNumber
-            nextOfKinContactNumber
-            nextOfKinFirstName
-            nextOfKinSurname
-            contactPreference
-            genderId
-            principalObjectData  {
-              isPrincipal
-            }
-            phoneNumber
-            profileImageUrl
-            roles {
-              id
-              name
-              systemName
-            }   
-            resetData  
-            registerType    
-            whatsAppConsent   
-          }
-        }
-      `,
-      variables: {
-        userId: userId,
-      },
+      id: 'userCurrent',
     });
 
     if (response.status !== 200) {

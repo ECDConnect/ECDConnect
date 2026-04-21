@@ -1,22 +1,20 @@
-using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.DataAccessLayer.Context;
-using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.EGraphQL.Interceptors;
-using ECDLink.EGraphQL.ObjectTypes.Input;
 using ECDLink.EGraphQL.Registration;
 using ECDLink.EGraphQL.Registration.Modules;
 using HotChocolate;
+using HotChocolate.Execution;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
 
 namespace ECDLink.EGraphQL
 {
@@ -47,13 +45,36 @@ namespace ECDLink.EGraphQL
               .AddType<UploadType>()
               .AddDirectiveType<TokenAccessDirectiveType>()
               .AddDirectiveType<PermissionDirectiveType>()
+              .AddProjections()
               .AddFiltering()
               .AddSorting()
               .RegisterDbContext<AuthenticationDbContext>(HotChocolate.Data.DbContextKind.Synchronized)
               .RegisterService<HierarchyEngine>(ServiceKind.Synchronized)
               .RegisterService<IDbContextFactory<AuthenticationDbContext>>(ServiceKind.Synchronized)
               .RegisterService<ApplicationUserManager>(ServiceKind.Synchronized)
-              .RegisterService<IGenericRepositoryFactory>(ServiceKind.Synchronized);
+              .RegisterService<IGenericRepositoryFactory>(ServiceKind.Synchronized)
+              .AllowIntrospection(isDevelopment)
+              .UseExceptions()
+              .UseTimeout()
+              .UseDocumentCache()
+              .UseReadPersistedQuery()
+              .UseDocumentParser()
+              .UseDocumentValidation()
+              .UseOperationCache()
+              .UseOperationResolver()
+              .UseRequest(next => async context =>
+              {
+                  //if (context.Request.Query is null && (context.IsCachedDocument || context.IsPersistedDocument))
+                  {
+                      await next(context);
+                      return;
+                  }
+                  //var error = ErrorBuilder.New().SetMessage("Persisted Operations Only").Build();
+                  //context.Result = QueryResultBuilder.CreateError(error);
+              })
+              .UseOperationVariableCoercion()
+              .UseOperationExecution()
+              .AddReadOnlyFileSystemQueryStorage(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "PersistedQueries"));
 
             builder = builder
                 .AddAuthorization()
