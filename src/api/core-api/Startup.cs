@@ -136,15 +136,22 @@ namespace EcdLink.Api.CoreApi
             //"https://smartstart-ecdconnect-co-za-funda.datafree.co"};
 
             var corsAllowedDomains = corsAllowedDomainsEnv.Split(",");
-            services.AddCors(options => options.AddPolicy("CorsPolicy", builder => builder
-                            .AllowAnyMethod()
-                            .AllowAnyHeader()
-                            .AllowCredentials()
-                            .SetIsOriginAllowedToAllowWildcardSubdomains()
-                            .SetIsOriginAllowed(origin => true)
-                            .WithOrigins(corsAllowedDomains)
-                            .WithExposedHeaders("WWW-Authenticate")
-                        ));
+            services.AddCors(options =>
+            {
+                options.AddPolicy("CorsPolicy", builder => builder
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials()
+                    .SetIsOriginAllowedToAllowWildcardSubdomains()
+                    .WithOrigins(corsAllowedDomains)
+                    .WithExposedHeaders("WWW-Authenticate"));
+
+                // AllowAnyOrigin is safe here because this endpoint is anonymous and returns no sensitive data
+                options.AddPolicy("PublicPolicy", builder => builder
+                    .AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader());
+            });
 
             //services.AddHttpLogging(logging =>
             //{
