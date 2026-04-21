@@ -363,7 +363,7 @@ namespace EcdLink.Api.CoreApi
 
             app.UseCookiePolicy();
             app.UseRouting();
-            app.UseCors("CorsPolicy");
+            app.UseCors();
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseTenancy();
@@ -374,7 +374,8 @@ namespace EcdLink.Api.CoreApi
             {
                 endpoints.MapControllerRoute(
                 name: "default",
-                pattern: "{controller}/{action}/{id?}");
+                pattern: "{controller}/{action}/{id?}")
+                .RequireCors("CorsPolicy");
             });
 
             SecurityStartup.AddSecurityConfiguration(app);
