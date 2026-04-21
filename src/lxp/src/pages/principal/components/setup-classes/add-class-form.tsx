@@ -182,8 +182,6 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
     });
   };
 
-  console.log('practitionersList', practitionersList);
-
   return (
     <div>
       <div className=" flex flex-col gap-4 pb-8">

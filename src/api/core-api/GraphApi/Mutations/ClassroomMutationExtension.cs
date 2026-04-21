@@ -50,10 +50,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             Guid? programmeType = input.ProgrammeTypeId;
 
             var hierarchy = engine.GetUserHierarchy(input.UserId.HasValue ? input.UserId : uId);
-            if (input.UserId != uId && !engine.UserInHierarchy(uId, input.UserId.Value, true))
-            {
-                throw new UnauthorizedAccessException("You do not have permission to update this classroom group.");
-            }
 
             if (classRoomGroup == null)
             {
@@ -130,6 +126,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                 if (input.UserId != null)
                 {
+                    if (input.UserId != uId && !engine.UserInHierarchy(uId, input.UserId.Value, true))
+                    {
+                        throw new UnauthorizedAccessException("You do not have permission to update this classroom group.");
+                    }
+
                     if (hierarchy != null && oldHierarchy != classRoomGroup.Hierarchy)
                     {
                         var historyRepo = repoFactory.CreateGenericRepository<ClassReassignmentHistory>(userContext: uId);
