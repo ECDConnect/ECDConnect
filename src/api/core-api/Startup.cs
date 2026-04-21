@@ -361,9 +361,9 @@ namespace EcdLink.Api.CoreApi
                 app.UseResponseCompression();
             }
 
-            app.UseCors("CorsPolicy");
             app.UseCookiePolicy();
             app.UseRouting();
+            app.UseCors("CorsPolicy");
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseTenancy();
