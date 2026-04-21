@@ -1,4 +1,5 @@
 import { EcdRegistrationDto } from '@ecdlink/core';
+import { NonSubsidyRegistrationType, SubsidyStatus } from '@ecdlink/graphql';
 import { StepItem } from '@ecdlink/ui';
 
 type RegistrationSection = 'Apply' | 'Comply';
@@ -17,9 +18,16 @@ export const registrationTimelineSteps = ({
   const hasSilverOrGold =
     (ecdRegistration?.hasSilverCertificate ?? false) ||
     (ecdRegistration?.hasGoldCertificate ?? false);
+  const registrationStatus =
+    ecdRegistration?.registrationType ===
+      NonSubsidyRegistrationType.FullyRegistered ||
+    ecdRegistration?.registrationType ===
+      NonSubsidyRegistrationType.PartiallyRegistered;
+  const hasSubsidy = ecdRegistration?.subsidy === SubsidyStatus.Yes;
 
-  const applyCompleted = hasBronze || hasSilverOrGold;
-  const complyCompleted = hasSilverOrGold;
+  const applyCompleted =
+    hasSubsidy || registrationStatus || hasBronze || hasSilverOrGold;
+  const complyCompleted = hasSubsidy || registrationStatus || hasSilverOrGold;
 
   return [
     {

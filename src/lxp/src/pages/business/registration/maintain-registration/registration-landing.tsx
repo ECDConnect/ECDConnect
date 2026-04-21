@@ -24,7 +24,11 @@ import { registrationTimelineSteps } from './components/registration-timeline-st
 import { OnlineOnlyModal } from '@/modals/offline-sync/online-only-modal';
 import { InformationPage } from './components/information-page';
 import { BusinessTabItems } from '../../business.types';
-import { EcdRegistrationUpdateInputModelInput } from '@ecdlink/graphql';
+import {
+  EcdRegistrationUpdateInputModelInput,
+  NonSubsidyRegistrationType,
+  SubsidyStatus,
+} from '@ecdlink/graphql';
 import { useAppDispatch } from '@/store/config/config';
 
 type RegistrationSection = 'Apply' | 'Comply';
@@ -39,6 +43,20 @@ export const RegistrationLanding = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const dispatch = useAppDispatch();
+
+  const hasBronze =
+    practitioner?.ecdRegistration?.hasBronzeCertificate ?? false;
+  const hasSilverOrGold =
+    (practitioner?.ecdRegistration?.hasSilverCertificate ?? false) ||
+    (practitioner?.ecdRegistration?.hasGoldCertificate ?? false);
+  const registrationStatus =
+    practitioner?.ecdRegistration?.registrationType ===
+      NonSubsidyRegistrationType.FullyRegistered ||
+    practitioner?.ecdRegistration?.registrationType ===
+      NonSubsidyRegistrationType.PartiallyRegistered;
+  const hasSubsidy =
+    practitioner?.ecdRegistration?.subsidy === SubsidyStatus.Yes;
+  const registrationCompleted = hasSubsidy || registrationStatus;
 
   const showOnlineOnly = useCallback(() => {
     dialog({
@@ -123,73 +141,69 @@ export const RegistrationLanding = () => {
         text={'DBE registration helper'}
         color={'textDark'}
       />
-      {!practitioner?.ecdRegistration?.hasBronzeCertificate &&
-        !practitioner?.ecdRegistration?.hasSilverCertificate &&
-        !practitioner?.ecdRegistration?.hasGoldCertificate && (
-          <Alert
-            type={'info'}
-            title={'Get started with your registration!'}
-            button={
-              <Button
-                text="Start"
-                icon="ArrowCircleRightIcon"
-                type="filled"
-                color="quatenary"
-                textColor="white"
-                disabled={isUpdating}
-                onClick={() => setShowApply(true)}
-              />
-            }
-          />
-        )}
-      {practitioner?.ecdRegistration?.hasBronzeCertificate &&
-        !practitioner?.ecdRegistration?.hasSilverCertificate &&
-        !practitioner?.ecdRegistration?.hasGoldCertificate && (
-          <CelebrationCard
-            image={<EmojiBlueSmile className="mr-2 h-16 w-16" />}
-            primaryMessage={`Good job, you have your Bronze certificate!`}
-            secondaryMessage="Get started with the Comply process."
-            primaryTextColour="quatenary"
-            secondaryTextColour="black"
-            backgroundColour="quatenaryBg"
-            button={
-              <Button
-                text="Start"
-                icon="ArrowCircleRightIcon"
-                type="filled"
-                color="quatenary"
-                textColor="white"
-                disabled={isUpdating}
-                onClick={() => setShowComply(true)}
-              />
-            }
-          />
-        )}
-      {(practitioner?.ecdRegistration?.hasSilverCertificate ||
-        practitioner?.ecdRegistration?.hasGoldCertificate) && (
-        <CelebrationCard
-          image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
-          primaryMessage={`Well done, you've completed your registration!`}
-          secondaryMessage="Explore more resources for your ECD business."
-          primaryTextColour="successMain"
-          secondaryTextColour="black"
-          backgroundColour="successBg"
+      {!hasBronze && !hasSilverOrGold && !registrationCompleted && (
+        <Alert
+          type={'info'}
+          title={'Get started with your registration!'}
           button={
             <Button
-              text="See resources"
-              icon="LinkIcon"
+              text="Start"
+              icon="ArrowCircleRightIcon"
               type="filled"
               color="quatenary"
               textColor="white"
-              onClick={() =>
-                history.push(ROUTES.BUSINESS, {
-                  activeTabIndex: BusinessTabItems.RESOURCES,
-                })
-              }
+              disabled={isUpdating}
+              onClick={() => setShowApply(true)}
             />
           }
         />
       )}
+      {hasBronze && !hasSilverOrGold && !registrationCompleted && (
+        <CelebrationCard
+          image={<EmojiBlueSmile className="mr-2 h-16 w-16" />}
+          primaryMessage={`Good job, you have your Bronze certificate!`}
+          secondaryMessage="Get started with the Comply process."
+          primaryTextColour="quatenary"
+          secondaryTextColour="black"
+          backgroundColour="quatenaryBg"
+          button={
+            <Button
+              text="Start"
+              icon="ArrowCircleRightIcon"
+              type="filled"
+              color="quatenary"
+              textColor="white"
+              disabled={isUpdating}
+              onClick={() => setShowComply(true)}
+            />
+          }
+        />
+      )}
+      {hasSilverOrGold ||
+        (registrationCompleted && (
+          <CelebrationCard
+            image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
+            primaryMessage={`Well done, you've completed your registration!`}
+            secondaryMessage="Explore more resources for your ECD business."
+            primaryTextColour="successMain"
+            secondaryTextColour="black"
+            backgroundColour="successBg"
+            button={
+              <Button
+                text="See resources"
+                icon="LinkIcon"
+                type="filled"
+                color="quatenary"
+                textColor="white"
+                onClick={() =>
+                  history.push(ROUTES.BUSINESS, {
+                    activeTabIndex: BusinessTabItems.RESOURCES,
+                  })
+                }
+              />
+            }
+          />
+        ))}
       <div className="mt-8">
         <Steps
           items={registrationTimelineSteps({

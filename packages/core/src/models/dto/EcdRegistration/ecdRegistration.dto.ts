@@ -2,7 +2,7 @@ export type EcdRegistrationDto = {
   id: string;
   userId?: string;
   practitionerId: string;
-  subsidy: number;
+  subsidy: string;
   registrationType?: string;
   challenges: string;
   challengesOtherReason?: string;
