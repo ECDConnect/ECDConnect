@@ -122,7 +122,6 @@ export const ConnectionProfile = () => {
       );
       await dispatch(
         communityThunkActions.getCommunityProfile({
-          userId: loggedUserCommunityProfile?.userId!,
           overrideCache: true,
         })
       ).then(() => {
@@ -149,7 +148,6 @@ export const ConnectionProfile = () => {
       if (rejectResponse) {
         await dispatch(
           communityThunkActions.getCommunityProfile({
-            userId: loggedUserCommunityProfile?.userId!,
             overrideCache: true,
           })
         ).then(() => {

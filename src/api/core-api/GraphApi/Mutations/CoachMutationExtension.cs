@@ -110,12 +110,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         public Practitioner AddPractitionerToCoach([Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             IGenericRepositoryFactory repoFactory,
+            ApplicationUserManager userManager,
             string practitionerId,
             string coachId)
         {
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
+            var callerIsAdmin = userManager.IsInRoleAsync(new ApplicationUser { Id = uId }, Roles.ADMINISTRATOR).Result;
+            if (uId != Guid.Parse(coachId) && !callerIsAdmin)
+                throw new HotChocolate.Execution.QueryException("You are not authorized to manage practitioners for this coach.");
+
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
             Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId == Guid.Parse(practitionerId));
             if (practitioner != null)
@@ -132,13 +137,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         public Practitioner DeletePractitionerForCoach([Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             IGenericRepositoryFactory repoFactory,
+            ApplicationUserManager userManager,
             string practitionerId, string coachId)
         {
-
             //find the practitioner
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
+            var callerIsAdmin = userManager.IsInRoleAsync(new ApplicationUser { Id = uId }, Roles.ADMINISTRATOR).Result;
+            if (uId != Guid.Parse(coachId) && !callerIsAdmin)
+                throw new HotChocolate.Execution.QueryException("You are not authorized to manage practitioners for this coach.");
+
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
             Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId == Guid.Parse(practitionerId));
             if (practitioner != null)
@@ -154,9 +163,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         [Permission(PermissionGroups.COACH, GraphActionEnum.Update)]
         public Coach UpdateCoachAboutInfo([Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
+            ApplicationUserManager userManager,
             string userId, string aboutInfo)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
+            var callerIsAdmin = userManager.IsInRoleAsync(new ApplicationUser { Id = uId }, Roles.ADMINISTRATOR).Result;
+            if (uId != Guid.Parse(userId) && !callerIsAdmin)
+                throw new HotChocolate.Execution.QueryException("You are not authorized to update this coach.");
+
             var dbRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
             Coach coach = dbRepo.GetByUserId(userId);
 
@@ -176,9 +190,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         public Coach UpdateCoachCommunityTabStatus(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
+            ApplicationUserManager userManager,
             Guid coachUserId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
+            var callerIsAdmin = userManager.IsInRoleAsync(new ApplicationUser { Id = uId }, Roles.ADMINISTRATOR).Result;
+            if (uId != coachUserId && !callerIsAdmin)
+                throw new HotChocolate.Execution.QueryException("You are not authorized to update this coach.");
+
             var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
             var coach = coachRepo.GetByUserId(coachUserId);
             if (coach != null)

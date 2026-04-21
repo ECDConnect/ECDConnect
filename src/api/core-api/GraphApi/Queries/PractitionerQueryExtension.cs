@@ -19,6 +19,7 @@ using ECDLink.DataAccessLayer.Entities.Reports;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -47,13 +48,24 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] PersonnelService personnelService,
+            [Service] HierarchyEngine engine,
             string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
+            if (!contextAccessor.HttpContext.IsInRole(new[] { Roles.COACH, Roles.PRINCIPAL, Roles.ADMINISTRATOR, Roles.PRACTITIONER }))
+            {
+                throw new UnauthorizedAccessException("You do not have permission to retrieve practitioner data.");
+            }
+
             var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             Practitioner practitioner = practiRepo.GetByUserId(userId);
             if (practitioner != null)
             {
+                if (contextAccessor.HttpContext.IsInRole(new[] { Roles.COACH, Roles.PRINCIPAL, Roles.PRACTITIONER })
+                    && !engine.UserInHierarchy(uId, Guid.Parse(userId), false))
+                {
+                    throw new UnauthorizedAccessException("You do not have permission to retrieve this practitioner's data.");
+                }
                 return personnelService.GetPractitionerDetails(practitioner);
             }
             return null;
@@ -63,7 +75,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         public PractitionerModel GetPractitionerPermissions(
           [Service] IHttpContextAccessor contextAccessor,
           IGenericRepositoryFactory repoFactory,
-          [Service] PersonnelService personnelService,
           string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -85,13 +96,24 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] PersonnelService personnelService,
+            [Service] HierarchyEngine engine,
             string id)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
+            if (!contextAccessor.HttpContext.IsInRole(new[] { Roles.COACH, Roles.PRINCIPAL, Roles.ADMINISTRATOR, Roles.PRACTITIONER }))
+            {
+                throw new UnauthorizedAccessException("You do not have permission to retrieve practitioner data.");
+            }
+
             var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             Practitioner practitioner = practiRepo.GetById(new Guid(id));
             if (practitioner != null)
             {
+                if (contextAccessor.HttpContext.IsInRole(new[] { Roles.COACH, Roles.PRINCIPAL, Roles.PRACTITIONER })
+                    && !engine.UserInHierarchy(uId, Guid.Parse(id), false))
+                {
+                    throw new UnauthorizedAccessException("You do not have permission to retrieve this practitioner's data.");
+                }
                 return personnelService.GetPractitionerDetails(practitioner);
             }
             return null;
@@ -103,7 +125,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             AuthenticationDbContext dbContext,
             IGenericRepositoryFactory repoFactory,
             ApplicationUserManager userManager,
-            [Service] IClassroomService classroomService,
             string idNumber)
         {
             var uId = contextAccessor.HttpContext.GetUser()?.Id;
@@ -121,7 +142,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 {
                     ApplicationUser currentUser = userManager.FindByIdAsync(practitionerUser.Id.ToString()).Result;
                     Classroom classroom = dbContext.Classrooms.Where(classroom => classroom.UserId == practitionerUser.Id).FirstOrDefault();
-                    
+
                     var practitioner = dbRepo.GetByUserId(practitionerUser.Id);
 
                     if (practitioner != null)
@@ -132,10 +153,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         if (practitioner.PrincipalHierarchy == null)
                         {
 
-                            if (TenantExecutionContext.Tenant.TenantType == ECDLink.Tenancy.Enums.TenantType.WhiteLabel) 
+                            if (TenantExecutionContext.Tenant.TenantType == ECDLink.Tenancy.Enums.TenantType.WhiteLabel)
                             {
                                 hasPreschool = classroom != null;
-                            } else 
+                            }
+                            else
                             {
                                 var belongToOtherSchool = dbContext.ClassroomGroups.Where(x => x.UserId == practitionerUser.Id && x.IsActive == true)
                                                                         .Include(x => x.Classroom).Where(x => x.Classroom.UserId != practitionerUser.Id)
@@ -146,47 +168,56 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                                     var startDate = practitioner.StartDate.Value.Date;
                                     var endDate = DateTime.Today;
                                     var trailPeriodDays = (endDate - startDate).TotalDays;
-                                    var isTrialPeriod = trailPeriodDays < 31; 
+                                    var isTrialPeriod = trailPeriodDays < 31;
                                     var isDummySchool = classroom?.PreschoolCode == null;
                                     hasPreschool = classroom == null ? false : !isDummySchool || belongToOtherSchool || !isTrialPeriod;
-                                } else
-                                {
-                                    return new PractitionerUserAndNote() { 
-                                        AppUser = null, 
-                                        Note = "Not on " + TenantExecutionContext.Tenant.ApplicationName + " app", 
-                                        IsRegistered = false, 
-                                        BelongsToPreschool = false };
                                 }
-                                
+                                else
+                                {
+                                    return new PractitionerUserAndNote()
+                                    {
+                                        AppUser = null,
+                                        Note = "Not on " + TenantExecutionContext.Tenant.ApplicationName + " app",
+                                        IsRegistered = false,
+                                        BelongsToPreschool = false
+                                    };
+                                }
+
                             }
 
-                            return new PractitionerUserAndNote() { 
-                                AppUser = practitioner.User, 
-                                IsRegistered = practitioner.IsRegistered, 
-                                BelongsToPreschool = hasPreschool, 
-                                Note = hasPreschool ? "This practitioner is linked to a different programme" : null };
+                            return new PractitionerUserAndNote()
+                            {
+                                AppUser = practitioner.User,
+                                IsRegistered = practitioner.IsRegistered,
+                                BelongsToPreschool = hasPreschool,
+                                Note = hasPreschool ? "This practitioner is linked to a different programme" : null
+                            };
                         }
                         else
                         {
-                            return new PractitionerUserAndNote() { 
-                                AppUser = practitioner.User, 
-                                Note = "This practitioner is linked to a different programme", 
-                                IsRegistered = classroom != null };
+                            return new PractitionerUserAndNote()
+                            {
+                                AppUser = practitioner.User,
+                                Note = "This practitioner is linked to a different programme",
+                                IsRegistered = classroom != null
+                            };
                         }
                     }
                     else
                     {
-                        return new PractitionerUserAndNote() { 
-                            AppUser = null, 
-                            Note = "Not on " + TenantExecutionContext.Tenant.ApplicationName + " app", 
-                            IsRegistered = false, 
-                            BelongsToPreschool = false };
+                        return new PractitionerUserAndNote()
+                        {
+                            AppUser = null,
+                            Note = "Not on " + TenantExecutionContext.Tenant.ApplicationName + " app",
+                            IsRegistered = false,
+                            BelongsToPreschool = false
+                        };
                     }
                 }
             }
             return null;
         }
-        
+
         [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.View)]
         public ApplicationUser GetPractitionerByIdNumberInternal(
             [Service] IHttpContextAccessor contextAccessor,
@@ -257,7 +288,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             Practitioner practi = practiRepo.GetByUserId(userId);
             // Return no classroom if the OA practitioner has not accepted any invitation for classroom
             if (TenantExecutionContext.Tenant.TenantType == ECDLink.Tenancy.Enums.TenantType.OpenAccess
-                && !practi.IsPrincipalOrAdmin() && practi.PrincipalHierarchy != null && !practi.DateAccepted.HasValue) 
+                && !practi.IsPrincipalOrAdmin() && practi.PrincipalHierarchy != null && !practi.DateAccepted.HasValue)
             {
                 return null;
             }
@@ -270,14 +301,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 if (practi.IsPrincipal == true)
                 {
                     Practitioner practiPrincipal = practiRepo.GetByUserId(practi.UserId.ToString());
-                    if (practiPrincipal != null && practiPrincipal.UserId != practi.UserId) {
+                    if (practiPrincipal != null && practiPrincipal.UserId != practi.UserId)
+                    {
                         practitioners.Add(practiPrincipal);
                     }
                 }
                 if (practi.PrincipalHierarchy.HasValue)
                 {
                     Practitioner practiPrincipal = practiRepo.GetByUserId(practi.PrincipalHierarchy.ToString());
-                    if (practiPrincipal != null && practiPrincipal.UserId != practi.UserId) {
+                    if (practiPrincipal != null && practiPrincipal.UserId != practi.UserId)
+                    {
                         practitioners.Add(practiPrincipal);
                     }
                 }
@@ -294,7 +327,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                             string practiNumber = practitioner.User.PhoneNumber;
                             string practiClassroomNames = "";
                             string practiType = "";
-                         
+
                             if (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal != false)
                             {
                                 practiType = "Principal";
@@ -405,7 +438,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return await personnelService.GetAllPractitionersAsync();
         }
 
-        
+
         [UseFiltering]
         [UseSorting]
         [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.View)]

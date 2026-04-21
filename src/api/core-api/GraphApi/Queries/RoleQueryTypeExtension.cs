@@ -2,6 +2,7 @@ using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Api.CoreApi.Services;
 using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -33,6 +34,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             IGenericRepositoryFactory repoFactory,
             [Service] ApplicationRoleManager roleManager,
             [Service] PersonnelService personnelService,
+            [Service] HierarchyEngine engine,
             string userId = null)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -54,7 +56,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 //Principal or Practitioner - Principal is just a Practitioner with IsPrincipal as true
                 if (roles.Any(x => x.SystemName.Contains(Roles.PRINCIPAL.ToUpper()) || x.SystemName.Contains(Roles.PRACTITIONER.ToUpper())))
                 {
-                    var userData = new PractitionerQueryExtension().GetPractitionerByUserId(contextAccessor, repoFactory, personnelService, userId);
+                    var userData = new PractitionerQueryExtension().GetPractitionerByUserId(contextAccessor, repoFactory, personnelService, engine, userId);
                     if (userData != null)
                     {
                         if (userData.IsPrincipal.HasValue && userData.IsPrincipal == true)

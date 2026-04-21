@@ -8,6 +8,7 @@ using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -32,6 +33,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public async Task<bool> SendNotificationToUser(
           [Service] ApplicationUserManager userManager,
           [Service] INotificationService notificationService,
+          [Service] IHttpContextAccessor httpContextAccessor,
+          [Service] HierarchyEngine engine,
           string userType,
           string templateType, string userId = null, DateTime? startDate = null, DateTime? endDate = null)
         {
@@ -39,6 +42,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 startDate = DateTime.Now.Date;
             if (userId != null)
             {
+                var callerId = httpContextAccessor.HttpContext.GetUser().Id;
+                var callerIsAdmin = await userManager.IsInRoleAsync(new ApplicationUser { Id = callerId }, Roles.ADMINISTRATOR);
+                if (!callerIsAdmin && !engine.UserInHierarchy(callerId, Guid.Parse(userId)))
+                    throw new HotChocolate.Execution.QueryException("You are not authorized to send notifications to this user.");
+
                 var userToSend = await userManager.FindByIdAsync(userId);
                 return await notificationService.SendNotificationAsync(userType, templateType, (DateTime)startDate, userToSend);
             }
@@ -67,8 +75,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         }
 
         [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Update)]
-        public async Task<bool> ExpireNotificationsTypesForUser([Service] INotificationService notificationService, string userId, string templateType, string searchCriteria = null)
+        public async Task<bool> ExpireNotificationsTypesForUser(
+            [Service] INotificationService notificationService,
+            [Service] IHttpContextAccessor httpContextAccessor,
+            [Service] ApplicationUserManager userManager,
+            [Service] HierarchyEngine engine,
+            string userId, string templateType, string searchCriteria = null)
         {
+            var callerId = httpContextAccessor.HttpContext.GetUser().Id;
+            var callerIsAdmin = await userManager.IsInRoleAsync(new ApplicationUser { Id = callerId }, Roles.ADMINISTRATOR);
+            if (!callerIsAdmin && !engine.UserInHierarchy(callerId, Guid.Parse(userId)))
+                throw new HotChocolate.Execution.QueryException("You are not authorized to manage notifications for this user.");
+
             return await notificationService.ExpireNotificationsTypesForUser(userId, templateType, searchCriteria);
         }
 
@@ -132,6 +150,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             MessageLogModel input)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
+
+            if (!contextAccessor.HttpContext.IsInRole(new[] { Roles.ADMINISTRATOR, Roles.SUPER_ADMINISTRATOR }))
+            {
+                throw new UnauthorizedAccessException("You do not have permission to perform this action.");
+            }
+
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
             var messageTemplateRepo = repoFactory.CreateGenericRepository<MessageTemplate>(userContext: uId);

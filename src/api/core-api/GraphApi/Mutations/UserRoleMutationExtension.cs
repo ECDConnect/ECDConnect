@@ -5,6 +5,7 @@ using ECDLink.DataAccessLayer.Managers;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
@@ -20,16 +21,24 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class UserRoleMutationExtension
     {
-[Permission(PermissionGroups.ROLES, GraphActionEnum.Update)]
-
+        [Permission(PermissionGroups.ROLES, GraphActionEnum.Update)]
         public async Task<bool> AddUsersToRoleAsync(
-          [Service] ApplicationUserManager userManager,
-          [Service] HierarchyEngine engine,
-          [Service] IHttpContextAccessor httpContextAccessor,
-          [Service] ApplicationRoleManager roleManager,
-          string userId,
-          List<string> roleNames)
+                  [Service] ApplicationUserManager userManager,
+                  [Service] HierarchyEngine engine,
+                  [Service] IHttpContextAccessor httpContextAccessor,
+                  [Service] ApplicationRoleManager roleManager,
+                  string userId,
+                  List<string> roleNames)
         {
+            var isAdminPortal = CheckHostUrlForAdminPortal(
+                TenantExecutionContext.Tenant.AdminSiteAddress,
+                TenantExecutionContext.Tenant.AdminTestSiteAddress,
+                httpContextAccessor.HttpContext?.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri ?? (httpContextAccessor.HttpContext?.Request.Host.Value ?? String.Empty));
+            if (!isAdminPortal)
+            {
+                throw new UnauthorizedAccessException();
+            }
+
             // No reason to look this up from DB, it's all hardcoded already...
             var validRoleNames = roleManager.Roles.Select(r => r.Name).ToList();
             var distinctRoleNamesToBeAdded = roleNames?.Distinct().Where(r => validRoleNames.Contains(r));
@@ -40,7 +49,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 throw new Exception("User does not exist");
             }
 
-            var systemUserIsAdmin = await userManager.IsInRoleAsync(new ApplicationUser() { Id = httpContextAccessor.HttpContext.GetUser().Id }, Roles.ADMINISTRATOR);
+            var systemUserIsAdmin = await userManager.IsInRoleAsync(new ApplicationUser() { Id = httpContextAccessor.HttpContext.GetUserId().Value }, Roles.ADMINISTRATOR);
 
             // Remove admin from list if user adding roles is not an admin.
             if (!systemUserIsAdmin)
@@ -62,9 +71,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return result.Succeeded;
         }
 
-        // TODO: Refactor
-[Permission(PermissionGroups.ROLES, GraphActionEnum.Update)]
-
+        [Permission(PermissionGroups.ROLES, GraphActionEnum.Update)]
         public async Task<bool> RemoveUserFromRolesAsync(
           [Service] ApplicationUserManager userManager,
           [Service] ILogger<UserMutationExtension> _logger,
@@ -73,6 +80,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           string userId,
           List<string> roleNames)
         {
+            var isAdminPortal = CheckHostUrlForAdminPortal(
+                TenantExecutionContext.Tenant.AdminSiteAddress,
+                TenantExecutionContext.Tenant.AdminTestSiteAddress,
+                httpContextAccessor.HttpContext?.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri ?? (httpContextAccessor.HttpContext?.Request.Host.Value ?? String.Empty));
+            if (!isAdminPortal)
+            {
+                throw new UnauthorizedAccessException();
+            }
+
             // If nothing to remove, just return
             if (!(roleNames?.Any() ?? false))
                 return true;
@@ -82,7 +98,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             if (user == default(ApplicationUser) || currentUserId is null)
             {
-                throw new Exception("User does not exist");
+                throw new InvalidOperationException("User does not exist");
             }
 
             var distinctRoleNames = roleNames?.Distinct();
@@ -101,10 +117,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 }
             }
 
-            // If user having its roles removed is not an admin, remove them... no this is still not right.
-            // TODO: Use hierarchy to check if user has authority to remove target users roles...
             if (!userIsAdmin)
             {
+                //check if user is in the hierarchy
+                if (!engine.UserInHierarchy(currentUserId.Value, Guid.Parse(userId), true))
+                {
+                    throw new InvalidOperationException("Cannot remove roles from user in hierarchy");
+                }
                 _logger.LogInformation("Roles: Remove {0} from user {1} by {2} [UserRoleMutationExtension.RemoveUserFromRolesAsync(2)]", string.Join(',', distinctRoleNames), user.Id, currentUserId);
                 result = await userManager.RemoveFromRolesAsync(user, distinctRoleNames);
             }
@@ -118,6 +137,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             return (result?.Succeeded ?? false) && hierarchySuccess;
+        }
+
+        private static bool CheckHostUrlForAdminPortal(string adminSiteAddress, string testAdminSiteAddress, string hostAddress)
+        {
+            return hostAddress.Contains(adminSiteAddress) || hostAddress.Contains(testAdminSiteAddress);
         }
     }
 }

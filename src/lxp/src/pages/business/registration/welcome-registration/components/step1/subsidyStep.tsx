@@ -112,7 +112,8 @@ export const SubsidyStep: React.FC<SubsidyStepProps> = ({
         icon="ArrowCircleRightIcon"
         disabled={
           subsidy === undefined ||
-          (subsidy === 'false' && selectedOption === '')
+          ((subsidy === 'false' || subsidy === 'unsure') &&
+            selectedOption === '')
         }
         onClick={onNext}
       />
