@@ -213,7 +213,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
             isActive: true,
             programmeStartDate: today,
             isFullDay: playgroupData?.isFullDay || false,
-            synced: isOnline,
+            synced: false,
           };
         }),
       };
