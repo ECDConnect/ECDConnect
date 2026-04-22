@@ -62,7 +62,7 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
     defaultValues: {
       classroomId: '',
       name: '',
-      practitionerId: currentPractitioner?.id,
+      practitionerId: currentPractitioner?.userId,
       isFullDay: true,
     },
     reValidateMode: 'onBlur',
@@ -181,8 +181,6 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
       isFullDay: true,
     });
   };
-
-  console.log('practitionersList', practitionersList);
 
   return (
     <div>
