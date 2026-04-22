@@ -132,7 +132,6 @@ export const EditPlaygroups: React.FC = () => {
       name: playgroup?.name ?? '',
       userId: playgroup?.userId!,
       learners: [],
-      // synced: isOnline,
       classProgrammes: playgroup.meetingDays.map((x) => {
         return {
           id: newGuid(),
@@ -141,7 +140,7 @@ export const EditPlaygroups: React.FC = () => {
           isActive: true,
           programmeStartDate: today,
           isFullDay: playgroup?.isFullDay || false,
-          synced: isOnline,
+          synced: false,
         };
       }),
     };
