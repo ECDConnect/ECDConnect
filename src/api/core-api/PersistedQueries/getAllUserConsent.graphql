@@ -1,0 +1,15 @@
+query GetAllUserConsent($createdUserId: UUID) {
+  GetAllUserConsent(where: {
+    and: [{
+      createdUserId: { eq: $createdUserId }
+    }]
+  }) {
+    id
+    isActive
+    consentId
+    consentType
+    userId
+    createdUserId
+    insertedDate
+  }
+}

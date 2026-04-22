@@ -1,0 +1,6 @@
+query GetAllRace($isActive: Boolean = true) {
+  GetAllRace(where: { isActive: { eq: $isActive } }) {
+    id
+    description
+  }
+}

@@ -1,0 +1,3 @@
+mutation addChildRegistrationPoints($userId: String) {
+  addChildRegistrationPoints(userId: $userId)
+}

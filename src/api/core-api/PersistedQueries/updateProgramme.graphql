@@ -1,0 +1,5 @@
+mutation updateProgramme($input: ProgrammeInput, $id: UUID) {
+  updateProgramme(id: $id, input: $input) {
+    id
+  }
+}

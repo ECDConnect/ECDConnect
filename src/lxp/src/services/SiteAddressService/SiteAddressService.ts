@@ -14,13 +14,7 @@ class SiteAddressService {
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation updateSiteAddress($id: UUID!,$input: SiteAddressInput) {
-          updateSiteAddress(id: $id, input: $input) {
-            id
-          }
-        }
-      `,
+      id: `updateSiteAddress`,
       variables: {
         id: id,
         input: input,

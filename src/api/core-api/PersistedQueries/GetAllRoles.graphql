@@ -1,0 +1,7 @@
+query GetAllRoles {
+  roles {
+    id
+    name
+    systemName
+  }
+}

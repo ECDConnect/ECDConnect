@@ -1,0 +1,5 @@
+mutation updateDailyProgramme($input: DailyProgrammeInput, $id: UUID) {
+  updateDailyProgramme(id: $id, input: $input) {
+    id
+  }
+}

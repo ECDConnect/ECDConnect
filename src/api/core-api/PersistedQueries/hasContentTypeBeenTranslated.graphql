@@ -1,0 +1,3 @@
+query hasContentTypeBeenTranslated($id: Int!, $ageGroup: Int!, $localeId: UUID!) {
+  hasContentTypeBeenTranslated(id: $id, ageGroup: $ageGroup, localeId: $localeId)
+}

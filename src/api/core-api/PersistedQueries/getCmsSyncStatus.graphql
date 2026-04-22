@@ -1,0 +1,12 @@
+query GetCmsSyncStatus($lastSync: DateTime!) {
+  cmsSyncStatus(lastSync: $lastSync) {
+    syncActivities
+    syncCalendarEventTypes
+    syncStoryBooks
+    syncConsent
+    syncResourceLinks
+    syncAgeGroups
+    syncProgrammeRoutines
+    syncHolidays
+  }
+}

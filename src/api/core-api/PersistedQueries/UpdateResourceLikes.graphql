@@ -1,0 +1,3 @@
+mutation UpdateResourceLikes($contentId: Int!, $contentTypeId: Int!, $liked: Boolean!) {
+  updateResourceLikes(contentId: $contentId, contentTypeId: $contentTypeId, liked: $liked)
+}

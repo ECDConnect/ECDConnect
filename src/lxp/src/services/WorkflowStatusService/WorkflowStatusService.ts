@@ -10,15 +10,7 @@ class WorkflowStatusService {
   async getWorkflowStatuses(): Promise<WorkflowStatusDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query GetAllWorkflowStatus($isActive: Boolean = true){
-          GetAllWorkflowStatus(where: { isActive: { eq: $isActive } }) {
-            id
-            description
-            enumId
-          }
-        }
-          `,
+      id: `GetAllWorkflowStatus`,
     });
 
     if (response.status !== 200) {

@@ -16,60 +16,7 @@ class ClassroomService {
       data: { classroomForUser: ClassroomDto };
       errors?: {};
     }>(``, {
-      query: `query GetClassroomForUser($userId: UUID) {
-          classroomForUser(userId: $userId) {            
-            id
-            name
-            classroomImageUrl
-            numberPractitioners
-            numberOfAssistants
-            numberOfOtherAssistants
-            preschoolCode
-            isDummySchool
-            siteAddress {
-              id
-              area
-              name
-              addressLine1
-              addressLine2
-              addressLine3
-              latitude
-              longitude
-              municipality
-              postalCode
-              province {
-                id
-                description
-              }
-              provinceId
-              ward
-            }
-            principal {
-              userId
-              firstName
-              surname
-              phoneNumber
-              email
-              profileImageUrl
-            }
-            childProgressReportPeriods {
-              id
-              startDate
-              endDate
-              notifications {
-                subject
-                message
-                id
-                messageProtocol
-                cTAText
-                cTA
-                messageDate
-                messageEndDate
-              }
-            }
-          }
-        }
-      `,
+      id: 'GetClassroomForUser',
       variables: {
         userId,
       },
@@ -85,13 +32,7 @@ class ClassroomService {
   async updateClassroom(id: string, input: ClassroomInput): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation updateClassroom($id: UUID!,$input: ClassroomInput) {
-          updateClassroom(id: $id, input: $input) {
-            id
-          }
-        }
-      `,
+      id: 'updateClassroom',
       variables: {
         id: id,
         input: input,
@@ -111,13 +52,7 @@ class ClassroomService {
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation updateClassroomSiteAddress($id: UUID!,$input: ClassroomInput) {
-          updateClassroomSiteAddress(id: $id, input: $input) {
-            id
-          }
-        }
-      `,
+      id: 'updateClassroomSiteAddress',
       variables: {
         id: id,
         input: input,
@@ -137,32 +72,7 @@ class ClassroomService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
 
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query allClassroomsForCoach {
-        allClassroomsForCoach {
-          id
-          userId
-          name
-          classroomImageUrl
-          numberPractitioners
-          isPrinciple
-          childProgressReportPeriods {
-            id
-            startDate
-            endDate
-          }
-          siteAddress {
-            id
-            name
-            addressLine1
-            addressLine2
-            addressLine3
-            postalCode
-            ward
-          }
-        }
-      }
-      `,
+      id: 'allClassroomsForCoach',
     });
 
     if (response.status !== 200) {
@@ -182,30 +92,7 @@ class ClassroomService {
       data: { validatePreSchoolCode: ClassroomDto };
       errors?: {};
     }>(``, {
-      query: `query ValidatePreSchoolCode($preSchoolCode: String!) {
-                validatePreSchoolCode(preSchoolCode: $preSchoolCode) {
-                              id
-            name
-            userId
-            numberOfAssistants
-            numberOfOtherAssistants
-            siteAddress {
-              id
-              name
-              addressLine1
-              addressLine2
-              addressLine3
-              postalCode
-              ward
-            }
-            user {
-                principalObjectData {
-                  principalHierarchy
-                }
-              }
-            }
-          }
-      `,
+      id: 'ValidatePreSchoolCode',
       variables: {
         preSchoolCode,
       },
@@ -232,9 +119,7 @@ class ClassroomService {
       data: { addChildPregressReportPeriods: boolean };
       errors?: {};
     }>(``, {
-      query: `mutation AddChildProgressReportPeriods($classroomId: UUID!, $childProgressReportPeriods: [ChildProgressReportPeriodModelInput]) {
-          addChildProgressReportPeriods(classroomId: $classroomId, childProgressReportPeriods: $childProgressReportPeriods) {
-        }}`,
+      id: 'AddChildProgressReportPeriods',
       variables: {
         classroomId,
         childProgressReportPeriods,

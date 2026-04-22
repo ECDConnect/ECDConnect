@@ -20,45 +20,7 @@ class ResourcesService {
   ): Promise<ResourceDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query GetResources(
-    $localeId: UUID!
-    $sectionType: String
-    $search: String
-    $dataFreeSearch: [String]
-    $likesSearch: [String]
-    $startDate: DateTime
-    $endDate: DateTime
-    $pagingInput: PagedQueryInput
-  ) {
-    resources(
-      localeId: $localeId
-      sectionType: $sectionType
-      search: $search
-      dataFreeSearch: $dataFreeSearch
-      likesSearch: $likesSearch
-      startDate: $startDate
-      endDate: $endDate
-      pagingInput: $pagingInput
-    ) {
-      id
-      resourceType
-      title
-      shortDescription
-      link
-      longDescription
-      dataFree
-      sectionType
-      numberLikes
-      availableLanguages {
-        id
-      }
-      updatedDate
-      insertedDate
-      __typename
-    }
-  }
-          `,
+      id: 'GetResources',
       variables: {
         localeId,
         sectionType,
@@ -81,10 +43,7 @@ class ResourcesService {
   async getResourceLikedStatusForUser(contentId: number): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query GetResourceLikedStatusForUser($contentId: Int!) {
-          resourceLikedStatusForUser(contentId: $contentId)
-        }`,
+      id: 'GetResourceLikedStatusForUser',
       variables: {
         contentId,
       },
@@ -106,16 +65,7 @@ class ResourcesService {
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation UpdateResourceLikes($contentId: Int!, $contentTypeId: Int!, $liked: Boolean!) {
-          updateResourceLikes(
-            contentId: $contentId
-            contentTypeId: $contentTypeId
-            liked: $liked
-          ) {
-          }
-        }
-          `,
+      id: 'UpdateResourceLikes',
       variables: {
         contentId,
         contentTypeId,
@@ -135,14 +85,7 @@ class ResourcesService {
   async allResourceLikesForUser(): Promise<ResourcesLikedDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query GetAllResourceLikesForUser() {
-          allResourceLikesForUser() {
-              isActive
-              contentId
-          }
-        }
-          `,
+      id: 'GetAllResourceLikesForUser',
     });
 
     if (response.status !== 200) {
@@ -161,21 +104,7 @@ class ResourcesService {
   ): Promise<ResourceDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query GetResourceByLanguage($contentId: Int!, $contentTypeId: Int!, $localeId: UUID!) {
-          resourceByLanguage(contentId: $contentId, contentTypeId: $contentTypeId, localeId: $localeId) {
-              resourceType
-              title
-              shortDescription
-              link
-              longDescription
-              dataFree
-              sectionType
-              numberLikes
-              availableLanguages
-          }
-        }
-          `,
+      id: 'GetResourceByLanguage',
       variables: {
         contentId,
         contentTypeId,

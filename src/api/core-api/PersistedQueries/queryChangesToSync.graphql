@@ -1,0 +1,4 @@
+query queryChangesToSync($lastUpdated: DateTime!) {
+  changesToSync(lastUpdated: $lastUpdated) {
+  }
+}

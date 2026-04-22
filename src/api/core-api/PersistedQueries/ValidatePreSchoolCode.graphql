@@ -1,0 +1,23 @@
+query ValidatePreSchoolCode($preSchoolCode: String!) {
+  validatePreSchoolCode(preSchoolCode: $preSchoolCode) {
+    id
+    name
+    userId
+    numberOfAssistants
+    numberOfOtherAssistants
+    siteAddress {
+      id
+      name
+      addressLine1
+      addressLine2
+      addressLine3
+      postalCode
+      ward
+    }
+    user {
+      principalObjectData {
+        principalHierarchy
+      }
+    }
+  }
+}
