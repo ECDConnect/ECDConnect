@@ -256,18 +256,6 @@ export const AddPractitioner = ({
       preschoolCode: '',
     };
 
-    const updatePermissionInput: UpdateUserPermissionInputModelInput = {
-      userId: newPractitioner?.userId,
-      permissionIds: permissionsAdded,
-    };
-    // also set the progress for this newly assigned user to 0
-    await appDispatch(
-      practitionerThunkActions.updatePractitionerProgress({
-        practitionerId: newPractitioner?.userId!,
-        progress: 0,
-      })
-    );
-
     await appDispatch(
       practitionerThunkActions.updatePractitionerPermissions({
         userId: newPractitioner?.userId!,
@@ -278,6 +266,15 @@ export const AddPractitioner = ({
     await appDispatch(
       practitionerThunkActions.addPractitionerToPrincipal(input)
     );
+
+    // also set the progress for this newly assigned user to 0
+    await appDispatch(
+      practitionerThunkActions.updatePractitionerProgress({
+        practitionerId: newPractitioner?.userId!,
+        progress: 0,
+      })
+    );
+
     await appDispatch(
       practitionerThunkActions.getAllPractitioners({})
     ).unwrap();
