@@ -140,7 +140,7 @@ export const EditClass = ({
           meetingDay: i,
           isActive: true,
           programmeStartDate: new Date().toUTCString(),
-          synced: isOnline,
+          synced: false,
         });
       }
     });
