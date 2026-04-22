@@ -179,11 +179,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public decimal UpdatePractitionerProgress([Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             ApplicationUserManager userManager,
+            [Service] HierarchyEngine engine,
             string practitionerId, decimal progress)
 
         {
             var uId = contextAccessor.HttpContext.GetUserId().Value;
-            if (uId != Guid.Parse(practitionerId))
+            if (uId != Guid.Parse(practitionerId) && !engine.UserInHierarchy(uId, Guid.Parse(practitionerId)))
                 throw new HotChocolate.Execution.QueryException("You are not authorized to update this practitioner.");
 
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
