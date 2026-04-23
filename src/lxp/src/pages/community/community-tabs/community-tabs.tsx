@@ -1,12 +1,14 @@
 import { BannerWrapper, TabItem, TabList } from '@ecdlink/ui';
 import { useHistory, useLocation } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import format from 'date-fns/format';
 import ROUTES from '@/routes/routes';
 import { CommunityItem } from './components/community-item/community-item';
 import { CommunityLinks } from './components/community-links/community-links';
 import { CommunityRouteState } from '../community.types';
+import { communityThunkActions } from '@/store/community';
+import { useAppDispatch } from '@/store';
 
 export const COMMUNITY_TABS = {
   CONNECT: 0,
