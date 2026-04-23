@@ -35,9 +35,7 @@ export const MonthStatements: React.FC = () => {
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
 
-  const userAuth = useSelector(authSelectors.getAuthUser);
-
-  const [showConfrimDialog, setShowConfirmDialog] = useState<boolean>(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState<boolean>(false);
 
   const showOnlineOnly = () => {
     dialog({
@@ -64,24 +62,34 @@ export const MonthStatements: React.FC = () => {
       return;
     }
 
-    const getPdf = async () => {
-      const report = await new IncomeStatementsService(
-        userAuth?.auth_token || ''
-      ).getIncomeStatementPdf(statementId);
+    try {
+      const base64String = await appDispatch(
+        statementsThunkActions.getIncomeStatementPdf({ statementId })
+      ).unwrap();
 
-      return report;
-    };
+      const byteCharacters = atob(base64String);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: 'application/pdf' });
 
-    const base64String = await getPdf();
+      const blobUrl = URL.createObjectURL(blob);
 
-    const downloadLink = document.createElement('a');
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = `${monthName}_statement.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
 
-    downloadLink.href = `data:application/pdf;base64,${base64String}`;
-
-    downloadLink.download = `${monthName}_statement.pdf`;
-
-    downloadLink.click();
-  }, [appDispatch, userAuth, isOnline, statementId]);
+      // Clean up to avoid memory leaks
+      URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error(err);
+    }
+  }, [appDispatch, isOnline, statementId, monthName]);
 
   return (
     <BannerWrapper
@@ -116,7 +124,7 @@ export const MonthStatements: React.FC = () => {
           </div>
           <Dialog
             stretch={false}
-            visible={showConfrimDialog}
+            visible={showConfirmDialog}
             position={DialogPosition.Middle}
           >
             <ActionModal
@@ -133,12 +141,13 @@ export const MonthStatements: React.FC = () => {
                   colour: 'quatenary',
                   type: 'filled',
                   onClick: () => {
-                    appDispatch(
-                      statementsActions.markStatementAsDownloaded({
-                        statementId,
-                      })
-                    );
-                    downloadPdf();
+                    downloadPdf().then(() => {
+                      appDispatch(
+                        statementsActions.markStatementAsDownloaded({
+                          statementId,
+                        })
+                      );
+                    });
                     setShowConfirmDialog(false);
                   },
                   leadingIcon: 'DownloadIcon',
