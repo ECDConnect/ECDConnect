@@ -95,7 +95,7 @@ namespace EcdLink.Api.CoreApi.Services
                 FeedbackDetails = input.FeedbackDetails,
             });
 
-            if (coachFeedback != null )
+            if (coachFeedback != null)
             {
                 List<String> feedbackTypes = new List<String>();
                 var coachFeedBackTypes = new List<CoachFeedbackType>();
@@ -153,7 +153,7 @@ namespace EcdLink.Api.CoreApi.Services
         {
             // first validate to see if there is maybe an archived profile for this user.
             var communityProfile = _communityProfileRepo.GetAll().Where(x => x.UserId == input.UserId).FirstOrDefault();
-            
+
             if (communityProfile != null)
             {
                 // if the profile exists and the about short is empty, we can add 
@@ -175,7 +175,7 @@ namespace EcdLink.Api.CoreApi.Services
                 communityProfile.ProvinceId = string.IsNullOrWhiteSpace(input.ProvinceId.ToString()) ? null : input.ProvinceId;
 
                 _communityProfileRepo.Update(communityProfile);
-            } 
+            }
             else
             {
                 communityProfile = _communityProfileRepo.Insert(new CommunityProfile()
@@ -202,7 +202,7 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     _pointsService.CalculateAddingShortDescription(input.UserId);
                 }
-               
+
             }
             // Update skills if available
             UpdateProfileSkills(communityProfile.Id, input.CommunitySkillIds);
@@ -218,9 +218,9 @@ namespace EcdLink.Api.CoreApi.Services
             var linkedSkills = _communityProfileSkillRepo.GetAll().Where(x => x.CommunityProfileId == communityProfileId).ToList();
             var linkedSkillIds = linkedSkills.Select(x => x.CommunitySkillId).ToList();
 
-            if (linkedSkills.Count > 0 )
+            if (linkedSkills.Count > 0)
             {
-                
+
                 foreach (var item in linkedSkills)
                 {
                     _communityProfileSkillRepo.Delete(item.Id);
@@ -237,7 +237,7 @@ namespace EcdLink.Api.CoreApi.Services
                         skill.UpdatedBy = _applicationUserId.ToString();
                         _communityProfileSkillRepo.Update(skill);
 
-                    } 
+                    }
                     else
                     {
                         skillsToAdd.Add(new CommunityProfileSkill()
@@ -255,7 +255,7 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     _communityProfileSkillRepo.InsertMany(skillsToAdd);
                 }
-            } 
+            }
             else
             {
                 var skillsToAdd = new List<CommunityProfileSkill>();
@@ -286,7 +286,7 @@ namespace EcdLink.Api.CoreApi.Services
                                         .ThenInclude(x => x.CommunitySkill)
                                         .Where(x => x.UserId == userId).FirstOrDefault();
 
-            if (userCommunityProfile != null )
+            if (userCommunityProfile != null)
             {
                 DateTime? lastViewed = DateTime.Now.AddDays(-60);
 
@@ -296,7 +296,7 @@ namespace EcdLink.Api.CoreApi.Services
                                     .ToList();
 
                 var fromConnections = allConnections.Where(x => x.FromProfile.UserId == userId).ToList();
-                var toConnections = allConnections.Where(x => x.ToProfile.UserId == userId && x.FromProfile.UserId != userId ).ToList();
+                var toConnections = allConnections.Where(x => x.ToProfile.UserId == userId && x.FromProfile.UserId != userId).ToList();
 
                 if (userCommunityProfile?.User?.practitionerObjectData?.CommunitySectionViewDate != null)
                 {
@@ -309,11 +309,11 @@ namespace EcdLink.Api.CoreApi.Services
                      .Select(x => new CommunityConnectionModel(x.FromProfile, _userManager.GetRolesAsync(x.FromProfile.User).Result.ToList(), x.InviteAccepted))
                      .OrderByDescending(x => x.InsertedDate)
                      .ToList();
-                 acceptedConnections.AddRange(fromConnections
-                     .Where(x => x.InviteAccepted.HasValue && x.InviteAccepted == true)
-                     .Select(x => new CommunityConnectionModel(x.ToProfile, _userManager.GetRolesAsync(x.ToProfile.User).Result.ToList(), x.InviteAccepted))
-                     .OrderByDescending(x => x.InsertedDate)
-                     .ToList());
+                acceptedConnections.AddRange(fromConnections
+                    .Where(x => x.InviteAccepted.HasValue && x.InviteAccepted == true)
+                    .Select(x => new CommunityConnectionModel(x.ToProfile, _userManager.GetRolesAsync(x.ToProfile.User).Result.ToList(), x.InviteAccepted))
+                    .OrderByDescending(x => x.InsertedDate)
+                    .ToList());
 
                 // new connections was send to this user and is still waiting for acceptance
                 var pendingConnections = toConnections
@@ -363,7 +363,7 @@ namespace EcdLink.Api.CoreApi.Services
                 if (completenessPerc >= 61)
                 {
                     completenessPercColor = Constants.CSSColorClasses.Green;
-                } 
+                }
                 else if (completenessPerc >= 11)
                 {
                     completenessPercColor = Constants.CSSColorClasses.Blue;
@@ -374,14 +374,14 @@ namespace EcdLink.Api.CoreApi.Services
                 //     _pointsService.CalculateCompleteCommunityProfile(userId);
                 // }
 
-                return new CommunityProfileModel(userCommunityProfile, 
+                return new CommunityProfileModel(userCommunityProfile,
                                                  acceptedConnections,
                                                  pendingConnections,
                                                  userConnectionsRequests,
                                                  _userManager.GetRolesAsync(userCommunityProfile.User).Result.ToList(),
                                                  completenessPerc,
                                                  completenessPercColor);
-            } 
+            }
             else
             {
                 return null;
@@ -390,14 +390,21 @@ namespace EcdLink.Api.CoreApi.Services
 
         public List<CommunityConnectionModel> GetUsersToConnectWith(Guid userId, List<Guid> provinceIds = null, List<Guid> communitySkillIds = null, List<string> connectionTypes = null)
         {
-            var allCommunityProfiles = _communityProfileRepo.GetAll().Where(x => x.IsActive && x.ShareContactInfo.HasValue && x.ShareContactInfo.Value && x.UserId != userId).ToList();
+            var allCommunityProfiles = _communityProfileRepo.GetAll()
+                .Include(x => x.User)
+                .Where(x => x.IsActive
+                && x.ShareContactInfo.HasValue && x.ShareContactInfo.Value
+                 && x.UserId != userId
+                 && !(x.User.FirstName == null && x.User.Surname == null))
+                 .AsNoTracking()
+                 .ToList();
             var allConnections = _communityProfileConnectionRepo
                                             .GetAll()
                                             .Where(x => x.IsActive && (x.FromProfile.UserId == userId || x.ToProfile.UserId == userId));
-            
+
             var connectionsToBeAccepted = allConnections
                                             .Where(x => x.IsActive && x.FromProfile.UserId == userId)
-                                            .Select(x => new { x.ToCommunityProfileId, x.InviteAccepted})
+                                            .Select(x => new { x.ToCommunityProfileId, x.InviteAccepted })
                                             .ToList();
 
             var connectionsDict = connectionsToBeAccepted.ToDictionary(x => x.ToCommunityProfileId, x => x.InviteAccepted);
@@ -449,7 +456,7 @@ namespace EcdLink.Api.CoreApi.Services
 
             if ((provinceIds != null && provinceIds.Any()) || (communitySkillIds != null && communitySkillIds.Any()) || (connectionTypes != null && connectionTypes.Any()))
             {
-                return filteredConnection.Select(x => new CommunityConnectionModel(x, _userManager.GetRolesAsync(x.User).Result.ToList(), connectionsDict.ContainsKey(x.Id) ? connectionsDict[x.Id] == null? false: true  : null)).Distinct().ToList();
+                return filteredConnection.Select(x => new CommunityConnectionModel(x, _userManager.GetRolesAsync(x.User).Result.ToList(), connectionsDict.ContainsKey(x.Id) ? connectionsDict[x.Id] == null ? false : true : null)).Distinct().ToList();
             }
 
             return allCommunityProfiles.Select(x => new CommunityConnectionModel(x, _userManager.GetRolesAsync(x.User).Result.ToList(), connectionsDict.ContainsKey(x.Id) ? connectionsDict[x.Id] == null ? false : true : null)).Distinct().ToList();
@@ -552,11 +559,11 @@ namespace EcdLink.Api.CoreApi.Services
 
             var fromConnections = allConnections.Where(x => x.FromProfile.UserId == userId).Select(x => x.ToCommunityProfileId).Distinct().ToList();
             var toConnections = allConnections.Where(x => x.ToProfile.UserId == userId).Select(x => x.FromCommunityProfileId).Distinct().ToList();
-            
+
             // exclude profiles where user is linked to any connection
-            var allCommunityProfiles = _communityProfileRepo.GetAll().Where(x => x.IsActive && 
-                                x.ShareContactInfo.HasValue && 
-                                x.ShareContactInfo.Value && 
+            var allCommunityProfiles = _communityProfileRepo.GetAll().Where(x => x.IsActive &&
+                                x.ShareContactInfo.HasValue &&
+                                x.ShareContactInfo.Value &&
                                 x.UserId != userId &&
                                 !fromConnections.Contains(x.Id) &&
                                 !toConnections.Contains(x.Id)
