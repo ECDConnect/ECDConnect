@@ -1,6 +1,7 @@
 using EcdLink.Api.CoreApi.GraphApi.Models.Statements;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
@@ -29,18 +30,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.View)]
-        /// <summary>
-        /// Fetches a list of income statements, including lists of all income and expense items linked to it
-        /// </summary>
-        /// <param name="userId">UserId to retrieve data for</param>
-        /// <param name="startDate">Date to fetch statements from</param>
-        /// <param name="endDate">Date to fetch statements until, can be ommitted to fetch all from start date</param>
-        /// <returns>List of income statements, including lists of all income and expense items linked to it</returns>
-        public List<IncomeStatementModel> GetIncomeStatements([Service] IIncomeExpenseService incomeExpenseService,
+            public List<IncomeStatementModel> GetIncomeStatements(
+            [Service] IIncomeExpenseService incomeExpenseService,
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] HierarchyEngine engine,
             Guid userId,
             DateTime startDate,
             DateTime? endDate)
         {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            if (!contextAccessor.HttpContext.IsInRole(new[] { Roles.COACH, Roles.PRINCIPAL, Roles.PRACTITIONER })
+                 || !engine.UserInHierarchy(uId, userId, true))
+            {
+                throw new UnauthorizedAccessException("You do not have permission to retrieve this data.");
+            }
             var statements = incomeExpenseService.GetStatements(userId, startDate, endDate);
 
             return statements.Select(x => new IncomeStatementModel(x)).ToList();

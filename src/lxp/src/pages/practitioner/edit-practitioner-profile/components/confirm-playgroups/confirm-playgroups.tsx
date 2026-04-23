@@ -46,7 +46,7 @@ export const ConfirmPlayGroups: React.FC<ConfirmPlayGroupsProps> = ({
       name: '',
       classroomGroupId: newGuid(),
       meetEveryday: undefined,
-      synced: isOnline,
+      synced: false,
     });
     onEditPlaygroup(playgroups, playgroups.length - 1, true);
   };
