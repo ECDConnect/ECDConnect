@@ -71,8 +71,10 @@ namespace ECDLink.Security.Extensions
         {
             var tenant = GetTenant(context);
             if (tenant == null) return false;
-            var hostAddress = context.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri ?? (context?.Request.Host.Value ?? String.Empty);
-            return hostAddress.Contains(tenant.SiteAddress) || hostAddress.Contains(tenant.AdminTestSiteAddress);
+            var url = context?.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri
+                ?? (string.IsNullOrEmpty(context.Request.Headers.Origin.ToString()) ? null : context.Request.Headers.Origin.ToString())
+                ?? (context.Request.Host.HasValue ? context.Request.Host.Value : String.Empty);
+            return url.Contains(tenant.AdminSiteAddress) || url.Contains(tenant.AdminTestSiteAddress);
         }
 
         public static bool IsBackend(this HttpContext context)
