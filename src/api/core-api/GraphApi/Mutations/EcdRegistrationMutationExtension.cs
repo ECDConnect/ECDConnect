@@ -51,6 +51,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             };
 
             bool hasAnyCertificate = input.HasBronzeCertificate || input.HasSilverCertificate || input.HasGoldCertificate;
+            bool isRegistered = input.RegistrationType == NonSubsidyRegistrationType.FullyRegistered || input.RegistrationType == NonSubsidyRegistrationType.PartiallyRegistered;
 
             if (!hasAnyCertificate)
             {
@@ -63,6 +64,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 registration.HasBronzeCertificate = input.HasBronzeCertificate;
                 registration.HasSilverCertificate = input.HasSilverCertificate;
                 registration.HasGoldCertificate = input.HasGoldCertificate;
+            }
+
+            if (input.Subsidy == SubsidyStatus.Yes || (input.Subsidy == SubsidyStatus.NotSure && isRegistered))
+            {
+                registration.InitialCertificates = "N/A";
+            }
+            else if (!hasAnyCertificate)
+            {
+                registration.InitialCertificates = "None";
+            }
+            else
+            {
+                var certs = new List<string>();
+                if (input.HasBronzeCertificate) certs.Add("bronze");
+                if (input.HasSilverCertificate) certs.Add("silver");
+                if (input.HasGoldCertificate) certs.Add("gold");
+                registration.InitialCertificates = string.Join(", ", certs);
             }
 
             dbContext.EcdRegistrations.Add(registration);

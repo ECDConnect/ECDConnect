@@ -38,6 +38,8 @@ public class EcdRegistration<TKey> : EntityBase<TKey>
     public bool HasSilverCertificate { get; set; } = false;
     public bool HasGoldCertificate { get; set; } = false;
 
+    public string? InitialCertificates { get; set; }
+
     public virtual ICollection<EcdRegistrationHistory> History { get; set; }
         = new List<EcdRegistrationHistory>();
 }
