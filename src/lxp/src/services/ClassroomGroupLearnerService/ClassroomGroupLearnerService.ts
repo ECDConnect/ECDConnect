@@ -11,18 +11,7 @@ class ClassroomGroupLearnerService {
   async getClassroomGroupLearners(): Promise<LearnerDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query {
-          GetAllLearner {
-            id            
-            classroomGroupId
-            startedAttendance
-            stoppedAttendance
-            userId
-            isActive            
-          }
-        }
-          `,
+      id: 'GetAllLearner',
     });
 
     if (response.status !== 200) {
@@ -37,13 +26,7 @@ class ClassroomGroupLearnerService {
   async updateLearner(id: string, input: LearnerInput): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation updateLearner($id: UUID!, $input: LearnerInput) {
-          updateLearner(id: $id, input: $input) {
-            id
-          }
-        }
-      `,
+      id: 'updateLearner',
       variables: {
         id: id,
         input: input,
@@ -63,13 +46,7 @@ class ClassroomGroupLearnerService {
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation updateLearnerWithUserId($input: LearnerInputModelInput) {
-          updateLearnerWithUserId(input: $input) {
-            id
-          }
-        }
-      `,
+      id: 'updateLearnerWithUserId',
       variables: {
         input: input,
       },
@@ -85,16 +62,7 @@ class ClassroomGroupLearnerService {
   async createLearner(input: LearnerInput): Promise<LearnerDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation createLearner($input: LearnerInput) {
-          createLearner(input: $input) {
-            id            
-            classroomGroupId
-            startedAttendance
-            userId            
-          }
-        }
-      `,
+      id: 'createLearner',
       variables: {
         input: input,
       },
@@ -113,13 +81,7 @@ class ClassroomGroupLearnerService {
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation UpdateLearnerHierarchy($learnerId: String,  $classroomGroupId: String,) {
-          updateLearnerHierarchy(learnerId: $learnerId, classroomGroupId: $classroomGroupId){
-            id
-          }
-        }
-      `,
+      id: 'UpdateLearnerHierarchy',
       variables: {
         learnerId: learnerId,
         classroomGroupId: classroomGroupId,

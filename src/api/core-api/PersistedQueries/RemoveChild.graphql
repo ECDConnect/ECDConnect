@@ -1,0 +1,3 @@
+mutation RemoveChild($input: UpdateChildAndCaregiverInput) {
+  removeChild(input: $input)
+}

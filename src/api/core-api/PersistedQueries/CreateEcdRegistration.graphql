@@ -1,0 +1,13 @@
+mutation CreateEcdRegistration($input: EcdRegistrationInputModelInput) {
+  createEcdRegistration(input: $input) {
+    id
+    subsidy
+    registrationType
+    challenges
+    challengesOtherReason
+    hasBronzeCertificate
+    hasSilverCertificate
+    hasGoldCertificate
+    problemDescription
+  }
+}

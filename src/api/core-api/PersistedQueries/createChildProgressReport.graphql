@@ -1,0 +1,9 @@
+mutation createChildProgressReport($input: ChildProgressReportInput) {
+  createChildProgressReport(input: $input) {
+    id
+    reportContent
+    classroomGroupId
+    userId
+    childId
+  }
+}

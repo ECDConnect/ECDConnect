@@ -1,0 +1,3 @@
+mutation updatePractitionerEmergencyContact($userId: String, $firstname: String, $surname: String, $contactno: String) {
+  updatePractitionerEmergencyContact(userId: $userId, firstname: $firstname, surname: $surname, contactno: $contactno)
+}

@@ -1,0 +1,9 @@
+query GetAllProgressTrackingSkill($locale: String) {
+  GetAllProgressTrackingSkill(locale: $locale) {
+    id
+    name
+    supportImage
+    isReverseScored
+    value
+  }
+}

@@ -1,0 +1,9 @@
+mutation generateCaregiverChildToken($firstname: String, $surname: String, $classgroupId: UUID!) {
+  generateCaregiverChildToken(firstname: $firstname, surname: $surname, classgroupId: $classgroupId) {
+    childId
+    childUserId
+    addedByUserId
+    classroomGroupId
+    caregiverRegistrationUrl
+  }
+}

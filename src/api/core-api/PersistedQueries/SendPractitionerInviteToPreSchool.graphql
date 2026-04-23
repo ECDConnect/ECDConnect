@@ -1,0 +1,3 @@
+mutation SendPractitionerInviteToPreSchool($practitionerPhoneNumber: String!, $preSchoolNameCode: String!, $preSchoolName: String!, $principalUserId: UUID!, $idOrPassport: String) {
+  sendPractitionerInviteToPreSchool(practitionerPhoneNumber: $practitionerPhoneNumber, preSchoolNameCode: $preSchoolNameCode, preSchoolName: $preSchoolName, principalUserId: $principalUserId, idOrPassport: $idOrPassport)
+}

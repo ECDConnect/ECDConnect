@@ -1,0 +1,35 @@
+query GetClassroomGroupClassroomsForPractitioner($userId: String) {
+  classroomGroupClassroomsForPractitioner(userId: $userId) {
+    id
+    name
+    programmeType {
+      description
+    }
+    classroom {
+      id
+      siteAddress {
+        name
+        addressLine1
+        addressLine2
+        addressLine3
+        postalCode
+        province {
+          description
+        }
+      }
+      name
+      numberPractitioners
+      numberOfAssistants
+      numberOfOtherAssistants
+    }
+    classProgrammes {
+      id
+      meetingDay
+      isFullDay
+      classroomGroup {
+        id
+        name
+      }
+    }
+  }
+}

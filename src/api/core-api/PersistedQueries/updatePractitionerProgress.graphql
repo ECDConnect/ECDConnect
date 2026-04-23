@@ -1,0 +1,3 @@
+mutation updatePractitionerProgress($practitionerId: String, $progress: Decimal!) {
+  updatePractitionerProgress(practitionerId: $practitionerId, progress: $progress)
+}

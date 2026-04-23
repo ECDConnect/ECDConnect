@@ -1,0 +1,13 @@
+mutation UpdateEcdRegistration($input: EcdRegistrationUpdateInputModelInput) {
+  updateEcdRegistration(input: $input) {
+    id
+    subsidy
+    registrationType
+    challenges
+    challengesOtherReason
+    hasBronzeCertificate
+    hasSilverCertificate
+    hasGoldCertificate
+    problemDescription
+  }
+}

@@ -1,0 +1,26 @@
+query GetOtherConnections($provinceIds: [UUID!], $communitySkillIds: [UUID!]) {
+  otherConnections(provinceIds: $provinceIds, communitySkillIds: $communitySkillIds) {
+    id
+    userId
+    aboutShort
+    aboutLong
+    shareContactInfo
+    shareEmail
+    sharePhoneNumber
+    shareProfilePhoto
+    shareProvince
+    provinceId
+    provinceName
+    shareRole
+    insertedDate
+    communityUser {
+      id
+      fullName
+      email
+      phoneNumber
+      whatsAppNumber
+      profilePhoto
+      roleName
+    }
+  }
+}

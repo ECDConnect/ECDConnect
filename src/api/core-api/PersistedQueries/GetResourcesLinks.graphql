@@ -1,0 +1,8 @@
+query GetResourcesLinks($locale: String) {
+  GetAllResourceLink(locale: $locale) {
+    id
+    link
+    description
+    title
+  }
+}

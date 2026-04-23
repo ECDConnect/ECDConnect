@@ -1,0 +1,7 @@
+mutation CancelCommunityRequest($input: CommunityConnectInputModelInput) {
+  cancelCommunityRequest(input: $input) {
+    fromCommunityProfileId
+    toCommunityProfileId
+    isActive
+  }
+}

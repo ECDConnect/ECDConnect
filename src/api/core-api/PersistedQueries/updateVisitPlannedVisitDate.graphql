@@ -1,0 +1,5 @@
+mutation updateVisitPlannedVisitDate($input: UpdateVisitPlannedVisitDateModelInput) {
+  updateVisitPlannedVisitDate(input: $input) {
+    id
+  }
+}

@@ -31,12 +31,7 @@ class PQAService {
       data: { addVisitData: boolean };
       errors?: {};
     }>(``, {
-      query: `
-        mutation addVisitData($input: CMSVisitDataInputModelInput) {
-          addVisitData(input: $input) {
-          }
-        }
-      `,
+      id: 'addVisitData',
       variables: {
         input,
       },
@@ -57,12 +52,7 @@ class PQAService {
       data: { addSupportVisitData: boolean };
       errors?: {};
     }>(``, {
-      query: `
-        mutation addSupportVisitData($input: CMSVisitDataInputModelInput) {
-          addSupportVisitData(input: $input) {
-          }
-        }
-      `,
+      id: 'addSupportVisitData',
       variables: {
         input,
       },
@@ -83,13 +73,7 @@ class PQAService {
       data: { addSupportVisitForPractitioner: Visit };
       errors?: {};
     }>(``, {
-      query: `
-        mutation AddSupportVisitForPractitioner($input: SupportVisitModelInput) {
-          addSupportVisitForPractitioner(input: $input) {
-              id
-          }
-        }
-      `,
+      id: 'AddSupportVisitForPractitioner',
       variables: {
         input,
       },
@@ -110,13 +94,7 @@ class PQAService {
       data: { addFollowUpVisitForPractitioner: Visit };
       errors?: {};
     }>(``, {
-      query: `
-        mutation AddFollowUpVisitForPractitioner($input: FollowUpVisitModelInput) {
-          addFollowUpVisitForPractitioner(input: $input) {
-              id          
-          }        
-        }
-      `,
+      id: 'AddFollowUpVisitForPractitioner',
       variables: {
         input,
       },
@@ -137,13 +115,7 @@ class PQAService {
       data: { addReAccreditationFollowUpVisitForPractitioner: Visit };
       errors?: {};
     }>(``, {
-      query: `
-        mutation AddReAccreditationFollowUpVisitForPractitioner($input: FollowUpVisitModelInput) {
-          addReAccreditationFollowUpVisitForPractitioner(input: $input) {
-              id 
-          }        
-        }
-      `,
+      id: 'AddReAccreditationFollowUpVisitForPractitioner',
       variables: {
         input,
       },
@@ -166,20 +138,7 @@ class PQAService {
       data: { addSelfAssessmentForPractitioner: Visit };
       errors?: {};
     }>(``, {
-      query: `
-        mutation AddSelfAssessmentForPractitioner($input: SupportVisitModelInput) {
-          addSelfAssessmentForPractitioner(input: $input) {
-            id
-            plannedVisitDate
-            actualVisitDate
-            attended
-            visitType {
-                name
-                description
-            } 
-          }
-        }
-      `,
+      id: 'AddSelfAssessmentForPractitioner',
       variables: {
         input,
       },
@@ -198,18 +157,7 @@ class PQAService {
       data: { visitDataForVisitId: VisitData[] };
       errors?: {};
     }>(``, {
-      query: `
-        query GetVisitDataForVisitId($visitId: String) {
-          visitDataForVisitId(visitId: $visitId) {
-            insertedDate
-            visitId
-            visitName
-            visitSection
-            question
-            questionAnswer
-          }
-        }
-          `,
+      id: 'GetVisitDataForVisitId',
       variables: {
         visitId,
       },
@@ -230,167 +178,7 @@ class PQAService {
       data: { practitionerTimeline: PractitionerTimeline };
       errors?: {};
     }>(``, {
-      query: `
-        query GetPractitionerTimeline ($userId: String) {
-          practitionerTimeline(userId: $userId) {
-            consolidationMeetingColor
-            consolidationMeetingDate
-            consolidationMeetingStatus
-            firstAidCourseColor
-            firstAidCourseStatus
-            firstAidDate
-            prePQAVisitDate1
-            prePQAVisitDate1Color
-            prePQAVisitDate1Status
-            prePQAVisitDate2
-            prePQAVisitDate2Color
-            prePQAVisitDate2Status
-            prePQASiteVisits {
-              id
-              plannedVisitDate
-              attended
-              comment
-              dueDate
-              actualVisitDate
-              insertedDate
-              visitType {
-                type
-                order
-                name
-                normalizedName
-                description
-              }
-              eventId
-            }
-            pQARatings {
-              visitId
-              linkedVisitId
-              sections {
-                sectionRating
-                sectionRatingColor
-                sectionScore
-                visitSection
-              }
-              overallRating
-              overallRatingColor
-              overallRatingStars
-              overallScore
-              visitName
-              visitTypeName
-            }
-            pQASiteVisits {
-              id
-              hasAnswerData
-              delicenseQuestionAnswered
-              plannedVisitDate
-              attended
-              comment
-              actualVisitDate
-              insertedDate
-              overallRatingColor
-              visitType {
-                type
-                order
-                name
-                normalizedName
-                description
-              }
-              eventId
-            }
-            reAccreditationVisits {
-              id
-              hasAnswerData
-              delicenseQuestionAnswered
-              plannedVisitDate
-              attended
-              comment
-              actualVisitDate
-              insertedDate
-              overallRatingColor
-              visitType {
-                type
-                order
-                name
-                normalizedName
-                description
-              }
-              eventId
-            }
-            reAccreditationRatings {
-              visitId
-              linkedVisitId
-              sections {
-                sectionRating
-                sectionRatingColor
-                sectionScore
-                visitSection
-              }
-              overallRating
-              overallRatingColor
-              overallRatingStars
-              overallScore
-              visitName
-              visitTypeName
-            }
-            requestedCoachVisits {
-              id
-              plannedVisitDate
-              insertedDate
-              attended
-              eventId
-              visitType {
-                description
-                id
-                isActive
-                name
-                normalizedName
-                order
-                type
-              }
-            }
-            selfAssessmentColor
-            selfAssessmentDate
-            selfAssessmentStatus
-            selfAssessmentVisits {
-              id
-              plannedVisitDate
-              attended
-              comment
-              insertedDate
-              visitType {
-                type
-                order
-                name
-                normalizedName
-                description
-              }
-              eventId
-            }
-            smartSpaceLicenseColor
-            smartSpaceLicenseDate
-            smartSpaceLicenseStatus
-            starterLicenseColor
-            starterLicenseDate
-            starterLicenseStatus
-            supportVisits {
-              id
-              plannedVisitDate
-              insertedDate
-              attended
-              visitType {
-                description
-                id
-                isActive
-                name
-                normalizedName
-                order
-                type
-              }
-              eventId
-            }
-          }
-        }
-          `,
+      id: 'GetPractitionerTimeline',
       variables: {
         userId,
       },
@@ -410,18 +198,7 @@ class PQAService {
       data: { journeyTimeline: JourneyTimeline[] };
       errors?: {};
     }>(``, {
-      query: `
-        query GetJourneyTimeline ($userId: UUID!) {
-          journeyTimeline(userId: $userId) {
-            name
-            dateCompleted
-            dateValue
-            iconName
-            type
-            visitId
-          }
-        }
-          `,
+      id: 'GetJourneyTimeline',
       variables: {
         userId,
       },
@@ -439,21 +216,7 @@ class PQAService {
       data: { journeyPublishedAssessmentForms: AssessmentFormDto[] };
       errors?: {};
     }>(``, {
-      query: `
-        query getJourneyPublishedAssessmentForms() {
-          journeyPublishedAssessmentForms() {
-              id
-              name
-              description
-              roleIds
-              isPublished
-              publishedDate
-              logoUrl
-              provider
-          }
-        }
-          `,
-      variables: {},
+      id: 'getJourneyPublishedAssessmentForms',
     });
 
     if (response.status !== 200 || response.data.errors) {
@@ -470,43 +233,7 @@ class PQAService {
       data: { journeyAssessmentFormData: AssessmentFormDto };
       errors?: {};
     }>(``, {
-      query: `
-        query getJourneyAssessmentFormData($id: Int!) {
-          journeyAssessmentFormData(id: $id) {
-            id
-            name
-            description
-            roleIds
-            isPublished
-            publishedDate
-            logoUrl
-            provider 
-            formPages {
-                id
-                name
-                description
-                stepNr
-                isScored
-                isScoreResult
-                canSkip
-                multiAnswers
-                info
-                formQuestions {
-                    id
-                    name
-                    description
-                    answerType
-                    minValue
-                    formQuestionOptions {
-                        id
-                        name
-                    }
-                }
-
-            }
-          }
-        }
-          `,
+      id: 'getJourneyAssessmentFormData',
       variables: {
         id,
       },
@@ -528,24 +255,7 @@ class PQAService {
       data: { journeyAssessmentReport: AssessmentReportDto };
       errors?: {};
     }>(``, {
-      query: `
-        query GetJourneyAssessmentReport($visitId: UUID!) {
-            journeyAssessmentReport(visitId: $visitId) {
-              name 
-              greenQuestions
-              blueQuestions
-              amberQuestions
-              dailyActivities
-              skippedActivities
-              textQuestion
-              textAnswer
-              visitId
-              preschoolDetail
-              classroomDetail
-              safetyStandards
-            }        
-        }
-          `,
+      id: 'GetJourneyAssessmentReport',
       variables: {
         visitId,
       },
@@ -569,24 +279,7 @@ class PQAService {
       data: { submitJourneyAssessmentFormData: AssessmentReportDto };
       errors?: {};
     }>(``, {
-      query: `
-       mutation submitJourneyAssessmentFormData($formId: String!, $formName: String!,$input: [AssessmentPageInput]) {
-          submitJourneyAssessmentFormData(formId: $formId, formName: $formName, input: $input) {
-            name 
-            greenQuestions
-            blueQuestions
-            amberQuestions
-            dailyActivities
-            skippedActivities
-            textQuestion
-            textAnswer
-            visitId 
-            preschoolDetail
-            classroomDetail
-            safetyStandards
-          }        
-        }
-      `,
+      id: 'submitJourneyAssessmentFormData',
       variables: {
         formId,
         formName,
@@ -600,11 +293,6 @@ class PQAService {
       );
     }
 
-    // console.log(
-    //   'pqaservice.submitJourneyAssessmentFormData',
-    //   response.data.data
-    // );
-
     return response.data.data.submitJourneyAssessmentFormData;
   }
 
@@ -616,13 +304,7 @@ class PQAService {
       data: { updateVisitPlannedVisitDate: Visit };
       errors?: {};
     }>(``, {
-      query: `
-        mutation updateVisitPlannedVisitDate($input: UpdateVisitPlannedVisitDateModelInput) {
-          updateVisitPlannedVisitDate(input: $input) {
-            id 
-          }        
-        }
-      `,
+      id: 'updateVisitPlannedVisitDate',
       variables: {
         input,
       },
@@ -645,20 +327,7 @@ class PQAService {
       data: { addCoachVisitInviteForPractitioner: Visit };
       errors?: {};
     }>(``, {
-      query: `
-        mutation AddCoachVisitInviteForPractitioner($input: VisitModelInput) {        
-          addCoachVisitInviteForPractitioner(input: $input) {           
-              id           
-              plannedVisitDate           
-              actualVisitDate           
-              attended           
-              visitType {               
-                  name               
-                  description           
-              }         
-          }   
-        }
-      `,
+      id: 'AddCoachVisitInviteForPractitioner',
       variables: {
         input,
       },

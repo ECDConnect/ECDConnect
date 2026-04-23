@@ -1,0 +1,11 @@
+query GetAllProgressTrackingAgeGroup($locale: String) {
+  GetAllProgressTrackingAgeGroup(locale: $locale) {
+    id
+    name
+    startAgeInMonths
+    endAgeInMonths
+    color
+    description
+    skills
+  }
+}

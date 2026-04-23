@@ -1,0 +1,6 @@
+mutation UpdatePractitionerCommunityTabStatus($practitionerUserId: UUID!) {
+  updatePractitionerCommunityTabStatus(practitionerUserId: $practitionerUserId) {
+    id
+    clickedCommunityTab
+  }
+}

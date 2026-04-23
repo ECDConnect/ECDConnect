@@ -25,14 +25,7 @@ class CommunityService {
       data: { GetAllConnect: Connect[] };
       errors?: {};
     }>(``, {
-      query: `
-      query GetAllConnect($locale: String) {
-        GetAllConnect(locale: $locale){
-          id
-          name
-        }
-      }
-      `,
+      id: 'GetAllConnect',
       variables: {
         locale,
       },
@@ -51,14 +44,7 @@ class CommunityService {
       data: { GetAllConnectItem: ConnectItem[] };
       errors?: {};
     }>(``, {
-      query: `
-      query GetAllConnectItem($locale: String) {
-        GetAllConnectItem(locale: $locale){
-          buttonText
-          link
-        }
-      }
-      `,
+      id: 'GetAllConnectItem',
       variables: {
         locale,
       },
@@ -73,143 +59,7 @@ class CommunityService {
   async getCommunityProfile(): Promise<CommunityProfile> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post(``, {
-      query: `
-      query GetCommunityProfile() {
-          communityProfile() {            
-            id
-            userId
-            aboutShort
-            aboutLong
-            shareContactInfo
-            shareEmail            
-            sharePhoneNumber
-            shareProfilePhoto
-            shareProvince
-            provinceId
-            provinceName
-            shareRole
-            clickedECDHeros
-            coachUserId
-            coachName
-            coachPhoneNumber
-            completenessPerc
-            completenessPercColor
-            completenessPercImage
-            insertedDate
-            profileSkills {
-                id
-                name
-                imageName
-                description
-                isActive
-                ordering
-            }
-            communityUser {
-                id
-                fullName
-                email
-                phoneNumber
-                whatsAppNumber
-                profilePhoto
-                roleName
-            }
-            acceptedConnections {
-                id
-                userId
-                aboutShort
-                aboutLong
-                shareEmail
-                sharePhoneNumber
-                shareProfilePhoto
-                shareProvince
-                provinceId
-                provinceName
-                shareRole
-                connectionAccepted
-                communityUser {
-                    id
-                    fullName
-                    email
-                    phoneNumber
-                    whatsAppNumber
-                    profilePhoto
-                    roleName
-                }
-                      profileSkills {
-                id
-                name
-                imageName
-                description
-                isActive
-                ordering
-            }
-            }
-            pendingConnections {
-                id
-                userId
-                aboutShort
-                aboutLong
-                shareEmail
-                sharePhoneNumber
-                shareProfilePhoto
-                shareProvince
-                provinceId
-                provinceName
-                shareRole
-                connectionAccepted
-                communityUser {
-                    id
-                    fullName
-                    email
-                    phoneNumber
-                    whatsAppNumber
-                    profilePhoto
-                    roleName
-                }
-                      profileSkills {
-                id
-                name
-                imageName
-                description
-                isActive
-                ordering
-            }
-            }
-            userConnectionRequests {
-                id
-                userId
-                aboutShort
-                aboutLong
-                shareEmail
-                sharePhoneNumber
-                shareProfilePhoto
-                shareProvince
-                provinceId
-                provinceName
-                shareRole
-                connectionAccepted
-                communityUser {
-                    id
-                    fullName
-                    email
-                    phoneNumber
-                    whatsAppNumber
-                    profilePhoto
-                    roleName
-                }
-                      profileSkills {
-                id
-                name
-                imageName
-                description
-                isActive
-                ordering
-            }
-            }
-          }
-        }
-      `,
-      variables: {},
+      id: 'GetCommunityProfile',
     });
 
     if (response.status !== 200 || response.data.errors) {
@@ -223,108 +73,7 @@ class CommunityService {
   ): Promise<CommunityProfileDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation SaveCommunityProfile($input: CommunityProfileInputModelInput) {
-          saveCommunityProfile(input: $input) {            
-           id
-            userId
-            aboutShort
-            aboutLong
-            shareContactInfo
-            shareEmail            
-            sharePhoneNumber
-            shareProfilePhoto
-            shareProvince
-            provinceId
-            provinceName
-            shareRole
-            clickedECDHeros
-            coachUserId
-            coachName
-            completenessPerc
-            completenessPercColor
-            completenessPercImage
-            insertedDate
-            profileSkills {
-                id
-                name
-                imageName
-                description
-                isActive
-                ordering
-            }
-            communityUser {
-                id
-                fullName
-                email
-                phoneNumber
-                whatsAppNumber
-                profilePhoto
-                roleName
-            }
-            acceptedConnections {
-                id
-                userId
-                aboutShort
-                aboutLong
-                shareEmail
-                sharePhoneNumber
-                shareProfilePhoto
-                shareProvince
-                provinceId
-                provinceName
-                shareRole
-                communityUser {
-                    id
-                    fullName
-                    email
-                    phoneNumber
-                    whatsAppNumber
-                    profilePhoto
-                    roleName
-                }
-                      profileSkills {
-                id
-                name
-                imageName
-                description
-                isActive
-                ordering
-            }
-            }
-            pendingConnections {
-                id
-                userId
-                aboutShort
-                aboutLong
-                shareEmail
-                sharePhoneNumber
-                shareProfilePhoto
-                shareProvince
-                provinceId
-                provinceName
-                shareRole
-                communityUser {
-                    id
-                    fullName
-                    email
-                    phoneNumber
-                    whatsAppNumber
-                    profilePhoto
-                    roleName
-                }
-                      profileSkills {
-                id
-                name
-                imageName
-                description
-                isActive
-                ordering
-            }
-            }
-        }
-}
-      `,
+      id: 'SaveCommunityProfile',
       variables: {
         input,
       },
@@ -346,43 +95,7 @@ class CommunityService {
   ): Promise<CommunityProfileDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post(``, {
-      query: `
-      query GetUsersToConnectWith($provinceIds: [UUID!], $communitySkillIds: [UUID!], $connectionTypes: [String]) {
-    usersToConnectWith(provinceIds: $provinceIds, communitySkillIds: $communitySkillIds, connectionTypes: $connectionTypes) {
-        id
-            userId
-            aboutShort
-            aboutLong
-            shareContactInfo
-            shareEmail            
-            sharePhoneNumber
-            shareProfilePhoto
-            shareProvince
-                        profileSkills {
-                id
-                name
-                imageName
-                description
-                isActive
-                ordering
-            }
-            provinceId
-            provinceName
-            shareRole
-            insertedDate
-             communityUser {
-                id
-                fullName
-                email
-                phoneNumber
-                whatsAppNumber
-                profilePhoto
-                roleName
-            }
-            connectionAccepted
-    }
-}
-      `,
+      id: 'GetUsersToConnectWith',
       variables: {
         provinceIds,
         communitySkillIds,
@@ -404,34 +117,7 @@ class CommunityService {
   ): Promise<CommunityProfile[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post(``, {
-      query: `
-      query GetOtherConnections($provinceIds: [UUID!], $communitySkillIds: [UUID!]) {
-    otherConnections(provinceIds: $provinceIds, communitySkillIds: $communitySkillIds) {
- id
-            userId
-            aboutShort
-            aboutLong
-            shareContactInfo
-            shareEmail            
-            sharePhoneNumber
-            shareProfilePhoto
-            shareProvince
-            provinceId
-            provinceName
-            shareRole
-            insertedDate
-             communityUser {
-                id
-                fullName
-                email
-                phoneNumber
-                whatsAppNumber
-                profilePhoto
-                roleName
-            }
-    }
-}
-      `,
+      id: 'GetOtherConnections',
       variables: {
         provinceIds,
         communitySkillIds,
@@ -451,14 +137,7 @@ class CommunityService {
   ): Promise<CommunityConnectInputModelInput[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation SaveCommunityProfileConnections($input: [CommunityConnectInputModelInput]) {
-    saveCommunityProfileConnections(input: $input) {
-        fromCommunityProfileId
-        toCommunityProfileId
-    }
-}
-      `,
+      id: 'SaveCommunityProfileConnections',
       variables: {
         input,
       },
@@ -478,15 +157,7 @@ class CommunityService {
   ): Promise<CommunityConnectInputModelInput> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation CancelCommunityRequest($input: CommunityConnectInputModelInput) {
-    cancelCommunityRequest(input: $input) {
-        fromCommunityProfileId
-        toCommunityProfileId
-        isActive
-    }
-}
-      `,
+      id: 'CancelCommunityRequest',
       variables: {
         input,
       },
@@ -506,21 +177,7 @@ class CommunityService {
   ): Promise<CoachFeedbackInputModelInput> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation SaveCoachFeedback($input: CoachFeedbackInputModelInput) {
-    saveCoachFeedback(input: $input) {
-        id
-        fromUserId
-        toUserId
-        supportRatingId
-        feedbackDetails
-        coachFeedbackTypes {
-            id
-            feedbackTypeId
-        }
-    }
-}
-      `,
+      id: 'SaveCoachFeedback',
       variables: {
         input,
       },
@@ -536,15 +193,7 @@ class CommunityService {
   async getFeedbackTypes(): Promise<FeedbackTypeSortInput> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post(``, {
-      query: `
-      query GetFeedbackTypes() {
-    feedbackTypes() {
-        id
-        name
-        ordering
-    }
-}
-      `,
+      id: 'GetFeedbackTypes',
     });
 
     if (response.status !== 200 || response.data.errors) {
@@ -558,16 +207,7 @@ class CommunityService {
   async getSupportRatings(): Promise<SupportRatingSortInput> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post(``, {
-      query: `
-      query GetSupportRatings() {
-    supportRatings() {
-        id
-        name
-        imageName
-        ordering
-    }
-}
-      `,
+      id: 'GetSupportRatings',
     });
 
     if (response.status !== 200 || response.data.errors) {
@@ -581,116 +221,7 @@ class CommunityService {
   ): Promise<CommunityProfileDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation AcceptRejectCommunityRequests($input: AcceptRejectCommunityRequestsInputModelInput) {
-    acceptRejectCommunityRequests(input: $input) {
-        id
-            userId
-            aboutShort
-            aboutLong
-            shareContactInfo
-            shareEmail            
-            sharePhoneNumber
-            shareProfilePhoto
-            shareProvince
-            provinceId
-            provinceName
-            shareRole
-            clickedECDHeros
-            coachUserId
-            coachName
-            completenessPerc
-            completenessPercColor
-            completenessPercImage
-            insertedDate
-            profileSkills {
-                id
-                name
-                imageName
-                description
-                isActive
-                ordering
-            }
-            communityUser {
-                id
-                fullName
-                email
-                phoneNumber
-                whatsAppNumber
-                profilePhoto
-                roleName
-            }
-            acceptedConnections {
-                id
-                userId
-                aboutShort
-                aboutLong
-                shareEmail
-                sharePhoneNumber
-                shareProfilePhoto
-                shareProvince
-                provinceId
-                provinceName
-                shareRole
-                communityUser {
-                    id
-                    fullName
-                    email
-                    phoneNumber
-                    whatsAppNumber
-                    profilePhoto
-                    roleName
-                }
-            }
-            pendingConnections {
-                id
-                userId
-                aboutShort
-                aboutLong
-                shareEmail
-                sharePhoneNumber
-                shareProfilePhoto
-                shareProvince
-                provinceId
-                provinceName
-                shareRole
-                communityUser {
-                    id
-                    fullName
-                    email
-                    phoneNumber
-                    whatsAppNumber
-                    profilePhoto
-                    roleName
-                }
-            }
-             
-             userConnectionRequests {
-                id
-                userId
-                aboutShort
-                aboutLong
-                shareEmail
-                sharePhoneNumber
-                shareProfilePhoto
-                shareProvince
-                provinceId
-                provinceName
-                shareRole
-                connectionAccepted
-                communityUser {
-                    id
-                    fullName
-                    email
-                    phoneNumber
-                    whatsAppNumber
-                    profilePhoto
-                    roleName
-                }
-            }
-    }
-}
-      `,
+      id: 'AcceptRejectCommunityRequests',
       variables: {
         input,
       },
@@ -708,13 +239,7 @@ class CommunityService {
   async deleteCommunityProfile(communityProfileId: string): Promise<string> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation DeleteCommunityProfile($communityProfileId: UUID!) {
-    deleteCommunityProfile(communityProfileId: $communityProfileId) {
-     
-    }
-}
-      `,
+      id: 'DeleteCommunityProfile',
       variables: {
         communityProfileId,
       },

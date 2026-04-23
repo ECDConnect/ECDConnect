@@ -1,0 +1,12 @@
+query displayMetrics($type: String) {
+  displayMetrics(type: $type) {
+    subject
+    icon
+    color
+    message
+    notes
+    userId
+    userType
+    groupingName
+  }
+}

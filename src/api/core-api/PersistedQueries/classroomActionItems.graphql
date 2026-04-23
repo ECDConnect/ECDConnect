@@ -1,0 +1,11 @@
+query classroomActionItems($practitionerId: String) {
+  classroomActionItems(practitionerId: $practitionerId) {
+    subject
+    icon
+    color
+    message
+    notes
+    userId
+    userType
+  }
+}
