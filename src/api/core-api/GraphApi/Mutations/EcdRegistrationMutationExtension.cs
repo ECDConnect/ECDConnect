@@ -66,7 +66,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 registration.HasGoldCertificate = input.HasGoldCertificate;
             }
 
-            if (input.Subsidy == SubsidyStatus.Yes || (input.Subsidy == SubsidyStatus.NotSure && isRegistered))
+            if (input.Subsidy == SubsidyStatus.Yes || isRegistered)
             {
                 registration.InitialCertificates = "N/A";
             }
