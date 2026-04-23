@@ -190,7 +190,6 @@ export const ECDHeroes: React.FC<ECDHeroesProps> = ({ onClose }) => {
       setIsLoading(true);
       const response: any = await dispatch(
         communityThunkActions.getUsersToConnectWith({
-          userId: communityProfile?.userId!,
           provinceIds: filteredProvinces || [],
           connectionTypes: filteredConnectionsType || [],
           communitySkillIds: filteredProfileSkills || [],
@@ -199,7 +198,6 @@ export const ECDHeroes: React.FC<ECDHeroesProps> = ({ onClose }) => {
 
       const connectionsResponse: any = await dispatch(
         communityThunkActions.getOtherConnections({
-          userId: communityProfile?.userId!,
           provinceIds: filteredProvinces || [],
           communitySkillIds: filteredProfileSkills || [],
         })
@@ -274,7 +272,7 @@ export const ECDHeroes: React.FC<ECDHeroesProps> = ({ onClose }) => {
 
     await dispatch(
       communityThunkActions.getCommunityProfile({
-        userId: communityProfile?.userId!,
+        overrideCache: true,
       })
     );
   };

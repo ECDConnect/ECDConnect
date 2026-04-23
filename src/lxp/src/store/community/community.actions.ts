@@ -9,6 +9,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState, ThunkApiType } from '../types';
 import { CommunityService } from '@/services/CommunityService';
 import { CommunityProfileDto } from '@ecdlink/core';
+import { OverrideCache } from '@/models/sync/override-cache';
 
 export interface CommunityConnectDataForGGWithLocale {
   locale: string;
@@ -89,28 +90,30 @@ export const getAllConnectItem = createAsyncThunk<
 
 export const getCommunityProfile = createAsyncThunk<
   any,
-  { userId: string },
+  {} & OverrideCache,
   ThunkApiType<RootState>
 >(
   CommunityActions.GET_COMMUNITY_PROFILE,
-  async ({ userId }, { getState, rejectWithValue }) => {
+  async ({ overrideCache = false }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       community: { communityProfile: cache },
     } = getState();
 
-    if (cache) {
+    // === CACHE CHECK ===
+    if (!overrideCache && cache) {
       return cache;
     }
 
+    // === FETCH FROM API ===
     try {
-      if (userAuth?.auth_token) {
-        return await new CommunityService(
-          userAuth?.auth_token ?? ''
-        ).getCommunityProfile(userId);
-      } else {
+      if (!userAuth?.auth_token) {
         return rejectWithValue('no access token, profile check required');
       }
+
+      return await new CommunityService(
+        userAuth?.auth_token ?? ''
+      ).getCommunityProfile();
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -143,7 +146,6 @@ export const saveCommunityProfile = createAsyncThunk<
 export const getUsersToConnectWith = createAsyncThunk<
   any,
   {
-    userId: string;
     provinceIds: string[];
     communitySkillIds: string[];
     connectionTypes: string[];
@@ -152,26 +154,22 @@ export const getUsersToConnectWith = createAsyncThunk<
 >(
   CommunityActions.GET_USERS_TO_CONNECT_WITH,
   async (
-    { userId, provinceIds, communitySkillIds, connectionTypes },
+    { provinceIds, communitySkillIds, connectionTypes },
     { getState, rejectWithValue }
   ) => {
     const {
       auth: { userAuth },
     } = getState();
 
+    // === FETCH FROM API ===
     try {
-      if (userAuth?.auth_token) {
-        return await new CommunityService(
-          userAuth?.auth_token ?? ''
-        ).getUsersToConnectWith(
-          userId,
-          provinceIds,
-          communitySkillIds,
-          connectionTypes
-        );
-      } else {
+      if (!userAuth?.auth_token) {
         return rejectWithValue('no access token, profile check required');
       }
+
+      return await new CommunityService(
+        userAuth?.auth_token ?? ''
+      ).getUsersToConnectWith(provinceIds, communitySkillIds, connectionTypes);
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -180,26 +178,24 @@ export const getUsersToConnectWith = createAsyncThunk<
 
 export const getOtherConnections = createAsyncThunk<
   any,
-  { userId: string; provinceIds: string[]; communitySkillIds: string[] },
+  { provinceIds: string[]; communitySkillIds: string[] },
   ThunkApiType<RootState>
 >(
   CommunityActions.GET_OTHER_CONNECTIONS,
-  async (
-    { userId, provinceIds, communitySkillIds },
-    { getState, rejectWithValue }
-  ) => {
+  async ({ provinceIds, communitySkillIds }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
     } = getState();
 
+    // === FETCH FROM API ===
     try {
-      if (userAuth?.auth_token) {
-        return await new CommunityService(
-          userAuth?.auth_token ?? ''
-        ).getOtherConnections(userId, provinceIds, communitySkillIds);
-      } else {
+      if (!userAuth?.auth_token) {
         return rejectWithValue('no access token, profile check required');
       }
+
+      return await new CommunityService(
+        userAuth?.auth_token ?? ''
+      ).getOtherConnections(provinceIds, communitySkillIds);
     } catch (err) {
       return rejectWithValue(err);
     }
