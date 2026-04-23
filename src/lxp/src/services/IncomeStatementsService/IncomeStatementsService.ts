@@ -17,11 +17,7 @@ class IncomeStatementsService {
   async GetAllStatementsIncomeType(): Promise<IncomeStatementsTypes[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `query GetAllStatementsIncomeType() {
-          GetAllStatementsIncomeType() {
-            id description insertedDate notes
-          }
-        }`,
+      id: 'GetAllStatementsIncomeType',
     });
 
     if (response.status !== 200) {
@@ -36,11 +32,7 @@ class IncomeStatementsService {
   async GetAllStatementsPayType(): Promise<StatementsPayTypes[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `query GetAllStatementsPayType() {
-          GetAllStatementsPayType() {
-            id description insertedDate notes
-          }
-        }`,
+      id: 'GetAllStatementsPayType',
     });
 
     if (response.status !== 200) {
@@ -59,37 +51,7 @@ class IncomeStatementsService {
   ): Promise<IncomeStatementDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `query incomeStatements($userId: UUID!, $startDate: DateTime!, $endDate: DateTime) { 
-          incomeStatements(userId: $userId, startDate: $startDate, endDate: $endDate) { 
-            id 
-            month
-            year
-            contactedByCoach
-            downloaded
-            incomeItems {
-              incomeTypeId
-              id
-              dateReceived
-              amount
-              childUserId
-              notes
-              numberOfChildrenCovered
-              payTypeId
-              photoProof
-              description
-              isActive
-            } 
-            expenseItems {
-              expenseTypeId
-              id
-              datePaid
-              amount
-              notes
-              photoProof
-              isActive
-            }    
-          }
-        }`,
+      id: 'incomeStatements',
       variables: {
         userId,
         startDate,
@@ -113,33 +75,7 @@ class IncomeStatementsService {
       data: { updateIncomeStatement: IncomeStatementDto };
       errors?: {};
     }>(``, {
-      query: `mutation UpdateIncomeStatement($input: IncomeStatementModelInput) {      
-          updateIncomeStatement(input: $input) {
-            id 
-            month
-            year
-            downloaded
-            incomeItems {
-              incomeTypeId
-              id
-              dateReceived
-              amount
-              childUserId
-              notes
-              numberOfChildrenCovered
-              payTypeId
-              photoProof
-            } 
-            expenseItems {
-              expenseTypeId
-              id
-              datePaid
-              amount
-              notes
-              photoProof
-            }
-          } 
-        }`,
+      id: 'UpdateIncomeStatement',
       variables: {
         input: {
           id: input.id,
@@ -162,33 +98,12 @@ class IncomeStatementsService {
     return response.data.data.updateIncomeStatement;
   }
 
-  // Used to generate the PDF, can we refactor to fetch a link to the backend PDF,
-  // or to use the income statement to create the pdf? Then it could work offline?
   async getMonthsIncomeExpensesReport(
     statementId: string
   ): Promise<ReportTableDataDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `query GetStatementsIncomeExpensesPDFData($statementId: UUID!) {
-          statementsIncomeExpensesPDFData(statementId: $statementId) {
-          tableName
-          type
-          total
-          headers {
-              header
-              dataKey
-          }
-          data {
-              child
-              date
-              description
-              amount
-              invoiceNr
-              photoProof
-              type
-          }
-        }
-      }`,
+      id: 'GetStatementsIncomeExpensesPDFData',
       variables: {
         statementId,
       },
@@ -205,13 +120,7 @@ class IncomeStatementsService {
   async GetAllStatementsExpensesType(): Promise<any[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query GetAllStatementsExpenseType() {
-        GetAllStatementsExpenseType() {
-            id description insertedDate notes
-        }
-    }
-          `,
+      id: 'GetAllStatementsExpenseType',
     });
 
     if (response.status !== 200) {
@@ -230,35 +139,7 @@ class IncomeStatementsService {
     const response = await apiInstance.post<{
       data: { updateUserContactStatusForStatement: IncomeStatementDto };
     }>(``, {
-      query: `
-        mutation UpdateUserContactStatusForStatement($statementId: UUID!) {
-          updateUserContactStatusForStatement(statementId: $statementId) {
-            id 
-            month
-            year
-            downloaded
-            incomeItems {
-              incomeTypeId
-              id
-              dateReceived
-              amount
-              childUserId
-              notes
-              numberOfChildrenCovered
-              payTypeId
-              photoProof
-            } 
-            expenseItems {
-              expenseTypeId
-              id
-              datePaid
-              amount
-              notes
-              photoProof
-            }
-          }
-        }
-      `,
+      id: 'UpdateUserContactStatusForStatement',
       variables: {
         statementId,
       },
@@ -276,9 +157,7 @@ class IncomeStatementsService {
   async getIncomeStatementPdf(statementId: string): Promise<string> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `query GetIncomeStatementPdf($statementId: UUID!) { 
-          incomeStatementPdf(statementId: $statementId) { 
-    }}`,
+      id: 'GetIncomeStatementPdf',
       variables: {
         statementId,
       },

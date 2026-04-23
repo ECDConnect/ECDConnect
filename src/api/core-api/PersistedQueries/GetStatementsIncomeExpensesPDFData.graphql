@@ -1,0 +1,20 @@
+query GetStatementsIncomeExpensesPDFData($statementId: UUID!) {
+  statementsIncomeExpensesPDFData(statementId: $statementId) {
+    tableName
+    type
+    total
+    headers {
+      header
+      dataKey
+    }
+    data {
+      child
+      date
+      description
+      amount
+      invoiceNr
+      photoProof
+      type
+    }
+  }
+}

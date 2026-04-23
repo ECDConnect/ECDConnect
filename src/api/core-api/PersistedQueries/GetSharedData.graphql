@@ -1,0 +1,23 @@
+query GetSharedData($userId: UUID!, $isMonthly: Boolean!) {
+  sharedData(userId: $userId, isMonthly: $isMonthly) {
+    total
+    totalChildren
+    activityDetail {
+      activity
+      timesScored
+      pointsTotal
+    }
+    userRankingData {
+      pointsTotal
+      comparativeTargetPercentage
+      comparativeTargetPercentageColor
+      comparativePrimaryMessage
+      comparativeSecondaryMessage
+      nonComparativeTargetPercentage
+      nonComparativeTargetPercentageColor
+      nonComparativePrimaryMessage
+      nonComparativeSecondaryMessage
+      messageNr
+    }
+  }
+}

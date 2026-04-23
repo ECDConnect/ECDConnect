@@ -1,0 +1,3 @@
+mutation UpdateClickedECDHeros($userId: UUID!) {
+  updateClickedECDHeros(userId: $userId)
+}

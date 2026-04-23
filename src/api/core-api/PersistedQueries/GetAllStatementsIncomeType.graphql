@@ -1,0 +1,5 @@
+query GetAllStatementsIncomeType {
+  GetAllStatementsIncomeType {
+    id description insertedDate notes
+  }
+}

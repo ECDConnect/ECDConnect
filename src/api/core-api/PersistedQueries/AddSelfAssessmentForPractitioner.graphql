@@ -1,0 +1,12 @@
+mutation AddSelfAssessmentForPractitioner($input: SupportVisitModelInput) {
+  addSelfAssessmentForPractitioner(input: $input) {
+    id
+    plannedVisitDate
+    actualVisitDate
+    attended
+    visitType {
+      name
+      description
+    }
+  }
+}

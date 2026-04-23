@@ -1,0 +1,5 @@
+mutation updateCalendarEvent($input: CalendarEventModelInput, $id: UUID!) {
+  updateCalendarEvent(input: $input, id: $id) {
+    id
+  }
+}

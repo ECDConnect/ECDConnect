@@ -1,0 +1,8 @@
+query GetAllLanguage($isActive: Boolean = true) {
+  GetAllLanguage(where: { isActive: { eq: $isActive } }) {
+    id
+    description
+    locale
+    isActive
+  }
+}

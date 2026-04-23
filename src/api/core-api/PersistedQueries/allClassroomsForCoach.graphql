@@ -1,0 +1,24 @@
+query allClassroomsForCoach {
+  allClassroomsForCoach {
+    id
+    userId
+    name
+    classroomImageUrl
+    numberPractitioners
+    isPrinciple
+    childProgressReportPeriods {
+      id
+      startDate
+      endDate
+    }
+    siteAddress {
+      id
+      name
+      addressLine1
+      addressLine2
+      addressLine3
+      postalCode
+      ward
+    }
+  }
+}

@@ -11,14 +11,7 @@ class EducationLevelService {
   async getEducationLevels(): Promise<EducationLevelDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query GetAllEducation($isActive: Boolean = true) {
-        GetAllEducation(where: { isActive: { eq: $isActive } }) {
-          id
-          description      
-        }
-      }
-          `,
+      id: 'GetAllEducation',
     });
 
     if (response.status !== 200) {

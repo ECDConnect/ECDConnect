@@ -11,19 +11,7 @@ class SettingsService {
   async getSettingType(): Promise<SettingTypeDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query {
-          settings {
-            Reporting{
-              ChildProgressReportMonths
-            }
-            Children {
-              ChildInitialObservationPeriod
-              ChildExpiryTime
-            }
-          }
-        }
-          `,
+      id: 'getSettings',
     });
 
     if (response.status !== 200) {
@@ -36,15 +24,7 @@ class SettingsService {
   async queryChangesToSync(lastUpdated: string): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query queryChangesToSync (
-        $lastUpdated: DateTime!) {
-        changesToSync(
-            lastUpdated: $lastUpdated
-               ) {
-    }
-    }
-          `,
+      id: 'queryChangesToSync',
       variables: {
         lastUpdated: lastUpdated,
       },
@@ -60,20 +40,7 @@ class SettingsService {
   async getCmsSyncStatus(lastSyncDate: Date): Promise<CmsSyncStatus> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query GetCmsSyncStatus($lastSync: DateTime!) {
-          cmsSyncStatus(lastSync: $lastSync) {
-            syncActivities
-            syncCalendarEventTypes
-            syncStoryBooks
-            syncConsent
-            syncResourceLinks
-            syncAgeGroups
-            syncProgrammeRoutines
-            syncHolidays
-          }
-        }   
-        `,
+      id: 'getCmsSyncStatus',
       variables: {
         lastSync: lastSyncDate,
       },

@@ -30,179 +30,7 @@ class PractitionerService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
 
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query allPractitionersForCoach($userId: String) {
-          allPractitionersForCoach(userId: $userId) {
-            id
-            userId
-            programmeType
-            timeline {
-              consolidationMeetingColor
-              consolidationMeetingDate
-              consolidationMeetingStatus
-              firstAidCourseColor
-              firstAidCourseStatus
-              firstAidDate
-              prePQAVisitDate1
-              prePQAVisitDate1Color
-              prePQAVisitDate1Status
-              prePQAVisitDate2
-              prePQAVisitDate2Color
-              prePQAVisitDate2Status
-              supportVisits {
-                id
-                plannedVisitDate
-                attended
-                comment
-                visitType {
-                  type
-                  order
-                  name
-                  normalizedName
-                  description
-                }
-                eventId
-              }
-              prePQASiteVisits {
-                id
-                plannedVisitDate
-                attended
-                comment
-                dueDate
-                insertedDate
-                visitType {
-                  type
-                  order
-                  name
-                  normalizedName
-                  description
-                }
-                eventId
-              }
-              pQARatings {
-                visitId
-                linkedVisitId
-                sections {
-                  sectionRating
-                  sectionRatingColor
-                  sectionScore
-                  visitSection
-                }
-                overallRating
-                overallRatingColor
-                overallRatingStars
-                overallScore
-                visitName
-                visitTypeName
-              }
-              pQASiteVisits {
-                id
-                hasAnswerData
-                delicenseQuestionAnswered
-                plannedVisitDate
-                attended
-                comment
-                insertedDate
-                overallRatingColor
-                visitType {
-                  type
-                  order
-                  name
-                  normalizedName
-                  description
-                }
-                eventId
-              }
-              reAccreditationVisits {
-                id
-                hasAnswerData
-                delicenseQuestionAnswered
-                plannedVisitDate
-                attended
-                comment
-                insertedDate
-                overallRatingColor
-                visitType {
-                  type
-                  order
-                  name
-                  normalizedName
-                  description
-                }
-                eventId
-              }
-              reAccreditationRatings {
-                visitId
-                linkedVisitId
-                sections {
-                  sectionRating
-                  sectionRatingColor
-                  sectionScore
-                  visitSection
-                }
-                overallRating
-                overallRatingColor
-                overallRatingStars
-                overallScore
-                visitName
-                visitTypeName
-              }
-              requestedCoachVisits {
-                id
-                plannedVisitDate
-                insertedDate
-                attended
-                visitType {
-                  description
-                  id
-                  isActive
-                  name
-                  normalizedName
-                  order
-                  type
-                }
-              }
-              selfAssessmentVisits {
-                id
-                plannedVisitDate
-                attended
-                comment
-                insertedDate
-                visitType {
-                  type
-                  order
-                  name
-                  normalizedName
-                  description
-                }
-                eventId
-              }
-              smartSpaceLicenseColor
-              smartSpaceLicenseDate
-              smartSpaceLicenseStatus
-              starterLicenseColor
-              starterLicenseDate
-              starterLicenseStatus
-              supportVisits {
-                id
-                plannedVisitDate
-                insertedDate
-                attended
-                visitType {
-                  description
-                  id
-                  isActive
-                  name
-                  normalizedName
-                  order
-                  type
-                }
-                eventId
-              }
-            }
-          }
-        }
-      `,
+      id: 'allPractitionersForCoach',
       variables: {
         userId,
       },
@@ -220,70 +48,7 @@ class PractitionerService {
   async getPractitionerById(id: string): Promise<PractitionerDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query GetPractitionerById($id: UUID) {
-          GetPractitionerById(id: $id) {
-            id
-            userId
-            user {
-              gender {
-                description
-              }
-              firstName
-              surname
-              fullName
-              email
-              isSouthAfricanCitizen
-              verifiedByHomeAffairs
-              idNumber
-              phoneNumber
-            }
-            siteAddress {
-              id
-              province {
-                id
-                description
-              }
-              name
-              addressLine1
-              addressLine2
-              addressLine3
-              postalCode
-              ward
-            }
-            programmeType
-            isPrincipal
-            isRegistered
-            principalHierarchy
-            coachHierarchy
-            attendanceRegisterLink
-            consentForPhoto
-            parentFees
-            languageUsedInGroups
-            signingSignature
-            startDate
-            shareInfo
-            dateLinked
-            dateAccepted
-            dateToBeRemoved
-            isLeaving
-            progress
-            usePhotoInReport
-            isCompletedBusinessWalkThrough
-            ecdRegistration {
-              id
-              subsidy
-              registrationType
-              challenges
-              challengesOtherReason
-              hasBronzeCertificate
-              hasSilverCertificate
-              hasGoldCertificate
-              problemDescription
-            }
-          }
-        }
-      `,
+      id: 'GetPractitionerById',
       variables: {
         id: id,
       },
@@ -299,97 +64,7 @@ class PractitionerService {
   async getPractitionerByUserId(userId: string): Promise<PractitionerDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query GetPractitionerByUserId($userId: String) {
-          practitionerByUserId(userId: $userId) {
-            id
-            userId
-            user {
-              gender {
-                description
-              }
-              firstName
-              surname
-              fullName
-              userName
-              email
-              isSouthAfricanCitizen
-              verifiedByHomeAffairs
-              idNumber
-              phoneNumber
-            }
-            siteAddress {
-              id
-              province {
-                id
-                description
-              }
-              name
-              addressLine1
-              addressLine2
-              addressLine3
-              postalCode
-              ward
-            }
-            programmeType
-            isPrincipal
-            isRegistered
-            principalHierarchy
-            coachHierarchy
-            coachName
-            coachProfilePic
-            attendanceRegisterLink
-            consentForPhoto
-            parentFees
-            languageUsedInGroups
-            signingSignature
-            startDate
-            shareInfo
-            dateLinked
-            dateAccepted
-            dateToBeRemoved
-            isLeaving
-            progress
-            usePhotoInReport
-            isCompletedBusinessWalkThrough
-            clickedCommunityTab
-            communitySectionViewDate
-            progressWalkthroughComplete
-            absentees {
-              absentDate
-              absentDateEnd
-              className
-              classroomGroupId
-              reason
-              reassignedToPerson
-              reassignedToUserId
-              absenteeId
-              loggedByPerson
-              loggedByUserId
-            }
-            permissions {
-              id
-              userId
-              permissionId
-              isActive
-              permissionName
-              permissionNormalizedName
-              permissionGrouping
-            }
-            ecdRegistration {
-              id
-              subsidy
-              registrationType
-              challenges
-              challengesOtherReason
-              hasBronzeCertificate
-              hasSilverCertificate
-              hasGoldCertificate
-              problemDescription
-            }
-          }
-        }
-      `,
+      id: 'GetPractitionerByUserId',
       variables: {
         userId,
       },
@@ -407,22 +82,7 @@ class PractitionerService {
   async getPractitionerPermissions(userId: string): Promise<PractitionerDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query GetPractitionerPermissions($userId: String) {
-          practitionerPermissions(userId: $userId) {
-            id
-            permissions {
-              id
-              userId
-              permissionId
-              isActive
-              permissionName
-              permissionNormalizedName
-              permissionGrouping
-            }
-          }
-        }
-      `,
+      id: 'GetPractitionerPermissions',
       variables: {
         userId,
       },
@@ -440,91 +100,7 @@ class PractitionerService {
   async getAllPractitioners(): Promise<PractitionerDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query GetAllPractitioners {
-          allPractitioners {
-            id
-            userId
-            isPrincipal
-            programmeType
-            principalHierarchy
-            isActive
-            coachHierarchy
-            isRegistered
-            shareInfo
-            signingSignature
-            dateLinked
-            dateAccepted
-            dateToBeRemoved
-            daysAbsentLastMonth
-            permissions {
-              id
-              isActive
-              permissionId
-              permissionName
-              permissionNormalizedName
-              permissionGrouping
-            }
-            siteAddress {
-              addressLine1
-              addressLine2
-              addressLine3
-              area
-              id
-              municipality
-              name
-              postalCode
-              province {
-                id
-                description
-              }
-              provinceId
-              updatedBy
-              updatedDate
-              ward
-            }
-            isLeaving
-            user {
-              gender {
-                description
-              }
-              emergencyContactFirstName
-              emergencyContactSurname
-              emergencyContactPhoneNumber
-              idNumber
-              fullName
-              firstName
-              surname
-              userName
-              id
-              email
-              phoneNumber
-              profileImageUrl
-              roles {
-                id
-                name
-              }
-            }
-            dateLinked
-            dateAccepted
-            dateToBeRemoved
-            isLeaving
-            progress
-            usePhotoInReport
-            isCompletedBusinessWalkThrough
-            absentees {
-              absentDate
-              absentDateEnd
-              className
-              classroomGroupId
-              reason
-              reassignedToPerson
-              reassignedToUserId
-              absenteeId
-          }
-          }
-        }
-      `,
+      id: 'GetAllPractitioners',
     });
 
     if (response.status !== 200 || !!response.data.errors) {
@@ -537,46 +113,7 @@ class PractitionerService {
   async getPractitionerByIdNumber(idNumber: string): Promise<UserDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-       query GetPractitionerByIdNumber($idNumber: String) {
-          practitionerByIdNumber(idNumber: $idNumber) {
-            appUser {
-              id
-              idNumber
-              firstName
-              surname
-              userName
-              practitionerObjectData {
-                isRegistered
-                isPrincipal
-                id
-                shareInfo
-                programmeType
-                principalHierarchy
-                dateLinked
-                dateAccepted
-                dateToBeRemoved
-                isLeaving
-                progress
-                usePhotoInReport
-                isCompletedBusinessWalkThrough
-              }
-                userPermissions {
-                id
-                isActive
-                permissionId
-               permission {
-                id
-                name
-               }
-            }
-            }
-            isRegistered
-            belongsToPreschool
-            note
-          }
-        }
-      `,
+      id: 'GetPractitionerByIdNumber',
       variables: {
         idNumber,
       },
@@ -595,20 +132,7 @@ class PractitionerService {
   async PromotePractitionerToPrincipal(userId: string): Promise<UserDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation promotePractitionerToPrincipal($userId: String) {
-          promotePractitionerToPrincipal(userId: $userId) {
-            id
-            isPrincipal
-            user {
-              roles {
-                id
-                name
-              }
-            }
-          }
-        }
-      `,
+      id: 'promotePractitionerToPrincipal',
       variables: {
         userId,
       },
@@ -630,43 +154,7 @@ class PractitionerService {
   ): Promise<ClassroomGroupDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query GetClassroomGroupClassroomsForPractitioner($userId: String) {
-        classroomGroupClassroomsForPractitioner(userId: $userId){
-            id
-            name
-            programmeType {
-                description
-            }
-            classroom {
-                id
-                siteAddress {
-                    name
-                    addressLine1
-                    addressLine2
-                    addressLine3
-                    postalCode
-                    province {
-                        description
-                    }
-                }
-                name
-                numberPractitioners
-                numberOfAssistants
-                numberOfOtherAssistants
-            }
-            classProgrammes{
-                id
-                meetingDay
-                isFullDay
-                classroomGroup{
-                    id
-                    name
-                }
-            }
-        }
-    }
-      `,
+      id: 'GetClassroomGroupClassroomsForPractitioner',
       variables: {
         userId,
       },
@@ -684,15 +172,7 @@ class PractitionerService {
   async UpdatePractitionerShareInfo(practitionerId: string): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation updatePractitionerShareInfo(
-          $practitionerId: String
-        ) {
-          updatePractitionerShareInfo(
-            practitionerId: $practitionerId
-          )
-        }
-      `,
+      id: 'updatePractitionerShareInfo',
       variables: {
         practitionerId,
       },
@@ -713,17 +193,7 @@ class PractitionerService {
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation UpdatePractitionerRegistered(
-          $practitionerId: String
-          $status: Boolean
-        ) {
-          updatePractitionerRegistered(
-            practitionerId: $practitionerId
-            status: $status
-          )
-        }
-      `,
+      id: 'UpdatePractitionerRegistered',
       variables: {
         practitionerId,
         status,
@@ -745,17 +215,7 @@ class PractitionerService {
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation updatePractitionerProgress(
-          $practitionerId: String
-          $progress: Decimal!
-        ) {
-          updatePractitionerProgress(
-            practitionerId: $practitionerId
-            progress: $progress
-          )
-        }
-      `,
+      id: 'updatePractitionerProgress',
       variables: {
         practitionerId,
         progress,
@@ -777,17 +237,7 @@ class PractitionerService {
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation updatePractitionerUsePhotoInReport(
-          $practitionerId: String
-          $usePhotoInReport: String
-        ) {
-          updatePractitionerUsePhotoInReport(
-            practitionerId: $practitionerId
-            usePhotoInReport: $usePhotoInReport
-          )
-        }
-      `,
+      id: 'updatePractitionerUsePhotoInReport',
       variables: {
         practitionerId,
         usePhotoInReport,
@@ -808,20 +258,7 @@ class PractitionerService {
   ): Promise<UserDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation addPractitionerToPrincipal ($firstName: String, $idNumber: String, $lastName: String, $userId: String, $preschoolCode: String) {
-          addPractitionerToPrincipal(
-            firstName: $firstName
-            idNumber: $idNumber
-            lastName: $lastName
-            userId: $userId
-            preschoolCode: $preschoolCode
-          ) {
-            userId
-            isActive
-          }
-        }
-      `,
+      id: 'addPractitionerToPrincipal',
       variables: {
         userId: input.userId,
         idNumber: input.idNumber,
@@ -847,19 +284,7 @@ class PractitionerService {
   ): Promise<PractitionerDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      mutation updatePractitionerContactInfo($practitionerId: String, $firstName: String, $lastName: String, $phoneNumber: String, $email: String) {
-        updatePractitionerContactInfo(practitionerId: $practitionerId, firstName: $firstName, lastName: $lastName, phoneNumber: $phoneNumber, email: $email) {
-            id
-            idNumber
-            firstName
-            nickFirstName
-            nickSurname
-              email
-            phoneNumber
-        }
-      }
-      `,
+      id: 'updatePractitionerContactInfo',
       variables: {
         practitionerId,
         input,
@@ -881,24 +306,7 @@ class PractitionerService {
   ): Promise<PrincipalInvitationStatus> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      mutation updatePrincipalInvitation(
-        $practitionerId: String
-        $principalId: String
-        $accepted: Boolean!
-      ) {
-        updatePrincipalInvitation(
-          practitionerId: $practitionerId
-          principalId: $principalId
-          accepted: $accepted
-        ) {
-          leavingDate
-          acceptedDate
-          linkedDate
-          leaving
-        }
-      }  
-      `,
+      id: 'updatePrincipalInvitation',
       variables: {
         practitionerId,
         principalId,
@@ -924,24 +332,7 @@ class PractitionerService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
 
     const response = await apiInstance.post<any>(``, {
-      query: `
-      mutation removePractitioner(
-        $practitionerUserId: String
-        $reasonForPractitionerLeavingId: String
-        $reasonDetails: String
-        $newPrincipalId: String
-        $classroomGroupReassignments: [ClassroomGroupReassignmentsInput]
-      ) {
-        removePractitioner(
-          practitionerUserId: $practitionerUserId
-          reasonForPractitionerLeavingId: $reasonForPractitionerLeavingId
-          reasonDetails: $reasonDetails
-          newPrincipalId: $newPrincipalId
-          classroomGroupReassignments: $classroomGroupReassignments
-        ) {
-        }
-      }  
-      `,
+      id: 'removePractitioner',
       variables: {
         practitionerUserId,
         reasonForPractitionerLeavingId,
@@ -972,26 +363,7 @@ class PractitionerService {
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      mutation removeFromProgramme(
-        $practitionerUserId: String
-        $reasonForPractitionerLeavingProgrammeId: String
-        $reasonDetails: String
-        $classroomId: String
-        $dateOfRemoval: DateTime!
-        $classroomGroupReassignments: [ClassroomGroupReassignmentsInput]
-      ) {
-        removeFromProgramme(
-          practitionerUserId: $practitionerUserId
-          reasonForPractitionerLeavingProgrammeId: $reasonForPractitionerLeavingProgrammeId
-          reasonDetails: $reasonDetails
-          classroomId: $classroomId
-          dateOfRemoval: $dateOfRemoval
-          classroomGroupReassignments: $classroomGroupReassignments
-        ) {
-        }
-      }  
-      `,
+      id: 'removeFromProgramme',
       variables: {
         practitionerUserId,
         reasonForPractitionerLeavingProgrammeId,
@@ -1014,20 +386,7 @@ class PractitionerService {
   async displayMetrics(type: string): Promise<NotificationDisplay[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query displayMetrics($type: String) {
-        displayMetrics(type: $type) {
-          subject
-          icon
-          color
-          message
-          notes
-          userId
-          userType 
-          groupingName     
-        }
-      }
-      `,
+      id: 'displayMetrics',
       variables: {
         type,
       },
@@ -1046,19 +405,7 @@ class PractitionerService {
   ): Promise<NotificationDisplay[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query classroomActionItems($practitionerId: String) {
-        classroomActionItems(practitionerId: $practitionerId) {
-          subject
-          icon
-          color
-          message
-          notes
-          userId
-          userType
-        }
-      }
-      `,
+      id: 'classroomActionItems',
       variables: {
         practitionerId,
       },
@@ -1076,13 +423,7 @@ class PractitionerService {
   ): Promise<PractitionerColleagues[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query practitionerColleagues($userId: String) {
-        practitionerColleagues(userId: $userId) {
-          name title nickName contactNumber classroomNames profilePhoto userId
-        }
-      }
-      `,
+      id: 'practitionerColleagues',
       variables: {
         userId,
       },
@@ -1105,21 +446,7 @@ class PractitionerService {
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation updatePractitionerEmergencyContact(
-          $userId: String
-          $firstname: String
-          $surname: String
-          $contactno: String
-        ) {
-          updatePractitionerEmergencyContact(
-            userId: $userId
-            firstname: $firstname
-            surname: $surname
-            contactno: $contactno
-          )
-        }
-      `,
+      id: 'updatePractitionerEmergencyContact',
       variables: {
         userId,
         firstname,
@@ -1143,13 +470,7 @@ class PractitionerService {
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      mutation updatePractitioner($input: PractitionerInput, $id: UUID) {
-        updatePractitioner(input: $input, id: $id) {
-          id
-        }
-      }
-      `,
+      id: 'updatePractitioner',
       variables: {
         id: userId,
         input: practitioner,
@@ -1167,12 +488,7 @@ class PractitionerService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
 
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query getMoodleSessionForCurrentUser {
-        getMoodleSessionForCurrentUser {
-        }
-      }
-      `,
+      id: 'getMoodleSessionForCurrentUser',
     });
     if (response.status !== 200) {
       throw new Error('Get Practitioner Failed - Server connection error');
@@ -1185,11 +501,7 @@ class PractitionerService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
 
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query GetPractitionerInviteCount($userId: String) {
-        practitionerInviteCount(userId: $userId) {}
-    }
-      `,
+      id: 'GetPractitionerInviteCount',
       variables: {
         userId,
       },
@@ -1205,12 +517,7 @@ class PractitionerService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
 
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query GetLastPractitionerInviteDate($userId: String) {
-        lastPractitionerInviteDate(userId: $userId) {
-        }
-    }
-      `,
+      id: 'GetLastPractitionerInviteDate',
       variables: {
         userId,
       },
@@ -1231,9 +538,7 @@ class PractitionerService {
       data: { allPractitionerInvites: Date[] };
       errors?: {};
     }>(``, {
-      query: `query GetAllPractitionerInvites($userId: String) {
-          allPractitionerInvites(userId: $userId) {}
-        }`,
+      id: 'GetAllPractitionerInvites',
       variables: {
         userId,
       },
@@ -1251,11 +556,7 @@ class PractitionerService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
 
     const response = await apiInstance.post<any>(``, {
-      query: `
-      mutation SendPractitionerInviteToApplication($userId: String) {
-        sendPractitionerInviteToApplication(userId: $userId) {}
-      }
-      `,
+      id: 'SendPractitionerInviteToApplication',
       variables: {
         userId,
       },
@@ -1279,12 +580,7 @@ class PractitionerService {
       data: { deActivatePractitioner: boolean };
       errors?: {};
     }>(``, {
-      query: `
-      mutation DeActivatePractitioner($userId: String, $leavingComment: String, $reasonForPractitionerLeavingId: String, $reasonDetails: String) {          
-        deActivatePractitioner(userId: $userId, leavingComment: $leavingComment, reasonForPractitionerLeavingId: $reasonForPractitionerLeavingId, reasonDetails: $reasonDetails) {          
-      }        
-      }
-      `,
+      id: 'DeActivatePractitioner',
       variables: {
         userId,
         leavingComment,
@@ -1306,22 +602,7 @@ class PractitionerService {
   ): Promise<PractitionerRemovalHistory | undefined> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query removalDetailsForPractitioner($userId: String) {
-        removalDetailsForPractitioner(userId: $userId) {
-          dateOfRemoval
-          id
-          reasonDetails
-          reasonForPractitionerLeavingProgrammeId
-          removedByUserId,
-          classReassignments {
-            id,
-            reassignedClass,
-            reassignedToPractitioner
-          }
-        }
-      }
-      `,
+      id: 'removalDetailsForPractitioner',
       variables: {
         userId,
       },
@@ -1341,23 +622,7 @@ class PractitionerService {
   ): Promise<PractitionerRemovalHistory[] | undefined> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query removalDetailsForPractitioners($userIds: [String]) {
-        removalDetailsForPractitioners(userIds: $userIds) {
-          dateOfRemoval
-          id
-          userId
-          reasonDetails
-          reasonForPractitionerLeavingProgrammeId
-          removedByUserId,
-          classReassignments {
-            id,
-            reassignedClass,
-            reassignedToPractitioner
-          }
-        }
-      }
-      `,
+      id: 'removalDetailsForPractitioners',
       variables: {
         userIds,
       },
@@ -1381,24 +646,7 @@ class PractitionerService {
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      mutation updateRemovalFromProgramme(
-        $removalId: String
-        $reasonForPractitionerLeavingProgrammeId: String
-        $reasonDetails: String
-        $dateOfRemoval: DateTime!
-        $classroomGroupReassignments: [ClassroomGroupReassignmentsInput]
-      ) {
-        updateRemovalFromProgramme(
-          removalId: $removalId
-          reasonForPractitionerLeavingProgrammeId: $reasonForPractitionerLeavingProgrammeId
-          reasonDetails: $reasonDetails
-          dateOfRemoval: $dateOfRemoval
-          classroomGroupReassignments: $classroomGroupReassignments
-        ) {
-        }
-      }  
-      `,
+      id: 'updateRemovalFromProgramme',
       variables: {
         removalId,
         reasonForPractitionerLeavingProgrammeId,
@@ -1422,16 +670,7 @@ class PractitionerService {
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      mutation cancelRemovalFromProgramme(
-        $removalId: String
-      ) {
-        cancelRemovalFromProgramme(
-          removalId: $removalId
-        ) {
-        }
-      }  
-      `,
+      id: 'cancelRemovalFromProgramme',
       variables: {
         removalId,
       },
@@ -1452,18 +691,7 @@ class PractitionerService {
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      mutation switchPrincipal(
-        $oldPrincipalUserId: String
-        $newPrincipalUserId: String
-      ) {
-        switchPrincipal(
-          oldPrincipalUserId: $oldPrincipalUserId
-          newPrincipalUserId: $newPrincipalUserId
-        ) {
-        }
-      }  
-      `,
+      id: 'switchPrincipal',
       variables: {
         oldPrincipalUserId,
         newPrincipalUserId,
@@ -1480,12 +708,7 @@ class PractitionerService {
   async UpdatePractitionerBusinessWalkthrough(): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      mutation UpdatePractitionerBusinessWalkthrough() {
-        updatePractitionerBusinessWalkthrough() {
-        }
-      }
-      `,
+      id: 'UpdatePractitionerBusinessWalkthrough',
     });
 
     if (response.status !== 200) {
@@ -1500,12 +723,7 @@ class PractitionerService {
   async UpdatePractitionerProgressWalkthrough(): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      mutation UpdatePractitionerProgressWalkthrough() {
-        updatePractitionerProgressWalkthrough() {
-        }
-      }
-      `,
+      id: 'UpdatePractitionerProgressWalkthrough',
     });
 
     if (response.status !== 200) {
@@ -1523,11 +741,7 @@ class PractitionerService {
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation SendPrincipalInviteToApplication($principalPhoneNumber: String, $practitionerUserId: UUID!) {
-          sendPrincipalInviteToApplication(principalPhoneNumber: $principalPhoneNumber, practitionerUserId: $practitionerUserId)
-        }
-      `,
+      id: 'SendPrincipalInviteToApplication',
       variables: {
         principalPhoneNumber,
         practitionerUserId,
@@ -1550,12 +764,7 @@ class PractitionerService {
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation SendPractitionerInviteToPreSchool($practitionerPhoneNumber: String!, $preSchoolNameCode: String!, $preSchoolName: String!, $principalUserId: UUID!, $idOrPassport: String) {
-    sendPractitionerInviteToPreSchool(practitionerPhoneNumber: $practitionerPhoneNumber, preSchoolNameCode: $preSchoolNameCode, preSchoolName: $preSchoolName, principalUserId: $principalUserId, idOrPassport: $idOrPassport) {
-    }
-}
-      `,
+      id: 'SendPractitionerInviteToPreSchool',
       variables: {
         practitionerPhoneNumber,
         preSchoolNameCode,
@@ -1577,14 +786,7 @@ class PractitionerService {
   ): Promise<any> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation UpdatePractitionerCommunityTabStatus($practitionerUserId: UUID!) {
-    updatePractitionerCommunityTabStatus(practitionerUserId: $practitionerUserId) {
-        id
-        clickedCommunityTab
-    }
-}
-      `,
+      id: 'UpdatePractitionerCommunityTabStatus',
       variables: {
         practitionerUserId,
       },
@@ -1602,13 +804,7 @@ class PractitionerService {
   async updateClickedECDHeros(userId: string): Promise<any> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation UpdateClickedECDHeros($userId: UUID!) {
-    updateClickedECDHeros(userId: $userId) {
-        
-    }
-}
-      `,
+      id: 'UpdateClickedECDHeros',
       variables: {
         userId,
       },
@@ -1628,23 +824,7 @@ class PractitionerService {
   ): Promise<EcdRegistrationDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation CreateEcdRegistration(
-          $input: EcdRegistrationInputModelInput
-        ) {
-          createEcdRegistration(input: $input) {
-            id
-            subsidy
-            registrationType
-            challenges
-            challengesOtherReason
-            hasBronzeCertificate
-            hasSilverCertificate
-            hasGoldCertificate
-            problemDescription
-          }
-        }
-      `,
+      id: 'CreateEcdRegistration',
       variables: {
         input,
       },
@@ -1664,23 +844,7 @@ class PractitionerService {
   ): Promise<EcdRegistrationDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation UpdateEcdRegistration(
-          $input: EcdRegistrationUpdateInputModelInput
-        ) {
-          updateEcdRegistration(input: $input) {
-            id
-            subsidy
-            registrationType
-            challenges
-            challengesOtherReason
-            hasBronzeCertificate
-            hasSilverCertificate
-            hasGoldCertificate
-            problemDescription
-          }
-        }
-      `,
+      id: 'UpdateEcdRegistration',
       variables: {
         input,
       },

@@ -1,0 +1,3 @@
+mutation saveCoachContact($practitionerId: UUID!, $actionItemType: Int!, $period: DateTime!) {
+  saveCoachContact(practitionerId: $practitionerId, actionItemType: $actionItemType, period: $period)
+}

@@ -1,0 +1,155 @@
+query allPractitionersForCoach($userId: String) {
+  allPractitionersForCoach(userId: $userId) {
+    id
+    userId
+    programmeType
+    timeline {
+      consolidationMeetingColor
+      consolidationMeetingDate
+      consolidationMeetingStatus
+      firstAidCourseColor
+      firstAidCourseStatus
+      firstAidDate
+      prePQAVisitDate1
+      prePQAVisitDate1Color
+      prePQAVisitDate1Status
+      prePQAVisitDate2
+      prePQAVisitDate2Color
+      prePQAVisitDate2Status
+      supportVisits {
+        id
+        plannedVisitDate
+        attended
+        comment
+        visitType {
+          type
+          order
+          name
+          normalizedName
+          description
+        }
+        eventId
+      }
+      prePQASiteVisits {
+        id
+        plannedVisitDate
+        attended
+        comment
+        dueDate
+        insertedDate
+        visitType {
+          type
+          order
+          name
+          normalizedName
+          description
+        }
+        eventId
+      }
+      pQARatings {
+        visitId
+        linkedVisitId
+        sections {
+          sectionRating
+          sectionRatingColor
+          sectionScore
+          visitSection
+        }
+        overallRating
+        overallRatingColor
+        overallRatingStars
+        overallScore
+        visitName
+        visitTypeName
+      }
+      pQASiteVisits {
+        id
+        hasAnswerData
+        delicenseQuestionAnswered
+        plannedVisitDate
+        attended
+        comment
+        insertedDate
+        overallRatingColor
+        visitType {
+          type
+          order
+          name
+          normalizedName
+          description
+        }
+        eventId
+      }
+      reAccreditationVisits {
+        id
+        hasAnswerData
+        delicenseQuestionAnswered
+        plannedVisitDate
+        attended
+        comment
+        insertedDate
+        overallRatingColor
+        visitType {
+          type
+          order
+          name
+          normalizedName
+          description
+        }
+        eventId
+      }
+      reAccreditationRatings {
+        visitId
+        linkedVisitId
+        sections {
+          sectionRating
+          sectionRatingColor
+          sectionScore
+          visitSection
+        }
+        overallRating
+        overallRatingColor
+        overallRatingStars
+        overallScore
+        visitName
+        visitTypeName
+      }
+      requestedCoachVisits {
+        id
+        plannedVisitDate
+        insertedDate
+        attended
+        visitType {
+          description
+          id
+          isActive
+          name
+          normalizedName
+          order
+          type
+        }
+      }
+      selfAssessmentVisits {
+        id
+        plannedVisitDate
+        attended
+        comment
+        insertedDate
+        visitType {
+          type
+          order
+          name
+          normalizedName
+          description
+        }
+        eventId
+      }
+      smartSpaceLicenseColor
+      smartSpaceLicenseDate
+      smartSpaceLicenseStatus
+      starterLicenseColor
+      starterLicenseDate
+      starterLicenseStatus
+    }
+  }
+}

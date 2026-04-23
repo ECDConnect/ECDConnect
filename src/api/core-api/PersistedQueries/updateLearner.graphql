@@ -1,0 +1,5 @@
+mutation updateLearner($id: UUID!, $input: LearnerInput) {
+  updateLearner(id: $id, input: $input) {
+    id
+  }
+}

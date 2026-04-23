@@ -1,0 +1,3 @@
+mutation switchPrincipal($oldPrincipalUserId: String, $newPrincipalUserId: String) {
+  switchPrincipal(oldPrincipalUserId: $oldPrincipalUserId, newPrincipalUserId: $newPrincipalUserId)
+}

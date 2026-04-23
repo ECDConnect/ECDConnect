@@ -1,0 +1,30 @@
+query userCalendarEvents($start: DateTime!) {
+  userCalendarEvents(start: $start) {
+    allDay
+    description
+    end
+    eventType
+    id
+    name
+    participants {
+      id
+      isActive
+      participantUserId
+      participantUser {
+        firstName
+        surname
+      }
+    }
+    start
+    action
+    isActive
+    userId
+    user {
+      firstName
+      surname
+    }
+    visit {
+      attended
+    }
+  }
+}

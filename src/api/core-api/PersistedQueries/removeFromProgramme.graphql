@@ -1,0 +1,17 @@
+mutation removeFromProgramme(
+  $practitionerUserId: String
+  $reasonForPractitionerLeavingProgrammeId: String
+  $reasonDetails: String
+  $classroomId: String
+  $dateOfRemoval: DateTime!
+  $classroomGroupReassignments: [ClassroomGroupReassignmentsInput]
+) {
+  removeFromProgramme(
+    practitionerUserId: $practitionerUserId
+    reasonForPractitionerLeavingProgrammeId: $reasonForPractitionerLeavingProgrammeId
+    reasonDetails: $reasonDetails
+    classroomId: $classroomId
+    dateOfRemoval: $dateOfRemoval
+    classroomGroupReassignments: $classroomGroupReassignments
+  )
+}

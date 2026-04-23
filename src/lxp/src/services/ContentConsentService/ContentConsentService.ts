@@ -14,21 +14,7 @@ class ContentConsentService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
 
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query GetAllConsent($locale: String) {
-          GetAllConsent(locale: $locale) {          
-            id
-            name
-            type
-            description
-            availableLanguages {
-              id
-              description
-              locale
-            }
-          }
-        }
-      `,
+      id: 'GetAllConsent',
       variables: {
         locale: this._locale,
       },
@@ -45,22 +31,7 @@ class ContentConsentService {
     const apiInstance = api(Config.graphQlApi);
 
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query openConsent($locale: String, $name: String) {
-          openConsent(locale: $locale,name:$name) {          
-            id
-            name
-            type
-            description
-            image
-            availableLanguages {
-              id
-              description
-              locale
-            }
-          }
-        }
-      `,
+      id: 'openConsent',
       variables: {
         locale: this._locale,
         name: name,

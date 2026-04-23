@@ -30,23 +30,7 @@ class UserService {
   async getUserConsents(userId: string): Promise<UserConsentDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query GetAllUserConsent($createdUserId: UUID) {
-          GetAllUserConsent (where: {
-            and: [{ 
-              createdUserId: {eq: $createdUserId}
-            }]
-          }) {
-            id
-            isActive
-            consentId
-            consentType
-            userId
-            createdUserId
-            insertedDate            
-          }
-        }        
-      `,
+      id: 'getAllUserConsent',
       variables: {
         createdUserId: userId,
       },
@@ -67,13 +51,7 @@ class UserService {
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation updateUserConsent($id: UUID!,$input: UserConsentInput) {
-          updateUserConsent(id: $id, input: $input) {
-            id
-          }
-        }
-      `,
+      id: 'updateUserConsent',
       variables: {
         id: id,
         input: input,
@@ -93,11 +71,7 @@ class UserService {
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation resetUserPassword($id: String!, $newPassword: String!) {
-          resetUserPassword(id: $id, newPassword: $newPassword)
-        }
-      `,
+      id: 'resetUserPassword',
       variables: {
         id: userId,
         newPassword: newPassword,
@@ -119,17 +93,7 @@ class UserService {
   ): Promise<UserSyncStatus> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query getUserSyncStatus($lastSync: DateTime!, $classroomId: UUID!) {
-        userSyncStatus(lastSync: $lastSync, classroomId: $classroomId) {
-          syncChildren
-          syncClassroom
-          syncReportingPeriods
-          syncPoints
-          syncPermissions
-        }
-      }
-      `,
+      id: 'getUserSyncStatus',
       variables: {
         lastSync: lastSyncDate,
         classroomId: classroomId,
@@ -146,13 +110,7 @@ class UserService {
   async updateUser(userId: string, user: UserModelInput): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation updateUser($id: String!, $input: UserModelInput) {
-          updateUser(id: $id, input: $input) {
-            id
-          }
-        }
-      `,
+      id: 'updateUser',
       variables: {
         id: userId,
         input: user,
@@ -169,30 +127,7 @@ class UserService {
   async addUser(user: UserModelInput): Promise<UserDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      mutation addUser($input: UserModelInput) {
-        addUser(input: $input) {
-          id
-          userName
-          email
-          isSouthAfricanCitizen
-          verifiedByHomeAffairs
-          dateOfBirth
-          idNumber            
-          firstName
-          surname
-          fullName
-          contactPreference
-          genderId
-          phoneNumber
-          profileImageUrl
-          roles {
-            id
-            name
-          }            
-        }
-      }
-      `,
+      id: 'addUser',
       variables: {
         input: user,
       },
@@ -208,16 +143,7 @@ class UserService {
   async getUserByToken(token: string): Promise<UserByToken> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query userByToken($token: String) {          
-        userByToken(token: $token) {      
-          fullName 
-          phoneNumber 
-          roleName 
-          userId   
-        }        
-      }
-      `,
+      id: 'userByToken',
       variables: {
         token: token,
       },

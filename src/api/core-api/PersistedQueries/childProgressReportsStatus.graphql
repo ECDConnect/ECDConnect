@@ -1,0 +1,6 @@
+query getChildProgressReportsStatus($userId: String) {
+  childProgressReportsStatus(userId: $userId) {
+    completedReports
+    numberOfChildren
+  }
+}

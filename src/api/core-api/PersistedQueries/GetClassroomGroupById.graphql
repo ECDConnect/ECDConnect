@@ -1,0 +1,11 @@
+query GetClassroomGroupById($id: UUID) {
+  GetClassroomGroupById(id: $id) {
+    id
+    learners {
+      isActive
+      stoppedAttendance
+      id
+      userId
+    }
+  }
+}

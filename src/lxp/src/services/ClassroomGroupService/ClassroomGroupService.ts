@@ -12,19 +12,7 @@ class ClassroomGroupService {
   async getClassroomGroupById(id: string): Promise<any> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query GetClassroomGroupById($id:UUID) {
-          GetClassroomGroupById(id: $id) {
-            id
-            learners {
-              isActive
-                stoppedAttendance
-                id
-                userId
-            }
-          }
-        }
-      `,
+      id: 'GetClassroomGroupById',
       variables: {
         id: id,
       },
@@ -47,31 +35,7 @@ class ClassroomGroupService {
       data: { classroomGroupsForUser: ClassroomGroupDto[] };
       errors?: {};
     }>(``, {
-      query: `
-        query GetClassroomGroupsForUser($userId: UUID) {
-          classroomGroupsForUser(userId: $userId) {
-            id
-            classroomId
-            name
-            userId
-            learners {
-              learnerId
-              childUserId
-              startedAttendance
-              stoppedAttendance
-              isActive
-            }
-            classProgrammes {
-              id
-              programmeStartDate
-              meetingDay
-              isFullDay
-              classroomGroupId
-              isActive
-            }
-          }
-        }
-          `,
+      id: 'GetClassroomGroupsForUser',
       variables: {
         userId: practitionerUserId,
       },
@@ -94,31 +58,7 @@ class ClassroomGroupService {
       data: { classroomGroupForClassId: ClassroomGroupDto };
       errors?: {};
     }>(``, {
-      query: `
-        query GetClassroomGroupForClassId($classroomGroupId: UUID!) {
-          classroomGroupForClassId(classroomGroupId: $classroomGroupId) {
-            id
-            classroomId
-            name
-            userId
-            learners {
-              learnerId
-              childUserId
-              startedAttendance
-              stoppedAttendance
-              isActive
-            }
-            classProgrammes {
-              id
-              programmeStartDate
-              meetingDay
-              isFullDay
-              classroomGroupId
-              isActive
-            }
-          }
-        }
-          `,
+      id: 'GetClassroomGroupForClassId',
       variables: {
         classroomGroupId: classroomGroupId,
       },
@@ -139,13 +79,7 @@ class ClassroomGroupService {
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation updateClassroomGroup($id: UUID!,$input: ClassroomGroupInput) {
-          updateClassroomGroup(id: $id, input: $input) {
-            id
-          }
-        }
-      `,
+      id: 'updateClassroomGroup',
       variables: {
         id: id,
         input: input,
@@ -175,26 +109,7 @@ class ClassroomGroupService {
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      mutation addAbsenteeForPractitioner ($practitionerId: String,
-        $reason: String, $absentDate: DateTime!,$loggedByUser: String,
-        $classProgram: String,$reassignedToPractitioner: String, $absentDateEnd: DateTime!,
-        $fromRole: String,
-        $toRole: String,
-        $roleAssignedToUser: String
-        )       {
-         addAbsenteeForPractitioner (practitionerId: $practitionerId,
-           reason: $reason, absentDate: $absentDate, 
-           loggedByUser: $loggedByUser, classProgram: $classProgram, 
-           reassignedToPractitioner: $reassignedToPractitioner, 
-           absentDateEnd: $absentDateEnd,
-           fromRole: $fromRole,
-           toRole: $toRole,
-           roleAssignedToUser: $roleAssignedToUser) { 
-                  id  
-                     }      
-                       }
-      `,
+      id: 'addAbsenteeForPractitioner',
       variables: {
         practitionerId: practitionerId,
         reassignedToPractitioner: reassignedToPractitioner,
@@ -230,27 +145,7 @@ class ClassroomGroupService {
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      mutation editAbsentee(
-        $absenteeId: String,
-    $deleteAbsentee: Boolean,
-    $reassignedToPractitioner: String,
-    $reason: String!,
-    $absentDate: DateTime!,
-    $absentDateEnd: DateTime!,
-    $isRoleAssign: Boolean,
-    $roleAssignedToUser: String
-    )       {
-        editAbsentee (absenteeId: $absenteeId,
-        deleteAbsentee: $deleteAbsentee,
-    reassignedToPractitioner: $reassignedToPractitioner,
-     reason: $reason,
-     absentDate: $absentDate,
-     absentDateEnd: $absentDateEnd,
-    isRoleAssign: $isRoleAssign,
-    roleAssignedToUser: $roleAssignedToUser
-     ) {           id             }               }
-      `,
+      id: 'editAbsentee',
       variables: {
         absenteeId,
         deleteAbsentee,
@@ -279,27 +174,7 @@ class ClassroomGroupService {
   ): Promise<ClassroomMetricReport[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query classAttendanceMetricsByUser(   
-        $userId: String    
-        $startMonth: DateTime! 
-        $endMonth: DateTime!) 
-        {        
-          classAttendanceMetricsByUser(          
-            userId: $userId, startMonth: $startMonth endMonth: $endMonth 
-          ) 
-          {          
-            childCount  
-            attendancePercentage 
-            month 
-            year 
-            classroomId 
-            practitionerId 
-            weekOfYear 
-            classroomGroupId       
-          }      
-        }  
-      `,
+      id: 'classAttendanceMetricsByUser',
       variables: {
         userId: userId,
         startMonth: startMonth,

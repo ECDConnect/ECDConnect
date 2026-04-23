@@ -1,0 +1,3 @@
+query coachNameByUserId($userId: String) {
+  coachNameByUserId(userId: $userId)
+}

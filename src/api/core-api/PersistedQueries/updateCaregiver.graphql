@@ -1,0 +1,41 @@
+mutation updateCaregiver($input: CaregiverInput, $id: UUID) {
+  updateCaregiver(input: $input, id: $id) {
+    id
+    phoneNumber
+    idNumber
+    firstName
+    surname
+    fullName
+    siteAddressId
+    siteAddress {
+      id
+      provinceId
+      province {
+        id
+        description
+      }
+      name
+      addressLine1
+      addressLine2
+      addressLine3
+      postalCode
+      ward
+    }
+    relationId
+    educationId
+    emergencyContactFirstName
+    emergencyContactSurname
+    emergencyContactPhoneNumber
+    additionalFirstName
+    additionalSurname
+    additionalPhoneNumber
+    joinReferencePanel
+    contribution
+    grants {
+      id
+      description
+    }
+    isActive
+    isAllowedCustody
+  }
+}

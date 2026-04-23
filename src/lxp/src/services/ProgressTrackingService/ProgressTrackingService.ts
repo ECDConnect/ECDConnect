@@ -28,21 +28,7 @@ class ProgressTrackingService {
   ): Promise<ProgressTrackingCategoryDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query GetAllProgressTrackingCategory($locale: String) {
-        GetAllProgressTrackingCategory(locale: $locale) {
-          id
-          name
-          subTitle
-          description
-          imageUrl
-          color
-          subCategories {
-            id
-          }          
-        }
-      }        
-      `,
+      id: 'GetAllProgressTrackingCategory',
       variables: {
         locale: locale,
       },
@@ -62,19 +48,7 @@ class ProgressTrackingService {
   ): Promise<ProgressTrackingSubCategoryDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query GetAllProgressTrackingSubCategory($locale: String) {
-        GetAllProgressTrackingSubCategory(locale: $locale) {
-          id
-          name
-          description
-          imageUrl
-          skills {
-            id
-          } 
-        }
-      }         
-      `,
+      id: 'GetAllProgressTrackingSubCategory',
       variables: {
         locale: locale,
       },
@@ -96,17 +70,7 @@ class ProgressTrackingService {
     const response = await apiInstance.post<{
       data: { GetAllProgressTrackingAgeGroup: ProgressTrackingAgeGroup[] };
     }>(``, {
-      query: `query GetAllProgressTrackingAgeGroup($locale: String) {
-          GetAllProgressTrackingAgeGroup(locale: $locale) {
-            id
-            name            
-            startAgeInMonths
-            endAgeInMonths     
-            color
-            description
-            skills
-          }
-        }`,
+      id: 'GetAllProgressTrackingAgeGroup',
       variables: {
         locale: locale,
       },
@@ -142,17 +106,7 @@ class ProgressTrackingService {
     const response = await apiInstance.post<{
       data: { GetAllProgressTrackingSkill: ProgressTrackingSkill[] };
     }>(``, {
-      query: `
-      query GetAllProgressTrackingSkill($locale: String) {
-        GetAllProgressTrackingSkill(locale: $locale) {
-          id                
-          name
-          supportImage
-          isReverseScored
-          value
-        }
-      }         
-      `,
+      id: 'GetAllProgressTrackingSkill',
       variables: {
         locale: locale,
       },
@@ -174,16 +128,7 @@ class ProgressTrackingService {
   async getProgressResourcesLinks(locale: string): Promise<ResourceLink[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query GetResourcesLinks($locale: String) {
-        GetAllResourceLink(locale: $locale) {
-          id
-          link
-          description
-          title
-        }
-      }        
-      `,
+      id: 'GetResourcesLinks',
       variables: {
         locale: locale,
       },
@@ -202,34 +147,7 @@ class ProgressTrackingService {
   ): Promise<PractitionerProgressReportSummaryDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query practitionerProgressReportSummary{
-        practitionerProgressReportSummary(reportingPeriod: "Nov 2023") {
-          reportingPeriod
-          classSummaries {
-              practitionerUserId
-              practitionerFullName
-              className
-              childCount
-              categories {
-                  id
-                  name
-                  imageUrl
-                  color
-                  subCategories {
-                    id
-                    name
-                    imageUrl
-                      childrenPerSkill {
-                          childCount
-                          skill
-                      }
-                  }
-              }
-          }
-        }
-      }
-      `,
+      id: 'practitionerProgressReportSummary',
       variables: {
         reportingPeriod: reportingPeriod,
       },
@@ -252,33 +170,7 @@ class ProgressTrackingService {
       data: { childProgressReportsForUser: ChildProgressReport[] };
       errors?: {};
     }>(``, {
-      query: `query getChildProgressReportsForUser($userId: UUID!) {
-        childProgressReportsForUser(userId: $userId) {
-          id,
-          dateCreated,
-          childId,
-          dateCompleted,
-          notes,
-          howToSupport,
-          childProgressReportPeriodId
-          observationsCompleteDate
-          childEnjoys
-          goodProgressWith
-          howCanCaregiverSupport
-          classroomName
-          practitionerName
-          principalName
-          principalPhoneNumber
-          skillObservations {
-            skillId,
-            value
-          }
-          skillsToWorkOn {
-            skillId
-            howToSupport
-          }          
-        }
-      }`,
+      id: 'getChildProgressReportsForUser',
       variables: {
         userId: userId,
       },
@@ -299,12 +191,7 @@ class ProgressTrackingService {
       data: { createOrUpdateChildProgressReport: boolean };
       errors?: {};
     }>(``, {
-      query: `
-        mutation createOrUpdateChildProgressReport($input: ChildProgressReportModelInput) {
-          createOrUpdateChildProgressReport(input: $input) {
-          }
-        }
-      `,
+      id: 'createOrUpdateChildProgressReport',
       variables: {
         input: input,
       },
@@ -327,12 +214,7 @@ class ProgressTrackingService {
       data: { createOrUpdateChildProgressReport: boolean };
       errors?: {};
     }>(``, {
-      query: `
-        mutation ClassroomProgressSummaryDownloaded($classroomGroupId: UUID!) {
-          classroomProgressSummaryDownloaded(classroomGroupId: $classroomGroupId) {
-          }
-        }
-      `,
+      id: 'ClassroomProgressSummaryDownloaded',
       variables: {
         classroomGroupId: classroomGroupId,
       },
