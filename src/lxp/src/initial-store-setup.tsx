@@ -227,9 +227,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
         appDispatch(classroomsThunkActions.getClassroom({})).unwrap()
       );
       promises.push(
-        appDispatch(
-          communityThunkActions.getCommunityProfile({ userId: userData?.id! })
-        ).unwrap()
+        appDispatch(communityThunkActions.getCommunityProfile({})).unwrap()
       );
       promises.push(
         appDispatch(classroomsThunkActions.getClassroomGroups({})).unwrap()
