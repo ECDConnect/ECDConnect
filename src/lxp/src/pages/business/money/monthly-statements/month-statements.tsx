@@ -2,7 +2,11 @@ import ROUTES from '@/routes/routes';
 import React, { useState, useCallback } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { statementsActions, statementsSelectors } from '@/store/statements';
+import {
+  statementsActions,
+  statementsSelectors,
+  statementsThunkActions,
+} from '@/store/statements';
 import { authSelectors } from '@/store/auth';
 import { MonthStatementsDetails } from '../../components/month-statements-details';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
@@ -29,7 +33,7 @@ export const MonthStatements: React.FC = () => {
   const dialog = useDialog();
   const history = useHistory();
   const location = useLocation<MonthStatementsDetailsState>();
-
+  const userAuth = useSelector(authSelectors.getAuthUser);
   const statementId = location.state.statementId;
 
   const appDispatch = useAppDispatch();
@@ -63,9 +67,15 @@ export const MonthStatements: React.FC = () => {
     }
 
     try {
-      const base64String = await appDispatch(
-        statementsThunkActions.getIncomeStatementPdf({ statementId })
-      ).unwrap();
+      const getPdf = async () => {
+        const report = await new IncomeStatementsService(
+          userAuth?.auth_token || ''
+        ).getIncomeStatementPdf(statementId);
+
+        return report;
+      };
+
+      const base64String = await getPdf();
 
       const byteCharacters = atob(base64String);
       const byteNumbers = new Array(byteCharacters.length);
