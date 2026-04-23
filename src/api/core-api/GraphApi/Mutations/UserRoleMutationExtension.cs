@@ -30,10 +30,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                   string userId,
                   List<string> roleNames)
         {
-            var isAdminPortal = CheckHostUrlForAdminPortal(
-                TenantExecutionContext.Tenant.AdminSiteAddress,
-                TenantExecutionContext.Tenant.AdminTestSiteAddress,
-                httpContextAccessor.HttpContext?.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri ?? (httpContextAccessor.HttpContext?.Request.Host.Value ?? String.Empty));
+            var isAdminPortal = httpContextAccessor.HttpContext.IsTenantAdminPortal();
             if (!isAdminPortal)
             {
                 throw new UnauthorizedAccessException();
@@ -80,10 +77,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           string userId,
           List<string> roleNames)
         {
-            var isAdminPortal = CheckHostUrlForAdminPortal(
-                TenantExecutionContext.Tenant.AdminSiteAddress,
-                TenantExecutionContext.Tenant.AdminTestSiteAddress,
-                httpContextAccessor.HttpContext?.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri ?? (httpContextAccessor.HttpContext?.Request.Host.Value ?? String.Empty));
+            var isAdminPortal = httpContextAccessor.HttpContext.IsTenantAdminPortal();
             if (!isAdminPortal)
             {
                 throw new UnauthorizedAccessException();
@@ -137,11 +131,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             return (result?.Succeeded ?? false) && hierarchySuccess;
-        }
-
-        private static bool CheckHostUrlForAdminPortal(string adminSiteAddress, string testAdminSiteAddress, string hostAddress)
-        {
-            return hostAddress.Contains(adminSiteAddress) || hostAddress.Contains(testAdminSiteAddress);
         }
     }
 }
