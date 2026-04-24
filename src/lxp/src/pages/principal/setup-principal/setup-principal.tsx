@@ -42,6 +42,7 @@ import { usePractitionerNotification } from '@/hooks/usePractitionerNotification
 import { ClassroomDto } from '@/models/classroom/classroom.dto';
 import { ClassroomDto as SimpleClassroomDto } from '@/models/classroom/classroom.dto';
 import { PrincipalInviteDto } from '@/models/practitioner/PrincipalInvite.dto';
+import { refreshToken } from '@/store/auth/auth.actions';
 
 export const SetupPrincipal: React.FC = () => {
   const history = useHistory();
@@ -311,6 +312,7 @@ export const SetupPrincipal: React.FC = () => {
           userId: user?.id,
         })
       );
+      await appDispatch(refreshToken({}));
       await appDispatch(
         practitionerThunkActions.getPractitionerByUserId({
           userId: user?.id || '',
