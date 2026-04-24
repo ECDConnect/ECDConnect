@@ -33,6 +33,9 @@ module.exports = {
       'h-360px',
       '-top-1',
       '-right-1',
+      'prose',
+      'haAclf', // agreements
+      'S9gUrf-YoZ4jf' // google button
     ],
   },
 },
