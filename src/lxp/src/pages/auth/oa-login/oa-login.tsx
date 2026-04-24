@@ -621,7 +621,7 @@ export const OaLogin: React.FC = () => {
                   text="signin_with"
                   logo_alignment="center"
                   size="large"
-                  width={250}
+                  width="100%"
                 />
               </div>
             )}
@@ -637,6 +637,7 @@ export const OaLogin: React.FC = () => {
                   //className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                   className="flex h-10 items-center space-x-2 rounded-lg bg-blue-600 px-6 py-3 text-white transition-colors hover:bg-blue-700"
                   disabled={isLoading}
+                  width="100%"
                 >
                   <svg
                     className="h-5 w-5"
