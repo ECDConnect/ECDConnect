@@ -1,7 +1,19 @@
-import { BannerWrapper, Button, Card, Typography } from '@ecdlink/ui';
+import {
+  BannerWrapper,
+  Button,
+  Card,
+  DialogPosition,
+  Typography,
+} from '@ecdlink/ui';
 import { ReactComponent as EmojiYellowHappy } from '../../../../../../assets/iconRobot.svg';
 import TransparentLayer from '../../../../../../assets/TransparentLayer.png';
 import { useHistory } from 'react-router-dom';
+import { JoinOrAddPreschoolModal } from '../trial-period/join-or-add-preschool-modal';
+import { useDialog } from '@ecdlink/core/lib/services/dialog/DialogService';
+import { practitionerSelectors } from '@/store/practitioner';
+import { useSelector } from 'react-redux';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
+import { useEffect } from 'react';
 
 interface WelcomeStepProps {
   onNext: () => void;
@@ -9,6 +21,24 @@ interface WelcomeStepProps {
 
 export const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
   const history = useHistory();
+  const dialog = useDialog();
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const missingProgramme =
+    (practitioner?.isRegistered == null || practitioner?.isRegistered) &&
+    !practitioner?.principalHierarchy &&
+    !practitioner?.isPrincipal;
+  const isTrialPeriod = useIsTrialPeriod();
+
+  useEffect(() => {
+    if (isTrialPeriod || missingProgramme) {
+      dialog({
+        blocking: true,
+        fullOverlay: true,
+        position: DialogPosition.Middle,
+        render: (onSubmit) => <JoinOrAddPreschoolModal onSubmit={onSubmit} />,
+      });
+    }
+  }, [isTrialPeriod, missingProgramme]);
 
   return (
     <BannerWrapper

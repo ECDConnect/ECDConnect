@@ -31,6 +31,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         CancellationToken cancellationToken)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
+            var tenantId = TenantExecutionContext.Tenant.Id;
 
             var normalizedChallenge = input.Challenges?.Replace("_", "") ?? string.Empty;
             if (!Enum.TryParse<ChallengeType>(normalizedChallenge, true, out var parsedChallenge))
@@ -47,7 +48,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 Challenges = parsedChallenge,
                 ChallengesOtherReason = input.ChallengesOtherReason != "" ? input.ChallengesOtherReason : null,
                 ProblemDescription = input.ProblemDescription?.Trim(),
-                UpdatedBy = contextAccessor.HttpContext.GetUser().UserName ?? contextAccessor.HttpContext.GetUser().Id.ToString()
+                UpdatedBy = contextAccessor.HttpContext.GetUser().UserName ?? contextAccessor.HttpContext.GetUser().Id.ToString(),
+                TenantId = tenantId
             };
 
             bool hasAnyCertificate = input.HasBronzeCertificate || input.HasSilverCertificate || input.HasGoldCertificate;
