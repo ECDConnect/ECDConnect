@@ -121,7 +121,7 @@ export const ViewPublishedForm: React.FC<ViewPublishedFormProps> = ({
       onClose={onBack}
       backgroundColour="white"
     >
-      <div className="p-4">
+      <div className="w-full p-4">
         <Typography
           className="mt-3"
           type="h3"
@@ -194,13 +194,12 @@ export const ViewPublishedForm: React.FC<ViewPublishedFormProps> = ({
                     text={'These standards were not met:'}
                   />
 
-                  {timelineReport.safetyStandards?.map((detail, index) => (
-                    <Typography
-                      key={`safety-standard-${index}`}
-                      type={'markdown'}
-                      text={`* ${detail}`}
-                    />
-                  ))}
+                  <Typography
+                    type={'markdown'}
+                    text={timelineReport
+                      .safetyStandards!.map((d) => `* ${d}`)
+                      .join('\n')}
+                  />
                   <Divider dividerType="dashed" className="my-2" />
                 </>
               ) : (
@@ -236,7 +235,7 @@ export const ViewPublishedForm: React.FC<ViewPublishedFormProps> = ({
                 weight="bold"
                 text={'Classroom capacity:'}
               />
-              <div className="text-textMid bg-uiBg z-10 mx-auto w-11/12 rounded-lg bg-white px-3.5 py-2.5">
+              <div className="text-textMid bg-uiBg z-10 mx-auto w-full rounded-lg bg-white p-4">
                 {timelineReport.classroomDetail.map((detail, index) => (
                   <Typography
                     key={`classroom-detail-${index}`}

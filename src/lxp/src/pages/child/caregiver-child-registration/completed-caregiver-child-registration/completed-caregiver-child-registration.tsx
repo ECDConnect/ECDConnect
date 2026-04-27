@@ -28,7 +28,6 @@ export const CompletedCaregiverChildRegistration: React.FC<
       renderOverflow
       titleOverrideRender={() => (
         <Typography
-          className="-ml-20"
           type="h1"
           text={`Welcome to ${childDetails.child.groupName} ${childDetails.child.firstname} and family!`}
           color="white"
