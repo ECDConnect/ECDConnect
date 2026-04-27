@@ -126,7 +126,7 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 $"<b>Preschool:</b> {classroom.Name}",
                 $"<b>Location:</b> {addressAnswer}",
-                $"<b>Check completed:</b> {visit?.ActualVisitDate?.ToString("dd MMM yyyy") ?? "—"}"
+                $"<b>Check completed:</b> {visit?.ActualVisitDate?.ToString("dd MMMM yyyy") ?? "—"}"
             };
 
             // Get all Step 5 related answers (any classroom)
