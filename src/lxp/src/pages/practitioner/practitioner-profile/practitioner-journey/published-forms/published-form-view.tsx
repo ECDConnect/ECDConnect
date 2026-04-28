@@ -193,13 +193,13 @@ export const ViewPublishedForm: React.FC<ViewPublishedFormProps> = ({
                     weight="bold"
                     text={'These standards were not met:'}
                   />
-
-                  <Typography
-                    type={'markdown'}
-                    text={timelineReport
-                      .safetyStandards!.map((d) => `* ${d}`)
-                      .join('\n')}
-                  />
+                  {timelineReport.safetyStandards?.map((d, index) => (
+                    <Typography
+                      key={`safety-standard-${index}`}
+                      type={'markdown'}
+                      text={`• ${d}`}
+                    />
+                  ))}
                   <Divider dividerType="dashed" className="my-2" />
                 </>
               ) : (

@@ -6,6 +6,8 @@ module.exports = {
   content: [
     './src/**/*.{js,jsx,ts,tsx}',
     './public/index.html',
+    '../../packages/ui/src/**/*.{js,jsx,ts,tsx}',
+    '../../packages/core/src/**/*.{js,jsx,ts,tsx}',
   ],
   options: {
     safelist: [
