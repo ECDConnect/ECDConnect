@@ -496,10 +496,9 @@ export const PublishedFormStep: React.FC<PublishedFormStepProps> = ({
                         <>
                           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-base">
                             <Typography
-                              type="body"
-                              color="textMid"
-                              weight="bold"
-                              className="mt-3 mb-1"
+                              type="h4"
+                              color="textDark"
+                              className="semi-bold mt-3 mb-1"
                               text="Property address:"
                             />
                             <Typography
@@ -513,10 +512,9 @@ export const PublishedFormStep: React.FC<PublishedFormStepProps> = ({
                           </div>
 
                           <Typography
-                            type="body"
-                            color="textMid"
-                            className="mt-3 mb-1"
-                            weight="bold"
+                            type="h4"
+                            color="textDark"
+                            className="semi-bold mt-3 mb-1"
                             text="Is this address correct?"
                           />
 
