@@ -7,8 +7,10 @@ import ROUTES from '@/routes/routes';
 import { CommunityItem } from './components/community-item/community-item';
 import { CommunityLinks } from './components/community-links/community-links';
 import { CommunityRouteState } from '../community.types';
-import { communityThunkActions } from '@/store/community';
 import { useAppDispatch } from '@/store';
+import { communityThunkActions } from '@/store/community';
+import { useSelector } from 'react-redux';
+import { userSelectors } from '@/store/user';
 
 export const COMMUNITY_TABS = {
   CONNECT: 0,

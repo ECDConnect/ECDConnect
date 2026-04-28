@@ -12,7 +12,7 @@ export const getConsent = createAsyncThunk<
   'getConsent',
   // eslint-disable-next-line no-empty-pattern
   async (
-    { locale, authToken, overrideCache },
+    { locale, authToken, overrideCache = false },
     { getState, rejectWithValue }
   ) => {
     const {
@@ -20,7 +20,7 @@ export const getConsent = createAsyncThunk<
       contentConsentData: { consent: consentCache },
     } = getState();
 
-    if (!consentCache || !!overrideCache) {
+    if (!consentCache || !overrideCache) {
       try {
         let content: ConsentDto[] = [];
 

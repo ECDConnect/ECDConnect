@@ -17,9 +17,7 @@ import { useProgressForChild } from '@/hooks/useProgressForChild';
 import ROUTES from '@/routes/routes';
 import { TabsItems } from '../../class-dashboard/class-dashboard.types';
 import { ContentTypeEnum, LanguageDto, useDialog } from '@ecdlink/core';
-import { ContentService } from '@/services/ContentService';
 import { useSelector } from 'react-redux';
-import { authSelectors } from '@/store/auth';
 import {
   progressTrackingActions,
   progressTrackingSelectors,
@@ -42,33 +40,25 @@ export const ProgressShareReport: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [pdfBlob, setPdfBlob] = useState<Blob>();
   const [isReportReady, setIsReportReady] = useState(false);
-
   const { isOnline } = useOnlineStatus();
-
   const { state: routeState } = useLocation<ProgressShareReportState>();
-
   const { child, detailedReports, currentAgeGroup } = useProgressForChild(
     routeState.childId
   );
-
   const { generateReportAndReturnBlob, sharePdfReport } = usePdfFromHtml();
-
   const [selectedReport, setSelectedReport] = useState<string | undefined>(
     routeState.reportId
   );
-
   const shareRef = useRef<HTMLDivElement>(null);
 
-  const userAuth = useSelector(authSelectors.getAuthUser);
-
   const changeLanguage = async (language: LanguageDto) => {
-    const hasTranslations = await new ContentService(
-      userAuth?.auth_token ?? ''
-    ).hasContentTypeBeenTranslated(
-      ContentTypeEnum.ProgressTrackingCategory,
-      currentAgeGroup?.id ?? 0,
-      language.id ?? ''
-    );
+    const hasTranslations = await appDispatch(
+      progressTrackingThunkActions.hasContentTypeBeenTranslated({
+        id: ContentTypeEnum.ProgressTrackingCategory,
+        ageGroup: currentAgeGroup?.id ?? 0,
+        localeId: language.id ?? '',
+      })
+    ).unwrap();
 
     if (hasTranslations) {
       await appDispatch(
@@ -76,7 +66,7 @@ export const ProgressShareReport: React.FC = () => {
           locale: language.locale,
         })
       ).unwrap();
-      await appDispatch(
+      appDispatch(
         progressTrackingActions.setLocale({ localeId: language.locale })
       );
     } else {

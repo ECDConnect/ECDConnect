@@ -68,7 +68,7 @@ export const EditWhatsAppConsent: React.FC<EditWhatsAppConsentProps> = ({
       onBack={() => setEditWhatsAppConsent(false)}
       onClose={() => setEditWhatsAppConsent(false)}
     >
-      <div className="w-12/12 wrapper-with-sticky-button px-4">
+      <div className="flex h-full w-full flex-col bg-white p-4">
         <div className="flex flex-wrap justify-center">
           <div className="w-full">
             <Typography
@@ -91,27 +91,26 @@ export const EditWhatsAppConsent: React.FC<EditWhatsAppConsentProps> = ({
               multiple={false}
             />
           </div>
-          <div className="mt-4 -mb-4 h-full w-full self-end">
-            <Button
-              size="normal"
-              className="mb-4 w-full"
-              type="filled"
-              color="quatenary"
-              text="Save"
-              textColor="white"
-              icon="SaveIcon"
-              disabled={
-                !!Object.keys(errors).length || whatsAppConsent === undefined
-              }
-              onClick={() => {
-                if (whatsAppConsent !== undefined) {
-                  saveWhatsAppConsent(whatsAppConsent);
-                }
-                setEditWhatsAppConsent(false);
-              }}
-            />
-          </div>
         </div>
+
+        <Button
+          size="normal"
+          className="mt-auto w-full"
+          type="filled"
+          color="quatenary"
+          text="Save"
+          textColor="white"
+          icon="SaveIcon"
+          disabled={
+            !!Object.keys(errors).length || whatsAppConsent === undefined
+          }
+          onClick={() => {
+            if (whatsAppConsent !== undefined) {
+              saveWhatsAppConsent(whatsAppConsent);
+            }
+            setEditWhatsAppConsent(false);
+          }}
+        />
       </div>
     </BannerWrapper>
   );

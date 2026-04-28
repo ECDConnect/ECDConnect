@@ -17,9 +17,7 @@ import {
 } from '../../setup-principal/setup-principal.types';
 import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
 import { useEffect, useMemo, useState } from 'react';
-import { ClassroomService } from '@/services/ClassroomService';
 import { useSelector } from 'react-redux';
-import { authSelectors } from '@/store/auth';
 import Article from '@/components/article/article';
 import { ContentConsentTypeEnum } from '@ecdlink/core';
 import { PrincipalCheckPreschoolCode } from './components/principal-check-preschool-code';
@@ -27,23 +25,21 @@ import { InvitePrincipal } from './components/invite-principal';
 import { useTenant } from '@/hooks/useTenant';
 import { useAppDispatch } from '@/store';
 import { userSelectors } from '@/store/user';
-import { useNotificationService } from '@/hooks/useNotificationService';
 import { ClassroomDto } from '@/models/classroom/classroom.dto';
 import { MutationAddPractitionerToPrincipalArgs } from '@ecdlink/graphql';
 import { ShareSomeDetails } from '../share-some-detail/share-some-detail';
+import { classroomsThunkActions } from '@/store/classroom';
 
 export const PreschoolCodeCheck: React.FC<{
   onNext: OnNext;
   onPreschoolNext: any;
   setPrincipalNumberDetails: any;
 }> = ({ onNext, onPreschoolNext, setPrincipalNumberDetails }) => {
-  const userAuth = useSelector(authSelectors.getAuthUser);
   const appDispatch = useAppDispatch();
   const user = useSelector(userSelectors.getUser);
   const tenant = useTenant();
   const appName = tenant?.tenant?.applicationName;
   const isOpenAccess = tenant?.isOpenAccess;
-  const { stopService } = useNotificationService();
   const [preschoolCode, setPreschoolCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [allowPermissions, setAllowPermissions] = useState(false);
@@ -81,9 +77,11 @@ export const PreschoolCodeCheck: React.FC<{
 
   const handleSearchPreschool = async () => {
     setIsLoading(true);
-    const preschoolCodeValidation: any = await new ClassroomService(
-      userAuth?.auth_token!
-    ).getClassroomForPreschoolCode(preschoolCode);
+    const preschoolCodeValidation: any = await appDispatch(
+      classroomsThunkActions.getClassroomForPreschoolCode({
+        preSchoolCode: preschoolCode,
+      })
+    ).unwrap();
     setIsLoading(false);
     if (preschoolCodeValidation) {
       setIsValidPreschool(preschoolCodeValidation);
@@ -183,23 +181,21 @@ export const PreschoolCodeCheck: React.FC<{
         ></FormInput>
 
         {preschoolCode && !isLoading && (
-          <>
-            <Button
-              type="filled"
-              color="quatenary"
-              className={'mt-1 mb-2 w-full'}
-              disabled={!preschoolCode && !isLoading}
-              isLoading={isLoading}
-              onClick={handleSearchPreschool} // Navigate to a different page if it is principle
-            >
-              {renderIcon('SearchIcon', 'mr-2 text-white w-5')}
-              <Typography
-                type={'help'}
-                text={'Search for preschool'}
-                color={'white'}
-              />
-            </Button>
-          </>
+          <Button
+            type="filled"
+            color="quatenary"
+            className={'mt-1 mb-2 w-full'}
+            disabled={!preschoolCode && !isLoading}
+            isLoading={isLoading}
+            onClick={handleSearchPreschool} // Navigate to a different page if it is principle
+          >
+            {renderIcon('SearchIcon', 'mr-2 text-white w-5')}
+            <Typography
+              type={'help'}
+              text={'Search for preschool'}
+              color={'white'}
+            />
+          </Button>
         )}
 
         <div>{renderPreschoolSearchMessage}</div>

@@ -1,10 +1,13 @@
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import ROUTES from '@/routes/routes';
-import { PractitionerDto } from '@ecdlink/core';
+import { PractitionerDto, useDialog } from '@ecdlink/core';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 import {
   BannerWrapper,
   Button,
   Card,
+  DialogPosition,
   Divider,
   Typography,
   renderIcon,
@@ -30,8 +33,23 @@ export const AbsencesView: React.FC<AbsencesViewProps> = ({
       item?.absentDate === item?.absentDateEnd &&
       isSameMonth(new Date(item?.absentDate as string), new Date(lastMonth))
   );
-
+  const { isOnline } = useOnlineStatus();
+  const dialog = useDialog();
   const history = useHistory();
+
+  const showOfflineDialog = () => {
+    if (!isOnline) {
+      return dialog({
+        color: 'bg-white',
+        position: DialogPosition.Middle,
+        blocking: true,
+        render: (onSubmit) => {
+          return <OnlineOnlyModal onSubmit={onSubmit} />;
+        },
+      });
+    }
+  };
+
   return (
     <BannerWrapper
       size="small"
@@ -103,12 +121,14 @@ export const AbsencesView: React.FC<AbsencesViewProps> = ({
                   color="primary"
                   className={'mt-4 mb-4 w-11/12 rounded-2xl'}
                   onClick={() =>
-                    history.push(
-                      ROUTES.PRINCIPAL.PRACTITIONER_REMOVE_FROM_PROGRAMME,
-                      {
-                        practitionerId: practitioner?.userId,
-                      }
-                    )
+                    isOnline
+                      ? history.push(
+                          ROUTES.PRINCIPAL.PRACTITIONER_REMOVE_FROM_PROGRAMME,
+                          {
+                            practitionerId: practitioner?.userId,
+                          }
+                        )
+                      : showOfflineDialog()
                   }
                 >
                   {renderIcon(

@@ -10,13 +10,13 @@ class ClassroomService {
     this._accessToken = accessToken;
   }
 
-  async getClassroomForUser(userId: string): Promise<ClassroomDto> {
+  async getClassroomForUser(userId?: string): Promise<ClassroomDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
       data: { classroomForUser: ClassroomDto };
       errors?: {};
     }>(``, {
-      query: `query GetClassroomForUser($userId: UUID!) {
+      query: `query GetClassroomForUser($userId: UUID) {
           classroomForUser(userId: $userId) {            
             id
             name
@@ -199,12 +199,12 @@ class ClassroomService {
               ward
             }
             user {
-  principalObjectData {
-     principalHierarchy
-}
-}
+                principalObjectData {
+                  principalHierarchy
                 }
               }
+            }
+          }
       `,
       variables: {
         preSchoolCode,

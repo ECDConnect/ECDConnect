@@ -11,8 +11,6 @@ import {
 import { format, addDays, differenceInMinutes } from 'date-fns';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useHistory } from 'react-router';
-import { PractitionerService } from '@/services/PractitionerService';
-import { authSelectors } from '@/store/auth';
 import { useSelector } from 'react-redux';
 import { practitionerThunkActions } from '@/store/practitioner';
 import { useAppDispatch } from '@/store';
@@ -38,18 +36,17 @@ export const PractitionerNotRegistered: React.FC<
   const dialog = useDialog();
   const { showMessage } = useSnackbar();
   const { isOnline } = useOnlineStatus();
-  const userAuth = useSelector(authSelectors.getAuthUser);
   const appDispatch = useAppDispatch();
   const user = useSelector(userSelectors.getUser);
   const isOpenAccess = tenant?.isOpenAccess;
 
   const removePractitioner = async () => {
-    await new PractitionerService(
-      userAuth?.auth_token || ''
-    ).UpdatePrincipalInvitation(
-      practitioner?.userId!,
-      practitioner?.principalHierarchy!,
-      false
+    await appDispatch(
+      practitionerThunkActions.updatePrincipalInvitation({
+        userId: practitioner?.userId!,
+        principalHierarchy: practitioner?.principalHierarchy!,
+        accepted: false,
+      })
     );
 
     await appDispatch(
@@ -76,9 +73,11 @@ export const PractitionerNotRegistered: React.FC<
 
   const getInviteDetails = async () => {
     setIsLoading(true);
-    const dates = await new PractitionerService(
-      userAuth?.auth_token || ''
-    ).GetAllPractitionerInvites(practitioner?.userId || '');
+    const dates = await appDispatch(
+      practitionerThunkActions.getAllPractitionerInvites({
+        userId: practitioner?.userId || '',
+      })
+    ).unwrap();
 
     dates.sort();
 
@@ -110,9 +109,11 @@ export const PractitionerNotRegistered: React.FC<
       if (!inviteDates || !inviteDates.length || timeSinceLastInvite > 60) {
         setShowAlert(true);
         setIsSending(true);
-        await new PractitionerService(
-          userAuth?.auth_token || ''
-        ).SendPractitionerInviteToApplication(practitioner?.userId || '');
+        await appDispatch(
+          practitionerThunkActions.sendPractitionerInviteToApplication({
+            userId: practitioner?.userId || '',
+          })
+        );
         await getInviteDetails();
         setShowAlert(false);
       } else {
@@ -250,7 +251,9 @@ export const PractitionerNotRegistered: React.FC<
             color={'quatenary'}
             textColor={'quatenary'}
             className="mt-4 w-11/12"
-            onClick={removePractitioner}
+            onClick={() => {
+              isOnline ? removePractitioner() : showOnlineOnly();
+            }}
           />
         </div>
 

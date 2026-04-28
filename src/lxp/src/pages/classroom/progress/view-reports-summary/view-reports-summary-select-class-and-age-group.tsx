@@ -1,12 +1,11 @@
 import { Button, CoreRadioGroup, Typography } from '@ecdlink/ui';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useHistory, useLocation } from 'react-router';
 import { format } from 'date-fns';
 import { useSelector } from 'react-redux';
 import ROUTES from '@/routes/routes';
 import { useProgressForChildren } from '@/hooks/useProgressForChildren';
 import { classroomsSelectors } from '@/store/classroom';
-import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { StepViewer } from '@/components/step-viewer/step-viewer';
 import { Step } from '@/components/step-viewer/components/step';
 import { ChildProgressSummarySteps } from './view-summary.types';
@@ -19,7 +18,6 @@ export type ProgressViewReportsSummarySelectClassroomGroupAndAgeGroupState = {
 export const ProgressViewReportsSummarySelectClassroomGroupAndAgeGroup: React.FC =
   () => {
     const history = useHistory();
-    const { isOnline } = useOnlineStatus();
 
     const { state: routeState } =
       useLocation<ProgressViewReportsSummarySelectClassroomGroupAndAgeGroupState>();
@@ -29,12 +27,39 @@ export const ProgressViewReportsSummarySelectClassroomGroupAndAgeGroup: React.FC
 
     const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
 
+    // ────────────────────────────────────────────────
+    // Manual selections (must be declared before the hook so we can pass
+    // selectedPeriod into it — the hook needs the period's endDate to compute
+    // each child's ageGroup, which drives the age-group options downstream)
+    // ────────────────────────────────────────────────
+
+    const [selectedPeriod, setSelectedPeriod] = useState<string | undefined>(
+      routeState?.reportPeriodId
+    );
+
+    const [manualClassroom, setManualClassroom] = useState<string | undefined>(
+      undefined
+    );
+
+    const [manualAgeGroup, setManualAgeGroup] = useState<number | undefined>(
+      undefined
+    );
+
+    // Pass selectedPeriod into the hook so that children receive an ageGroup
+    // computed from that period's endDate. Without this, children.ageGroup is
+    // always undefined when there is no active/expired reporting period (e.g.
+    // viewing last year's data), which left filteredAgeGroupOptions empty and
+    // caused the Next button to silently do nothing.
     const {
       allReportingPeriods,
       allReportsForYear,
       children,
       currentReportingPeriod,
-    } = useProgressForChildren();
+    } = useProgressForChildren(false, selectedPeriod);
+
+    // ────────────────────────────────────────────────
+    // Base derived data
+    // ────────────────────────────────────────────────
 
     const reportChildUserIds = useMemo(
       () => new Set(children.map((r) => r.childUserId)),
@@ -58,7 +83,6 @@ export const ProgressViewReportsSummarySelectClassroomGroupAndAgeGroup: React.FC
       [allReportingPeriods, reportPeriodIds]
     );
 
-    // Create a mapping from childId to childUserId (assuming children have both 'id' and 'childUserId')
     const childIdToChildUserId = useMemo(
       () =>
         new Map(children.map((child) => [child.childId, child.childUserId])),
@@ -73,34 +97,21 @@ export const ProgressViewReportsSummarySelectClassroomGroupAndAgeGroup: React.FC
       [classroomGroups, reportChildUserIds]
     );
 
-    const [selectedPeriod, setSelectedPeriod] = useState<string | undefined>(
-      () => {
-        // This runs only once – during initial render
-        if (routeState?.reportPeriodId) {
-          return routeState.reportPeriodId;
-        }
-
-        if (availablePeriods?.length === 1) {
-          return availablePeriods[0].id;
-        }
-
-        if (currentReportingPeriod?.id) {
-          return currentReportingPeriod.id;
-        }
-
-        return undefined;
+    // Auto-select the period when the route didn't supply one. Mirrors the
+    // original lazy-init logic that previously lived in the useState call, but
+    // kept here as an effect so it runs after availablePeriods is computed.
+    useEffect(() => {
+      if (selectedPeriod) return;
+      if (availablePeriods.length === 1) {
+        setSelectedPeriod(availablePeriods[0].id);
+      } else if (currentReportingPeriod?.id) {
+        setSelectedPeriod(currentReportingPeriod.id);
       }
-    );
+    }, [availablePeriods, currentReportingPeriod, selectedPeriod]);
 
-    const [selectedClassroom, setSelectedClassroom] = useState<
-      string | undefined
-    >(() => {
-      if (availableClassrooms.length === 1) return availableClassrooms[0].id;
-      return undefined;
-    });
-    const [selectedAgeGroup, setSelectedAgeGroup] = useState<
-      number | undefined
-    >(undefined);
+    // ────────────────────────────────────────────────
+    // Options (filtered by upstream selections)
+    // ────────────────────────────────────────────────
 
     const periodOptions = useMemo(
       () =>
@@ -118,32 +129,24 @@ export const ProgressViewReportsSummarySelectClassroomGroupAndAgeGroup: React.FC
       [availablePeriods]
     );
 
-    // FILTERED CLASSROOMS (based on selected period)
     const filteredClassroomOptions = useMemo(() => {
-      // Base: all classrooms that have at least one child with any report
       let baseClassrooms = availableClassrooms;
 
-      // If a period is selected → filter classrooms that actually have reports in this period
       if (selectedPeriod) {
-        // Find all childUserIds that have a report in the selected period (via mapping)
         const childrenWithReportInPeriod = new Set(
           allReportsForYear
-            .filter(
-              (report) => report.childProgressReportPeriodId === selectedPeriod
-            )
-            .map((report) => childIdToChildUserId.get(report?.childId))
+            .filter((r) => r.childProgressReportPeriodId === selectedPeriod)
+            .map((r) => childIdToChildUserId.get(r?.childId))
             .filter((userId): userId is string => userId !== undefined)
         );
 
-        // Keep only classrooms that have at least one learner with a report in this period
         baseClassrooms = availableClassrooms.filter((group) =>
-          group.learners.some((learner) =>
-            childrenWithReportInPeriod.has(learner.childUserId)
+          group.learners.some((l) =>
+            childrenWithReportInPeriod.has(l.childUserId)
           )
         );
       }
 
-      // Map to radio group options
       return baseClassrooms.map((group, idx) => ({
         id: idx,
         label: group.name,
@@ -156,7 +159,6 @@ export const ProgressViewReportsSummarySelectClassroomGroupAndAgeGroup: React.FC
       childIdToChildUserId,
     ]);
 
-    // FILTERED AGE GROUPS (based on selected period + selected classroom)
     const filteredAgeGroupOptions = useMemo(() => {
       let relevantReports = allReportsForYear;
 
@@ -167,12 +169,17 @@ export const ProgressViewReportsSummarySelectClassroomGroupAndAgeGroup: React.FC
       }
 
       const childLookup = new Map(children.map((c) => [c.childId, c]));
-
       const allowedAgeGroupIds = new Set<number>();
 
-      if (selectedClassroom) {
+      // Use the resolved classroom (auto or manual) for filtering
+      const resolvedClassroom =
+        filteredClassroomOptions.length === 1
+          ? filteredClassroomOptions[0].value
+          : manualClassroom;
+
+      if (resolvedClassroom) {
         const classroom = availableClassrooms.find(
-          (g) => g.id === selectedClassroom
+          (g) => g.id === resolvedClassroom
         );
         if (!classroom) return [];
 
@@ -198,48 +205,44 @@ export const ProgressViewReportsSummarySelectClassroomGroupAndAgeGroup: React.FC
         });
       }
 
-      // Filter the known age groups to only those that appear
       return reportAgeGroups
         .filter((ag) => allowedAgeGroupIds.has(ag?.id!))
         .map((ag, idx) => ({
           id: idx,
-          label: ag?.name! ?? 'Unknown',
+          label: ag?.name ?? 'Unknown',
           value: ag?.id!,
         }));
     }, [
       selectedPeriod,
-      selectedClassroom,
+      manualClassroom,
+      filteredClassroomOptions,
       allReportsForYear,
       availableClassrooms,
       children,
       reportAgeGroups,
     ]);
 
-    // Auto-select when there's exactly one option — in useEffect
-    useEffect(() => {
-      if (filteredClassroomOptions.length === 1) {
-        setSelectedClassroom(
-          (prev) => prev ?? filteredClassroomOptions[0].value
-        );
-      }
-    }, [filteredClassroomOptions]);
+    // ────────────────────────────────────────────────
+    // Resolved selections (auto-select if only one option)
+    // ────────────────────────────────────────────────
 
-    useEffect(() => {
-      if (filteredAgeGroupOptions.length === 1) {
-        const onlyOption = filteredAgeGroupOptions[0];
-        // Only set if different — prevents loop
-        setSelectedAgeGroup((current) => {
-          if (current === onlyOption.value) return current;
-          return onlyOption.value;
-        });
-      }
-    }, [filteredAgeGroupOptions]);
+    const selectedClassroom = useMemo(() => {
+      if (filteredClassroomOptions.length === 1)
+        return filteredClassroomOptions[0].value;
+      return manualClassroom;
+    }, [filteredClassroomOptions, manualClassroom]);
+
+    const selectedAgeGroup = useMemo(() => {
+      if (filteredAgeGroupOptions.length === 1)
+        return filteredAgeGroupOptions[0].value;
+      return manualAgeGroup;
+    }, [filteredAgeGroupOptions, manualAgeGroup]);
 
     // ────────────────────────────────────────────────
     // Navigation logic
     // ────────────────────────────────────────────────
 
-    const showClassroomStep = filteredClassroomOptions.length > 1; // Updated to use filtered options
+    const showClassroomStep = filteredClassroomOptions.length > 1;
     const showAgeGroupStep = filteredAgeGroupOptions.length > 1;
 
     const canProceed = {
@@ -267,6 +270,8 @@ export const ProgressViewReportsSummarySelectClassroomGroupAndAgeGroup: React.FC
       if (activeStepKey === ChildProgressSummarySteps.reportingPeriod) {
         if (showClassroomStep) {
           goToStep(ChildProgressSummarySteps.classroom);
+        } else if (showAgeGroupStep) {
+          goToStep(ChildProgressSummarySteps.ageRange);
         } else {
           goToReport();
         }
@@ -321,6 +326,9 @@ export const ProgressViewReportsSummarySelectClassroomGroupAndAgeGroup: React.FC
               selectedOptionBackgroundColor="uiBg"
               onChange={(val) => {
                 setSelectedPeriod(val);
+                // Reset downstream manual selections when period changes
+                setManualClassroom(undefined);
+                setManualAgeGroup(undefined);
               }}
             />
 
@@ -342,31 +350,37 @@ export const ProgressViewReportsSummarySelectClassroomGroupAndAgeGroup: React.FC
             stepKey={ChildProgressSummarySteps.classroom}
             viewBannerWapper={true}
           >
-            <Typography
-              color="textMid"
-              text="Choose a class to view"
-              type="h3"
-              className="mb-4 mt-4"
-            />
+            <div className={'h-full bg-white px-4 pt-2 pb-4'}>
+              <Typography
+                color="textMid"
+                text="Choose a class to view"
+                type="h3"
+                className="mb-4 mt-4"
+              />
 
-            <CoreRadioGroup
-              options={filteredClassroomOptions}
-              currentValue={selectedClassroom}
-              colour="quatenary"
-              selectedOptionBackgroundColor="uiBg"
-              onChange={setSelectedClassroom}
-            />
+              <CoreRadioGroup
+                options={filteredClassroomOptions}
+                currentValue={selectedClassroom}
+                colour="quatenary"
+                selectedOptionBackgroundColor="uiBg"
+                onChange={(val) => {
+                  setManualClassroom(val);
+                  // Reset age group when classroom changes
+                  setManualAgeGroup(undefined);
+                }}
+              />
 
-            <Button
-              icon="ArrowCircleRightIcon"
-              text="Next"
-              type="filled"
-              color="quatenary"
-              textColor="white"
-              onClick={handleNext}
-              disabled={!canProceed.classroom}
-              className="mb-4 mt-auto w-full"
-            />
+              <Button
+                icon="ArrowCircleRightIcon"
+                text="Next"
+                type="filled"
+                color="quatenary"
+                textColor="white"
+                onClick={handleNext}
+                disabled={!canProceed.classroom}
+                className="mb-4 mt-auto w-full"
+              />
+            </div>
           </Step>
         )}
 
@@ -375,31 +389,33 @@ export const ProgressViewReportsSummarySelectClassroomGroupAndAgeGroup: React.FC
             stepKey={ChildProgressSummarySteps.ageRange}
             viewBannerWapper={true}
           >
-            <Typography
-              color="textMid"
-              text="Choose an age range to view"
-              type="h3"
-              className="mb-4 mt-4"
-            />
+            <div className={'h-full bg-white px-4 pt-2 pb-4'}>
+              <Typography
+                color="textMid"
+                text="Choose an age range to view"
+                type="h3"
+                className="mb-4 mt-4"
+              />
 
-            <CoreRadioGroup
-              options={filteredAgeGroupOptions}
-              currentValue={selectedAgeGroup}
-              colour="quatenary"
-              selectedOptionBackgroundColor="uiBg"
-              onChange={(v: number) => setSelectedAgeGroup(v)}
-            />
+              <CoreRadioGroup
+                options={filteredAgeGroupOptions}
+                currentValue={selectedAgeGroup}
+                colour="quatenary"
+                selectedOptionBackgroundColor="uiBg"
+                onChange={(v: number) => setManualAgeGroup(v)}
+              />
 
-            <Button
-              icon="ArrowCircleRightIcon"
-              text="Next"
-              type="filled"
-              color="quatenary"
-              textColor="white"
-              onClick={handleNext}
-              disabled={!canProceed.ageGroup}
-              className="mb-4 mt-auto w-full"
-            />
+              <Button
+                icon="ArrowCircleRightIcon"
+                text="Next"
+                type="filled"
+                color="quatenary"
+                textColor="white"
+                onClick={handleNext}
+                disabled={!canProceed.ageGroup}
+                className="mb-4 mt-auto w-full"
+              />
+            </div>
           </Step>
         )}
       </StepViewer>

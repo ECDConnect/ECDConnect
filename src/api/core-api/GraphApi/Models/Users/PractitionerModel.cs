@@ -41,4 +41,5 @@ public class PractitionerModel
     public List<UserPermissionModel> Permissions { get; set; }
     public DateTime? CommunitySectionViewDate { get; set; }
     public bool ProgressWalkthroughComplete { get; set; }
+    public EcdRegistration EcdRegistration { get; set; }
 }

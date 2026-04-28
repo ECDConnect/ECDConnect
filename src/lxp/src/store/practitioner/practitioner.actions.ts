@@ -1,4 +1,10 @@
-import { PractitionerDto } from '@ecdlink/core';
+import {
+  EcdRegistrationDto,
+  ClassroomGroupDto,
+  PractitionerColleagues,
+  PractitionerDto,
+  UserDto,
+} from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { PractitionerService } from '@services/PractitionerService';
 import { RootState, ThunkApiType } from '../types';
@@ -7,12 +13,17 @@ import {
   PractitionerInput,
   MutationUpdatePractitionerProgressArgs,
   MutationUpdatePractitionerUsePhotoInReportArgs,
-  MutationUpdatePractitionerShareInfoArgs,
   NotificationDisplay,
   PrincipalInvitationStatus,
   UserPermissionModel,
+  PractitionerRemovalHistory,
+  ClassroomGroupReassignmentsInput,
+  MutationAddPractitionerToPrincipalArgs,
+  EcdRegistrationInputModelInput,
+  EcdRegistrationUpdateInputModelInput,
 } from '@ecdlink/graphql';
 import PermissionsService from '@/services/PermissionsService/PermissionsService';
+import { OverrideCache } from '@/models/sync/override-cache';
 
 export const PractitionerActions = {
   UPDATE_PRACTITIONER_REGISTERED: 'updatePractitionerRegistered',
@@ -20,22 +31,42 @@ export const PractitionerActions = {
   DEACTIVATE_PRACTITIONER: 'deActivatePractitioner',
   UPDATE_PRACTITIONER_USEPHOTOINPROGRESS:
     'updatePractitionerUsePhotoInProgress',
-  GET_ALL_STATEMENTS_BALANCE_SHEET_FOR_PRACTITIONER:
-    'getAllStatementsBalanceSheetForPractitioner',
-  GET_ALL_EXPENSES_FOR_PRACTITIONER: 'getAllExpensesForPractitioner',
-  GET_ALL_INCOME_FOR_PRACTITIONER: 'getAllIncomeForPractitioner',
   UPDATE_PRACTITIONER_BUSINESS_WALK_THROUGH:
     'updatePractitionerProgressWalkthrough',
   UPDATE_PRACTITIONER_PROGRESS_WALKTHROUGH:
     'updatePractitionerBusinessWalkThrough',
   UPDATE_PRACTITIONER_SHARE_INFO: 'updatePractitionerShareInfo',
   UPDATE_PRINCIPAL_INVITATION: 'updatePrincipalInvitation',
-  GET_PRACTITIONERS_DISPLAY_METRICS: 'getPractitionersDisplayMetrics',
-  GET_PRACTITIONERS_FOR_COACH: 'getPractitionersForCoach',
-  GET_ALL_PRACTITIONERS: 'getAllPractitioners',
   UPDATE_PRACTITIONER_PERMISSIONS: 'updateUserPermission',
   UPDATE_PRACTITIONER_COMMUNITY_STATUS: 'updatePractitionerCommunityTabStatus',
   UPDATE_PRACTITIONER_CLICKED_ECD_HEROES: 'updatePractitionerClickedECDHeroes',
+  CANCEL_REMOVE_PRACTITIONER_FROM_PROGRAMME:
+    'cancelRemovePractitionerFromProgramme',
+  UPDATE_REMOVE_PRACTITIONER_FROM_PROGRAMME:
+    'updateRemovePractitionerFromProgramme',
+  REMOVE_PRACTITIONER_FROM_PROGRAMME: 'removePractitionerFromProgramme',
+  SEND_PRACTITIONER_INVITE_TO_APPLICATION:
+    'sendPractitionerInviteToApplication',
+  REMOVE_PRACTITIONER: 'removePractitioner',
+  SWITCH_PRINCIPAL: 'switchPrincipal',
+  SEND_PRACTITIONER_INVITE_TO_PRESCHOOL: 'sendPractitionerInviteToPreschool',
+  ADD_PRACTITIONER_TO_PRINCIPAL: 'addPractitionerToPrincipal',
+  SEND_PRACTITIONER_INVITE_TO_PRINCIPAL: 'sendPractitionerInvitePrincipal',
+  PROMOTE_PRACTITIONER_TO_PRINCIPAL: 'promotePractitionerToPrincipal',
+  GET_REMOVAL_FOR_PRACTITIONER: 'getRemovalForPractitioner',
+  GET_PRACTITIONERS_DISPLAY_METRICS: 'getPractitionersDisplayMetrics',
+  GET_PRACTITIONERS_FOR_COACH: 'getPractitionersForCoach',
+  GET_ALL_PRACTITIONERS: 'getAllPractitioners',
+  GET_ALL_PRACTITIONER_INVITES: 'getAllPractitionerInvites',
+  GET_CLASSROOM_ACTIONS: 'getClassroomActionItems',
+  GET_CLASSROOM_GROUP_CLASSROOM_FOR_PRACTITIONER:
+    'getClassroomGroupClassroomsForPractitioner',
+  GET_PRACTITIONER_COLLEAGUES: 'getPractitionerColleagues',
+  GET_PRACTITIONER_BY_ID_NUMBER: 'getPractitionerByIdNumber',
+  GET_REMOVALS_FOR_PRACTITIONERS: 'getRemovalsForPractitioners',
+  GET_MOODLE_SESSION_FOR_CURRENT_USER: 'getMoodleSessionForCurrentUser',
+  CREATE_PRACTITIONER_ECD_REGISTRATION: 'createPractitionerEcdRegistration',
+  UPDATE_PRACTITIONER_ECD_REGISTRATION: 'updatePractitionerEcdRegistration',
 };
 
 export const getPractitionersForCoach = createAsyncThunk<
@@ -114,14 +145,15 @@ export const getPractitionerById = createAsyncThunk<
 
 export const getPractitionerByUserId = createAsyncThunk<
   PractitionerDto,
-  { userId: string },
+  { userId: string } & OverrideCache,
   ThunkApiType<RootState>
 >(
   'getPractitionerByUserId',
   // eslint-disable-next-line no-empty-pattern
-  async ({ userId }, { getState, rejectWithValue }) => {
+  async ({ userId, overrideCache = false }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
+      practitioner: { practitioner: practitionerCache },
     } = getState();
 
     try {
@@ -131,6 +163,14 @@ export const getPractitionerByUserId = createAsyncThunk<
         return rejectWithValue('no user id supplied');
       }
 
+      const isUserLoggedInPractitioner = userId === userAuth?.id;
+
+      // === CACHE CHECK ===
+      if (!overrideCache && isUserLoggedInPractitioner && practitionerCache) {
+        return practitionerCache;
+      }
+
+      // === FETCH FROM API ===
       if (userAuth?.auth_token) {
         practitioner = await new PractitionerService(
           userAuth?.auth_token
@@ -364,20 +404,19 @@ export const updatePractitionerProgress = createAsyncThunk<
 
 export const updatePractitionerShareInfo = createAsyncThunk<
   any,
-  MutationUpdatePractitionerShareInfoArgs,
+  { practitionerId: string },
   ThunkApiType<RootState>
 >(
   PractitionerActions.UPDATE_PRACTITIONER_SHARE_INFO,
-  async (input, { getState, rejectWithValue }) => {
+  async ({ practitionerId }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
     } = getState();
-    const id = input.practitionerId;
     try {
-      if (userAuth?.auth_token && id) {
+      if (userAuth?.auth_token && practitionerId) {
         return await new PractitionerService(
           userAuth.auth_token
-        ).UpdatePractitionerShareInfo(id);
+        ).UpdatePractitionerShareInfo(practitionerId);
       }
     } catch (err) {
       return rejectWithValue(err);
@@ -612,6 +651,661 @@ export const updateClickedECDHeros = createAsyncThunk<
           userAuth?.auth_token
         ).updateClickedECDHeros(userId);
       }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getRemovalForPractitioner = createAsyncThunk<
+  PractitionerRemovalHistory | undefined,
+  { userId: string },
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.GET_REMOVAL_FOR_PRACTITIONER,
+  async ({ userId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    if (!userAuth?.auth_token) {
+      return rejectWithValue('no access token, profile check required');
+    }
+
+    try {
+      return await new PractitionerService(
+        userAuth.auth_token
+      ).getRemovalForPractitioner(userId);
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message ||
+          err?.message ||
+          'Failed to fetch practitioner removal history'
+      );
+    }
+  }
+);
+
+export const cancelRemovePractitionerFromProgramme = createAsyncThunk<
+  boolean,
+  { existingRemovalId: string },
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.CANCEL_REMOVE_PRACTITIONER_FROM_PROGRAMME,
+  async ({ existingRemovalId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    if (!userAuth?.auth_token) {
+      return rejectWithValue('no access token, profile check required');
+    }
+
+    try {
+      return await new PractitionerService(
+        userAuth.auth_token
+      ).cancelRemovePractitionerFromProgramme(existingRemovalId);
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message ||
+          err?.message ||
+          'Failed to cancel remove practitioner from programme'
+      );
+    }
+  }
+);
+
+export const updateRemovePractitionerFromProgramme = createAsyncThunk<
+  boolean,
+  {
+    removalId: string;
+    reasonForPractitionerLeavingProgrammeId: string;
+    reasonDetails: string | undefined;
+    dateOfRemoval: Date;
+    classroomGroupReassignments: ClassroomGroupReassignmentsInput[];
+  },
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.UPDATE_REMOVE_PRACTITIONER_FROM_PROGRAMME,
+  async (
+    {
+      removalId,
+      reasonForPractitionerLeavingProgrammeId,
+      reasonDetails,
+      dateOfRemoval,
+      classroomGroupReassignments,
+    },
+    { getState, rejectWithValue }
+  ) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    if (!userAuth?.auth_token) {
+      return rejectWithValue('no access token, profile check required');
+    }
+
+    try {
+      return await new PractitionerService(
+        userAuth.auth_token
+      ).updateRemovePractitionerFromProgramme(
+        removalId,
+        reasonForPractitionerLeavingProgrammeId,
+        reasonDetails,
+        dateOfRemoval,
+        classroomGroupReassignments
+      );
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message ||
+          err?.message ||
+          'Failed to update remove practitioner from programme'
+      );
+    }
+  }
+);
+
+export const removePractitionerFromProgramme = createAsyncThunk<
+  boolean,
+  {
+    practitionerUserId: string;
+    reasonForPractitionerLeavingProgrammeId: string | undefined;
+    reasonDetails: string | undefined;
+    classroomId: string;
+    dateOfRemoval: Date;
+    classroomGroupReassignments: ClassroomGroupReassignmentsInput[];
+  },
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.REMOVE_PRACTITIONER_FROM_PROGRAMME,
+  async (
+    {
+      practitionerUserId,
+      reasonForPractitionerLeavingProgrammeId,
+      reasonDetails,
+      classroomId,
+      dateOfRemoval,
+      classroomGroupReassignments,
+    },
+    { getState, rejectWithValue }
+  ) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    if (!userAuth?.auth_token) {
+      return rejectWithValue('no access token, profile check required');
+    }
+
+    try {
+      return await new PractitionerService(
+        userAuth.auth_token
+      ).RemovePractitionerFromProgramme(
+        practitionerUserId,
+        reasonForPractitionerLeavingProgrammeId,
+        reasonDetails,
+        classroomId,
+        dateOfRemoval,
+        classroomGroupReassignments
+      );
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message ||
+          err?.message ||
+          'Failed to remove practitioner from programme'
+      );
+    }
+  }
+);
+
+export const getAllPractitionerInvites = createAsyncThunk<
+  Date[],
+  { userId: string },
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.GET_ALL_PRACTITIONER_INVITES,
+  async ({ userId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      if (!userAuth?.auth_token) {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return await new PractitionerService(
+        userAuth?.auth_token
+      ).GetAllPractitionerInvites(userId);
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message ||
+          err?.message ||
+          'Failed to get all practitioner invites'
+      );
+    }
+  }
+);
+
+export const sendPractitionerInviteToApplication = createAsyncThunk<
+  string,
+  { userId: string },
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.SEND_PRACTITIONER_INVITE_TO_APPLICATION,
+  async ({ userId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      if (!userAuth?.auth_token) {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return await new PractitionerService(
+        userAuth?.auth_token
+      ).SendPractitionerInviteToApplication(userId);
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message ||
+          err?.message ||
+          'Failed to send practitioner invite to application'
+      );
+    }
+  }
+);
+
+export const getClassroomActionItems = createAsyncThunk<
+  NotificationDisplay[],
+  { userId: string },
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.GET_CLASSROOM_ACTIONS,
+  async ({ userId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      if (!userAuth?.auth_token) {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return await new PractitionerService(
+        userAuth?.auth_token
+      ).getClassroomActionItems(userId);
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message ||
+          err?.message ||
+          'Failed to get classroom action items'
+      );
+    }
+  }
+);
+
+export const getClassroomGroupClassroomsForPractitioner = createAsyncThunk<
+  ClassroomGroupDto[],
+  { userId: string },
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.GET_CLASSROOM_ACTIONS,
+  async ({ userId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      if (!userAuth?.auth_token) {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return await new PractitionerService(
+        userAuth?.auth_token
+      ).getClassroomGroupClassroomsForPractitioner(userId);
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message ||
+          err?.message ||
+          'Failed to get Classroom Group Classrooms For Practitioner'
+      );
+    }
+  }
+);
+
+export const getPractitionerColleagues = createAsyncThunk<
+  PractitionerColleagues[],
+  { userId: string },
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.GET_PRACTITIONER_COLLEAGUES,
+  async ({ userId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      if (!userAuth?.auth_token) {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return await new PractitionerService(
+        userAuth?.auth_token
+      ).getPractitionerColleagues(userId);
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message ||
+          err?.message ||
+          'Failed to get Classroom Group Classrooms For Practitioner'
+      );
+    }
+  }
+);
+
+export const removePractitioner = createAsyncThunk<
+  boolean,
+  {
+    practitionerUserId: string;
+    reasonForPractitionerLeavingId: string | undefined;
+    reasonDetails: string | undefined;
+    newPrincipalId: string;
+    classroomGroupReassignments: ClassroomGroupReassignmentsInput[];
+  },
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.REMOVE_PRACTITIONER,
+  async (
+    {
+      practitionerUserId,
+      reasonForPractitionerLeavingId,
+      reasonDetails,
+      newPrincipalId,
+      classroomGroupReassignments,
+    },
+    { getState, rejectWithValue }
+  ) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    if (!userAuth?.auth_token) {
+      return rejectWithValue('no access token, profile check required');
+    }
+
+    try {
+      return await new PractitionerService(
+        userAuth.auth_token
+      ).RemovePractitioner(
+        practitionerUserId,
+        reasonForPractitionerLeavingId,
+        reasonDetails,
+        newPrincipalId,
+        classroomGroupReassignments
+      );
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message ||
+          err?.message ||
+          'Failed to remove practitioner'
+      );
+    }
+  }
+);
+
+export const getPractitionerByIdNumber = createAsyncThunk<
+  UserDto,
+  { idNumber: string },
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.GET_PRACTITIONER_BY_ID_NUMBER,
+  async ({ idNumber }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      if (!userAuth?.auth_token) {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return await new PractitionerService(
+        userAuth?.auth_token
+      ).getPractitionerByIdNumber(idNumber);
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message ||
+          err?.message ||
+          'Failed to get Practitioner By IdNumber'
+      );
+    }
+  }
+);
+
+export const getRemovalsForPractitioners = createAsyncThunk<
+  PractitionerRemovalHistory[] | undefined,
+  { userIds: string[] },
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.GET_REMOVALS_FOR_PRACTITIONERS,
+  async ({ userIds }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      if (!userAuth?.auth_token) {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return await new PractitionerService(
+        userAuth?.auth_token
+      ).getRemovalsForPractitioners(userIds);
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message ||
+          err?.message ||
+          'Failed to get Removals For Practitioners'
+      );
+    }
+  }
+);
+
+export const switchPrincipal = createAsyncThunk<
+  boolean,
+  { oldPrincipalUserId: string; newPrincipalUserId: string },
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.SWITCH_PRINCIPAL,
+  async (
+    { oldPrincipalUserId, newPrincipalUserId },
+    { getState, rejectWithValue }
+  ) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      if (!userAuth?.auth_token) {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return await new PractitionerService(
+        userAuth?.auth_token
+      ).switchPrincipal(oldPrincipalUserId, newPrincipalUserId);
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message ||
+          err?.message ||
+          'Failed to switch Principal'
+      );
+    }
+  }
+);
+
+export const sendPractitionerInviteToPreschool = createAsyncThunk<
+  boolean,
+  {
+    practitionerPhoneNumber: string;
+    preSchoolNameCode: string;
+    preSchoolName: string;
+    principalUserId: string;
+    idOrPassport?: string;
+  },
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.SEND_PRACTITIONER_INVITE_TO_PRESCHOOL,
+  async (
+    {
+      practitionerPhoneNumber,
+      preSchoolNameCode,
+      preSchoolName,
+      principalUserId,
+      idOrPassport,
+    },
+    { getState, rejectWithValue }
+  ) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      if (!userAuth?.auth_token) {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return await new PractitionerService(
+        userAuth?.auth_token
+      ).sendPractitionerInviteToPreschool(
+        practitionerPhoneNumber,
+        preSchoolNameCode,
+        preSchoolName,
+        principalUserId,
+        idOrPassport
+      );
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message ||
+          err?.message ||
+          'Failed to send Practitioner Invite To Preschool'
+      );
+    }
+  }
+);
+
+export const addPractitionerToPrincipal = createAsyncThunk<
+  UserDto,
+  MutationAddPractitionerToPrincipalArgs,
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.ADD_PRACTITIONER_TO_PRINCIPAL,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      if (!userAuth?.auth_token) {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return await new PractitionerService(
+        userAuth?.auth_token
+      ).AddPractitionerToPrincipal(input);
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message ||
+          err?.message ||
+          'Failed to add Practitioner To Principal'
+      );
+    }
+  }
+);
+
+export const sendPractitionerInvitePrincipal = createAsyncThunk<
+  boolean,
+  { principalPhoneNumber: string; practitionerUserId: string },
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.SEND_PRACTITIONER_INVITE_TO_PRINCIPAL,
+  async (
+    { principalPhoneNumber, practitionerUserId },
+    { getState, rejectWithValue }
+  ) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      if (!userAuth?.auth_token) {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return await new PractitionerService(
+        userAuth?.auth_token
+      ).sendPractitionerInvitePrincipal(
+        principalPhoneNumber,
+        practitionerUserId
+      );
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message ||
+          err?.message ||
+          'Failed to practitioner Invite Principal'
+      );
+    }
+  }
+);
+
+export const promotePractitionerToPrincipal = createAsyncThunk<
+  UserDto,
+  { userId: string },
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.PROMOTE_PRACTITIONER_TO_PRINCIPAL,
+  async ({ userId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      if (!userAuth?.auth_token) {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return await new PractitionerService(
+        userAuth?.auth_token
+      ).PromotePractitionerToPrincipal(userId);
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message ||
+          err?.message ||
+          'Failed to promote Practitioner To Principal'
+      );
+    }
+  }
+);
+
+export const getMoodleSessionForCurrentUser = createAsyncThunk<
+  string,
+  void,
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.GET_MOODLE_SESSION_FOR_CURRENT_USER,
+  async (_, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      if (!userAuth?.auth_token) {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return await new PractitionerService(
+        userAuth?.auth_token
+      ).getMoodleSessionForCurrentUser();
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message ||
+          err?.message ||
+          'Failed to get Moodle Session For Current User'
+      );
+    }
+  }
+);
+
+export const createPractitionerEcdRegistration = createAsyncThunk<
+  EcdRegistrationDto,
+  { data: EcdRegistrationInputModelInput },
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.CREATE_PRACTITIONER_ECD_REGISTRATION,
+  async ({ data }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (!userAuth?.auth_token) {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return await new PractitionerService(
+        userAuth?.auth_token
+      ).createPractitionerEcdRegistration(data);
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const updatePractitionerEcdRegistration = createAsyncThunk<
+  EcdRegistrationDto,
+  { data: EcdRegistrationUpdateInputModelInput },
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.UPDATE_PRACTITIONER_ECD_REGISTRATION,
+  async ({ data }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (!userAuth?.auth_token) {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return await new PractitionerService(
+        userAuth.auth_token
+      ).updatePractitionerEcdRegistration(data);
     } catch (err) {
       return rejectWithValue(err);
     }

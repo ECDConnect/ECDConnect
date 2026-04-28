@@ -17,16 +17,20 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './coach-programme-information.styles';
 import ROUTES from '@routes/routes';
 import { useSelector } from 'react-redux';
-import { practitionerSelectors } from '@/store/practitioner';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
 import { useEffect, useMemo, useState } from 'react';
 import { authSelectors } from '@store/auth';
 import { userSelectors } from '@store/user';
 import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
-import { PractitionerService } from '@/services/PractitionerService';
 import TransparentLayer from '../../../assets/TransparentLayer.png';
+import { useAppDispatch } from '@/store';
 
 export const CoachProgrammeInformation: React.FC = () => {
+  const appDispatch = useAppDispatch();
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const dialog = useDialog();
@@ -147,15 +151,11 @@ export const CoachProgrammeInformation: React.FC = () => {
   const { theme } = useTheme();
 
   const getPractitionerColleagues = async () => {
-    // Check if the practitioner exists
-    let practitionerColleagues: PractitionerColleagues[] = [];
-
-    if (userAuth) {
-      practitionerColleagues = await new PractitionerService(
-        userAuth?.auth_token
-      ).practitionerColleagues(practitioner?.userId!);
-    }
-
+    const practitionerColleagues = await appDispatch(
+      practitionerThunkActions.getPractitionerColleagues({
+        userId: practitioner?.userId!,
+      })
+    ).unwrap();
     setOtherColleagues(practitionerColleagues);
     return practitionerColleagues;
   };

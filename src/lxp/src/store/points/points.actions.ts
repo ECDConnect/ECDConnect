@@ -10,13 +10,21 @@ import { PointsService } from '@/services/PointsService';
 import { differenceInDays } from 'date-fns';
 import { OverrideCache } from '@/models/sync/override-cache';
 
+export const PointActions = {
+  GET_POINT_SUMMARY_FOR_USER: 'getPointsSummaryForUser',
+  GET_USER_POINTS_SUMMARY_FOR_COACH: 'getUserPointsSummaryForCoach',
+  YEAR_POINTS_VIEW: 'yearPointsView',
+  POINTS_TO_DO_ITEMS: 'pointsTodoItems',
+  SHARED_DATA: 'sharedData',
+};
+
 export const getPointsSummaryForUser = createAsyncThunk<
   PointsUserSummary[],
   // eslint-disable-next-line @typescript-eslint/ban-types
   { userId: string; startDate: Date; endDate: Date } & OverrideCache,
   ThunkApiType<RootState>
 >(
-  'getPointsSummaryForUser',
+  PointActions.GET_POINT_SUMMARY_FOR_USER,
   // eslint-disable-next-line no-empty-pattern
   async (
     { userId, startDate, endDate, overrideCache = false },
@@ -55,7 +63,7 @@ export const getUserPointsSummaryForCoach = createAsyncThunk<
   { userId: string; startDate: Date; endDate: Date } & OverrideCache,
   ThunkApiType<RootState>
 >(
-  'getPointsSummaryForUser',
+  PointActions.GET_USER_POINTS_SUMMARY_FOR_COACH,
   // eslint-disable-next-line no-empty-pattern
   async (
     { userId, startDate, endDate, overrideCache = false },
@@ -102,7 +110,7 @@ export const yearPointsView = createAsyncThunk<
   { userId: string } & OverrideCache,
   ThunkApiType<RootState>
 >(
-  'yearPointsView',
+  PointActions.YEAR_POINTS_VIEW,
   // eslint-disable-next-line no-empty-pattern
   async ({ userId, overrideCache = false }, { getState, rejectWithValue }) => {
     const {
@@ -138,7 +146,7 @@ export const pointsTodoItems = createAsyncThunk<
   { userId: string } & OverrideCache,
   ThunkApiType<RootState>
 >(
-  'pointsTodoItems',
+  PointActions.POINTS_TO_DO_ITEMS,
   // eslint-disable-next-line no-empty-pattern
   async ({ userId, overrideCache = false }, { getState, rejectWithValue }) => {
     const {
@@ -174,7 +182,7 @@ export const sharedData = createAsyncThunk<
   { userId: string; isMonthly: boolean } & OverrideCache,
   ThunkApiType<RootState>
 >(
-  'sharedData',
+  PointActions.SHARED_DATA,
   // eslint-disable-next-line no-empty-pattern
   async (
     { userId, isMonthly, overrideCache = false },

@@ -1,5 +1,5 @@
 import { pointsConstants } from '@/constants/points';
-import { pointsSelectors, pointsThunkActions } from '@/store/points';
+import { pointsThunkActions } from '@/store/points';
 import { practitionerSelectors } from '@/store/practitioner';
 import {
   BannerWrapper,
@@ -27,8 +27,6 @@ import { PointsInfoPage } from '../info/points-info-page';
 import { useAppDispatch } from '@/store';
 import { PointsUserYearMonthSummary } from '@ecdlink/graphql';
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
-import { PointsService } from '@/services/PointsService';
-import { authSelectors } from '@/store/auth';
 
 export interface PointsYearViewRouteState {
   userRankingData?: any;
@@ -37,7 +35,6 @@ export interface PointsYearViewRouteState {
 export const PointsYearView: React.FC = () => {
   const history = useHistory();
   const { state } = useLocation<PointsYearViewRouteState>();
-  const userAuth = useSelector(authSelectors.getAuthUser);
   const dispatch = useAppDispatch();
   const messageNr = state?.userRankingData?.messageNr;
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
@@ -72,13 +69,15 @@ export const PointsYearView: React.FC = () => {
   const percentageScore = (pointsYearSummary?.total! / pointsMax) * 100;
 
   const getYearShareData = useCallback(async () => {
-    const response = await new PointsService(userAuth?.auth_token!).sharedData(
-      practitioner?.userId!,
-      false
-    );
+    const response = await dispatch(
+      pointsThunkActions.sharedData({
+        userId: practitioner?.userId!,
+        isMonthly: false,
+      })
+    ).unwrap();
     setPointsShareData(response);
     return response;
-  }, [practitioner?.userId, userAuth?.auth_token]);
+  }, [practitioner?.userId]);
 
   useEffect(() => {
     getYearShareData();

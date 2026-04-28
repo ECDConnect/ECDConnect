@@ -175,20 +175,10 @@ export const PractitionersList: React.FC = () => {
   };
 
   const handleReassignClass = () => {
-    if (!isOnline) {
-      return dialog({
-        blocking: false,
-        position: DialogPosition.Middle,
-        render: (onClose) => {
-          return <OnlineOnlyModal onSubmit={onClose} />;
-        },
-      });
-    }
-
     history.push('principal/practitioner-reassign-class');
   };
 
-  const offlineDialog = () => {
+  const showOfflineDialog = () => {
     if (!isOnline) {
       return dialog({
         color: 'bg-white',
@@ -233,7 +223,7 @@ export const PractitionersList: React.FC = () => {
           className={'mb-6 w-full'}
           onClick={() => {
             if (!isOnline) {
-              offlineDialog();
+              showOfflineDialog();
             } else if (isTrialPeriod) {
               showTrialPeriodCompleteProfileBlockingDialog();
             } else {
@@ -284,7 +274,9 @@ export const PractitionersList: React.FC = () => {
                 type="filled"
                 color="quatenary"
                 className={'mt-6 mb-6 w-11/12 rounded-2xl'}
-                onClick={handleReassignClass}
+                onClick={() => {
+                  isOnline ? handleReassignClass() : showOfflineDialog();
+                }}
               >
                 {renderIcon(
                   'PencilAltIcon',

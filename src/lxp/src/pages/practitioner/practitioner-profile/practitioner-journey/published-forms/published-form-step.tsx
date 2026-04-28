@@ -315,11 +315,20 @@ export const PublishedFormStep: React.FC<PublishedFormStepProps> = ({
 
         return (
           <Fragment key={question.id}>
-            {!isSingleCheckbox && <Typography type="h4" text={question.name} />}
             {!isSingleCheckbox && (
-              <Typography type="h6" text={question.description} />
+              <Typography
+                type="h4"
+                text={question.name}
+                className="font-bold"
+                color="textDark"
+              />
             )}
-            <fieldset className="mt-3 mb-3 flex flex-col gap-2">
+            {!isSingleCheckbox &&
+              question.description &&
+              question.description !== 'cms' && (
+                <Typography type="h6" text={question.description} />
+              )}
+            <fieldset className="mb-3 flex flex-col gap-2">
               {/* 🟦 Radio Buttons */}
               {question.answerType === 'radioButton' && (
                 <div className="flex flex-col gap-1">
@@ -339,7 +348,7 @@ export const PublishedFormStep: React.FC<PublishedFormStepProps> = ({
 
               {/* 🟩 Checkboxes */}
               {question.answerType === 'checkBox' && (
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col">
                   {question.formQuestionOptions?.length! > 0 ? (
                     question.formQuestionOptions?.map((item) => {
                       const isNone = item.name.toLowerCase().includes('none');
@@ -364,7 +373,8 @@ export const PublishedFormStep: React.FC<PublishedFormStepProps> = ({
                           id={item.id}
                           title={item.name}
                           value={item.id}
-                          checkboxColor="primary"
+                          checkboxColor="textLight"
+                          titleWeight="normal"
                           checked={currentIds.includes(item.id)}
                           disabled={!isNone && noneSelected}
                           onChange={() => {
@@ -417,7 +427,8 @@ export const PublishedFormStep: React.FC<PublishedFormStepProps> = ({
                       id={question.id}
                       title={question.name}
                       value={question.id}
-                      checkboxColor="primary"
+                      checkboxColor="textLight"
+                      titleWeight="normal"
                       checked={!!question.answerId}
                       onChange={() => {
                         const currentlyChecked = !!question.answerId;
@@ -447,29 +458,34 @@ export const PublishedFormStep: React.FC<PublishedFormStepProps> = ({
 
               {/* ✏️ Number Input */}
               {question.answerType === 'number' && (
-                <FormInput
-                  type="number"
-                  value={question.answer}
-                  className="mt-2 w-1/2"
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    updateQuestion(question.id, {
-                      answer: val,
-                      answerId: '',
-                    });
-                  }}
-                  {...((!!question.answer &&
-                    !!question.minValue &&
-                    Number(question.answer) < Number(question.minValue)) ||
-                  (!!question.answer && Number(question.answer) < 0)
-                    ? {
-                        error: {
-                          type: 'max',
-                          message: `Please enter a number that is more than ${question.minValue}.`,
-                        },
-                      }
-                    : {})}
-                />
+                <div className="flex items-center gap-2">
+                  <FormInput
+                    type="number"
+                    value={question.answer}
+                    className="w-1/2"
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      updateQuestion(question.id, {
+                        answer: val,
+                        answerId: '',
+                      });
+                    }}
+                    {...((!!question.answer &&
+                      !!question.minValue &&
+                      Number(question.answer) < Number(question.minValue)) ||
+                    (!!question.answer && Number(question.answer) < 0)
+                      ? {
+                          error: {
+                            type: 'max',
+                            message: `Please enter a number that is more than ${question.minValue}.`,
+                          },
+                        }
+                      : {})}
+                  />
+                  {question.description === 'cms' && (
+                    <Typography type="body" color="textMid" text="cms" />
+                  )}
+                </div>
               )}
               {/* ✏️ Map Input */}
               {question.answerType === 'map' && (
@@ -480,10 +496,9 @@ export const PublishedFormStep: React.FC<PublishedFormStepProps> = ({
                         <>
                           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-base">
                             <Typography
-                              type="body"
-                              color="textMid"
-                              weight="bold"
-                              className="mt-3 mb-1"
+                              type="h4"
+                              color="textDark"
+                              className="semi-bold mt-3 mb-1"
                               text="Property address:"
                             />
                             <Typography
@@ -497,10 +512,9 @@ export const PublishedFormStep: React.FC<PublishedFormStepProps> = ({
                           </div>
 
                           <Typography
-                            type="body"
-                            color="textMid"
-                            className="mt-3 mb-1"
-                            weight="bold"
+                            type="h4"
+                            color="textDark"
+                            className="semi-bold mt-3 mb-1"
                             text="Is this address correct?"
                           />
 

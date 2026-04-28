@@ -31,8 +31,6 @@ import {
 import { ProgressSkillValues } from '@/enums/ProgressSkillValues';
 import { useAppContext } from '@/walkthrougContext';
 import LanguageSelector from '@/components/language-selector/language-selector';
-import { ContentService } from '@/services/ContentService';
-import { authSelectors } from '@/store/auth';
 import { useAppDispatch } from '@/store';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 
@@ -60,20 +58,19 @@ export const ObservationsForChildLandingComplete: React.FC<
     state: { run: isWalkthrough },
   } = useAppContext();
 
-  const userAuth = useSelector(authSelectors.getAuthUser);
   const appDispatch = useAppDispatch();
   const dialog = useDialog();
 
   const { hasPermissionToCreateProgressReports } = useUserPermissions();
 
   const changeLanguage = async (language: LanguageDto) => {
-    const hasTranslations = await new ContentService(
-      userAuth?.auth_token ?? ''
-    ).hasContentTypeBeenTranslated(
-      ContentTypeEnum.ProgressTrackingSkill,
-      currentAgeGroup?.id ?? 0,
-      language.id ?? ''
-    );
+    const hasTranslations = await appDispatch(
+      progressTrackingThunkActions.hasContentTypeBeenTranslated({
+        id: ContentTypeEnum.ProgressTrackingSkill,
+        ageGroup: currentAgeGroup?.id ?? 0,
+        localeId: language.id ?? '',
+      })
+    ).unwrap();
 
     if (hasTranslations) {
       await appDispatch(
@@ -81,7 +78,7 @@ export const ObservationsForChildLandingComplete: React.FC<
           locale: language.locale,
         })
       ).unwrap();
-      await appDispatch(
+      appDispatch(
         progressTrackingActions.setLocale({ localeId: language.locale })
       );
     } else {

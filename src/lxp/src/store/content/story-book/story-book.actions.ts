@@ -19,31 +19,22 @@ export const getStoryBooks = createAsyncThunk<
       storyBookData: { storyBooks: storyBookCache },
     } = getState();
 
-    // Force fresh fetch if overrideCache is explicitly true
-    const shouldFetchFresh = overrideCache === true;
-
-    if (shouldFetchFresh || !storyBookCache || storyBookCache.length === 0) {
-      try {
-        let storyBooks: StoryBookDto[] | undefined;
-
-        if (userAuth?.auth_token) {
-          storyBooks = await new ContentStoryBookService(
-            userAuth?.auth_token
-          ).getStoryBooks(locale);
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        if (!storyBooks) {
-          return rejectWithValue('Error getting story books');
-        }
-
-        return storyBooks;
-      } catch (err) {
-        return rejectWithValue(err);
-      }
-    } else {
+    // === CACHE CHECK ===
+    if (!overrideCache && storyBookCache && storyBookCache.length > 0) {
       return storyBookCache;
+    }
+
+    // === FETCH FROM API ===
+    try {
+      if (!userAuth?.auth_token) {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return await new ContentStoryBookService(
+        userAuth?.auth_token
+      ).getStoryBooks(locale);
+    } catch (err) {
+      return rejectWithValue(err);
     }
   }
 );

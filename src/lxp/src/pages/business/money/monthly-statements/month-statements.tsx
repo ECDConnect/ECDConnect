@@ -9,7 +9,6 @@ import {
 } from '@/store/statements';
 import { authSelectors } from '@/store/auth';
 import { MonthStatementsDetails } from '../../components/month-statements-details';
-import { IncomeStatementsService } from '@/services/IncomeStatementsService';
 import { useDialog } from '@ecdlink/core';
 import { useAppDispatch } from '@/store';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
@@ -67,15 +66,9 @@ export const MonthStatements: React.FC = () => {
     }
 
     try {
-      const getPdf = async () => {
-        const report = await new IncomeStatementsService(
-          userAuth?.auth_token || ''
-        ).getIncomeStatementPdf(statementId);
-
-        return report;
-      };
-
-      const base64String = await getPdf();
+      const base64String = await appDispatch(
+        statementsThunkActions.getIncomeStatementPdf({ statementId })
+      ).unwrap();
 
       const byteCharacters = atob(base64String);
       const byteNumbers = new Array(byteCharacters.length);

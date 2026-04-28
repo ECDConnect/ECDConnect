@@ -1,6 +1,7 @@
 import {
   ReasonForLeavingDto,
   ReasonsForPractitionerLeavingProgramme,
+  useDialog,
   useSnackbar,
 } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -33,7 +34,6 @@ import { staticDataSelectors } from '@store/static-data';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useHistory, useLocation } from 'react-router-dom';
 import { PractitionerProfileRouteState } from '../../../../../../coach/practitioner-profile-info/practitioner-profile-info.types';
-import { PractitionerService } from '@/services/PractitionerService';
 import ROUTES from '@routes/routes';
 import { RemovePractitionerFromProgrammePrompt } from './remove-practitioner-from-programme-prompt';
 import { classroomsSelectors } from '@/store/classroom';
@@ -47,6 +47,7 @@ import { disableBackendNotification } from '@/store/notifications/notifications.
 import { PractitionerNotRegistered } from '../../practitioner-not-registered/practitioner-not-registered';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { BusinessTabItems } from '@/pages/business/business.types';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 
 export const RemovePractitionerFromProgramme: React.FC<
   RemovePractionerFromProgrammeProps
@@ -54,8 +55,8 @@ export const RemovePractitionerFromProgramme: React.FC<
   const appDispatch = useAppDispatch();
   const { showMessage } = useSnackbar();
   const history = useHistory();
-  const authUser = useSelector(authSelectors.getAuthUser);
   const { isOnline } = useOnlineStatus();
+  const dialog = useDialog();
   const location = useLocation<PractitionerProfileRouteState>();
   const reasonsForLeavingProgramme = useSelector(
     staticDataSelectors.getReasonsForPractitionerLeavingProgramme
@@ -126,6 +127,19 @@ export const RemovePractitionerFromProgramme: React.FC<
             notificationId: notification.message.reference ?? '',
           })
         );
+      });
+    }
+  };
+
+  const showOfflineDialog = () => {
+    if (!isOnline) {
+      return dialog({
+        color: 'bg-white',
+        position: DialogPosition.Middle,
+        blocking: true,
+        render: (onSubmit) => {
+          return <OnlineOnlyModal onSubmit={onSubmit} />;
+        },
       });
     }
   };
@@ -211,9 +225,12 @@ export const RemovePractitionerFromProgramme: React.FC<
     useState<any[]>();
 
   const getRemovalForPractitioner = async () => {
-    const removalDetails = await new PractitionerService(
-      authUser?.auth_token!
-    ).getRemovalForPractitioner(practitioner?.userId!);
+    const removalDetails = await appDispatch(
+      practitionerThunkActions.getRemovalForPractitioner({
+        userId: practitioner?.userId!,
+      })
+    ).unwrap();
+
     if (removalDetails) {
       const reassignments = (removalDetails.classReassignments || []).reduce(
         (obj, item) => {
@@ -269,27 +286,28 @@ export const RemovePractitionerFromProgramme: React.FC<
       });
 
       if (existingRemovalId) {
-        await new PractitionerService(
-          authUser?.auth_token || ''
-        ).updateRemovePractitionerFromProgramme(
-          existingRemovalId,
-          formValues.removeReasonId,
-          formValues.reasonDetail,
-          new Date(formValues.removalDate),
-          reassignments
+        await appDispatch(
+          practitionerThunkActions.updateRemovePractitionerFromProgramme({
+            removalId: existingRemovalId,
+            reasonForPractitionerLeavingProgrammeId: formValues.removeReasonId,
+            reasonDetails: formValues.reasonDetail,
+            dateOfRemoval: new Date(formValues.removalDate),
+            classroomGroupReassignments: reassignments,
+          })
         );
       } else {
-        await new PractitionerService(
-          authUser?.auth_token || ''
-        ).RemovePractitionerFromProgramme(
-          practitioner?.userId!,
-          formValues.removeReasonId,
-          formValues.reasonDetail,
-          classroom?.id || '',
-          new Date(formValues.removalDate),
-          reassignments
+        await appDispatch(
+          practitionerThunkActions.removePractitionerFromProgramme({
+            practitionerUserId: practitioner?.userId!,
+            reasonForPractitionerLeavingProgrammeId: formValues.removeReasonId,
+            reasonDetails: formValues.reasonDetail,
+            classroomId: classroom?.id || '',
+            dateOfRemoval: new Date(formValues.removalDate),
+            classroomGroupReassignments: reassignments,
+          })
         );
       }
+
       await appDispatch(
         practitionerThunkActions.getAllPractitioners({})
       ).unwrap();
@@ -507,7 +525,11 @@ export const RemovePractitionerFromProgramme: React.FC<
               </div>
               <div className={'py-4'}></div>
               <Button
-                onClick={() => setRemovePractionerPromptVisible(true)}
+                onClick={() =>
+                  isOnline
+                    ? setRemovePractionerPromptVisible(true)
+                    : showOfflineDialog()
+                }
                 className="mb-2 w-full"
                 size="small"
                 color="quatenary"

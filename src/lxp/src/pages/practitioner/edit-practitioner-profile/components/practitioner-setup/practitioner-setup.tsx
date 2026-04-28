@@ -19,7 +19,6 @@ import { yesNoOptions } from '../edit-programme-form/edit-programme-form.types';
 import { setupPractitioner } from '@/schemas/practitioner/add-practitioner';
 import { userSelectors } from '@/store/user';
 import { useAppDispatch } from '@/store';
-import { authSelectors } from '@/store/auth';
 import { PractitionerFormData } from '../../edit-practitioner-profile.types';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
@@ -33,11 +32,9 @@ import {
   classroomsThunkActions,
 } from '@/store/classroom';
 import { updatePrincipalInvitation } from '@/store/practitioner/practitioner.actions';
-import { ClassroomService } from '@/services/ClassroomService';
 import { ClassroomDto } from '@/models/classroom/classroom.dto';
 import { notificationActions } from '@/store/notifications';
 import { useTenant } from '@/hooks/useTenant';
-import { Message } from '@/models/messages/messages';
 import { usePractitionerNotification } from '@/hooks/usePractitionerNotification';
 
 export const PractitionerSetup = ({
@@ -63,7 +60,6 @@ export const PractitionerSetup = ({
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const [principalClassroom, setPrincipalClassroom] = useState<ClassroomDto>();
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const userAuth = useSelector(authSelectors.getAuthUser);
   const user = useSelector(userSelectors.getUser);
   const tenant = useTenant();
   const isWhiteLabel = tenant?.isWhiteLabel;
@@ -102,7 +98,7 @@ export const PractitionerSetup = ({
       })
     );
     await appDispatch(
-      classroomsThunkActions.getClassroom({ overrideCache: true })
+      classroomsThunkActions.getClassroomForUser({ overrideCache: true })
     ).unwrap();
 
     if (practitionerToProgramme === false) {
@@ -125,9 +121,12 @@ export const PractitionerSetup = ({
   }, [practitioner?.principalHierarchy]);
 
   const getPrincipalClassroom = useCallback(async () => {
-    const classroom = await new ClassroomService(
-      userAuth?.auth_token!
-    ).getClassroomForUser(practitioner?.principalHierarchy!);
+    const classroom = await appDispatch(
+      classroomsThunkActions.getClassroomForUser({
+        userId: practitioner?.principalHierarchy!,
+        overrideCache: true,
+      })
+    ).unwrap();
 
     if (classroom) {
       setPrincipalClassroom(classroom);
