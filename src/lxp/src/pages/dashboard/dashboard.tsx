@@ -202,21 +202,32 @@ export const Dashboard: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    let isMounted = true;
+
     if (navigator?.storage?.estimate) {
       navigator.storage
         .estimate()
         .then((estimate) => {
-          if (estimate?.quota) {
+          if (isMounted && estimate?.quota) {
             const freeMemoryMB = estimate.quota / (1024 * 1024);
             setFreeMemory(Math.round(freeMemoryMB));
+          } else if (isMounted) {
+            setFreeMemory(0);
           }
         })
         .catch(() => {
-          setFreeMemory(0);
+          if (isMounted) {
+            setFreeMemory(0);
+          }
         });
-    } else {
+    } else if (isMounted) {
       setFreeMemory(0);
     }
+
+    // Cleanup: prevent state updates after unmount
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -766,6 +777,14 @@ export const Dashboard: React.FC = () => {
                 params: { activeTabIndex: BusinessTabItems.MONEY },
                 current: false,
                 hideItem: !businessEnabled && isWhiteLabel,
+              },
+              {
+                name: NavigationNames.Business.Registration,
+                href: ROUTES.BUSINESS,
+                onNavigation: onNavigation,
+                params: { activeTabIndex: BusinessTabItems.REGISTRATION },
+                current: false,
+                hideItem: !businessEnabled,
               },
               {
                 name: NavigationNames.Business.Resources,

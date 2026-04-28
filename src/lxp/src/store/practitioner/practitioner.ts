@@ -17,6 +17,8 @@ import {
   updatePractitionerCommunityTabStatus,
   updatePractitionerProgressWalkthrough,
   getPractitionerPermissions,
+  updatePractitionerEcdRegistration,
+  createPractitionerEcdRegistration,
 } from './practitioner.actions';
 import {
   PractitionerState,
@@ -160,6 +162,24 @@ const practitionerSlice = createSlice({
         state.practitioner = {
           ...state.practitioner,
           usePhotoInReport: action.payload,
+        };
+      }
+    );
+    builder.addCase(
+      createPractitionerEcdRegistration.fulfilled,
+      (state, action) => {
+        state.practitioner = {
+          ...state.practitioner,
+          ecdRegistration: action.payload,
+        };
+      }
+    );
+    builder.addCase(
+      updatePractitionerEcdRegistration.fulfilled,
+      (state, action) => {
+        state.practitioner = {
+          ...state.practitioner,
+          ecdRegistration: action.payload,
         };
       }
     );

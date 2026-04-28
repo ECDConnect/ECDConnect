@@ -1,6 +1,9 @@
 import { BannerWrapper, Button, Card, Divider, Typography } from '@ecdlink/ui';
 import LanguageSelector from '../../../../../../../components/language-selector/language-selector';
-import { activitySelectors } from '@store/content/activity';
+import {
+  activitySelectors,
+  activityThunkActions,
+} from '@store/content/activity';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { ActivitySubCategoryCard } from '../../components/activity-sub-category-card/activity-sub-category-card';
@@ -12,8 +15,7 @@ import { dummyActivityDetails } from '@/pages/classroom/programme-planning/progr
 import ProgrammeWrapper from '../../../../programme-dashboard/walkthrough/programme-wrapper';
 import { LanguageCode } from '@/i18n/types';
 import { ActivityDto, LanguageDto } from '@ecdlink/core';
-import { ContentActivityService } from '@/services/ContentActivityService';
-import { authSelectors } from '@/store/auth';
+import { useAppDispatch } from '@/store';
 
 const ActivityDetails: React.FC<ActivityDetailsProps> = ({
   activityId,
@@ -26,7 +28,7 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
 }) => {
   const [isOnlineOnlyAlert, setOnlineOnlyAlert] = useState(false);
   const { isOnline } = useOnlineStatus();
-  const authUser = useSelector(authSelectors.getAuthUser);
+  const appDispatch = useAppDispatch();
 
   const { state } = useAppContext();
   const isWalkthrough = state?.run;
@@ -80,9 +82,9 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
 
     let activities: ActivityDto[] | undefined;
 
-    activities = await new ContentActivityService(
-      authUser?.auth_token || ''
-    ).getActivities(language.locale);
+    activities = await appDispatch(
+      activityThunkActions.getActivities({ locale: language.locale })
+    ).unwrap();
 
     const translatedActivity = activities?.find(
       (item) => item.id === currentActivity?.id

@@ -319,7 +319,7 @@ class ProgressTrackingService {
     return response.data.data.createOrUpdateChildProgressReport;
   }
 
-  async classroomProgressSummaryDownloaded(
+  async getClassroomProgressSummaryDownloaded(
     classroomGroupId: string
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);

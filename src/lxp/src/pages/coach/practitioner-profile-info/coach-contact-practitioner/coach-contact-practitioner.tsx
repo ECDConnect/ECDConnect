@@ -192,11 +192,9 @@ export const CoachContactPractitioner: React.FC = () => {
                 type="filled"
                 onClick={() => {
                   if (removePractitioner) {
-                    if (isOnline) {
-                      setRemovePractionerReasonsVisible(true);
-                    } else {
-                      showOnlineOnly();
-                    }
+                    isOnline
+                      ? setRemovePractionerReasonsVisible(true)
+                      : showOnlineOnly();
                   } else {
                     history.goBack();
                   }

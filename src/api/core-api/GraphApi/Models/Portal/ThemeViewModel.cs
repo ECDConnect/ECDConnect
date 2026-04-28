@@ -67,6 +67,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
             ThemeDays = themeDays != null ? themeDays.ToString().Split(",").ToList() : new List<string>();
             TenantId = tenantId != null ? tenantId.ToString() : "";
         }
+
+        /// <summary>Used when building from the lean GetThemeNameDayLinks query result.</summary>
+        public ThemeNameDaysViewModel(string name, string themeDays, string tenantId)
+        {
+            Name = name ?? "";
+            ThemeDays = !string.IsNullOrEmpty(themeDays)
+                ? themeDays.Split(",").Where(x => !string.IsNullOrEmpty(x)).ToList()
+                : new List<string>();
+            TenantId = tenantId ?? "";
+        }
     }
 
     public class GeneralThemeDaysViewModel
@@ -95,16 +105,27 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
             SmallGroupActivity = smallGroupActivity != null ? smallGroupActivity.ToString() : "";
             LargeGroupActivity = largeGroupActivity != null ? largeGroupActivity.ToString() : "";
         }
+
+        /// <summary>Used when building from the lean GetThemeDayActivityLinks query result.</summary>
+        public GeneralThemeDaysViewModel(string id, string tenantId, string storyBook,
+            string storyActivity, string smallGroupActivity, string largeGroupActivity)
+        {
+            Id = id ?? "";
+            TenantId = tenantId ?? "";
+            StoryBook = storyBook ?? "";
+            StoryActivity = storyActivity ?? "";
+            SmallGroupActivity = smallGroupActivity ?? "";
+            LargeGroupActivity = largeGroupActivity ?? "";
+        }
     }
 
-     public class ThemeDayViewModel
+    public class ThemeDayViewModel
     {
         public string ContentId { get; set; }
         public string ActivityId { get; set; }
 
         public ThemeDayViewModel(string contentId, string activityId)
         {
-
             ContentId = contentId;
             ActivityId = activityId;
         }

@@ -25,9 +25,9 @@ import { useTenant } from '@/hooks/useTenant';
 import { OAAgreements } from './components/oa-agreements/oa-agreements';
 import Banner1 from '../../../assets/banner1-ss.jpg';
 import Banner3 from '../../../assets/banner3-ss.jpg';
-import { AuthService } from '@/services/AuthService';
 import TransparentLayer from '../../../assets/TransparentLayer.png';
 import ROUTES from '@/routes/routes';
+import { authThunkActions } from '@/store/auth';
 
 const token = new URLSearchParams(window.location.search).get('token');
 
@@ -84,10 +84,12 @@ export const OASignUpOrLogin: React.FC = () => {
       token: token as any as string,
     };
     if (token) {
-      const principalToken = await new AuthService().VerifyPrincipalToken(
-        Config.authApi,
-        input
-      );
+      const principalToken = await appDispatch(
+        authThunkActions.verifyPrincipalToken({
+          baseEndPoint: Config.authApi,
+          body: input,
+        })
+      ).unwrap();
 
       if (principalToken?.data) {
         localStorage.setItem(

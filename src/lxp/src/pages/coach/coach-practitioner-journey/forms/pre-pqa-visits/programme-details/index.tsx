@@ -19,9 +19,10 @@ import {
 import { currentActivityKey } from '../..';
 import { ClassroomGroup, Maybe } from '@ecdlink/graphql';
 import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
-import { PractitionerService } from '@/services/PractitionerService';
 import { authSelectors } from '@/store/auth';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useAppDispatch } from '@/store';
+import { practitionerThunkActions } from '@/store/practitioner';
 
 export const ProgrammeDetails = ({
   isView,
@@ -29,6 +30,7 @@ export const ProgrammeDetails = ({
   setSectionQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
+  const appDispatch = useAppDispatch();
   const [questions, setAnswers] = useState<
     {
       question: string;
@@ -163,11 +165,11 @@ export const ProgrammeDetails = ({
 
   const classroomsDetailsForPractitioner = useCallback(async () => {
     // Needs to be updated
-    const classroomDetails = (await new PractitionerService(
-      userAuth?.auth_token!
-    ).getClassroomGroupClassroomsForPractitioner(
-      practitioner?.userId!
-    )) as unknown;
+    const classroomDetails = await appDispatch(
+      practitionerThunkActions.getClassroomGroupClassroomsForPractitioner({
+        userId: practitioner?.userId!,
+      })
+    ).unwrap();
 
     setPractitionerClassroomDetails(classroomDetails as ClassroomGroup[]);
     return classroomDetails;

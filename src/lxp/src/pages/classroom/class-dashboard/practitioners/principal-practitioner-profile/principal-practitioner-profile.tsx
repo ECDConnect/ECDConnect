@@ -1,6 +1,6 @@
 import { useHistory, useLocation } from 'react-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useTheme } from '@ecdlink/core';
+import { useDialog, useTheme } from '@ecdlink/core';
 import {
   BannerWrapper,
   Button,
@@ -30,13 +30,13 @@ import { CreateNote } from './components/create-note/create-note';
 import { getLastNoteDate } from '@utils/child/child-profile-utils';
 import { notesSelectors } from '@store/notes';
 import { useSelector } from 'react-redux';
-import { practitionerSelectors } from '@/store/practitioner';
-import { classroomsSelectors } from '@/store/classroom';
-import { authSelectors } from '@/store/auth';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
+import { classroomsSelectors, classroomsThunkActions } from '@/store/classroom';
 import { PractitionerNotRegistered } from './practitioner-not-registered/practitioner-not-registered';
-import { ClassroomGroupService } from '@/services/ClassroomGroupService';
 import { format, isPast, isToday, sub } from 'date-fns';
-import { PractitionerService } from '@/services/PractitionerService';
 import EditRemovePractitionerFromProgrammePrompt from './components/remove-practitioner-from-programme/edit-remove-practitioner-from-programme-prompt';
 import { formatDateLong } from '@/utils/common/date.utils';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
@@ -51,10 +51,12 @@ import { useTenantModules } from '@/hooks/useTenantModules';
 import { useTenant } from '@/hooks/useTenant';
 import { PermissionsNames } from '@/pages/principal/components/add-practitioner/add-practitioner.types';
 import TransparentLayer from '../../../../../assets/TransparentLayer.png';
+import { useAppDispatch } from '@/store';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 
 export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const history = useHistory();
-  const userAuth = useSelector(authSelectors.getAuthUser);
+  const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
   const location = useLocation<PractitionerProfileRouteState>();
   const practitionerUserId = location.state.practitionerId;
@@ -63,6 +65,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const practitioner = useSelector(
     practitionerSelectors.getPractitionerByUserId(practitionerUserId)
   );
+  const dialog = useDialog();
 
   const daysAbsentLastMonth = practitioner?.daysAbsentLastMonth;
   const practitionerUser = useSelector(practitionerSelectors.getPractitioner);
@@ -109,7 +112,6 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const practitionerClassroomGroups = classroomGroups?.filter((item) => {
     return item?.userId === practitionerUserId;
   });
-  const { theme } = useTheme();
 
   const [createPractitionerNoteVisible, setCreatePractitionerdNoteVisible] =
     useState<boolean>(false);
@@ -193,11 +195,13 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   >();
 
   const getRemovalForPractitioner = async () => {
-    const removalDetails = await new PractitionerService(
-      userAuth?.auth_token!
-    ).getRemovalForPractitioner(practitioner?.userId!);
-    setExistingRemoval(removalDetails);
+    const removalDetails = await appDispatch(
+      practitionerThunkActions.getRemovalForPractitioner({
+        userId: practitioner?.userId!,
+      })
+    ).unwrap();
 
+    setExistingRemoval(removalDetails);
     return removalDetails;
   };
 
@@ -209,13 +213,13 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
       1
     );
     const lastDayPrevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
-    const metricsData = await new ClassroomGroupService(
-      userAuth?.auth_token!
-    ).getClassAttendanceMetricsByUser(
-      practitionerUserId,
-      firstDayPrevMonth,
-      lastDayPrevMonth
-    );
+    const metricsData = await appDispatch(
+      classroomsThunkActions.getClassAttendanceMetricsByUser({
+        userId: practitionerUserId,
+        startMonth: firstDayPrevMonth,
+        endMonth: lastDayPrevMonth,
+      })
+    ).unwrap();
     setClassMetrics(metricsData);
     return metricsData;
   };
@@ -227,9 +231,12 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   }, []);
 
   const cancelPractitionerRemoval = async () => {
-    await new PractitionerService(
-      userAuth?.auth_token || ''
-    ).cancelRemovePractitionerFromProgramme(existingRemoval?.id);
+    await appDispatch(
+      practitionerThunkActions.cancelRemovePractitionerFromProgramme({
+        existingRemovalId: existingRemoval?.id,
+      })
+    );
+
     setExistingRemoval(undefined);
   };
 
@@ -284,6 +291,19 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
       progressEnabled,
     ]
   );
+
+  const showOfflineDialog = () => {
+    if (!isOnline) {
+      return dialog({
+        color: 'bg-white',
+        position: DialogPosition.Middle,
+        blocking: true,
+        render: (onSubmit) => {
+          return <OnlineOnlyModal onSubmit={onSubmit} />;
+        },
+      });
+    }
+  };
 
   const [allowedPermissions, setAllowedPermissions] = useState<
     string[] | undefined
@@ -571,166 +591,164 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
             />
           </Dialog>
         </div>
-        <>
-          <div className={styles.infoWrapper}>
-            <div>
-              <Typography
-                text={'Cellphone number'}
-                type="h5"
-                color="textMid"
-                className={'mt-4'}
-              />
-              <Typography
-                text={practitioner?.user?.phoneNumber}
-                type="h4"
-                color="textDark"
-                className={'mt-1'}
-              />
-            </div>
-            {!!practitioner?.user?.phoneNumber && (
-              <Button
-                size="small"
-                shape="normal"
-                color="secondaryAccent2"
-                type="filled"
-                onClick={() =>
-                  window.open(`tel:${practitioner?.user?.phoneNumber}`)
-                }
-              >
-                <Typography
-                  className={'mr-1'}
-                  type="buttonSmall"
-                  color="secondary"
-                  text="Call"
-                />
-                {renderIcon('PhoneIcon', 'h-4 w-4 text-secondary')}
-              </Button>
-            )}
+        <div className={styles.infoWrapper}>
+          <div>
+            <Typography
+              text={'Cellphone number'}
+              type="h5"
+              color="textMid"
+              className={'mt-4'}
+            />
+            <Typography
+              text={practitioner?.user?.phoneNumber}
+              type="h4"
+              color="textDark"
+              className={'mt-1'}
+            />
           </div>
-          <Divider dividerType="dashed" className="my-4" />
-          <div className={styles.infoWrapper}>
-            <div>
-              <Typography
-                text={'Email address'}
-                type="h5"
-                color="textMid"
-                className={'mt-1'}
-              />
-              <Typography
-                text={practitioner?.user?.email}
-                type="h4"
-                color="textDark"
-                className={'mt-1'}
-              />
-            </div>
-            {!!practitioner?.user?.email && (
-              <Button
-                size="small"
-                shape="normal"
-                color="secondaryAccent2"
-                type="filled"
-                onClick={() =>
-                  window.open(`mailto:${practitioner?.user?.email}`)
-                }
-              >
-                <Typography
-                  className={'mr-1'}
-                  type="buttonSmall"
-                  color="secondary"
-                  text="Email"
-                />
-                {renderIcon('MailIcon', 'h-4 w-4 text-secondary')}
-              </Button>
-            )}
-          </div>
-          <Divider dividerType="dashed" className="my-4" />
-          <div className={styles.infoWrapper}>
-            <div>
-              <Typography
-                text={'Your notes'}
-                type="h4"
-                color="textDark"
-                className={'mt-1'}
-              />
-              {notes?.length > 0 ? (
-                <Typography
-                  text={getLastNoteDate(notes)}
-                  type="h5"
-                  color="textMid"
-                  className={'mt-1'}
-                />
-              ) : (
-                <Typography
-                  text={'Add a note'}
-                  type="h5"
-                  color="textMid"
-                  className={'mt-1'}
-                />
-              )}
-            </div>
-            <div>
-              <Button
-                size="small"
-                shape="normal"
-                color="quatenary"
-                type="filled"
-                onClick={() =>
-                  history.push(ROUTES.PRINCIPAL.NOTES, {
-                    practitionerId: practitionerUserId,
-                  })
-                }
-              >
-                <Typography
-                  type="help"
-                  color="white"
-                  text="View"
-                  className="ml-1"
-                />
-                {renderIcon('PlusIcon', styles.buttonIcon)}
-              </Button>
-            </div>
-            <Dialog
-              fullScreen
-              visible={createPractitionerNoteVisible}
-              position={DialogPosition.Middle}
+          {!!practitioner?.user?.phoneNumber && (
+            <Button
+              size="small"
+              shape="normal"
+              color="secondaryAccent2"
+              type="filled"
+              onClick={() =>
+                window.open(`tel:${practitioner?.user?.phoneNumber}`)
+              }
             >
-              <div className={styles.dialogContent}>
-                <CreateNote
-                  userId={practitionerUserId || ''}
-                  noteType={NoteTypeEnum.Unknown}
-                  titleText={`Add a note to ${practitioner?.user?.firstName}'s profile`}
-                  onBack={() => onCreatePractitionerNoteBack()}
-                  onCreated={() => onCreatePractitionerNoteBack()}
-                />
-              </div>
-            </Dialog>
-          </div>
-          {!existingRemoval && (
-            <div className="flex w-full justify-center">
-              <Button
-                type="filled"
-                color="quatenary"
-                className={'mt-6 mb-6 w-11/12'}
-                onClick={() =>
-                  history.push(
-                    ROUTES.PRINCIPAL.PRACTITIONER_REMOVE_FROM_PROGRAMME,
-                    {
-                      practitionerId: practitionerUserId,
-                    }
-                  )
-                }
-              >
-                {renderIcon('TrashIcon', 'w-5 h-5 color-white text-white mr-2')}
-                <Typography
-                  type="body"
-                  className="mr-4"
-                  color="white"
-                  text={'Remove practitioner'}
-                />
-              </Button>
-            </div>
+              <Typography
+                className={'mr-1'}
+                type="buttonSmall"
+                color="secondary"
+                text="Call"
+              />
+              {renderIcon('PhoneIcon', 'h-4 w-4 text-secondary')}
+            </Button>
           )}
-        </>
+        </div>
+        <Divider dividerType="dashed" className="my-4" />
+        <div className={styles.infoWrapper}>
+          <div>
+            <Typography
+              text={'Email address'}
+              type="h5"
+              color="textMid"
+              className={'mt-1'}
+            />
+            <Typography
+              text={practitioner?.user?.email}
+              type="h4"
+              color="textDark"
+              className={'mt-1'}
+            />
+          </div>
+          {!!practitioner?.user?.email && (
+            <Button
+              size="small"
+              shape="normal"
+              color="secondaryAccent2"
+              type="filled"
+              onClick={() => window.open(`mailto:${practitioner?.user?.email}`)}
+            >
+              <Typography
+                className={'mr-1'}
+                type="buttonSmall"
+                color="secondary"
+                text="Email"
+              />
+              {renderIcon('MailIcon', 'h-4 w-4 text-secondary')}
+            </Button>
+          )}
+        </div>
+        <Divider dividerType="dashed" className="my-4" />
+        <div className={styles.infoWrapper}>
+          <div>
+            <Typography
+              text={'Your notes'}
+              type="h4"
+              color="textDark"
+              className={'mt-1'}
+            />
+            {notes?.length > 0 ? (
+              <Typography
+                text={getLastNoteDate(notes)}
+                type="h5"
+                color="textMid"
+                className={'mt-1'}
+              />
+            ) : (
+              <Typography
+                text={'Add a note'}
+                type="h5"
+                color="textMid"
+                className={'mt-1'}
+              />
+            )}
+          </div>
+          <div>
+            <Button
+              size="small"
+              shape="normal"
+              color="quatenary"
+              type="filled"
+              onClick={() =>
+                history.push(ROUTES.PRINCIPAL.NOTES, {
+                  practitionerId: practitionerUserId,
+                })
+              }
+            >
+              <Typography
+                type="help"
+                color="white"
+                text="View"
+                className="ml-1"
+              />
+              {renderIcon('PlusIcon', styles.buttonIcon)}
+            </Button>
+          </div>
+          <Dialog
+            fullScreen
+            visible={createPractitionerNoteVisible}
+            position={DialogPosition.Middle}
+          >
+            <div className={styles.dialogContent}>
+              <CreateNote
+                userId={practitionerUserId || ''}
+                noteType={NoteTypeEnum.Unknown}
+                titleText={`Add a note to ${practitioner?.user?.firstName}'s profile`}
+                onBack={() => onCreatePractitionerNoteBack()}
+                onCreated={() => onCreatePractitionerNoteBack()}
+              />
+            </div>
+          </Dialog>
+        </div>
+        {!existingRemoval && (
+          <div className="flex w-full justify-center">
+            <Button
+              type="filled"
+              color="quatenary"
+              className={'mt-6 mb-6 w-11/12'}
+              onClick={() =>
+                isOnline
+                  ? history.push(
+                      ROUTES.PRINCIPAL.PRACTITIONER_REMOVE_FROM_PROGRAMME,
+                      {
+                        practitionerId: practitionerUserId,
+                      }
+                    )
+                  : showOfflineDialog()
+              }
+            >
+              {renderIcon('TrashIcon', 'w-5 h-5 color-white text-white mr-2')}
+              <Typography
+                type="body"
+                className="mr-4"
+                color="white"
+                text={'Remove practitioner'}
+              />
+            </Button>
+          </div>
+        )}
       </div>
       <Dialog
         stretch={true}

@@ -11,4 +11,5 @@ export type CelebrationCardProps = {
   secondaryTextColour?: Colours;
   backgroundColour: Colours;
   onDismiss?: () => void;
+  button?: React.ReactElement;
 };

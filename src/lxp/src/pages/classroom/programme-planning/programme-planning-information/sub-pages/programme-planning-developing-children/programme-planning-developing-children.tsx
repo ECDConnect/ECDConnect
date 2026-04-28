@@ -4,24 +4,28 @@ import { useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 import { staticDataSelectors } from '@/store/static-data';
 import { MoreInformation } from '@ecdlink/graphql';
-import InfoService from '@/services/InfoService/InfoService';
 import { useHistory } from 'react-router';
+import { useAppDispatch } from '@/store';
+import { informationThunkActions } from '@/store/content/information';
 
 export const ProgrammePlanningDevelopingChildren = () => {
   const [isLoading, setIsLoading] = useState(false);
   const languages = useSelector(staticDataSelectors.getLanguages);
   const [selectedLanguage, setSelectedLanguage] = useState('en-za');
   const [data, setData] = useState<MoreInformation[]>();
+  const appDispatch = useAppDispatch();
 
   const history = useHistory();
 
   useEffect(() => {
     setIsLoading(true);
-    new InfoService()
-      .getMoreInformation(
-        MoreInformationTypeEnum.DevelopingChildrenHolistically,
-        selectedLanguage
-      )
+    appDispatch(
+      informationThunkActions.getMoreInformation({
+        section: MoreInformationTypeEnum.DevelopingChildrenHolistically,
+        locale: selectedLanguage,
+      })
+    )
+      .unwrap()
       .then((info) => {
         setData(info);
         setIsLoading(false);

@@ -18,7 +18,6 @@ import {
   addPractitionerSchema,
   initialAddPractitionerValues,
 } from '@/schemas/practitioner/add-practitioner';
-import { PractitionerService } from '@/services/PractitionerService';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import {
@@ -46,6 +45,7 @@ import { userSelectors } from '@/store/user';
 import { classroomsActions, classroomsSelectors } from '@/store/classroom';
 import { useTenantModules } from '@/hooks/useTenantModules';
 import { useAppDispatch } from '@/store';
+import { practitionerThunkActions } from '@/store/practitioner';
 
 export const AddOrEditPractitioner = ({
   onSubmit,
@@ -145,16 +145,20 @@ export const AddOrEditPractitioner = ({
 
     if (userAuth && idNumber) {
       setIsLoading(true);
-      _practitioner = await new PractitionerService(
-        userAuth.auth_token
-      ).getPractitionerByIdNumber(idNumber);
+      _practitioner = await appDispatch(
+        practitionerThunkActions.getPractitionerByIdNumber({
+          idNumber: idNumber,
+        })
+      ).unwrap();
       setIsLoading(false);
     }
     if (userAuth && passport) {
       setIsLoading(true);
-      _practitioner = await new PractitionerService(
-        userAuth.auth_token
-      ).getPractitionerByIdNumber(passport);
+      _practitioner = await appDispatch(
+        practitionerThunkActions.getPractitionerByIdNumber({
+          idNumber: passport,
+        })
+      ).unwrap();
       setIsLoading(false);
     }
     return _practitioner;

@@ -27,10 +27,9 @@ import {
   practitionerThunkActions,
 } from '@/store/practitioner';
 import { useSelector } from 'react-redux';
-import { ClassroomGroupService } from '@/services/ClassroomGroupService';
 import { authSelectors } from '@/store/auth';
 import { userSelectors } from '@store/user';
-import { classroomsSelectors } from '@/store/classroom';
+import { classroomsSelectors, classroomsThunkActions } from '@/store/classroom';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
 import { useAppDispatch } from '@/store';
@@ -251,24 +250,21 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
   }, []);
 
   const submitReassignClass = async () => {
-    if (
-      userAuth?.auth_token &&
-      selectedDate &&
-      userData?.id &&
-      reassignedClassroomGroups?.length > 0
-    ) {
+    if (selectedDate && userData?.id && reassignedClassroomGroups?.length > 0) {
       reassignedClassroomGroups?.map(async (item) => {
         setIsLoading(true);
         if (item?.absenteeId) {
-          await new ClassroomGroupService(userAuth.auth_token).editAbsentee(
-            item?.absenteeId,
-            false,
-            item?.practitioner,
-            reasonPayload,
-            new Date(selectedDate),
-            endDate || new Date(selectedDate),
-            true,
-            principalOrFundaAppAdmin
+          await dispatch(
+            classroomsThunkActions.editAbsentee({
+              absenteeId: item?.absenteeId,
+              deleteAbsentee: false,
+              reassignedToPractitioner: item?.practitioner,
+              reason: reasonPayload,
+              absentDate: new Date(selectedDate),
+              absentDateEnd: endDate || new Date(selectedDate),
+              isRoleAssign: true,
+              roleAssignedToUser: principalOrFundaAppAdmin,
+            })
           );
 
           dispatch(practitionerThunkActions?.getAllPractitioners({})).unwrap();
@@ -282,19 +278,20 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
           return;
         }
         setIsLoading(true);
-        await new ClassroomGroupService(
-          userAuth.auth_token
-        ).updateReassignClassroomGroup(
-          practitioner,
-          item?.practitioner,
-          reasonPayload,
-          new Date(selectedDate),
-          userData?.id!,
-          item?.classroomId,
-          endDate || new Date(selectedDate),
-          '',
-          '',
-          principalOrFundaAppAdmin
+
+        await dispatch(
+          classroomsThunkActions.updateReassignClassroomGroup({
+            practitionerId: practitioner,
+            reassignedToPractitioner: item?.practitioner,
+            reason: reasonPayload,
+            absentDate: new Date(selectedDate),
+            loggedByUser: userData.id!,
+            classProgram: item?.classroomId,
+            absentDateEnd: endDate || new Date(selectedDate),
+            fromRole: '',
+            toRole: '',
+            roleAssignedToUser: principalOrFundaAppAdmin,
+          })
         );
       });
 
@@ -306,15 +303,17 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
         const absenteeId = allAbsenteeClasses?.[0].absenteeId;
         setIsLoading(true);
         if (absenteeId) {
-          await new ClassroomGroupService(userAuth.auth_token).editAbsentee(
-            absenteeId,
-            false,
-            practitioner2 || '',
-            reasonPayload,
-            new Date(selectedDate),
-            endDate || new Date(selectedDate),
-            true,
-            principalOrFundaAppAdmin
+          await dispatch(
+            classroomsThunkActions.editAbsentee({
+              absenteeId: absenteeId,
+              deleteAbsentee: false,
+              reassignedToPractitioner: practitioner2 || '',
+              reason: reasonPayload,
+              absentDate: new Date(selectedDate),
+              absentDateEnd: endDate || new Date(selectedDate),
+              isRoleAssign: true,
+              roleAssignedToUser: principalOrFundaAppAdmin,
+            })
           );
 
           await refreshClassroom();
@@ -328,18 +327,19 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
         }
 
         setIsLoading(true);
-        await new ClassroomGroupService(
-          userAuth.auth_token
-        ).updateReassignClassroomGroup(
-          practitioner,
-          practitioner2,
-          reasonPayload,
-          new Date(selectedDate),
-          userData?.id!,
-          '',
-          endDate || new Date(selectedDate),
-          '',
-          principalOrFundaAppAdmin
+        await dispatch(
+          classroomsThunkActions.updateReassignClassroomGroup({
+            practitionerId: practitioner,
+            reassignedToPractitioner: practitioner2,
+            reason: reasonPayload,
+            absentDate: new Date(selectedDate),
+            loggedByUser: userData.id!,
+            classProgram: '',
+            absentDateEnd: endDate || new Date(selectedDate),
+            fromRole: '',
+            toRole: '',
+            roleAssignedToUser: principalOrFundaAppAdmin,
+          })
         );
       }
     }

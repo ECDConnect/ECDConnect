@@ -302,6 +302,17 @@ export const GetPractitionerByUserId = gql`
         permissionNormalizedName
         permissionGrouping
       }
+      ecdRegistration {
+        id
+        subsidy
+        registrationType
+        challenges
+        challengesOtherReason
+        hasBronzeCertificate
+        hasSilverCertificate
+        hasGoldCertificate
+        problemDescription
+      }
     }
   }
 `;

@@ -42,16 +42,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
 
             var englishId = new Guid("9688cd08-adef-408c-9d34-5d75ae5c44df");
             var records = new List<StoryBookViewModel>();
-            var themeDayRecords = contentRepo.GetAll(ContentTypeConstants.ThemeDayId, englishId)
-                                     .Select(x => new GeneralThemeDaysViewModel(x))
-                                     .Where(x => x.TenantId.ToString() == TenantExecutionContext.Tenant.Id.ToString())
-                                     .Select(x => new ThemeDayViewModel(x.Id, x.StoryBook))
-                                     .Distinct()
-                                     .ToList();
-            var themeRecords = contentRepo.GetAll(ContentTypeConstants.ThemeId, englishId)
-                                     .Select(x => new ThemeNameDaysViewModel(x))
-                                     .Where(x => x.TenantId.ToString() == TenantExecutionContext.Tenant.Id.ToString())
-                                     .ToList();
+
+            // Use targeted lean queries instead of full GetAll calls — loads only the two
+            // fields needed for link annotation rather than all content values per record.
+            var themeDayLinks = contentRepo.GetThemeDayActivityLinks(englishId);
+            var themeDayRecords = themeDayLinks
+                .Where(x => x.FieldName == "storyBook")
+                .Select(x => new ThemeDayViewModel(x.ThemeDayId, x.ActivityId))
+                .Distinct()
+                .ToList();
+            var themeRecords = contentRepo.GetThemeNameDayLinks(englishId)
+                .Select(x => new ThemeNameDaysViewModel(x.Name, x.ThemeDays, x.TenantId))
+                .ToList();
 
             if (languageSearch.Count > 0)
             {
@@ -232,13 +234,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
             var englishId = new Guid("9688cd08-adef-408c-9d34-5d75ae5c44df");
             var records = new List<ActivityViewModel>();
 
-            var themeDayRecords = contentRepo.GetAll(ContentTypeConstants.ThemeDayId, englishId)
-                                    .Select(x => new GeneralThemeDaysViewModel(x))
-                                    .Where(x => x.TenantId.ToString() == TenantExecutionContext.Tenant.Id.ToString()).ToList();
-            var themeRecords = contentRepo.GetAll(ContentTypeConstants.ThemeId, englishId)
-                                     .Select(x => new ThemeNameDaysViewModel(x))
-                                     .Where(x => x.TenantId.ToString() == TenantExecutionContext.Tenant.Id.ToString())
-                                     .ToList();
+            // Use targeted lean queries instead of full GetAll calls — loads only the
+            // link fields needed for annotation rather than all content values per record.
+            var themeDayLinks = contentRepo.GetThemeDayActivityLinks(englishId);
+            var themeDayRecords = themeDayLinks
+                .GroupBy(x => x.ThemeDayId)
+                .Select(g => new GeneralThemeDaysViewModel(
+                    id: g.Key,
+                    tenantId: TenantExecutionContext.Tenant.Id.ToString(),
+                    storyBook: g.FirstOrDefault(x => x.FieldName == "storyBook").ActivityId ?? "",
+                    storyActivity: g.FirstOrDefault(x => x.FieldName == "storyActivity").ActivityId ?? "",
+                    smallGroupActivity: g.FirstOrDefault(x => x.FieldName == "smallGroupActivity").ActivityId ?? "",
+                    largeGroupActivity: g.FirstOrDefault(x => x.FieldName == "largeGroupActivity").ActivityId ?? ""))
+                .ToList();
+            var themeRecords = contentRepo.GetThemeNameDayLinks(englishId)
+                .Select(x => new ThemeNameDaysViewModel(x.Name, x.ThemeDays, x.TenantId))
+                .ToList();
 
 
             var smallActivityRecords = themeDayRecords.Select(x => new ThemeDayViewModel(x.Id, x.SmallGroupActivity)).Distinct().ToList();

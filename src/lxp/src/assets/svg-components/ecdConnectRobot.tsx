@@ -9,7 +9,7 @@ const ecdConnectRobot = (props: React.SVGProps<SVGSVGElement>) => (
     xmlns="http://www.w3.org/2000/svg"
     {...props}
   >
-    <g clip-path="url(#clip0_4979_1279)">
+    <g clipPath="url(#clip0_4979_1279)">
       <path
         d="M47.6166 110.581H39.7812V135.17H47.6166V110.581Z"
         fill="#83BB26"
@@ -193,8 +193,8 @@ const ecdConnectRobot = (props: React.SVGProps<SVGSVGElement>) => (
       <path
         d="M47.0664 45.4232C47.7537 49.1779 52.5191 51.5132 57.7427 50.5974C62.9663 49.6816 66.6777 45.8811 66.0363 42.0806"
         stroke="#FF2180"
-        stroke-width="3"
-        stroke-linecap="round"
+        strokeWidth="3"
+        strokeLinecap="round"
       />
     </g>
     <defs>
@@ -206,10 +206,10 @@ const ecdConnectRobot = (props: React.SVGProps<SVGSVGElement>) => (
         gradientUnits="userSpaceOnUse"
         gradientTransform="translate(47.2677 34.8212) rotate(-5.49622) scale(6.81811 21.5898)"
       >
-        <stop stop-color="white" />
-        <stop offset="0.53" stop-color="#FCFCFC" />
-        <stop offset="0.94" stop-color="#F2F2F2" />
-        <stop offset="1" stop-color="#F0F0F0" />
+        <stop stopColor="white" />
+        <stop offset="0.53" stopColor="#FCFCFC" />
+        <stop offset="0.94" stopColor="#F2F2F2" />
+        <stop offset="1" stopColor="#F0F0F0" />
       </radialGradient>
       <radialGradient
         id="paint1_radial_4979_1279"
@@ -219,8 +219,8 @@ const ecdConnectRobot = (props: React.SVGProps<SVGSVGElement>) => (
         gradientUnits="userSpaceOnUse"
         gradientTransform="translate(63.505 30.5959) rotate(-5.4962) scale(2.60722 12.0839)"
       >
-        <stop stop-color="#51A87C" />
-        <stop offset="1" stop-color="#52AA7D" />
+        <stop stopColor="#51A87C" />
+        <stop offset="1" stopColor="#52AA7D" />
       </radialGradient>
       <clipPath id="clip0_4979_1279">
         <rect width="112" height="143" fill="white" />

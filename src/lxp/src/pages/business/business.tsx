@@ -11,6 +11,8 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
+import { useSelector } from 'react-redux';
+import { practitionerSelectors } from '@/store/practitioner';
 import { ClassDashboardRouteState } from './business.types';
 import { Money } from './money/money';
 import { Walkthrough } from './components/statements-walkthrough';
@@ -20,6 +22,8 @@ import { NavigationNames } from '../navigation';
 import PractitionersList from '../classroom/class-dashboard/practitioners/practitioners-list/practitioners-list';
 import { MoreInformationTypeEnum } from '@ecdlink/core';
 import { Resources } from './components/resources/resources';
+import { RegistrationLanding } from './registration/maintain-registration/registration-landing';
+import ROUTES from '@/routes/routes';
 
 export const Business: React.FC = () => {
   const history = useHistory();
@@ -32,6 +36,7 @@ export const Business: React.FC = () => {
   const appDispatch = useAppDispatch();
   const [currentTab, setCurrentTab] = useState<TabItem>();
   const { isOnline } = useOnlineStatus();
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   const backToDashboard = () => {
     history.push('/');
@@ -58,6 +63,12 @@ export const Business: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTabIndex]);
 
+  useEffect(() => {
+    if (state?.activeTabIndex !== undefined) {
+      setSelectedTabIndex(state.activeTabIndex);
+    }
+  }, [state?.activeTabIndex]);
+
   const goBackFromResources = () => {
     setSelectedTabIndex(previousTabIndex!);
   };
@@ -74,6 +85,11 @@ export const Business: React.FC = () => {
       child: <Money />,
     },
     {
+      title: NavigationNames.Business.Registration,
+      initActive: true,
+      child: <RegistrationLanding />,
+    },
+    {
       title: NavigationNames.Business.Resources,
       initActive: false,
       child: (
@@ -86,6 +102,10 @@ export const Business: React.FC = () => {
 
   const setTabSelected = (tabIndex: number) => {
     setPreviousTabIndex(selectedTabIndex);
+    if (tabIndex === 2 && practitioner?.ecdRegistration == null) {
+      history.push(ROUTES.BUSINESS_REGISTRATION);
+      return;
+    }
     setSelectedTabIndex(tabIndex);
   };
 

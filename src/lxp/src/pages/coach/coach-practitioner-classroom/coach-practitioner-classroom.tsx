@@ -15,20 +15,21 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './coach-practitioner-classroom.styles';
 import ROUTES from '@routes/routes';
 import { childrenSelectors, childrenThunkActions } from '@store/children';
-import { practitionerSelectors } from '@/store/practitioner';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@store';
 import { ChildrenPerAgeGroup } from './components/childrenPerAgeGroup/childrenPerAgeGroup';
 import { ClassroomAttendance } from './components/classroom-attendance/classroom-attendance';
-import { authSelectors } from '@/store/auth';
-import { PractitionerService } from '@/services/PractitionerService';
-import { ClassroomGroupService } from '@/services/ClassroomGroupService';
 import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
 import { ContactPractitioner } from './components/contact-practitioner/contact-practitioner';
 import { WorkflowStatusEnum } from '@ecdlink/graphql';
 import { useStaticData } from '@hooks/useStaticData';
 import { useTenant } from '@/hooks/useTenant';
 import { useTenantModules } from '@/hooks/useTenantModules';
+import { classroomsThunkActions } from '@/store/classroom';
 
 export const CoachPractitionerClassroom: React.FC = () => {
   const history = useHistory();
@@ -36,7 +37,6 @@ export const CoachPractitionerClassroom: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const dispatch = useAppDispatch();
 
-  const userAuth = useSelector(authSelectors.getAuthUser);
   const tenant = useTenant();
   const { attendanceEnabled } = useTenantModules();
   const isWhiteLabel = tenant?.isWhiteLabel;
@@ -98,9 +98,8 @@ export const CoachPractitionerClassroom: React.FC = () => {
   const [isContactDialogOpen, setIsContactDialogOpen] = useState(false);
 
   // Fetch attendance metrics
-  // Fetch attendance metrics
   useEffect(() => {
-    if (!userAuth?.auth_token || !practitionerUserId) return;
+    if (!practitionerUserId) return;
 
     const today = new Date();
     const firstDayPrevMonth = new Date(
@@ -110,23 +109,37 @@ export const CoachPractitionerClassroom: React.FC = () => {
     );
     const lastDayPrevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
 
-    new ClassroomGroupService(userAuth.auth_token)
-      .getClassAttendanceMetricsByUser(
-        practitionerUserId,
-        firstDayPrevMonth,
-        lastDayPrevMonth
-      )
+    dispatch(
+      classroomsThunkActions.getClassAttendanceMetricsByUser({
+        userId: practitionerUserId,
+        startMonth: firstDayPrevMonth,
+        endMonth: lastDayPrevMonth,
+      })
+    )
+      .unwrap()
       .then(setClassMetrics);
-  }, [userAuth?.auth_token, practitionerUserId]);
+  }, [practitionerUserId]);
 
   // Fetch action items
   useEffect(() => {
-    if (!userAuth?.auth_token || !practitionerUserId) return;
+    if (!practitionerUserId) return;
 
-    new PractitionerService(userAuth.auth_token)
-      .classroomActionItems(practitionerUserId)
-      .then(setActionItems);
-  }, [userAuth?.auth_token, practitionerUserId]);
+    const fetchActionItems = async () => {
+      try {
+        const result = await dispatch(
+          practitionerThunkActions.getClassroomActionItems({
+            userId: practitionerUserId,
+          })
+        ).unwrap();
+
+        setActionItems(result);
+      } catch (error) {
+        console.error('Failed to fetch action items:', error);
+      }
+    };
+
+    fetchActionItems();
+  }, [dispatch, practitionerUserId, setActionItems]);
 
   // Load children
   useEffect(() => {

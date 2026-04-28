@@ -20,6 +20,7 @@ import { useAppDispatch } from '@/store';
 import {
   practitionerActions,
   practitionerSelectors,
+  practitionerThunkActions,
 } from '@/store/practitioner';
 import {
   ConfirmPractitionersSteps,
@@ -31,8 +32,6 @@ import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
 import { classroomsSelectors } from '@/store/classroom';
 import { useTenant } from '@/hooks/useTenant';
 import { LocalStorageKeys } from '@ecdlink/core';
-import { PractitionerService } from '@/services/PractitionerService';
-import { authSelectors } from '@/store/auth';
 import { AddNewPractitionerModel } from '../add-practitioner/add-practitioner.types';
 
 export interface StackListItems extends ActionListDataItem {
@@ -52,7 +51,6 @@ export default function ConfirmPractitioners({
   >;
 }) {
   const appDispatch = useAppDispatch();
-  const userAuth = useSelector(authSelectors.getAuthUser);
   const tenant = useTenant();
   const appName = tenant?.tenant?.applicationName;
   const practitionersForPrincipal = useSelector(
@@ -89,9 +87,11 @@ export default function ConfirmPractitioners({
 
   const handleInvitingPractitioner = useCallback(async () => {
     setIsLoadingInvitingPractitioner(true);
-    const _practitioner: any = await new PractitionerService(
-      userAuth?.auth_token!
-    ).getPractitionerByIdNumber(inviTePractitionerIdNumber!);
+    const _practitioner: any = await appDispatch(
+      practitionerThunkActions.getPractitionerByIdNumber({
+        idNumber: inviTePractitionerIdNumber!,
+      })
+    ).unwrap();
 
     setInvitingPractitioner({
       userId: _practitioner?.appUser?.id,

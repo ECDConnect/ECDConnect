@@ -211,7 +211,12 @@ export const CompletePublishedForm: React.FC<CompletePublishedFormProps> = ({
     if (isInListView) {
       return (
         <div>
-          <Typography type="h5" text={currentStepData!.name} />
+          <Typography
+            type="h2"
+            text={currentStepData!.name}
+            color="textDark"
+            className="semi-bold"
+          />
           {currentStepData!.description && (
             <Alert type="info" title={currentStepData!.description} />
           )}
@@ -221,40 +226,35 @@ export const CompletePublishedForm: React.FC<CompletePublishedFormProps> = ({
               multiInstances[currentStepData!.id].map((instance, idx) => {
                 const metrics = computeClassroomMetrics(instance.answers || []);
                 return (
-                  <div
-                    key={instance.id}
-                    className="flex items-center justify-between"
-                  >
-                    <div>
-                      <Typography
-                        type="body"
-                        text={`Classroom ${idx + 1}: ${
-                          metrics?.capacity
-                        } children`}
-                      />{' '}
-                      {metrics && (
-                        <div className="mt-1">
+                  <div key={instance.id} className="w-full">
+                    <Typography
+                      type="body"
+                      text={`Classroom ${idx + 1}: ${
+                        metrics?.capacity
+                      } children`}
+                    />
+                    {metrics && (
+                      <>
+                        <div className="flex items-center justify-between">
                           <Typography
                             type="small"
                             color="textLight"
                             text={`${metrics.capacity} children; ${metrics.shortSideCm}cm x ${metrics.longSideCm}cm; ${metrics.assistants} assistants`}
                           />
-                          <Divider dividerType="dashed" className="my-2" />
+                          <Button
+                            iconPosition="end"
+                            icon="PencilIcon"
+                            type="filled"
+                            size="small"
+                            textColor="secondary"
+                            text="Edit"
+                            color="secondaryAccent2"
+                            onClick={() => setEditingInstanceId(instance.id)}
+                          />
                         </div>
-                      )}
-                    </div>
-                    <div className="space-x-3">
-                      <Button
-                        iconPosition="end"
-                        icon="PencilIcon"
-                        type="filled"
-                        size="small"
-                        textColor="secondary"
-                        text="Edit"
-                        color="secondaryAccent2"
-                        onClick={() => setEditingInstanceId(instance.id)}
-                      />
-                    </div>
+                        <Divider dividerType="dashed" className="my-2" />
+                      </>
+                    )}
                   </div>
                 );
               })}
@@ -277,7 +277,7 @@ export const CompletePublishedForm: React.FC<CompletePublishedFormProps> = ({
               }));
               setEditingInstanceId(newId);
             }}
-            className="mb-6 w-5/12"
+            className="mb-6 w-7/12"
           />
         </div>
       );
@@ -352,25 +352,28 @@ export const CompletePublishedForm: React.FC<CompletePublishedFormProps> = ({
       return (
         <>
           <Typography
-            className="mt-3"
-            type="h4"
+            className="semi-bold mt-3"
+            type="h2"
             text={`About the ${assessmentFormData?.name} form`}
           />
           <Typography
-            className=""
+            className="semi-bold"
             type="h4"
+            color="textMid"
             text={`${format(today, 'dd MMMM yyyy')}`}
           />
           <Divider dividerType="dashed" className="my-2" />
           <Typography
             className="mt-3"
             type="body"
+            color="textMid"
             text={`${assessmentFormData?.description}`}
           />
           <div className="mt-7 mb-7 flex">
             <Typography
-              className="mt-3"
-              type="body"
+              type="h4"
+              className="semi-bold m-3"
+              color="textDark"
               text={`This content is powered by:`}
             />
             {assessmentFormData?.logoUrl && (
@@ -426,7 +429,7 @@ export const CompletePublishedForm: React.FC<CompletePublishedFormProps> = ({
       renderOverflow
       onClose={() => onBack(false)}
     >
-      <div className="w-12/12 ml-4 mr-4 mt-5">
+      <div className="flex h-full w-full flex-col bg-white p-4">
         {renderStepContent()}
 
         {!isInEditView && (
@@ -434,7 +437,7 @@ export const CompletePublishedForm: React.FC<CompletePublishedFormProps> = ({
             <Button
               onClick={handleNext}
               disabled={!isStepComplete || isSubmitting}
-              className="w-full"
+              className="mt-auto w-full"
               size="normal"
               color="quatenary"
               type="filled"
@@ -447,7 +450,7 @@ export const CompletePublishedForm: React.FC<CompletePublishedFormProps> = ({
             {isMultiStep && (
               <Button
                 onClick={handleNext}
-                className="mt-4 w-full"
+                className="mt-2 w-full"
                 size="normal"
                 color="quatenary"
                 textColor="quatenary"

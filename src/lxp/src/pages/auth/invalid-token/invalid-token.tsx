@@ -3,7 +3,8 @@ import { useHistory, useLocation } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { ExclamationCircleIcon } from '@heroicons/react/solid';
 import { useQueryParams } from '@ecdlink/core';
-import { AuthService } from '@/services/AuthService';
+import { useAppDispatch } from '@/store';
+import { authThunkActions } from '@/store/auth';
 
 interface InvalidTokenProps {
   closeAction: (item: boolean) => void;
@@ -15,6 +16,7 @@ export const InvalidToken: React.FC<InvalidTokenProps> = ({
   username,
 }) => {
   const history = useHistory();
+  const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
   const location = useLocation();
   const queryParams = useQueryParams(location.search);
@@ -22,7 +24,12 @@ export const InvalidToken: React.FC<InvalidTokenProps> = ({
 
   const reloadView = async () => {
     if (authToken) {
-      await new AuthService().SendNewInvitation(username, authToken);
+      await appDispatch(
+        authThunkActions.sendNewInvitation({
+          username: username,
+          token: authToken,
+        })
+      );
     }
     closeAction(false);
     history.push('/');

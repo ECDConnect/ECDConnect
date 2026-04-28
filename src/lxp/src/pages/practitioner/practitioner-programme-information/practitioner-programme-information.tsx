@@ -20,7 +20,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useCallback, useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useSelector } from 'react-redux';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
 import { useDocuments } from '@hooks/useDocuments';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
@@ -40,8 +40,10 @@ import * as styles from './practitioner-programme-information.styles';
 import ROUTES from '@routes/routes';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { Colours } from '@ecdlink/ui';
-import { practitionerSelectors } from '@/store/practitioner';
-import { PractitionerService } from '@/services/PractitionerService';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
 import { authSelectors } from '@/store/auth';
 import { EditAddress } from './edit-address/edit-address';
 import { ClassroomDto } from '@/models/classroom/classroom.dto';
@@ -62,7 +64,6 @@ export const PractitionerProgrammeInformation: React.FC = () => {
   const tenant = useTenant();
   const isOpenAccess = tenant?.isOpenAccess;
   const isTrialPeriod = useIsTrialPeriod();
-  const location = useLocation();
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
 
@@ -193,9 +194,11 @@ export const PractitionerProgrammeInformation: React.FC = () => {
     let practitionerColleagues: PractitionerColleagues[] = [];
 
     if (userAuth) {
-      practitionerColleagues = await new PractitionerService(
-        userAuth.auth_token
-      ).practitionerColleagues(user?.id!);
+      practitionerColleagues = await appDispatch(
+        practitionerThunkActions.getPractitionerColleagues({
+          userId: user?.id!,
+        })
+      ).unwrap();
     }
 
     setOtherColleagues(practitionerColleagues);
