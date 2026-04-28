@@ -277,7 +277,7 @@ export const CompletePublishedForm: React.FC<CompletePublishedFormProps> = ({
               }));
               setEditingInstanceId(newId);
             }}
-            className="mb-6 w-5/12"
+            className="mb-6 w-7/12"
           />
         </div>
       );
