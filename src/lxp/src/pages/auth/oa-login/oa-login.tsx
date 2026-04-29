@@ -95,8 +95,8 @@ export const OaLogin: React.FC = () => {
   const isSslEnabled = window.location.protocol === 'https:';
 
   const googleContainerRef = useRef<HTMLDivElement>(null);
-  const [googleButtonWidth, setGoogleButtonWidth] = useState<number>(() =>
-    Math.min(window.innerWidth - 32, 400)
+  const [googleButtonWidth, setGoogleButtonWidth] = useState<number | null>(
+    null
   );
 
   useEffect(() => {
@@ -625,18 +625,19 @@ export const OaLogin: React.FC = () => {
           <div className="mb-6">
             {!!Config.googleClientId && (
               <div ref={googleContainerRef} className="mb-6 w-full">
-                <GoogleLogin
-                  key={googleButtonWidth}
-                  onSuccess={(credentialResponse) =>
-                    onGoogleLoginSuccess(credentialResponse)
-                  }
-                  onError={() => onGoogleLoginError()}
-                  type="standard"
-                  text="signin_with"
-                  logo_alignment="center"
-                  size="large"
-                  width={googleButtonWidth}
-                />
+                {googleButtonWidth !== null && (
+                  <GoogleLogin
+                    onSuccess={(credentialResponse) =>
+                      onGoogleLoginSuccess(credentialResponse)
+                    }
+                    onError={() => onGoogleLoginError()}
+                    type="standard"
+                    text="signin_with"
+                    logo_alignment="center"
+                    size="large"
+                    width={googleButtonWidth}
+                  />
+                )}
               </div>
             )}
             {!!Config.facebookAppId && isSslEnabled && (
