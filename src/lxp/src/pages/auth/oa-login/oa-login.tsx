@@ -113,10 +113,16 @@ export const OaLogin: React.FC = () => {
 
     const mutationObserver = new MutationObserver(() => {
       const iframe = el.querySelector('iframe');
+      console.log('MutationObserver fired, iframe found:', !!iframe);
+      console.log('Container offsetWidth:', el.offsetWidth);
+
       if (iframe) {
+        console.log('Iframe style before patch:', iframe.style.cssText);
         patchIframe(iframe);
-        // Watch for Google re-setting styles on the iframe itself
+        console.log('Iframe style after patch:', iframe.style.cssText);
+
         const iframeMutationObserver = new MutationObserver(() => {
+          console.log('Iframe style changed by Google, re-patching...');
           patchIframe(iframe);
         });
         iframeMutationObserver.observe(iframe, {
