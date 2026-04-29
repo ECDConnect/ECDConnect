@@ -814,9 +814,6 @@ namespace ECDLink.Api.CoreApi.Services
                     Id = Guid.NewGuid(),
                     Name = userName + "'s testing pre-school",
                     UserId = userId,
-                    NumberPractitioners = 0,
-                    NumberOfAssistants = 0,
-                    NumberOfOtherAssistants = 0,
                     IsDummySchool = true,
                     Hierarchy = practitioner.Hierarchy
                 });

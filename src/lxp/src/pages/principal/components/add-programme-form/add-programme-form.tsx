@@ -59,12 +59,6 @@ export const AddProgrammeForm: React.FC<{
       id: classroomId,
       name: programme?.name ?? '',
       isDummySchool: false,
-      numberPractitioners: programme?.smartStartPractitioners
-        ? +programme?.smartStartPractitioners
-        : 0,
-      numberOfOtherAssistants: programme?.nonSmartStartPractitioners
-        ? +programme?.nonSmartStartPractitioners
-        : 0,
       classroomImageUrl: '',
       principal: {
         email: user?.email!,
@@ -118,12 +112,6 @@ export const AddProgrammeForm: React.FC<{
       id: classroomId,
       name: programme?.name ?? '',
       isDummySchool: false,
-      numberPractitioners: programme?.smartStartPractitioners
-        ? +programme?.smartStartPractitioners
-        : 0,
-      numberOfOtherAssistants: programme?.nonSmartStartPractitioners
-        ? +programme?.nonSmartStartPractitioners
-        : 0,
       classroomImageUrl: '',
       siteAddress: classroom?.siteAddress!,
       principal: {

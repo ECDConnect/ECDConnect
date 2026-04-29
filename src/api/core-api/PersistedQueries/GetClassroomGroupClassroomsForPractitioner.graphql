@@ -18,9 +18,6 @@ query GetClassroomGroupClassroomsForPractitioner($userId: String) {
         }
       }
       name
-      numberPractitioners
-      numberOfAssistants
-      numberOfOtherAssistants
     }
     classProgrammes {
       id

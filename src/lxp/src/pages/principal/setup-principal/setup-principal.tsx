@@ -295,12 +295,6 @@ export const SetupPrincipal: React.FC = () => {
       classroomsThunkActions.upsertClassroomGroupProgrammes({})
     );
     await appDispatch(classroomsThunkActions.getClassroomGroups({}));
-    // Update classroom number of practitioners
-    appDispatch(
-      classroomsActions.updateClassroomNumberPractitioners(
-        principalPractitioners?.length ?? 0
-      )
-    );
     // Update classroom data
     await syncClassroom();
     // Update the principal data
