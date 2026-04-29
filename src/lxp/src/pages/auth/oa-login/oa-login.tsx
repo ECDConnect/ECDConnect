@@ -93,55 +93,6 @@ export const OaLogin: React.FC = () => {
 
   const isSslEnabled = window.location.protocol === 'https:';
 
-  const googleContainerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = googleContainerRef.current;
-    if (!el) return;
-
-    const patchIframe = (iframe: HTMLIFrameElement) => {
-      const containerWidth = el.offsetWidth;
-      const w = Math.min(containerWidth, 400);
-      iframe.style.cssText = iframe.style.cssText
-        .replace(/width:[^;]+;?/gi, '')
-        .replace(/margin:[^;]+;?/gi, '')
-        .replace(/left:[^;]+;?/gi, '');
-      iframe.style.setProperty('width', `${w}px`, 'important');
-      iframe.style.setProperty('margin', '0', 'important');
-      iframe.style.setProperty('left', '0', 'important');
-    };
-
-    const mutationObserver = new MutationObserver(() => {
-      const iframe = el.querySelector('iframe');
-      if (iframe) {
-        mutationObserver.disconnect(); // Stop watching for new iframes
-
-        patchIframe(iframe);
-
-        // Watch for Google resetting styles, but disconnect after first re-patch
-        let patchCount = 0;
-        const iframeMutationObserver = new MutationObserver(() => {
-          patchCount++;
-          if (patchCount > 5) {
-            // Google is looping — stop fighting it and just clip via CSS
-            iframeMutationObserver.disconnect();
-            return;
-          }
-          patchIframe(iframe);
-        });
-
-        iframeMutationObserver.observe(iframe, {
-          attributes: true,
-          attributeFilter: ['style'],
-        });
-      }
-    });
-
-    mutationObserver.observe(el, { childList: true, subtree: true });
-
-    return () => mutationObserver.disconnect();
-  }, []);
-
   const getDisplayErrorMessage = (
     loginError: LoginErrorEnum,
     loginType?: LoginType
@@ -660,16 +611,20 @@ export const OaLogin: React.FC = () => {
           <div className="mb-6">
             {!!Config.googleClientId && (
               <div
-                ref={googleContainerRef}
                 className="mb-6 w-full"
                 style={{
                   minHeight: '44px',
                   height: '44px',
                   overflow: 'hidden',
-                  position: 'relative',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
                 }}
               >
-                <div id="google-login-wrapper">
+                <div
+                  id="google-login-wrapper"
+                  style={{ width: '100%', maxWidth: '400px' }}
+                >
                   <GoogleLogin
                     onSuccess={(credentialResponse) =>
                       onGoogleLoginSuccess(credentialResponse)
@@ -679,6 +634,7 @@ export const OaLogin: React.FC = () => {
                     text="signin_with"
                     logo_alignment="center"
                     size="large"
+                    width={400}
                   />
                 </div>
               </div>
