@@ -110,6 +110,23 @@ export const OaLogin: React.FC = () => {
     }
   }, []);
 
+  useEffect(() => {
+    const updateWidth = () => {
+      if (googleContainerRef.current) {
+        const w = Math.min(
+          Math.floor(googleContainerRef.current.offsetWidth),
+          400
+        );
+        setGoogleButtonWidth(w);
+      }
+    };
+
+    updateWidth(); // initial
+
+    window.addEventListener('resize', updateWidth);
+    return () => window.removeEventListener('resize', updateWidth);
+  }, []);
+
   const getDisplayErrorMessage = (
     loginError: LoginErrorEnum,
     loginType?: LoginType
@@ -627,7 +644,11 @@ export const OaLogin: React.FC = () => {
         {!autoLogin && isOnline && (
           <div className="mb-6">
             {!!Config.googleClientId && (
-              <div ref={googleContainerRef} className="mb-6 w-full">
+              <div
+                ref={googleContainerRef}
+                className="mb-6 w-full"
+                style={{ minHeight: '44px' }}
+              >
                 {googleButtonWidth !== null && (
                   <GoogleLogin
                     onSuccess={(credentialResponse) =>
@@ -638,7 +659,7 @@ export const OaLogin: React.FC = () => {
                     text="signin_with"
                     logo_alignment="center"
                     size="large"
-                    width={googleButtonWidth ?? undefined}
+                    width={googleButtonWidth}
                   />
                 )}
               </div>
