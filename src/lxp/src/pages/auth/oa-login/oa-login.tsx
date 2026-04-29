@@ -104,7 +104,9 @@ export const OaLogin: React.FC = () => {
 
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        const w = Math.min(Math.floor(entry.contentRect.width), 400);
+        // const w = Math.min(Math.floor(entry.contentRect.width), 400);
+        // Subtract 20px to account for Google's -10px left/right margins on the iframe
+        const w = Math.min(Math.floor(entry.contentRect.width) - 20, 400);
         if (w > 0) setGoogleButtonWidth(w);
       }
     });
@@ -633,7 +635,7 @@ export const OaLogin: React.FC = () => {
               <div
                 ref={googleContainerRef}
                 className="mb-6 w-full"
-                style={{ minHeight: '44px' }}
+                style={{ minHeight: '44px', overflow: 'hidden' }}
               >
                 {googleButtonWidth !== null && (
                   <GoogleLogin
