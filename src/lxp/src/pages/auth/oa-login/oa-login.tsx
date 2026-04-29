@@ -619,8 +619,22 @@ export const OaLogin: React.FC = () => {
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
+                  border: '1px solid #dadce0',
+                  borderRadius: '4px',
+                  maxWidth: '400px',
+                  margin: '0 auto',
                 }}
               >
+                <style>{`
+                  #google-login-wrapper iframe {
+                    border: none !important;
+                    box-shadow: none !important;
+                  }
+                  #google-login-wrapper > div {
+                    box-shadow: none !important;
+                    border: none !important;
+                  }
+                `}</style>
                 <div
                   id="google-login-wrapper"
                   style={{ width: '100%', maxWidth: '400px' }}
