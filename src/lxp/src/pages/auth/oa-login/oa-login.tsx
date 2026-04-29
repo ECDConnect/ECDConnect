@@ -102,6 +102,14 @@ export const OaLogin: React.FC = () => {
     const patchIframe = (iframe: HTMLIFrameElement) => {
       const containerWidth = el.offsetWidth;
       const w = Math.min(containerWidth, 400);
+      console.log(
+        'patchIframe called - containerWidth:',
+        containerWidth,
+        'w:',
+        w
+      );
+
+      const before = iframe.style.cssText;
       iframe.style.cssText = iframe.style.cssText
         .replace(/width:[^;]+;?/gi, '')
         .replace(/margin:[^;]+;?/gi, '')
@@ -109,21 +117,54 @@ export const OaLogin: React.FC = () => {
       iframe.style.setProperty('width', `${w}px`, 'important');
       iframe.style.setProperty('margin', '0', 'important');
       iframe.style.setProperty('left', '0', 'important');
+
+      console.log('patchIframe before:', before);
+      console.log('patchIframe after:', iframe.style.cssText);
+      console.log(
+        'iframe.getBoundingClientRect().width after patch:',
+        iframe.getBoundingClientRect().width
+      );
     };
 
     const mutationObserver = new MutationObserver(() => {
       const iframe = el.querySelector('iframe');
-      if (iframe) {
-        mutationObserver.disconnect(); // Stop watching for new iframes
+      console.log('MutationObserver fired - iframe found:', !!iframe);
+      console.log('Container offsetWidth:', el.offsetWidth);
+      console.log(
+        'Container getBoundingClientRect:',
+        JSON.stringify(el.getBoundingClientRect())
+      );
 
+      if (iframe) {
+        mutationObserver.disconnect();
+        console.log('Patching iframe for first time...');
         patchIframe(iframe);
 
-        // Watch for Google resetting styles, but disconnect after first re-patch
         let patchCount = 0;
         const iframeMutationObserver = new MutationObserver(() => {
           patchCount++;
+          console.log(
+            `Iframe style changed by Google (patch #${patchCount}) - current style:`,
+            iframe.style.cssText
+          );
+          console.log(
+            'iframe.getBoundingClientRect().width:',
+            iframe.getBoundingClientRect().width
+          );
+
           if (patchCount > 5) {
-            // Google is looping — stop fighting it and just clip via CSS
+            console.log(
+              'Google is looping - disconnecting iframe observer, relying on overflow:hidden'
+            );
+            console.log('Final iframe style:', iframe.style.cssText);
+            console.log(
+              'Final iframe getBoundingClientRect:',
+              JSON.stringify(iframe.getBoundingClientRect())
+            );
+            console.log(
+              'Container getBoundingClientRect:',
+              JSON.stringify(el.getBoundingClientRect())
+            );
             iframeMutationObserver.disconnect();
             return;
           }
