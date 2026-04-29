@@ -7,6 +7,7 @@ using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Helpers;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -230,18 +231,32 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] ApplicationUserManager userManager,
             [Service] ApplicationRoleManager roleManager,
             [Service] IHttpContextAccessor httpContextAccessor,
+            [Service] HierarchyEngine engine,
             IGenericRepositoryFactory repoFactory,
             string userId)
         {
+            var currentUserId = httpContextAccessor.HttpContext.GetUserId().Value;
+
             if (string.IsNullOrEmpty(userId))
             {
-                userId = httpContextAccessor.HttpContext.GetUserId().ToString();
+                userId = currentUserId.ToString();
             }
             var user = await userManager.FindByIdAsync(userId);
 
             if (user is null)
             {
                 return default(ApplicationUser);
+            }
+
+            if (user.Id != currentUserId)
+            {
+                var currentUser = await userManager.FindByIdAsync(currentUserId.ToString());
+                var currentUserIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR)
+                    || await userManager.IsInRoleAsync(currentUser, Roles.SUPER_ADMINISTRATOR);
+                if (!currentUserIsAdmin && !engine.IsCallerAuthorizedForUser(currentUserId, user.Id))
+                {
+                    throw new UnauthorizedAccessException();
+                }
             }
 
             var roles = await (new ObjectTypes.ApplicationUserExtension()).GetRolesAsync(user, roleManager, userManager);

@@ -42,19 +42,22 @@ using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 
 namespace EcdLink.Api.CoreApi
 {
-  using EcdLink.Api.CoreApi.Configuration;
-  using EcdLink.Api.CoreApi.GraphApi.Models;
+    using EcdLink.Api.CoreApi.Configuration;
+    using EcdLink.Api.CoreApi.GraphApi.Models;
     using EcdLink.Api.CoreApi.Middleware;
     using Microsoft.ApplicationInsights;
     using Microsoft.ApplicationInsights.Extensibility;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.HttpOverrides;
     using Microsoft.AspNetCore.ResponseCompression;
-  using Microsoft.Extensions.Options;
-  using System;
+    using Microsoft.Extensions.Options;
+    using System;
     using System.IO;
     using System.Threading.Tasks;
 
@@ -75,7 +78,8 @@ namespace EcdLink.Api.CoreApi
                 //    corsHeaders[pair.Key] = pair.Value;
                 //}
 
-                httpContext.Response.OnStarting(o => {
+                httpContext.Response.OnStarting(o =>
+                {
                     var ctx = (HttpContext)o;
                     var headers = ctx.Response.Headers;
                     Console.WriteLine("{0}: {1} {2} {3}", timestamp, path, ctx.Response.Headers.AccessControlAllowOrigin, origin);
@@ -119,6 +123,25 @@ namespace EcdLink.Api.CoreApi
             ConfigureTenancy(services);
 
             services.AddHttpContextAccessor();
+            services.AddRateLimiter(options =>
+            {
+                options.AddFixedWindowLimiter("GraphQLPolicy", opt =>
+                {
+                    opt.PermitLimit = 200;
+                    opt.Window = TimeSpan.FromMinutes(1);
+                    opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                    opt.QueueLimit = 0;
+                });
+
+                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+                options.OnRejected = async (context, token) =>
+                {
+                    context.HttpContext.Response.ContentType = "application/json";
+                    await context.HttpContext.Response.WriteAsync(
+                        "{\"errors\":[{\"message\":\"Too many requests. Please try again later.\"}]}", token);
+                };
+            });
 
             // We are explicitly setting these because of CORS issues on .datafree.co
             var corsAllowedDomainsEnv = System.Environment.GetEnvironmentVariable("CORS_ALLOWED_DOMAINS");
@@ -183,7 +206,7 @@ namespace EcdLink.Api.CoreApi
 
             // if (Environment.IsDevelopment())
             // {
-                DevStartup.ConfigureLocalDevServices(services, Configuration, Environment);
+            DevStartup.ConfigureLocalDevServices(services, Configuration, Environment);
             // }
 
             services.AddTransient<IOpenAccessValidator<ChildOpenAccessValidator>, ChildOpenAccessValidator>();
@@ -260,12 +283,20 @@ namespace EcdLink.Api.CoreApi
             }
             else
             {
-                services.AddSingleton<ITelemetryService, Telemetry.TelemetryService>(serviceProvider => {
+                services.AddSingleton<ITelemetryService, Telemetry.TelemetryService>(serviceProvider =>
+                {
                     return new Telemetry.TelemetryService(null);
                 });
             }
 
             ECDLink.AutomatedJobs.AutomatedJobsStartup.ConfigureServices(services, Configuration);
+
+            services.AddHsts(options =>
+            {
+                options.MaxAge = TimeSpan.FromDays(365);
+                options.IncludeSubDomains = true;
+                options.Preload = true;
+            });
 
             // Bind custom compression settings
             services.Configure<ResponseCompressionSettings>(Configuration.GetSection("ResponseCompression"));
@@ -303,6 +334,17 @@ namespace EcdLink.Api.CoreApi
 
                 app.UseDeveloperExceptionPage();
             }
+            else
+            {
+                app.UseHsts();
+            }
+
+            app.Use(async (context, next) =>
+            {
+                context.Response.Headers["X-Frame-Options"] = "SAMEORIGIN";
+                context.Response.Headers["Content-Security-Policy"] = "frame-ancestors 'self'";
+                await next();
+            });
 
             // SSRF + long-path protection (blocks the 127.0.0.1 attack immediately)
             app.Use(async (context, next) =>
@@ -352,7 +394,11 @@ namespace EcdLink.Api.CoreApi
             {
                 app.UseResponseCompression();
             }
-
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            });
+            app.UseRateLimiter();
             app.UseCors("CorsPolicy");
             app.UseCookiePolicy();
             app.UseRouting();

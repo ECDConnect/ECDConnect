@@ -46,7 +46,7 @@ namespace ECDLink.EGraphQL
 
             var builder = services
               .AddGraphQLServer(maxAllowedRequestSize: maxRequestSize)
-              //.AddErrorFilter<Diagnostic.ErrorFilter>(services => new Diagnostic.ErrorFilter(services))
+              .AddErrorFilter<Diagnostic.ErrorFilter>(services => new Diagnostic.ErrorFilter(services))
               .AddDiagnosticEventListener<Diagnostic.AppServerDiagnosticEventListener>(services => new Diagnostic.AppServerDiagnosticEventListener(services))
               .AddDiagnosticEventListener<Diagnostic.AppExecutionDiagnosticEventListener>(services => new Diagnostic.AppExecutionDiagnosticEventListener(services))
               //.AddDiagnosticEventListener<Diagnostic.AppDataLoaderDiagnosticEventListener>(services => new Diagnostic.AppDataLoaderDiagnosticEventListener(services))
@@ -93,7 +93,8 @@ namespace ECDLink.EGraphQL
         {
             app.UseEndpoints(endpoints =>
              {
-                 endpoints.MapGraphQL().WithOptions(new HotChocolate.AspNetCore.GraphQLServerOptions()
+                 endpoints.MapGraphQL().RequireRateLimiting("GraphQLPolicy")
+                 .WithOptions(new HotChocolate.AspNetCore.GraphQLServerOptions()
                  {
                      Tool = { Enable = graphQLPlaygroundEnabled }
                  });

@@ -281,7 +281,7 @@ namespace ECDLink.Security.Api
                 await _notificationManager.SendOAWLAuthenticationCodeAsync(user, token);
             }
 
-            return new OkObjectResult(token);
+            return Ok();
         }
 
         private static string replaceIfNotNullOrWhiteSpace(string original, string @new)
@@ -304,15 +304,25 @@ namespace ECDLink.Security.Api
                     Error = "Invalid username"
                 });
             }
+            if (await _userManager.IsLockedOutAsync(user))
+            {
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 5,
+                    Error = "Account temporarily locked. Please request a new code."
+                });
+            }
             var tokenVerification = await _securityCodeManager.VerifyTokenAsync(user, verifyModel.Token);
             if (!tokenVerification)
             {
+                await _userManager.AccessFailedAsync(user);
                 return BadRequest(new FailedVerificationModel
                 {
                     ErrorCode = 2,
                     Error = "Invalid token"
                 });
             }
+            await _userManager.ResetAccessFailedCountAsync(user);
             // archive message records linked to user's number
             var messages = _messageRepo.GetAll().Where(x => x.IsActive && (x.To == user.PhoneNumber || x.To == user.PendingPhoneNumber) 
                                                         && x.MessageTemplateType == TemplateTypeConstants.OAWLAuthCode).ToList();
