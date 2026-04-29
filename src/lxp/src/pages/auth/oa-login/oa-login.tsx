@@ -18,7 +18,7 @@ import {
   DialogPosition,
   ActionModal,
 } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory, useLocation } from 'react-router';
 import * as styles from './oa-login.styles';
@@ -93,6 +93,15 @@ export const OaLogin: React.FC = () => {
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   const isSslEnabled = window.location.protocol === 'https:';
+
+  const googleContainerRef = useRef<HTMLDivElement>(null);
+  const [googleButtonWidth, setGoogleButtonWidth] = useState<number>(300);
+
+  useEffect(() => {
+    if (googleContainerRef.current) {
+      setGoogleButtonWidth(googleContainerRef.current.offsetWidth);
+    }
+  }, []);
 
   const getDisplayErrorMessage = (
     loginError: LoginErrorEnum,
@@ -611,7 +620,7 @@ export const OaLogin: React.FC = () => {
         {!autoLogin && isOnline && (
           <div className="mb-6">
             {!!Config.googleClientId && (
-              <div className="mb-6 flex justify-center">
+              <div ref={googleContainerRef} className="mb-6 w-full">
                 <GoogleLogin
                   onSuccess={(credentialResponse) =>
                     onGoogleLoginSuccess(credentialResponse)
@@ -621,12 +630,12 @@ export const OaLogin: React.FC = () => {
                   text="signin_with"
                   logo_alignment="center"
                   size="large"
-                  width={250}
+                  width={googleButtonWidth}
                 />
               </div>
             )}
             {!!Config.facebookAppId && isSslEnabled && (
-              <div className="mb-6 flex justify-center">
+              <div className="mb-6 w-full">
                 <FacebookLogin
                   onSuccess={(response: any) =>
                     onFacebookLoginSuccess(response)
@@ -634,8 +643,7 @@ export const OaLogin: React.FC = () => {
                   onError={(error: Error) => onFacebookLoginError(error)}
                   fields={['id', 'name', 'picture']}
                   scope={['public_profile']}
-                  //className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                  className="flex h-10 items-center space-x-2 rounded-lg bg-blue-600 px-6 py-3 text-white transition-colors hover:bg-blue-700"
+                  className="flex h-10 w-full items-center justify-center space-x-2 rounded-lg bg-blue-600 px-6 py-3 text-white transition-colors hover:bg-blue-700"
                   disabled={isLoading}
                 >
                   <svg
