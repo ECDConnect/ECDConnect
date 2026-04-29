@@ -93,96 +93,6 @@ export const OaLogin: React.FC = () => {
 
   const isSslEnabled = window.location.protocol === 'https:';
 
-  const googleContainerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = googleContainerRef.current;
-    if (!el) return;
-
-    const patchIframe = (iframe: HTMLIFrameElement) => {
-      const containerWidth = el.offsetWidth;
-      const w = Math.min(containerWidth, 400);
-      console.log(
-        'patchIframe called - containerWidth:',
-        containerWidth,
-        'w:',
-        w
-      );
-
-      const before = iframe.style.cssText;
-      iframe.style.cssText = iframe.style.cssText
-        .replace(/width:[^;]+;?/gi, '')
-        .replace(/margin:[^;]+;?/gi, '')
-        .replace(/left:[^;]+;?/gi, '');
-      iframe.style.setProperty('width', `${w}px`, 'important');
-      iframe.style.setProperty('margin', '0', 'important');
-      iframe.style.setProperty('left', '0', 'important');
-
-      console.log('patchIframe before:', before);
-      console.log('patchIframe after:', iframe.style.cssText);
-      console.log(
-        'iframe.getBoundingClientRect().width after patch:',
-        iframe.getBoundingClientRect().width
-      );
-    };
-
-    const mutationObserver = new MutationObserver(() => {
-      const iframe = el.querySelector('iframe');
-      console.log('MutationObserver fired - iframe found:', !!iframe);
-      console.log('Container offsetWidth:', el.offsetWidth);
-      console.log(
-        'Container getBoundingClientRect:',
-        JSON.stringify(el.getBoundingClientRect())
-      );
-
-      if (iframe) {
-        mutationObserver.disconnect();
-        console.log('Patching iframe for first time...');
-        patchIframe(iframe);
-
-        let patchCount = 0;
-        const iframeMutationObserver = new MutationObserver(() => {
-          patchCount++;
-          console.log(
-            `Iframe style changed by Google (patch #${patchCount}) - current style:`,
-            iframe.style.cssText
-          );
-          console.log(
-            'iframe.getBoundingClientRect().width:',
-            iframe.getBoundingClientRect().width
-          );
-
-          if (patchCount > 5) {
-            console.log(
-              'Google is looping - disconnecting iframe observer, relying on overflow:hidden'
-            );
-            console.log('Final iframe style:', iframe.style.cssText);
-            console.log(
-              'Final iframe getBoundingClientRect:',
-              JSON.stringify(iframe.getBoundingClientRect())
-            );
-            console.log(
-              'Container getBoundingClientRect:',
-              JSON.stringify(el.getBoundingClientRect())
-            );
-            iframeMutationObserver.disconnect();
-            return;
-          }
-          patchIframe(iframe);
-        });
-
-        iframeMutationObserver.observe(iframe, {
-          attributes: true,
-          attributeFilter: ['style'],
-        });
-      }
-    });
-
-    mutationObserver.observe(el, { childList: true, subtree: true });
-
-    return () => mutationObserver.disconnect();
-  }, []);
-
   const getDisplayErrorMessage = (
     loginError: LoginErrorEnum,
     loginType?: LoginType
@@ -701,16 +611,20 @@ export const OaLogin: React.FC = () => {
           <div className="mb-6">
             {!!Config.googleClientId && (
               <div
-                ref={googleContainerRef}
                 className="mb-6 w-full"
                 style={{
                   minHeight: '44px',
                   height: '44px',
                   overflow: 'hidden',
-                  position: 'relative',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
                 }}
               >
-                <div id="google-login-wrapper">
+                <div
+                  id="google-login-wrapper"
+                  style={{ width: '100%', maxWidth: '400px' }}
+                >
                   <GoogleLogin
                     onSuccess={(credentialResponse) =>
                       onGoogleLoginSuccess(credentialResponse)
@@ -720,6 +634,7 @@ export const OaLogin: React.FC = () => {
                     text="signin_with"
                     logo_alignment="center"
                     size="large"
+                    width={400}
                   />
                 </div>
               </div>
