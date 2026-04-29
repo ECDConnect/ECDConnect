@@ -94,47 +94,42 @@ export const OaLogin: React.FC = () => {
   const isSslEnabled = window.location.protocol === 'https:';
 
   const googleContainerRef = useRef<HTMLDivElement>(null);
-  const [googleButtonWidth, setGoogleButtonWidth] = useState<number | null>(
-    null
-  );
 
-  // 1. Measure container width
   useEffect(() => {
     const el = googleContainerRef.current;
     if (!el) return;
 
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const w = Math.min(Math.floor(entry.contentRect.width), 400);
-        if (w > 0) setGoogleButtonWidth(w);
+    const patchIframe = (iframe: HTMLIFrameElement) => {
+      const containerWidth = el.offsetWidth;
+      const w = Math.min(containerWidth, 400);
+      iframe.style.cssText = iframe.style.cssText
+        .replace(/width:[^;]+;?/gi, '')
+        .replace(/margin:[^;]+;?/gi, '')
+        .replace(/left:[^;]+;?/gi, '');
+      iframe.style.setProperty('width', `${w}px`, 'important');
+      iframe.style.setProperty('margin', '0', 'important');
+      iframe.style.setProperty('left', '0', 'important');
+    };
+
+    const mutationObserver = new MutationObserver(() => {
+      const iframe = el.querySelector('iframe');
+      if (iframe) {
+        patchIframe(iframe);
+        // Watch for Google re-setting styles on the iframe itself
+        const iframeMutationObserver = new MutationObserver(() => {
+          patchIframe(iframe);
+        });
+        iframeMutationObserver.observe(iframe, {
+          attributes: true,
+          attributeFilter: ['style'],
+        });
       }
     });
 
-    observer.observe(el);
-    return () => observer.disconnect();
+    mutationObserver.observe(el, { childList: true, subtree: true });
+
+    return () => mutationObserver.disconnect();
   }, []);
-
-  // 2. After width is known, patch the iframe Google injects
-  useEffect(() => {
-    if (googleButtonWidth === null) return;
-
-    const timer = setTimeout(() => {
-      const wrapper = document.getElementById('google-login-wrapper');
-      if (!wrapper) return;
-      const iframe = wrapper.querySelector('iframe');
-      if (iframe) {
-        iframe.style.setProperty(
-          'width',
-          `${googleButtonWidth}px`,
-          'important'
-        );
-        iframe.style.setProperty('margin', '0px', 'important');
-        iframe.style.setProperty('left', '0px', 'important');
-      }
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [googleButtonWidth]);
 
   const getDisplayErrorMessage = (
     loginError: LoginErrorEnum,
@@ -659,19 +654,16 @@ export const OaLogin: React.FC = () => {
                 style={{ minHeight: '44px', overflow: 'hidden' }}
               >
                 <div id="google-login-wrapper">
-                  {googleButtonWidth !== null && (
-                    <GoogleLogin
-                      onSuccess={(credentialResponse) =>
-                        onGoogleLoginSuccess(credentialResponse)
-                      }
-                      onError={() => onGoogleLoginError()}
-                      type="standard"
-                      text="signin_with"
-                      logo_alignment="center"
-                      size="large"
-                      width={googleButtonWidth}
-                    />
-                  )}
+                  <GoogleLogin
+                    onSuccess={(credentialResponse) =>
+                      onGoogleLoginSuccess(credentialResponse)
+                    }
+                    onError={() => onGoogleLoginError()}
+                    type="standard"
+                    text="signin_with"
+                    logo_alignment="center"
+                    size="large"
+                  />
                 </div>
               </div>
             )}
