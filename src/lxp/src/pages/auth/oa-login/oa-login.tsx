@@ -101,9 +101,12 @@ export const OaLogin: React.FC = () => {
 
   useEffect(() => {
     if (googleContainerRef.current) {
-      setGoogleButtonWidth(
-        Math.min(googleContainerRef.current.offsetWidth, 400)
-      );
+      const containerWidth = googleContainerRef.current.offsetWidth;
+
+      // Force integer and cap at Google's max (400px)
+      const safeWidth = Math.min(Math.floor(containerWidth), 400);
+
+      setGoogleButtonWidth(safeWidth);
     }
   }, []);
 
@@ -635,7 +638,7 @@ export const OaLogin: React.FC = () => {
                     text="signin_with"
                     logo_alignment="center"
                     size="large"
-                    width={googleButtonWidth}
+                    width={googleButtonWidth ?? undefined}
                   />
                 )}
               </div>
