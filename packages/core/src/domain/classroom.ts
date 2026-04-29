@@ -7,11 +7,6 @@ export interface Classroom extends EntityCacheBase {
   siteAddressId?: number;
   siteAddress?: SiteAddress;
   name: string;
-  isPrinciple?: boolean;
-  numberPractitioners?: number;
-  numberOfAssistants?: number;
-  numberOfOtherAssistants?: number;
-  doesOwnerTeach?: boolean;
   classroomImageUrl?: string;
   insertedDate: string;
 }

@@ -7,9 +7,6 @@ export type ClassroomDto = {
   id: string;
   name: string;
   classroomImageUrl: string;
-  numberPractitioners?: number;
-  numberOfAssistants?: number;
-  numberOfOtherAssistants?: number;
   siteAddress: SiteAddressDto;
   principal: BasePractitionerDto;
   preschoolCode?: string;

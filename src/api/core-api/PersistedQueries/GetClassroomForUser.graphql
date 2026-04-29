@@ -3,9 +3,6 @@ query GetClassroomForUser($userId: UUID) {
     id
     name
     classroomImageUrl
-    numberPractitioners
-    numberOfAssistants
-    numberOfOtherAssistants
     preschoolCode
     isDummySchool
     siteAddress {

@@ -4,8 +4,6 @@ query allClassroomsForCoach {
     userId
     name
     classroomImageUrl
-    numberPractitioners
-    isPrinciple
     childProgressReportPeriods {
       id
       startDate
