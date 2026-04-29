@@ -94,26 +94,6 @@ export const OaLogin: React.FC = () => {
   const isSslEnabled = window.location.protocol === 'https:';
 
   const googleContainerRef = useRef<HTMLDivElement>(null);
-  const [googleButtonWidth, setGoogleButtonWidth] = useState<number | null>(
-    null
-  );
-
-  useEffect(() => {
-    const el = googleContainerRef.current;
-    if (!el) return;
-
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        // const w = Math.min(Math.floor(entry.contentRect.width), 400);
-        // Subtract 20px to account for Google's -10px left/right margins on the iframe
-        const w = Math.min(Math.floor(entry.contentRect.width) - 20, 400);
-        if (w > 0) setGoogleButtonWidth(w);
-      }
-    });
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
 
   const getDisplayErrorMessage = (
     loginError: LoginErrorEnum,
@@ -637,7 +617,14 @@ export const OaLogin: React.FC = () => {
                 className="mb-6 w-full"
                 style={{ minHeight: '44px', overflow: 'hidden' }}
               >
-                {googleButtonWidth !== null && (
+                <style>{`
+                  #google-login-wrapper > div,
+                  #google-login-wrapper > div > div,
+                  #google-login-wrapper iframe {
+                    width: 100% !important;
+                  }
+                `}</style>
+                <div id="google-login-wrapper">
                   <GoogleLogin
                     onSuccess={(credentialResponse) =>
                       onGoogleLoginSuccess(credentialResponse)
@@ -647,9 +634,8 @@ export const OaLogin: React.FC = () => {
                     text="signin_with"
                     logo_alignment="center"
                     size="large"
-                    width={googleButtonWidth}
                   />
-                )}
+                </div>
               </div>
             )}
             {!!Config.facebookAppId && isSslEnabled && (
