@@ -113,18 +113,23 @@ export const OaLogin: React.FC = () => {
 
     const mutationObserver = new MutationObserver(() => {
       const iframe = el.querySelector('iframe');
-      console.log('MutationObserver fired, iframe found:', !!iframe);
-      console.log('Container offsetWidth:', el.offsetWidth);
-
       if (iframe) {
-        console.log('Iframe style before patch:', iframe.style.cssText);
-        patchIframe(iframe);
-        console.log('Iframe style after patch:', iframe.style.cssText);
+        mutationObserver.disconnect(); // Stop watching for new iframes
 
+        patchIframe(iframe);
+
+        // Watch for Google resetting styles, but disconnect after first re-patch
+        let patchCount = 0;
         const iframeMutationObserver = new MutationObserver(() => {
-          console.log('Iframe style changed by Google, re-patching...');
+          patchCount++;
+          if (patchCount > 5) {
+            // Google is looping — stop fighting it and just clip via CSS
+            iframeMutationObserver.disconnect();
+            return;
+          }
           patchIframe(iframe);
         });
+
         iframeMutationObserver.observe(iframe, {
           attributes: true,
           attributeFilter: ['style'],
@@ -559,12 +564,12 @@ export const OaLogin: React.FC = () => {
     }
 
     // Optional debug
-    console.log({
-      ua,
-      isChromeLike,
-      isIosSafari,
-      isAllowed,
-    });
+    // console.log({
+    //   ua,
+    //   isChromeLike,
+    //   isIosSafari,
+    //   isAllowed,
+    // });
   }, []);
 
   useEffect(() => {
@@ -657,7 +662,12 @@ export const OaLogin: React.FC = () => {
               <div
                 ref={googleContainerRef}
                 className="mb-6 w-full"
-                style={{ minHeight: '44px', overflow: 'hidden' }}
+                style={{
+                  minHeight: '44px',
+                  height: '44px',
+                  overflow: 'hidden',
+                  position: 'relative',
+                }}
               >
                 <div id="google-login-wrapper">
                   <GoogleLogin
