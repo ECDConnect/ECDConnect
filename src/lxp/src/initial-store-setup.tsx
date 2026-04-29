@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import Loader from './components/loader/loader';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
 import { useAppDispatch } from './store';
-import { attendanceThunkActions } from './store/attendance';
+import { attendanceActions, attendanceThunkActions } from './store/attendance';
 import { authActions } from './store/auth';
 import { caregiverActions } from './store/caregiver';
 import { childrenActions, childrenThunkActions } from './store/children';
@@ -128,6 +128,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     appDispatch(calendarActions.resetCalendarState());
     appDispatch(caregiverActions.resetCaregiverState());
     appDispatch(childrenActions.resetChildrenState());
+    appDispatch(attendanceActions.resetAttendanceState());
     appDispatch(classroomsActions.resetClassroomState());
     appDispatch(classroomsForCoachActions.resetClassroomState());
     appDispatch(coachActions.resetCoachState());
