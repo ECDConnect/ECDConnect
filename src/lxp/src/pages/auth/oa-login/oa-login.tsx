@@ -30,7 +30,6 @@ import ROUTES from '@routes/routes';
 import { StorageFull } from './storage-full/storage-full';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
-import { syncThunkActions } from '@/store/sync';
 import { useStoreSetup } from '@/hooks/useStoreSetup';
 import { userThunkActions } from '@/store/user';
 import ReactGA from 'react-ga4';
@@ -100,31 +99,18 @@ export const OaLogin: React.FC = () => {
   );
 
   useEffect(() => {
-    if (googleContainerRef.current) {
-      const containerWidth = googleContainerRef.current.offsetWidth;
+    const el = googleContainerRef.current;
+    if (!el) return;
 
-      // Force integer and cap at Google's max (400px)
-      const safeWidth = Math.min(Math.floor(containerWidth), 400);
-
-      setGoogleButtonWidth(safeWidth);
-    }
-  }, []);
-
-  useEffect(() => {
-    const updateWidth = () => {
-      if (googleContainerRef.current) {
-        const w = Math.min(
-          Math.floor(googleContainerRef.current.offsetWidth),
-          400
-        );
-        setGoogleButtonWidth(w);
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const w = Math.min(Math.floor(entry.contentRect.width), 400);
+        if (w > 0) setGoogleButtonWidth(w);
       }
-    };
+    });
 
-    updateWidth(); // initial
-
-    window.addEventListener('resize', updateWidth);
-    return () => window.removeEventListener('resize', updateWidth);
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
 
   const getDisplayErrorMessage = (
