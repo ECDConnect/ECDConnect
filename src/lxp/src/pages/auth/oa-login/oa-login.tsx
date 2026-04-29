@@ -94,6 +94,47 @@ export const OaLogin: React.FC = () => {
   const isSslEnabled = window.location.protocol === 'https:';
 
   const googleContainerRef = useRef<HTMLDivElement>(null);
+  const [googleButtonWidth, setGoogleButtonWidth] = useState<number | null>(
+    null
+  );
+
+  // 1. Measure container width
+  useEffect(() => {
+    const el = googleContainerRef.current;
+    if (!el) return;
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const w = Math.min(Math.floor(entry.contentRect.width), 400);
+        if (w > 0) setGoogleButtonWidth(w);
+      }
+    });
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // 2. After width is known, patch the iframe Google injects
+  useEffect(() => {
+    if (googleButtonWidth === null) return;
+
+    const timer = setTimeout(() => {
+      const wrapper = document.getElementById('google-login-wrapper');
+      if (!wrapper) return;
+      const iframe = wrapper.querySelector('iframe');
+      if (iframe) {
+        iframe.style.setProperty(
+          'width',
+          `${googleButtonWidth}px`,
+          'important'
+        );
+        iframe.style.setProperty('margin', '0px', 'important');
+        iframe.style.setProperty('left', '0px', 'important');
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [googleButtonWidth]);
 
   const getDisplayErrorMessage = (
     loginError: LoginErrorEnum,
@@ -617,24 +658,20 @@ export const OaLogin: React.FC = () => {
                 className="mb-6 w-full"
                 style={{ minHeight: '44px', overflow: 'hidden' }}
               >
-                <style>{`
-                  #google-login-wrapper > div,
-                  #google-login-wrapper > div > div,
-                  #google-login-wrapper iframe {
-                    width: 100% !important;
-                  }
-                `}</style>
                 <div id="google-login-wrapper">
-                  <GoogleLogin
-                    onSuccess={(credentialResponse) =>
-                      onGoogleLoginSuccess(credentialResponse)
-                    }
-                    onError={() => onGoogleLoginError()}
-                    type="standard"
-                    text="signin_with"
-                    logo_alignment="center"
-                    size="large"
-                  />
+                  {googleButtonWidth !== null && (
+                    <GoogleLogin
+                      onSuccess={(credentialResponse) =>
+                        onGoogleLoginSuccess(credentialResponse)
+                      }
+                      onError={() => onGoogleLoginError()}
+                      type="standard"
+                      text="signin_with"
+                      logo_alignment="center"
+                      size="large"
+                      width={googleButtonWidth}
+                    />
+                  )}
                 </div>
               </div>
             )}
