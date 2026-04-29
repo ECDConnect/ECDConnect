@@ -95,11 +95,15 @@ export const OaLogin: React.FC = () => {
   const isSslEnabled = window.location.protocol === 'https:';
 
   const googleContainerRef = useRef<HTMLDivElement>(null);
-  const [googleButtonWidth, setGoogleButtonWidth] = useState<number>(300);
+  const [googleButtonWidth, setGoogleButtonWidth] = useState<number>(() =>
+    Math.min(window.innerWidth - 32, 400)
+  );
 
   useEffect(() => {
     if (googleContainerRef.current) {
-      setGoogleButtonWidth(googleContainerRef.current.offsetWidth);
+      setGoogleButtonWidth(
+        Math.min(googleContainerRef.current.offsetWidth, 400)
+      );
     }
   }, []);
 
@@ -622,6 +626,7 @@ export const OaLogin: React.FC = () => {
             {!!Config.googleClientId && (
               <div ref={googleContainerRef} className="mb-6 w-full">
                 <GoogleLogin
+                  key={googleButtonWidth}
                   onSuccess={(credentialResponse) =>
                     onGoogleLoginSuccess(credentialResponse)
                   }
