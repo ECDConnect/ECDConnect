@@ -221,7 +221,10 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     if (cg.SiteAddress == null)
                     {
-                        cg.SiteAddress = new SiteAddress();
+                        cg.SiteAddress = new SiteAddress()
+                        {
+                            TenantId = tenantId
+                        };
                     }
                     cg.SiteAddress.AddressLine1 = input.Caregiver.SiteAddress.AddressLine1;
                     cg.SiteAddress.AddressLine2 = input.Caregiver.SiteAddress.AddressLine2;

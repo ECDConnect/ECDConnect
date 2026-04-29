@@ -213,7 +213,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         Name = siteAddress.Name,
                         PostalCode = siteAddress.PostalCode,
                         ProvinceId = siteAddress.ProvinceId,
-                        Ward = siteAddress.Ward
+                        Ward = siteAddress.Ward,
+                        TenantId = tenantId,
                     }
                 };
 
