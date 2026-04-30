@@ -1,0 +1,6 @@
+query GetAllGrant($isActive: Boolean = true) {
+  GetAllGrant(where: { isActive: { eq: $isActive } }) {
+    id
+    description
+  }
+}

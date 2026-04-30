@@ -59,13 +59,8 @@ export const LeaveCardMenu = ({
 
         // Invalidate or refetch absentees after deletion
         await appDispatch(
-          practitionerThunkActions.getAllPractitioners({})
+          practitionerThunkActions.getAllPractitioners({ overrideCache: true })
         ).unwrap();
-        //await appDispatch(
-        //  practitionerThunkActions.getPractitionerByUserId({
-        //    userId: practitioner?.userId!,
-        //  })
-        //).unwrap();
       } catch (error) {
         console.error('Error deleting leave:', error);
       } finally {

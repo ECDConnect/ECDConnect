@@ -207,7 +207,7 @@ export const EditPlaygroups: React.FC = () => {
       );
 
       if (!existing) {
-        await createPlayGroup(edited);
+        createPlayGroup(edited);
         continue;
       }
 

@@ -1,0 +1,100 @@
+mutation SaveCommunityProfile($input: CommunityProfileInputModelInput) {
+  saveCommunityProfile(input: $input) {
+    id
+    userId
+    aboutShort
+    aboutLong
+    shareContactInfo
+    shareEmail
+    sharePhoneNumber
+    shareProfilePhoto
+    shareProvince
+    provinceId
+    provinceName
+    shareRole
+    clickedECDHeros
+    coachUserId
+    coachName
+    completenessPerc
+    completenessPercColor
+    completenessPercImage
+    insertedDate
+    profileSkills {
+      id
+      name
+      imageName
+      description
+      isActive
+      ordering
+    }
+    communityUser {
+      id
+      fullName
+      email
+      phoneNumber
+      whatsAppNumber
+      profilePhoto
+      roleName
+    }
+    acceptedConnections {
+      id
+      userId
+      aboutShort
+      aboutLong
+      shareEmail
+      sharePhoneNumber
+      shareProfilePhoto
+      shareProvince
+      provinceId
+      provinceName
+      shareRole
+      communityUser {
+        id
+        fullName
+        email
+        phoneNumber
+        whatsAppNumber
+        profilePhoto
+        roleName
+      }
+      profileSkills {
+        id
+        name
+        imageName
+        description
+        isActive
+        ordering
+      }
+    }
+    pendingConnections {
+      id
+      userId
+      aboutShort
+      aboutLong
+      shareEmail
+      sharePhoneNumber
+      shareProfilePhoto
+      shareProvince
+      provinceId
+      provinceName
+      shareRole
+      communityUser {
+        id
+        fullName
+        email
+        phoneNumber
+        whatsAppNumber
+        profilePhoto
+        roleName
+      }
+      profileSkills {
+        id
+        name
+        imageName
+        description
+        isActive
+        ordering
+      }
+    }
+  }
+}

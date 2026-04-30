@@ -1,0 +1,3 @@
+query generateChildProgressReport($childId: UUID!, $classgroupId: UUID!, $reportDate: DateTime!) {
+  generateChildProgressReport(childId: $childId, classgroupId: $classgroupId, reportDate: $reportDate)
+}

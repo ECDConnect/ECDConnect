@@ -1,0 +1,7 @@
+query GetAllProgrammeType {
+  GetAllProgrammeType {
+    id
+    description
+    enumId
+  }
+}

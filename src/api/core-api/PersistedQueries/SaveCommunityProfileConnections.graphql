@@ -1,0 +1,6 @@
+mutation SaveCommunityProfileConnections($input: [CommunityConnectInputModelInput]) {
+  saveCommunityProfileConnections(input: $input) {
+    fromCommunityProfileId
+    toCommunityProfileId
+  }
+}

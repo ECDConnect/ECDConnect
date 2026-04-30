@@ -1,0 +1,5 @@
+query GetAllStatementsExpenseType {
+  GetAllStatementsExpenseType {
+    id description insertedDate notes
+  }
+}

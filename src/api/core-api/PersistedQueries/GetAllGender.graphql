@@ -1,0 +1,7 @@
+query GetAllGender($isActive: Boolean = true) {
+  GetAllGender(where: { isActive: { eq: $isActive } }) {
+    id
+    description
+    isActive
+  }
+}

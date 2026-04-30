@@ -1,0 +1,3 @@
+mutation ClassroomProgressSummaryDownloaded($classroomGroupId: UUID!) {
+  classroomProgressSummaryDownloaded(classroomGroupId: $classroomGroupId)
+}

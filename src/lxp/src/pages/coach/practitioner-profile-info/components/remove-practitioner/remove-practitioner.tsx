@@ -231,7 +231,7 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
         })
       );
       await appDispatch(
-        practitionerThunkActions.getAllPractitioners({})
+        practitionerThunkActions.getAllPractitioners({ overrideCache: true })
       ).unwrap();
     }
   };

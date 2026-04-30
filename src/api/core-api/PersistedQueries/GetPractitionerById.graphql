@@ -1,0 +1,62 @@
+query GetPractitionerById($id: UUID) {
+  GetPractitionerById(id: $id) {
+    id
+    userId
+    user {
+      gender {
+        description
+      }
+      firstName
+      surname
+      fullName
+      email
+      isSouthAfricanCitizen
+      verifiedByHomeAffairs
+      idNumber
+      phoneNumber
+    }
+    siteAddress {
+      id
+      province {
+        id
+        description
+      }
+      name
+      addressLine1
+      addressLine2
+      addressLine3
+      postalCode
+      ward
+    }
+    programmeType
+    isPrincipal
+    isRegistered
+    principalHierarchy
+    coachHierarchy
+    attendanceRegisterLink
+    consentForPhoto
+    parentFees
+    languageUsedInGroups
+    signingSignature
+    startDate
+    shareInfo
+    dateLinked
+    dateAccepted
+    dateToBeRemoved
+    isLeaving
+    progress
+    usePhotoInReport
+    isCompletedBusinessWalkThrough
+    ecdRegistration {
+      id
+      subsidy
+      registrationType
+      challenges
+      challengesOtherReason
+      hasBronzeCertificate
+      hasSilverCertificate
+      hasGoldCertificate
+      problemDescription
+    }
+  }
+}

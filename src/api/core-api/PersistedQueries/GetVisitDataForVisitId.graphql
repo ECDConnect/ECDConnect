@@ -1,0 +1,10 @@
+query GetVisitDataForVisitId($visitId: String) {
+  visitDataForVisitId(visitId: $visitId) {
+    insertedDate
+    visitId
+    visitName
+    visitSection
+    question
+    questionAnswer
+  }
+}

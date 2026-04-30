@@ -1,0 +1,6 @@
+query GetAllEducation($isActive: Boolean = true) {
+  GetAllEducation(where: { isActive: { eq: $isActive } }) {
+    id
+    description
+  }
+}

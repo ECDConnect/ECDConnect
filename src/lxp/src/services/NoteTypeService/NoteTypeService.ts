@@ -10,15 +10,7 @@ class NoteTypeService {
   async getNoteTypes(): Promise<NoteTypeDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query GetAllNoteType($isActive: Boolean = true){
-          GetAllNoteType(where: { isActive: { eq: $isActive } }) {
-            id
-            description
-            enumId
-          }
-        }
-          `,
+      id: 'GetAllNoteType',
     });
 
     if (response.status !== 200) {

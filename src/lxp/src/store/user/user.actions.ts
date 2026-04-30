@@ -29,9 +29,7 @@ export const getUser = createAsyncThunk<
         let user: UserDto | undefined;
 
         if (userAuth?.auth_token) {
-          user = await new UserService(userAuth?.auth_token).getUserById(
-            userAuth.id
-          );
+          user = await new UserService(userAuth?.auth_token).getUser();
         } else {
           return rejectWithValue('no access token, profile check required');
         }
@@ -206,7 +204,6 @@ export const updateUser = createAsyncThunk<any, {}, ThunkApiType<RootState>>(
 
 export const syncUser = createAsyncThunk<any, {}, ThunkApiType<RootState>>(
   'syncUser',
-  // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
@@ -235,10 +232,7 @@ export const syncUser = createAsyncThunk<any, {}, ThunkApiType<RootState>>(
         userModelInput
       );
 
-      if (!update) {
-        return rejectWithValue('Error updating user');
-      }
-
+      if (!update) return rejectWithValue('Error updating user');
       return [update];
     } catch (err) {
       return rejectWithValue(err);

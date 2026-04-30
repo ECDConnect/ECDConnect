@@ -1,0 +1,39 @@
+        query userById($userId: String) {
+          userById(userId: $userId) {
+            id
+            userName
+            email
+            isSouthAfricanCitizen
+            verifiedByHomeAffairs
+            dateOfBirth
+            idNumber   
+            isImported   
+            resetData      
+            firstName
+            surname
+            fullName
+            raceId
+            languageId
+            emergencyContactFirstName
+            emergencyContactSurname
+            emergencyContactPhoneNumber
+            nextOfKinContactNumber
+            nextOfKinFirstName
+            nextOfKinSurname
+            contactPreference
+            genderId
+            principalObjectData  {
+              isPrincipal
+            }
+            phoneNumber
+            profileImageUrl
+            roles {
+              id
+              name
+              systemName
+            }   
+            resetData  
+            registerType    
+            whatsAppConsent   
+          }
+        }

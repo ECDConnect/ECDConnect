@@ -11,14 +11,7 @@ class RaceService {
   async getRaces(): Promise<RaceDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query GetAllRace($isActive: Boolean = true){
-        GetAllRace(where: { isActive: { eq: $isActive } }) {
-          id
-          description      
-        }
-      }
-          `,
+      id: 'GetAllRace',
     });
 
     if (response.status !== 200) {

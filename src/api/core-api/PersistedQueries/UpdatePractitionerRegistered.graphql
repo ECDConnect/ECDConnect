@@ -1,0 +1,3 @@
+mutation UpdatePractitionerRegistered($practitionerId: String, $status: Boolean) {
+  updatePractitionerRegistered(practitionerId: $practitionerId, status: $status)
+}

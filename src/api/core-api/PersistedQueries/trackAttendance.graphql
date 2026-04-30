@@ -1,0 +1,3 @@
+mutation trackAttendance($attendance: [TrackAttendanceModelInput]) {
+  trackAttendance(attendance: $attendance)
+}

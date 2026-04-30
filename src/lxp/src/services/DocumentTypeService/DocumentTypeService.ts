@@ -10,15 +10,7 @@ class DocumentTypeService {
   async getDocumentTypes(): Promise<DocumentTypeDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query GetAllDocumentType($isActive: Boolean = true){
-          GetAllDocumentType(where: { isActive: { eq: $isActive } }) {
-            id
-            description
-            enumId
-          }
-        }
-          `,
+      id: 'GetAllDocumentType',
     });
 
     if (response.status !== 200) {

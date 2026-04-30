@@ -12,10 +12,7 @@ import {
   Dialog,
   DialogPosition,
 } from '@ecdlink/ui';
-import {
-  MutationAddPractitionerToPrincipalArgs,
-  UpdateUserPermissionInputModelInput,
-} from '@ecdlink/graphql';
+import { MutationAddPractitionerToPrincipalArgs } from '@ecdlink/graphql';
 import { useHistory } from 'react-router-dom';
 import { UserDto, useSnackbar } from '@ecdlink/core';
 import { useState, useEffect } from 'react';
@@ -49,7 +46,6 @@ import { practitionerThunkActions } from '@/store/practitioner';
 import { useTenant } from '@/hooks/useTenant';
 import { staticDataSelectors } from '@/store/static-data';
 import { HelpForm } from '@/components/help-form/help-form';
-import PermissionsService from '@/services/PermissionsService/PermissionsService';
 import { useTenantModules } from '@/hooks/useTenantModules';
 
 export const AddPractitioner = ({
@@ -276,7 +272,7 @@ export const AddPractitioner = ({
     );
 
     await appDispatch(
-      practitionerThunkActions.getAllPractitioners({})
+      practitionerThunkActions.getAllPractitioners({ overrideCache: true })
     ).unwrap();
 
     setIsloading(false);

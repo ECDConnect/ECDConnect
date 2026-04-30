@@ -1,0 +1,31 @@
+query incomeStatements($userId: UUID!, $startDate: DateTime!, $endDate: DateTime) {
+  incomeStatements(userId: $userId, startDate: $startDate, endDate: $endDate) {
+    id
+    month
+    year
+    contactedByCoach
+    downloaded
+    incomeItems {
+      incomeTypeId
+      id
+      dateReceived
+      amount
+      childUserId
+      notes
+      numberOfChildrenCovered
+      payTypeId
+      photoProof
+      description
+      isActive
+    }
+    expenseItems {
+      expenseTypeId
+      id
+      datePaid
+      amount
+      notes
+      photoProof
+      isActive
+    }
+  }
+}

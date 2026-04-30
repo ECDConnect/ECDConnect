@@ -11,15 +11,7 @@ class RoleService {
   async getRoles(): Promise<RoleDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query GetAllRoles(){
-        roles() {
-          id
-          name
-          systemName   
-        }
-      }
-          `,
+      id: 'GetAllRoles',
     });
 
     if (response.status !== 200) {

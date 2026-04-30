@@ -226,7 +226,11 @@ export const SetupPrincipal: React.FC = () => {
               userId: user?.id!,
             })
           );
-          await appDispatch(practitionerThunkActions.getAllPractitioners({}));
+          await appDispatch(
+            practitionerThunkActions.getAllPractitioners({
+              overrideCache: true,
+            })
+          );
           await appDispatch(
             classroomsThunkActions.getClassroomForUser({ overrideCache: true })
           ).unwrap();
@@ -290,12 +294,6 @@ export const SetupPrincipal: React.FC = () => {
       classroomsThunkActions.upsertClassroomGroupProgrammes({})
     );
     await appDispatch(classroomsThunkActions.getClassroomGroups({}));
-    // Update classroom number of practitioners
-    appDispatch(
-      classroomsActions.updateClassroomNumberPractitioners(
-        principalPractitioners?.length ?? 0
-      )
-    );
     // Update classroom data
     await syncClassroom();
     // Update the principal data
@@ -384,7 +382,9 @@ export const SetupPrincipal: React.FC = () => {
             ).unwrap();
           }
           await appDispatch(
-            practitionerThunkActions.getAllPractitioners({})
+            practitionerThunkActions.getAllPractitioners({
+              overrideCache: true,
+            })
           ).unwrap();
           await appDispatch(
             notificationActions.resetFrontendNotificationState()
@@ -416,7 +416,7 @@ export const SetupPrincipal: React.FC = () => {
           })
         ).unwrap();
         await appDispatch(
-          practitionerThunkActions.getAllPractitioners({})
+          practitionerThunkActions.getAllPractitioners({ overrideCache: true })
         ).unwrap();
         await appDispatch(notificationActions.resetFrontendNotificationState());
       }

@@ -14,11 +14,7 @@ class ContentService {
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query hasContentTypeBeenTranslated($id: Int!, $ageGroup: Int!, $localeId: UUID!) {
-          hasContentTypeBeenTranslated(id: $id, ageGroup: $ageGroup,localeId: $localeId) 
-        }
-      `,
+      id: 'hasContentTypeBeenTranslated',
       variables: {
         id: id,
         ageGroup: ageGroup,

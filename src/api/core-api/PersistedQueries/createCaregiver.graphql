@@ -1,0 +1,39 @@
+mutation createCaregiver($input: CaregiverInput) {
+  createCaregiver(input: $input) {
+    id
+    phoneNumber
+    idNumber
+    firstName
+    surname
+    fullName
+    siteAddressId
+    siteAddress {
+      id
+      province {
+        id
+        description
+      }
+      name
+      addressLine1
+      addressLine2
+      addressLine3
+      postalCode
+      ward
+    }
+    relationId
+    educationId
+    emergencyContactFirstName
+    emergencyContactSurname
+    emergencyContactPhoneNumber
+    additionalFirstName
+    additionalSurname
+    additionalPhoneNumber
+    joinReferencePanel
+    contribution
+    grants {
+      id
+      description
+    }
+    isActive
+  }
+}

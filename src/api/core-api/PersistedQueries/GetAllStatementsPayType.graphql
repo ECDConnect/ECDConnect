@@ -1,0 +1,5 @@
+query GetAllStatementsPayType {
+  GetAllStatementsPayType {
+    id description insertedDate notes
+  }
+}

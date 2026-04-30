@@ -1,0 +1,6 @@
+query GetAllRelation($isActive: Boolean = true) {
+  GetAllRelation(where: { isActive: { eq: $isActive } }) {
+    id
+    description
+  }
+}

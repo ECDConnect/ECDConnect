@@ -1,0 +1,14 @@
+query openConsent($locale: String, $name: String) {
+  openConsent(locale: $locale, name: $name) {
+    id
+    name
+    type
+    description
+    image
+    availableLanguages {
+      id
+      description
+      locale
+    }
+  }
+}

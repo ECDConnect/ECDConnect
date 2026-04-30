@@ -1,0 +1,11 @@
+query GetUserContentChildProgressReport($UserId: String, $Locale: String) {
+  GetUserContentChildProgressReport(UserId: $UserId, Locale: $Locale) {
+    contentItem {
+      id
+      contentTypeId
+      name
+      reference
+    }
+    content
+  }
+}

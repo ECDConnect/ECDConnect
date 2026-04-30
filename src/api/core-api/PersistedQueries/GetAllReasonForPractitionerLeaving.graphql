@@ -1,0 +1,6 @@
+query GetAllReasonForPractitionerLeaving($isActive: Boolean = true) {
+  GetAllReasonForPractitionerLeaving(where: { isActive: { eq: $isActive } }) {
+    id
+    description
+  }
+}

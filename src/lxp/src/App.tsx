@@ -9,19 +9,16 @@ import {
 import { ActionModal, DialogPosition, renderIcon } from '@ecdlink/ui';
 import { IonApp, IonRouterOutlet } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import '@ionic/react/css/core.css';
-import '@ionic/react/css/display.css';
-import '@ionic/react/css/flex-utils.css';
-import '@ionic/react/css/float-elements.css';
 import { default as React, useEffect, useState } from 'react';
 import ReactGA from 'react-ga4';
 import TagManager from 'react-gtm-module';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { AuthRoutes, PublicRoutes } from '@routes';
 import InitialNotificationSetup from './initial-notifications-setup';
 import InitialStoreSetup from './initial-store-setup';
 import { LoginModal } from './pages/auth/login-modal/login-modal';
-import { authSelectors } from './store/auth';
+import { authActions, authSelectors } from './store/auth';
+import { useInactivityLock } from './hooks/useInactivityLock';
 import { differenceInHours, isSameDay } from 'date-fns';
 import { stopReportingRuntimeErrors } from 'react-error-overlay';
 import { useTenant } from './hooks/useTenant';
@@ -37,8 +34,10 @@ const App: React.FC = () => {
   const tenant = useTenant();
   const { theme } = useTheme();
   const dialog = useDialog();
+  const dispatch = useDispatch();
   const user = useSelector(authSelectors.getAuthUser);
   const userExpired = useSelector(authSelectors.getUserExpired);
+  const isAppLocked = useSelector(authSelectors.getIsAppLocked);
   const [freeMemory, setFreeMemory] = useState(0);
   const [errorMessage, setErrorMessage] = useState(false);
 
@@ -146,6 +145,26 @@ const App: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userExpired]);
+
+  useEffect(() => {
+    if (isAppLocked) {
+      dialog({
+        position: DialogPosition.Middle,
+        blocking: true,
+        render: (onSubmit) => {
+          return (
+            <LoginModal
+              loginSuccessful={() => {
+                dispatch(authActions.unlockApp());
+                onSubmit();
+              }}
+            />
+          );
+        },
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAppLocked]);
 
   useEffect(() => {
     if (freeMemory !== 0 && freeMemory <= 200) {

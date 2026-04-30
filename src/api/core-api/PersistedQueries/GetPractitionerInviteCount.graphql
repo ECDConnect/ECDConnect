@@ -1,0 +1,3 @@
+query GetPractitionerInviteCount($userId: String) {
+  practitionerInviteCount(userId: $userId)
+}

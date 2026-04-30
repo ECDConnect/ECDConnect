@@ -1,0 +1,27 @@
+mutation UpdateUserContactStatusForStatement($statementId: UUID!) {
+  updateUserContactStatusForStatement(statementId: $statementId) {
+    id
+    month
+    year
+    downloaded
+    incomeItems {
+      incomeTypeId
+      id
+      dateReceived
+      amount
+      childUserId
+      notes
+      numberOfChildrenCovered
+      payTypeId
+      photoProof
+    }
+    expenseItems {
+      expenseTypeId
+      id
+      datePaid
+      amount
+      notes
+      photoProof
+    }
+  }
+}

@@ -1,1 +1,1 @@
-export { default as ResourcesService } from './Resources';
+export { default as ResourcesService } from './ResourcesService';
