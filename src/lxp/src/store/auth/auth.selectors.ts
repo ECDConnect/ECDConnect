@@ -11,3 +11,6 @@ export const getAuthUser = (
 
 export const getUserExpired = (state: RootState): boolean | undefined =>
   state.auth.userExpired;
+
+export const getIsAppLocked = (state: RootState): boolean =>
+  state.auth.isAppLocked ?? false;

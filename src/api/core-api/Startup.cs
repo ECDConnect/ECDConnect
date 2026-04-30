@@ -34,6 +34,7 @@ using ECDLink.Security.Managers;
 using ECDLink.Tenancy.Extensions;
 using ECDLink.UrlShortner;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -42,63 +43,24 @@ using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Threading.RateLimiting;
 
 namespace EcdLink.Api.CoreApi
 {
-  using EcdLink.Api.CoreApi.Configuration;
-  using EcdLink.Api.CoreApi.GraphApi.Models;
+    using EcdLink.Api.CoreApi.Configuration;
+    using EcdLink.Api.CoreApi.GraphApi.Models;
     using EcdLink.Api.CoreApi.Middleware;
     using Microsoft.ApplicationInsights;
     using Microsoft.ApplicationInsights.Extensibility;
     using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Cors.Infrastructure;
     using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.HttpOverrides;
     using Microsoft.AspNetCore.ResponseCompression;
-  using Microsoft.Extensions.Options;
-  using System;
+    using Microsoft.Extensions.Options;
+    using System;
     using System.IO;
-    using System.Threading.Tasks;
-
-    public static class MaintainCorsExtension
-    {
-        public static IApplicationBuilder MaintainCorsHeadersOnError(this IApplicationBuilder builder)
-        {
-            return builder.Use(async (httpContext, next) =>
-            {
-                string timestamp = DateTime.Now.Ticks.ToString();
-                string path = httpContext.Request.Path;
-                string origin = httpContext.Request.Headers.Origin;
-                Console.WriteLine("{0}: {1} {2}", timestamp, path, origin);
-                //var corsHeaders = new HeaderDictionary();
-                //foreach (var pair in httpContext.Response.Headers)
-                //{
-                //    if (!pair.Key.StartsWith("access-control-", StringComparison.InvariantCultureIgnoreCase)) { continue; }
-                //    corsHeaders[pair.Key] = pair.Value;
-                //}
-
-                httpContext.Response.OnStarting(o => {
-                    var ctx = (HttpContext)o;
-                    var headers = ctx.Response.Headers;
-                    Console.WriteLine("{0}: {1} {2} {3}", timestamp, path, ctx.Response.Headers.AccessControlAllowOrigin, origin);
-                    //ctx.Response.Headers.AccessControlAllowOrigin = origin;
-                    //Console.WriteLine("{0}: {1} {2} {3}", timestamp, path, ctx.Response.Headers.AccessControlAllowOrigin, origin);
-                    //foreach (var pair in corsHeaders)
-                    //{
-                    //    if (headers.ContainsKey(pair.Key))
-                    //    {
-                    //        headers[pair.Key] = pair.Value;
-                    //    }
-                    //    else
-                    //    {
-                    //        headers.Add(pair.Key, pair.Value);
-                    //    }
-                    //}
-                    return Task.CompletedTask;
-                }, httpContext);
-
-                await next();
-            });
-        }
-    }
+    using System.Net.Http;
 
     public partial class Startup
     {
@@ -120,44 +82,11 @@ namespace EcdLink.Api.CoreApi
 
             services.AddHttpContextAccessor();
 
-            // We are explicitly setting these because of CORS issues on .datafree.co
-            var corsAllowedDomainsEnv = System.Environment.GetEnvironmentVariable("CORS_ALLOWED_DOMAINS");
-            if (string.IsNullOrEmpty(corsAllowedDomainsEnv))
-            {
-                corsAllowedDomainsEnv = "https://ecdconnect.co.za,https://*.ecdconnect.co.za,https://*.azurewebsites.net,https://portal.smartstart.ecdconnect.co.za,https://portal.chwconnect.ecdconnect.co.za,http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003,http://localhost:3005,https://*.datafree.co,https://*.sbox.datafree.co";
-            }
-            //var allowedDomains = new[] { "https://ecdconnect.co.za",
-            //"https://ecdconnect-co-za-fundasmartstart.datafree.co",
-            //"https://*.ecdconnect.co.za",
-            //"https://*.ecdlink.co.za",
-            //"https://*.azurewebsites.net",
-            //"http://localhost:3001",
-            //"http://localhost:3000" ,
-            //"https://smartstart-ecdconnect-co-za-funda.datafree.co"};
+            ConfigureRateLimiting(services, Configuration);
 
-            var corsAllowedDomains = corsAllowedDomainsEnv.Split(",");
-            services.AddCors(options => options.AddPolicy("CorsPolicy", builder => builder
-                            .AllowAnyMethod()
-                            .AllowAnyHeader()
-                            .AllowCredentials()
-                            .SetIsOriginAllowedToAllowWildcardSubdomains()
-                            .WithOrigins(corsAllowedDomains)
-                            .WithExposedHeaders("WWW-Authenticate")
-                        ));
-
-            //services.AddHttpLogging(logging =>
-            //{
-            //    logging.LoggingFields = HttpLoggingFields.All;
-            //    logging.RequestHeaders.Add("Origin");
-            //    logging.ResponseHeaders.Add("Access-Control-Allow-Origin");
-            //    logging.MediaTypeOptions.AddText("application/javascript");
-            //    logging.RequestBodyLogLimit = 4096;
-            //    logging.ResponseBodyLogLimit = 4096;
-            //});
+            ConfigureCorsPolicy(services, Configuration);
 
             CoreStartup.ConfigureCoreServices(services, Configuration);
-
-            //PostgresTenancyStartup.ConfigureDataAccessServices(services, Configuration);
 
             var storageType = GetStorageType();
             if (storageType == "AzureBlob")
@@ -183,7 +112,7 @@ namespace EcdLink.Api.CoreApi
 
             // if (Environment.IsDevelopment())
             // {
-                DevStartup.ConfigureLocalDevServices(services, Configuration, Environment);
+            DevStartup.ConfigureLocalDevServices(services, Configuration, Environment);
             // }
 
             services.AddTransient<IOpenAccessValidator<ChildOpenAccessValidator>, ChildOpenAccessValidator>();
@@ -260,38 +189,22 @@ namespace EcdLink.Api.CoreApi
             }
             else
             {
-                services.AddSingleton<ITelemetryService, Telemetry.TelemetryService>(serviceProvider => {
+                services.AddSingleton<ITelemetryService, Telemetry.TelemetryService>(serviceProvider =>
+                {
                     return new Telemetry.TelemetryService(null);
                 });
             }
 
             ECDLink.AutomatedJobs.AutomatedJobsStartup.ConfigureServices(services, Configuration);
 
-            // Bind custom compression settings
-            services.Configure<ResponseCompressionSettings>(Configuration.GetSection("ResponseCompression"));
-
-            var compressionSettings = services.BuildServiceProvider().GetRequiredService<IOptions<ResponseCompressionSettings>>().Value; // Temp resolve for config
-            if (compressionSettings.Enabled)
+            services.AddHsts(options =>
             {
-                services.AddResponseCompression(options =>
-                {
-                    options.EnableForHttps = true;
-                    options.ExcludedMimeTypes = compressionSettings.ExcludeMimeTypes;
-                    options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(compressionSettings.MimeTypes);
-                    options.Providers.Add<BrotliCompressionProvider>();
-                    options.Providers.Add<GzipCompressionProvider>();
-                });
-                // Configure compression levels
-                services.Configure<GzipCompressionProviderOptions>(options =>
-                {
-                    options.Level = System.IO.Compression.CompressionLevel.Optimal;
-                });
+                options.MaxAge = TimeSpan.FromDays(365);
+                options.IncludeSubDomains = true;
+                options.Preload = true;
+            });
 
-                services.Configure<BrotliCompressionProviderOptions>(options =>
-                {
-                    options.Level = System.IO.Compression.CompressionLevel.Optimal;
-                });
-            }
+            ConfigureCompression(services, Configuration);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -303,8 +216,69 @@ namespace EcdLink.Api.CoreApi
 
                 app.UseDeveloperExceptionPage();
             }
+            else
+            {
+                app.UseHsts();
+            }
+
+            ConfigureResponseHeaders(app);
 
             // SSRF + long-path protection (blocks the 127.0.0.1 attack immediately)
+            ConfigureLongPathProtection(app);
+
+            var compressionSettings = app.ApplicationServices.GetRequiredService<IOptions<ResponseCompressionSettings>>().Value;
+            if (compressionSettings.Enabled)
+            {
+                app.UseResponseCompression();
+            }
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            });
+            app.UseRateLimiter();
+            app.UseCors("CorsPolicy");
+            app.UseCookiePolicy();
+            app.UseRouting();
+            app.UseAuthentication();
+            app.UseAuthorization();
+            app.UseTenancy();
+            app.UseUserActivity();
+            if (TelemetryEnabled()) app.UseMiddleware<CoreApi.Telemetry.TelemetryMiddleware>();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllerRoute(
+                name: "default",
+                pattern: "{controller}/{action}/{id?}");
+            });
+
+            SecurityStartup.AddSecurityConfiguration(app);
+
+            GraphStartup.AddGraphConfiguration(app, env);
+
+            MoodleStartup.AddMoodleConfiguration(app, env);
+        }
+
+        private void ConfigureResponseHeaders(IApplicationBuilder app)
+        {
+            var headers = Configuration.GetSection("ResponseHeaders")
+                .GetChildren()
+                .ToDictionary(x => x.Key, x => x.Value);
+            if (headers.Count > 0)
+            {
+                app.Use(async (context, next) =>
+                {
+                    foreach (var header in headers)
+                    {
+                        context.Response.Headers[header.Key] = header.Value;
+                    }
+                    await next();
+                });
+            }
+        }
+
+        private void ConfigureLongPathProtection(IApplicationBuilder app)
+        {
             app.Use(async (context, next) =>
             {
                 if (context.Request.Method == "POST")
@@ -346,37 +320,97 @@ namespace EcdLink.Api.CoreApi
 
                 await next();
             });
-
-            var compressionSettings = app.ApplicationServices.GetRequiredService<IOptions<ResponseCompressionSettings>>().Value;
-            if (compressionSettings.Enabled)
-            {
-                app.UseResponseCompression();
-            }
-
-            app.UseCors("CorsPolicy");
-            app.UseCookiePolicy();
-            app.UseRouting();
-            app.UseAuthentication();
-            app.UseAuthorization();
-            app.UseTenancy();
-            app.UseUserActivity();
-            if (TelemetryEnabled()) app.UseMiddleware<CoreApi.Telemetry.TelemetryMiddleware>();
-
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllerRoute(
-                name: "default",
-                pattern: "{controller}/{action}/{id?}");
-            });
-
-            SecurityStartup.AddSecurityConfiguration(app);
-
-            GraphStartup.AddGraphConfiguration(app, env);
-
-            MoodleStartup.AddMoodleConfiguration(app, env);
         }
 
-        bool TelemetryEnabled()
+
+        private void ConfigureRateLimiting(IServiceCollection services, IConfiguration configuration)
+        {
+            var rateLimitingSettings = Configuration.GetSection("RateLimiting").Get<RateLimitingSettings>() ?? new RateLimitingSettings();
+
+            services.AddRateLimiter(options =>
+            {
+                if (rateLimitingSettings.PerClient.Limit > 0)
+                {
+                    options.AddPolicy("PerClient", context =>
+                        RateLimitPartition.GetFixedWindowLimiter(
+                            partitionKey: context.Request.Headers["X-Forwarded-For"].FirstOrDefault() ?? context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                            factory: _ => new FixedWindowRateLimiterOptions
+                            {
+                                PermitLimit = rateLimitingSettings.PerClient.Limit,
+                                Window = TimeSpan.FromSeconds(rateLimitingSettings.PerClient.PeriodInSeconds),
+                                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                                QueueLimit = 0
+                            }));
+                }
+
+                if (rateLimitingSettings.Global.Limit > 0)
+                {
+                    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+                        RateLimitPartition.GetFixedWindowLimiter(
+                            partitionKey: "Global",
+                            factory: _ => new FixedWindowRateLimiterOptions
+                            {
+                                PermitLimit = rateLimitingSettings.Global.Limit,
+                                Window = TimeSpan.FromSeconds(rateLimitingSettings.Global.PeriodInSeconds)
+                            }));
+                }
+
+                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+                options.OnRejected = async (context, token) =>
+                {
+                    context.HttpContext.Response.ContentType = "application/json";
+                    await context.HttpContext.Response.WriteAsync(
+                        "{\"errors\":[{\"message\":\"Too many requests. Please try again later.\"}]}", token);
+                };
+            });
+        }
+
+        private void ConfigureCorsPolicy(IServiceCollection services, IConfiguration configuration)
+        {
+            var corsPolicySettings = Configuration.GetSection("CorsPolicy").Get<CorsPolicySettings>() ?? new CorsPolicySettings();
+
+            // Should rather use CorsPolicy__Origins in App Service Env variable which will override the value in appsettings.json, but keeping this for backward compatibility for now
+            var corsAllowedDomainsEnv = System.Environment.GetEnvironmentVariable("CORS_ALLOWED_DOMAINS");
+            if (!string.IsNullOrEmpty(corsAllowedDomainsEnv)) corsPolicySettings.Origins = corsAllowedDomainsEnv;
+
+            services.AddCors(options => options.AddPolicy("CorsPolicy", builder => builder
+                            .WithMethods(corsPolicySettings.Methods.Split(","))
+                            .WithHeaders(corsPolicySettings.Headers.Split(","))
+                            .SetIsOriginAllowedToAllowWildcardSubdomains()
+                            .WithOrigins(corsPolicySettings.Origins.Split(","))
+                            .WithExposedHeaders(corsPolicySettings.ExposeHeaders.Split(","))
+                        ));
+        }
+
+        private void ConfigureCompression(IServiceCollection services, IConfiguration configuration)
+        {
+            var compressionSettings = Configuration.GetSection("ResponseCompression").Get<ResponseCompressionSettings>() ?? new ResponseCompressionSettings();
+
+            if (compressionSettings.Enabled)
+            {
+                services.AddResponseCompression(options =>
+                {
+                    options.EnableForHttps = true;
+                    options.ExcludedMimeTypes = compressionSettings.ExcludeMimeTypes;
+                    options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(compressionSettings.MimeTypes);
+                    options.Providers.Add<BrotliCompressionProvider>();
+                    options.Providers.Add<GzipCompressionProvider>();
+                });
+                // Configure compression levels
+                services.Configure<GzipCompressionProviderOptions>(options =>
+                {
+                    options.Level = System.IO.Compression.CompressionLevel.Optimal;
+                });
+
+                services.Configure<BrotliCompressionProviderOptions>(options =>
+                {
+                    options.Level = System.IO.Compression.CompressionLevel.Optimal;
+                });
+            }
+        }
+
+        private bool TelemetryEnabled()
         {
             var aiConnString = System.Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING");
             if (!string.IsNullOrEmpty(aiConnString)) return true;
@@ -387,7 +421,7 @@ namespace EcdLink.Api.CoreApi
             return false;
         }
 
-        string GetStorageType()
+        private string GetStorageType()
         {
             var section = Configuration.GetSection("Storage");
             if (section == null) return "FileSystem";
