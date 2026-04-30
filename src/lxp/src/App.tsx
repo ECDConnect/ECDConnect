@@ -9,10 +9,6 @@ import {
 import { ActionModal, DialogPosition, renderIcon } from '@ecdlink/ui';
 import { IonApp, IonRouterOutlet } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import '@ionic/react/css/core.css';
-import '@ionic/react/css/display.css';
-import '@ionic/react/css/flex-utils.css';
-import '@ionic/react/css/float-elements.css';
 import { default as React, useEffect, useState } from 'react';
 import ReactGA from 'react-ga4';
 import TagManager from 'react-gtm-module';
@@ -42,7 +38,6 @@ const App: React.FC = () => {
   const user = useSelector(authSelectors.getAuthUser);
   const userExpired = useSelector(authSelectors.getUserExpired);
   const isAppLocked = useSelector(authSelectors.getIsAppLocked);
-  useInactivityLock();
   const [freeMemory, setFreeMemory] = useState(0);
   const [errorMessage, setErrorMessage] = useState(false);
 
