@@ -190,6 +190,18 @@ namespace ECDLink.UrlShortner.Managers
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<Guid?> GetUserIdForInviteToken(string token)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+                return null;
+
+            return await _dbContext.ShortUrls
+                .Where(x => x.Clicked == 0 && x.IsActive && x.URL.EndsWith(token))
+                .OrderByDescending(x => x.InsertedDate)
+                .Select(x => x.UserId)
+                .FirstOrDefaultAsync();
+        }
+
         public async Task UpdateMessageNotificationResult(Guid userId, string messageType, int notificationResult, Guid? messageLogId = null)
         {
             if (messageLogId.HasValue)

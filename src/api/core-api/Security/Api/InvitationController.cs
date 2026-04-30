@@ -150,40 +150,62 @@ namespace ECDLink.Security.Api
         [HttpPost]
         public async Task<IActionResult> VerifyInvitation([FromBody] VerifyInvitationModel verifyModel)
         {
+            if (string.IsNullOrWhiteSpace(verifyModel.Username) || 
+                string.IsNullOrWhiteSpace(verifyModel.Token))
+            {
+                return BadRequest(new FailedVerificationModel 
+                { 
+                    ErrorCode = 0, 
+                    Error = "Invalid request" 
+                });
+            }
+
+            Guid? inviteUserId = await _shortUrlManager.GetUserIdForInviteToken(verifyModel.Token);
+            if (!inviteUserId.HasValue)
+            {
+                return BadRequest(new FailedVerificationModel 
+                { 
+                    ErrorCode = 3,   // Token invalid/expired/inactive
+                    Error = "Invalid or expired token" 
+                });
+            }
+            var tokenUser = await _userManager.FindByIdAsync(inviteUserId);
+
             var decodedToken = TokenHelper.DecodeToken(verifyModel.Token);
             var user = await _invitationManager.GetValidUserWithTokenAsync(verifyModel.Username, decodedToken);
 
-            if (user == null)
+            if (user == null && tokenUser != null)
             {
-                var userWithId = await _userManager.FindByNameAsync(verifyModel.Username);
-                return BadRequest(new FailedVerificationModel
-                {
-                    ErrorCode = 3,
-                    Error = userWithId.Id.ToString()
-                }); 
+                // Username does not match the token owner
+                return BadRequest(new FailedVerificationModel 
+                { 
+                    ErrorCode = 4, 
+                    Error = "Username does not match invitation" 
+                });
+            }
+
+            // At this point, username is correct and token is valid for this user
+            var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(verifyModel.PhoneNumber);
+
+            if (!string.Equals(normalizePhoneNumber, user.PhoneNumber, StringComparison.OrdinalIgnoreCase))
+            {
+                return BadRequest(new FailedVerificationModel 
+                { 
+                    ErrorCode = 2, 
+                    Error = "Invalid Phone Number" 
+                });
             }
 
             if (!string.Equals(verifyModel.Username, user.UserName))
             {
-                return BadRequest(new FailedVerificationModel
-                {
-                    ErrorCode = 1,
+                return BadRequest(new FailedVerificationModel 
+                { 
+                    ErrorCode = 1, 
                     Error = "Invalid Idnumber"
                 });
             }
 
-            var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(verifyModel.PhoneNumber);
-
-            if (!string.Equals(normalizePhoneNumber, user.PhoneNumber))
-            {
-                return BadRequest(new FailedVerificationModel
-                {
-                    ErrorCode = 2,
-                    Error = "Invalid Phone Number"
-                });
-            }
-
-            return Ok(user.Id);
+            return Ok(new { UserId = tokenUser.Id });
         }
 
         [Route("send-auth-code")]
