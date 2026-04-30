@@ -18,7 +18,7 @@ import {
   DialogPosition,
   ActionModal,
 } from '@ecdlink/ui';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory, useLocation } from 'react-router';
 import * as styles from './oa-login.styles';
@@ -30,6 +30,7 @@ import ROUTES from '@routes/routes';
 import { StorageFull } from './storage-full/storage-full';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
+import { syncThunkActions } from '@/store/sync';
 import { useStoreSetup } from '@/hooks/useStoreSetup';
 import { userThunkActions } from '@/store/user';
 import ReactGA from 'react-ga4';
@@ -515,12 +516,12 @@ export const OaLogin: React.FC = () => {
     }
 
     // Optional debug
-    // console.log({
-    //   ua,
-    //   isChromeLike,
-    //   isIosSafari,
-    //   isAllowed,
-    // });
+    console.log({
+      ua,
+      isChromeLike,
+      isIosSafari,
+      isAllowed,
+    });
   }, []);
 
   useEffect(() => {
@@ -610,51 +611,22 @@ export const OaLogin: React.FC = () => {
         {!autoLogin && isOnline && (
           <div className="mb-6">
             {!!Config.googleClientId && (
-              <div
-                className="mb-6 w-full"
-                style={{
-                  minHeight: '44px',
-                  height: '44px',
-                  overflow: 'hidden',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  border: '1px solid #dadce0',
-                  borderRadius: '4px',
-                  maxWidth: '400px',
-                  margin: '0 auto',
-                }}
-              >
-                <style>{`
-                  #google-login-wrapper iframe {
-                    border: none !important;
-                    box-shadow: none !important;
+              <div className="mb-6 flex justify-center">
+                <GoogleLogin
+                  onSuccess={(credentialResponse) =>
+                    onGoogleLoginSuccess(credentialResponse)
                   }
-                  #google-login-wrapper > div {
-                    box-shadow: none !important;
-                    border: none !important;
-                  }
-                `}</style>
-                <div
-                  id="google-login-wrapper"
-                  style={{ width: '100%', maxWidth: '400px' }}
-                >
-                  <GoogleLogin
-                    onSuccess={(credentialResponse) =>
-                      onGoogleLoginSuccess(credentialResponse)
-                    }
-                    onError={() => onGoogleLoginError()}
-                    type="standard"
-                    text="signin_with"
-                    logo_alignment="center"
-                    size="large"
-                    width={400}
-                  />
-                </div>
+                  onError={() => onGoogleLoginError()}
+                  type="standard"
+                  text="signin_with"
+                  logo_alignment="center"
+                  size="large"
+                  width={250}
+                />
               </div>
             )}
             {!!Config.facebookAppId && isSslEnabled && (
-              <div className="mb-6 w-full">
+              <div className="mb-6 flex justify-center">
                 <FacebookLogin
                   onSuccess={(response: any) =>
                     onFacebookLoginSuccess(response)
@@ -662,7 +634,8 @@ export const OaLogin: React.FC = () => {
                   onError={(error: Error) => onFacebookLoginError(error)}
                   fields={['id', 'name', 'picture']}
                   scope={['public_profile']}
-                  className="flex h-10 w-full items-center justify-center space-x-2 rounded-lg bg-blue-600 px-6 py-3 text-white transition-colors hover:bg-blue-700"
+                  //className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                  className="flex h-10 items-center space-x-2 rounded-lg bg-blue-600 px-6 py-3 text-white transition-colors hover:bg-blue-700"
                   disabled={isLoading}
                 >
                   <svg
