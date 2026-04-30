@@ -1,0 +1,11 @@
+query GetAllProgressTrackingSubCategory($locale: String) {
+  GetAllProgressTrackingSubCategory(locale: $locale) {
+    id
+    name
+    description
+    imageUrl
+    skills {
+      id
+    }
+  }
+}

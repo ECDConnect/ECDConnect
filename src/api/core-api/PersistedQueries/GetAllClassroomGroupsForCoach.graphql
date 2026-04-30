@@ -1,0 +1,15 @@
+query GetAllClassroomGroupsForCoach($userId: String) {
+  allClassroomGroupsForCoach(userId: $userId) {
+    id
+    classroomId
+    name
+    userId
+    learners {
+      learnerId
+      childUserId
+      startedAttendance
+      stoppedAttendance
+      isActive
+    }
+  }
+}

@@ -58,12 +58,5 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         {
             return absenteeService.EditAbsentee(absenteeId, deleteAbsentee, reassignedToPractitioner, reason, absentDate, absentDateEnd, isRoleAssign, roleAssignedToUser);
         }
-
-        [Permission(PermissionGroups.ABSENTEE, GraphActionEnum.Update)]
-        public bool ReassignAbsenteeFromHistory([Service] IReassignmentService reassignmentService,
-            string userId)
-        {
-            return reassignmentService.ReassignClassroomsFromHistory(userId);
-        }
     }
 }

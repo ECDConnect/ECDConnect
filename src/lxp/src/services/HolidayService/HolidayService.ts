@@ -11,13 +11,7 @@ class HolidayService {
   async getHolidaysByYear(year: number): Promise<HolidayDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query holidaysByYear($year: Int!) {
-          holidaysByYear(year: $year) {
-            day
-          }
-        }
-      `,
+      id: 'holidaysByYear',
       variables: {
         year: year,
       },
@@ -36,13 +30,7 @@ class HolidayService {
   ): Promise<HolidayDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query holidaysByMonth($startMonth: DateTime!, $endMonth: DateTime!) {
-          holidaysByMonth(startMonth: $startMonth, endMonth: $endMonth) {
-            day
-          }
-        }
-      `,
+      id: 'holidaysByMonth',
       variables: {
         startMonth: startMonth,
         endMonth: endMonth,

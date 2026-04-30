@@ -1,0 +1,12 @@
+query getJourneyPublishedAssessmentForms {
+  journeyPublishedAssessmentForms {
+    id
+    name
+    description
+    roleIds
+    isPublished
+    publishedDate
+    logoUrl
+    provider
+  }
+}

@@ -1,0 +1,23 @@
+query GetClassroomGroupForClassId($classroomGroupId: UUID!) {
+  classroomGroupForClassId(classroomGroupId: $classroomGroupId) {
+    id
+    classroomId
+    name
+    userId
+    learners {
+      learnerId
+      childUserId
+      startedAttendance
+      stoppedAttendance
+      isActive
+    }
+    classProgrammes {
+      id
+      programmeStartDate
+      meetingDay
+      isFullDay
+      classroomGroupId
+      isActive
+    }
+  }
+}

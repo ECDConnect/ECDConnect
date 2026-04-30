@@ -9,26 +9,24 @@ import {
 } from '@ecdlink/ui';
 import { ResourcesIcons, ResourcesNames } from './resources.types';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ResourcesService } from '@/services/ResourcesService';
 import { useSelector } from 'react-redux';
-import { authSelectors } from '@/store/auth';
 import { AllResources } from './all-resources/all-resources';
-import { userSelectors } from '@/store/user';
 import { ComingSoon } from '../coming-soon/coming-soon';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { useDialog } from '@ecdlink/core';
+import { ResourcesLikedDto, useDialog } from '@ecdlink/core';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
-import { resourcesSelectors } from '@/store/resources';
-import { useHistory } from 'react-router';
+import { resourcesSelectors, resourcesThunkActions } from '@/store/resources';
+import { useAppDispatch } from '@/store';
 
 interface ResourceProps {
   setSelectedTabIndex: React.Dispatch<React.SetStateAction<number>>;
 }
 
 export const Resources = ({ setSelectedTabIndex }: ResourceProps) => {
-  const userAuth = useSelector(authSelectors.getAuthUser);
-  const user = useSelector(userSelectors.getUser);
-  const [resourcesLikedByUser, setResourcesLikedByUser] = useState<any[]>([]);
+  const appDispatch = useAppDispatch();
+  const [resourcesLikedByUser, setResourcesLikedByUser] = useState<
+    ResourcesLikedDto[]
+  >([]);
   const [viewAllResources, setViewAllResources] = useState(false);
   const [resourceTypeItem, setResourceTypeItem] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -63,14 +61,14 @@ export const Resources = ({ setSelectedTabIndex }: ResourceProps) => {
   );
 
   const handleGetResourcesLikedByUser = useCallback(async () => {
-    const response = await new ResourcesService(
-      userAuth?.auth_token!
-    )?.allResourceLikesForUser(user?.id!);
+    const response = await appDispatch(
+      resourcesThunkActions.getAllResourceLikesForUser({ overrideCache: true })
+    ).unwrap();
 
     if (response) {
       setResourcesLikedByUser(response);
     }
-  }, [user?.id, userAuth?.auth_token]);
+  }, [appDispatch]);
 
   const handleGetResourcesQueries = useCallback(async () => {
     if (isOnline) {

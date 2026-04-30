@@ -1,0 +1,5 @@
+mutation updateCoach($id: UUID!, $input: CoachInput) {
+  updateCoach(id: $id, input: $input) {
+    id
+  }
+}

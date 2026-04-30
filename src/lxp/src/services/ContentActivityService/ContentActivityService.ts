@@ -10,32 +10,7 @@ class ContentActivityService {
   async getActivities(locale: string): Promise<ActivityDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query GetAllActivity($locale: String) {
-          GetAllActivity(locale: $locale) {
-            id
-            name
-            type
-            subType
-            image
-            materials
-            description
-            notes
-            availableLanguages {
-              id
-              description
-              locale
-            }
-            image
-            subCategories {
-              id
-              imageUrl
-              name
-              imageHexColor
-            }
-          }
-        }
-      `,
+      id: 'GetAllActivity',
       variables: {
         locale: locale,
       },

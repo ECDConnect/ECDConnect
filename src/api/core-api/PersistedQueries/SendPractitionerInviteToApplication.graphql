@@ -1,0 +1,3 @@
+mutation SendPractitionerInviteToApplication($userId: String) {
+  sendPractitionerInviteToApplication(userId: $userId)
+}

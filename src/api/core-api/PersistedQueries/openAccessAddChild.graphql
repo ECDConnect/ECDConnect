@@ -1,0 +1,17 @@
+mutation openAccessAddChild(
+  $token: String
+  $caregiver: AddChildCaregiverTokenModelInput
+  $siteAddress: AddChildSiteAddressTokenModelInput
+  $child: AddChildTokenModelInput
+  $registration: AddChildRegistrationTokenModelInput
+  $consent: AddChildUserConsentTokenModelInput
+) {
+  openAccessAddChild(
+    token: $token
+    caregiver: $caregiver
+    siteAddress: $siteAddress
+    child: $child
+    registration: $registration
+    consent: $consent
+  )
+}

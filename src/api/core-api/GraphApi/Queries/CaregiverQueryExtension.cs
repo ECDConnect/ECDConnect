@@ -87,46 +87,5 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 }
             }
         }
-
-
-        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
-        public List<Caregiver> GetAllCaregiverByPractitioner(
-            [Service] IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory,
-            string practitionerId)
-        {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
-            var careGiverRepo = repoFactory.CreateRepository<Caregiver>(userContext: uId);
-            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            List<Practitioner> practitioners = practitionerRepo.GetAll().Where(x => x.UserId == Guid.Parse(practitionerId)).ToList();
-
-            if (practitioners.Count > 0)
-            {
-                List<Child> children = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practitioners.FirstOrDefault().Hierarchy)).ToList();
-                List<Caregiver> caregivers = new List<Caregiver>();
-                foreach (var child in children)
-                {
-                    if (child.CaregiverId != null)
-                    {
-                        Caregiver cg = careGiverRepo.GetById((Guid)child.CaregiverId);
-                        caregivers.Add(cg);
-                    }
-                }
-                return caregivers;
-            }
-            else
-            {
-                return careGiverRepo.GetAll().ToList();
-            }
-        }
-
-        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
-        public List<UserGrant> GetCaregiverGrants(
-            [Service] AuthenticationDbContext context,
-            Guid careGiverId)
-        {
-            return context.UserGrants.Where(x => x.UserId == careGiverId).ToList();
-        }
     }
 }

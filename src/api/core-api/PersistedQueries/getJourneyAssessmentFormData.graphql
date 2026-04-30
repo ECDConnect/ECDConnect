@@ -1,0 +1,34 @@
+query getJourneyAssessmentFormData($id: Int!) {
+  journeyAssessmentFormData(id: $id) {
+    id
+    name
+    description
+    roleIds
+    isPublished
+    publishedDate
+    logoUrl
+    provider
+    formPages {
+      id
+      name
+      description
+      stepNr
+      isScored
+      isScoreResult
+      canSkip
+      multiAnswers
+      info
+      formQuestions {
+        id
+        name
+        description
+        answerType
+        minValue
+        formQuestionOptions {
+          id
+          name
+        }
+      }
+    }
+  }
+}

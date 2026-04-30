@@ -1,0 +1,5 @@
+mutation UpdateLearnerHierarchy($learnerId: String, $classroomGroupId: String) {
+  updateLearnerHierarchy(learnerId: $learnerId, classroomGroupId: $classroomGroupId) {
+    id
+  }
+}

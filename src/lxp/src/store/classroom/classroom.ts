@@ -61,14 +61,6 @@ const classroomsSlice = createSlice({
         };
       }
     },
-    updateClassroomNumberPractitioners: (
-      state,
-      action: PayloadAction<number>
-    ) => {
-      if (state.classroom) {
-        state.classroom.numberPractitioners = action.payload;
-      }
-    },
     updateClassroomGroup: (
       state,
       action: PayloadAction<SimpleClassroomGroupDto>

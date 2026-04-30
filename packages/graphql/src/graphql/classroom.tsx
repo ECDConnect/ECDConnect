@@ -33,11 +33,6 @@ export const GetAllClassroom = gql`
         }
       }
       userId
-      isPrinciple
-      numberPractitioners
-      numberOfAssistants
-      numberOfOtherAssistants
-      doesOwnerTeach
       insertedDate
       siteAddressId
       siteAddress {
@@ -90,11 +85,6 @@ export const GetClassroomById = gql`
         }
       }
       userId
-      isPrinciple
-      numberPractitioners
-      numberOfAssistants
-      numberOfOtherAssistants
-      doesOwnerTeach
       insertedDate
     }
   }
@@ -106,11 +96,6 @@ export const CreateClassroom = gql`
       id
       name
       userId
-      isPrinciple
-      numberPractitioners
-      numberOfAssistants
-      numberOfOtherAssistants
-      doesOwnerTeach
     }
   }
 `;

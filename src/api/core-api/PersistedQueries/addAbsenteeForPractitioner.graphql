@@ -1,0 +1,27 @@
+mutation addAbsenteeForPractitioner(
+  $practitionerId: String
+  $reason: String
+  $absentDate: DateTime!
+  $loggedByUser: String
+  $classProgram: String
+  $reassignedToPractitioner: String
+  $absentDateEnd: DateTime!
+  $fromRole: String
+  $toRole: String
+  $roleAssignedToUser: String
+) {
+  addAbsenteeForPractitioner(
+    practitionerId: $practitionerId
+    reason: $reason
+    absentDate: $absentDate
+    loggedByUser: $loggedByUser
+    classProgram: $classProgram
+    reassignedToPractitioner: $reassignedToPractitioner
+    absentDateEnd: $absentDateEnd
+    fromRole: $fromRole
+    toRole: $toRole
+    roleAssignedToUser: $roleAssignedToUser
+  ) {
+    id
+  }
+}

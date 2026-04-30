@@ -1,0 +1,3 @@
+mutation addVisitData($input: CMSVisitDataInputModelInput) {
+  addVisitData(input: $input)
+}

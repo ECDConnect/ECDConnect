@@ -11,33 +11,7 @@ class ContentProgrammeThemeService {
   async getProgrammeThemes(locale: string): Promise<ProgrammeThemeDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query GetAllTheme($locale: String) {
-          GetAllTheme(locale: $locale) {          
-            id
-            name
-            color
-            imageUrl
-            themeLogo
-            themeDays {
-              id
-              day
-              largeGroupActivity {
-                id
-              }
-              smallGroupActivity {
-                id
-              }
-              storyActivity {
-                id
-              }
-              storyBook {
-                id
-              }
-            }            
-          }
-        }
-      `,
+      id: 'GetAllTheme',
       variables: {
         locale: locale,
       },

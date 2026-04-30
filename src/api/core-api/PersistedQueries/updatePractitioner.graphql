@@ -1,0 +1,5 @@
+mutation updatePractitioner($input: PractitionerInput, $id: UUID) {
+  updatePractitioner(input: $input, id: $id) {
+    id
+  }
+}

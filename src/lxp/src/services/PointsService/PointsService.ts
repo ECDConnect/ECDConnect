@@ -23,25 +23,7 @@ class PointsService {
       data: { pointsSummaryForUser: PointsUserSummary[] };
       errors?: {};
     }>(``, {
-      query: `
-        query pointsSummaryForUser($userId: String, $startDate: DateTime!, $endDate: DateTime!) {
-            pointsSummaryForUser(userId: $userId, startDate: $startDate, endDate: $endDate) {
-            pointsTotal
-            pointsYTD
-            timesScored
-            month
-            year
-            userId
-            dateScored
-            pointsActivity {
-              id
-              name
-              points
-              maxPointsIndividualMonthly
-              maxPointsIndividualYearly
-            }
-        }
-      }`,
+      id: 'pointsSummaryForUser',
       variables: {
         userId,
         startDate,
@@ -62,12 +44,7 @@ class PointsService {
       data: { addChildRegistrationPoints: boolean };
       errors?: {};
     }>(``, {
-      query: `
-        mutation addChildRegistrationPoints($userId: String) {
-          addChildRegistrationPoints(userId: $userId){
-          }
-        }
-      `,
+      id: 'addChildRegistrationPoints',
       variables: {
         userId: userId,
       },
@@ -88,15 +65,7 @@ class PointsService {
       data: { pointsTodoItems: PointsToDoItemModel };
       errors?: {};
     }>(``, {
-      query: `query GetPointsTodoItems($userId: UUID!) {    
-    pointsTodoItems(userId: $userId) {        
-        signedUpForApp        
-        isPartOfPreschool        
-        savedIncomeOrExpense        
-        plannedOneDay        
-        viewedCommunitySection    
-    }
-}`,
+      id: 'GetPointsTodoItems',
       variables: {
         userId,
       },
@@ -115,29 +84,7 @@ class PointsService {
       data: { sharedData: any };
       errors?: {};
     }>(``, {
-      query: `query GetSharedData($userId: UUID!, $isMonthly: Boolean!) {
-    sharedData(userId: $userId, isMonthly: $isMonthly) {
-        total
-        totalChildren
-        activityDetail {
-            activity
-            timesScored
-            pointsTotal
-        }
-        userRankingData {
-            pointsTotal
-            comparativeTargetPercentage
-            comparativeTargetPercentageColor
-            comparativePrimaryMessage
-            comparativeSecondaryMessage
-            nonComparativeTargetPercentage
-            nonComparativeTargetPercentageColor
-            nonComparativePrimaryMessage
-            nonComparativeSecondaryMessage
-            messageNr
-        }
-    }
-}`,
+      id: 'GetSharedData',
       variables: {
         userId,
         isMonthly,
@@ -157,21 +104,7 @@ class PointsService {
       data: { yearPointsView: PointsUserYearMonthSummary };
       errors?: {};
     }>(``, {
-      query: `query GetYearPointsView($userId: UUID!) {
-    yearPointsView(userId: $userId) {
-        total
-        monthSummary {
-            month
-            total
-            activityDetail {
-                activity
-                timesScored
-                pointsTotal
-            }
-        }
-        
-    }
-}`,
+      id: 'GetYearPointsView',
       variables: {
         userId,
       },

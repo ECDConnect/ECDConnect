@@ -52,7 +52,7 @@ export const PractitionerNotAccepted: React.FC<
     );
 
     await appDispatch(
-      practitionerThunkActions.getAllPractitioners({})
+      practitionerThunkActions.getAllPractitioners({ overrideCache: true })
     ).unwrap();
     history.push(ROUTES.BUSINESS, {
       activeTabIndex: BusinessTabItems.STAFF,

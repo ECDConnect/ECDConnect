@@ -9,7 +9,6 @@ import {
 } from '@ecdlink/ui';
 import { ResourcesIcons, ResourcesNames } from './resources.types';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ResourcesService } from '@/services/ResourcesService';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import { AllResources } from './all-resources/all-resources';
@@ -18,12 +17,14 @@ import { ComingSoon } from '@/pages/business/components/coming-soon/coming-soon'
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { useDialog } from '@ecdlink/core';
-import { resourcesSelectors } from '@/store/resources';
+import { resourcesSelectors, resourcesThunkActions } from '@/store/resources';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { TabsItems } from '../class-dashboard/class-dashboard.types';
+import { useAppDispatch } from '@/store';
 
 export const Resources = () => {
+  const appDispatch = useAppDispatch();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const user = useSelector(userSelectors.getUser);
   const [resourcesLikedByUser, setResourcesLikedByUser] = useState<any[]>([]);
@@ -64,9 +65,9 @@ export const Resources = () => {
   );
 
   const handleGetResourcesLikedByUser = useCallback(async () => {
-    const response = await new ResourcesService(
-      userAuth?.auth_token!
-    )?.allResourceLikesForUser(user?.id!);
+    const response = await appDispatch(
+      resourcesThunkActions.getAllResourceLikesForUser({ overrideCache: true })
+    ).unwrap();
 
     if (response) {
       setResourcesLikedByUser(response);

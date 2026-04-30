@@ -1,0 +1,8 @@
+query GetSupportRatings {
+  supportRatings {
+    id
+    name
+    imageName
+    ordering
+  }
+}

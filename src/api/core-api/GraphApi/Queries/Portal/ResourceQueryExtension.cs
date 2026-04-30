@@ -199,26 +199,26 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
 
 
         [Permission(PermissionGroups.GENERAL, GraphActionEnum.View)]
-        public UserResourceLikes GetResourceLikedStatusForUser(
+        public bool GetResourceLikedStatusForUser(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             int contentId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var userResourceLikesRepo = repoFactory.CreateRepository<UserResourceLikes>();
-            return userResourceLikesRepo.GetAll().Where(x => x.UserId == uId && x.ContentId == contentId).FirstOrDefault();
+            var record =  userResourceLikesRepo.GetAll().Where(x => x.UserId == uId && x.ContentId == contentId).FirstOrDefault();
+            return record?.IsActive ?? false;
         }
 
 
         [Permission(PermissionGroups.GENERAL, GraphActionEnum.View)]
         public List<UserResourcesModel> GetAllResourceLikesForUser(
             [Service] IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory,
-            Guid userId)
+            IGenericRepositoryFactory repoFactory)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var userId = contextAccessor.HttpContext.GetUser().Id;
             var userResourceLikesRepo = repoFactory.CreateRepository<UserResourceLikes>();
-            return userResourceLikesRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true).Select(x => new UserResourcesModel() { IsActive = x.IsActive, ContentId = x.ContentId}).ToList();
+            return userResourceLikesRepo.GetAll().Where(x => x.UserId == userId && x.IsActive).Select(x => new UserResourcesModel() { IsActive = x.IsActive, ContentId = x.ContentId}).ToList();
         }
 
         [Permission(PermissionGroups.GENERAL, GraphActionEnum.View)]

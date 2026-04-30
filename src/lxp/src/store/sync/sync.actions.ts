@@ -320,7 +320,10 @@ export const pullRemoteChanges = createAsyncThunk<
         otherPromises.push(
           retryWithExponentialBackoff(() =>
             dispatch(
-              practitionerThunkActions.getPractitionerPermissions({ userId })
+              practitionerThunkActions.getPractitionerPermissions({
+                userId,
+                overrideCache: true,
+              })
             ).unwrap()
           )
         );
@@ -389,11 +392,6 @@ export const triggerBackgroundSync = createAsyncThunk<
       ).unwrap();
 
       if (includeOfflineSyncData) {
-        console.log('[Sync] isPrincipal:', practitioner?.isPrincipal);
-        console.log(
-          '[Sync] using steps:',
-          practitioner?.isPrincipal ? 'PRINCIPAL' : 'PRACTITIONER'
-        );
         const syncAction = practitioner?.isPrincipal
           ? syncOfflineData
           : syncOfflineDataForPractitioner;

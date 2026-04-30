@@ -1762,16 +1762,11 @@ export type Classroom = {
   childProgressReportPeriods?: Maybe<Array<Maybe<ChildProgressReportPeriod>>>;
   classroomGroups?: Maybe<Array<Maybe<ClassroomGroup>>>;
   classroomImageUrl?: Maybe<Scalars['String']>;
-  doesOwnerTeach?: Maybe<Scalars['Boolean']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
   isDummySchool?: Maybe<Scalars['Boolean']>;
-  isPrinciple?: Maybe<Scalars['Boolean']>;
   name?: Maybe<Scalars['String']>;
-  numberOfAssistants?: Maybe<Scalars['Int']>;
-  numberOfOtherAssistants?: Maybe<Scalars['Int']>;
-  numberPractitioners?: Maybe<Scalars['Int']>;
   preschoolCode?: Maybe<Scalars['String']>;
   programmes?: Maybe<Array<Maybe<Programme>>>;
   siteAddress?: Maybe<SiteAddress>;
@@ -1817,16 +1812,11 @@ export type ClassroomFilterInput = {
   childProgressReportPeriods?: InputMaybe<ListFilterInputTypeOfChildProgressReportPeriodFilterInput>;
   classroomGroups?: InputMaybe<ListFilterInputTypeOfClassroomGroupFilterInput>;
   classroomImageUrl?: InputMaybe<StringOperationFilterInput>;
-  doesOwnerTeach?: InputMaybe<BooleanOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   isDummySchool?: InputMaybe<BooleanOperationFilterInput>;
-  isPrinciple?: InputMaybe<BooleanOperationFilterInput>;
   name?: InputMaybe<StringOperationFilterInput>;
-  numberOfAssistants?: InputMaybe<ComparableNullableOfInt32OperationFilterInput>;
-  numberOfOtherAssistants?: InputMaybe<ComparableNullableOfInt32OperationFilterInput>;
-  numberPractitioners?: InputMaybe<ComparableNullableOfInt32OperationFilterInput>;
   or?: InputMaybe<Array<ClassroomFilterInput>>;
   preschoolCode?: InputMaybe<StringOperationFilterInput>;
   programmes?: InputMaybe<ListFilterInputTypeOfProgrammeFilterInput>;
@@ -1946,15 +1936,10 @@ export type ClassroomInput = {
   >;
   ClassroomGroups?: InputMaybe<Array<InputMaybe<ClassroomGroupInput>>>;
   ClassroomImageUrl?: InputMaybe<Scalars['String']>;
-  DoesOwnerTeach?: InputMaybe<Scalars['Boolean']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   IsDummySchool?: InputMaybe<Scalars['Boolean']>;
-  IsPrinciple?: InputMaybe<Scalars['Boolean']>;
   Name?: InputMaybe<Scalars['String']>;
-  NumberOfAssistants?: InputMaybe<Scalars['Int']>;
-  NumberOfOtherAssistants?: InputMaybe<Scalars['Int']>;
-  NumberPractitioners?: InputMaybe<Scalars['Int']>;
   PreschoolCode?: InputMaybe<Scalars['String']>;
   Programmes?: InputMaybe<Array<InputMaybe<ProgrammeInput>>>;
   SiteAddress?: InputMaybe<SiteAddressInput>;
@@ -1985,9 +1970,6 @@ export type ClassroomModel = {
   id: Scalars['UUID'];
   isDummySchool?: Maybe<Scalars['Boolean']>;
   name?: Maybe<Scalars['String']>;
-  numberOfAssistants?: Maybe<Scalars['Int']>;
-  numberOfOtherAssistants?: Maybe<Scalars['Int']>;
-  numberPractitioners?: Maybe<Scalars['Int']>;
   preschoolCode?: Maybe<Scalars['String']>;
   principal?: Maybe<BasePractitionerModel>;
   siteAddress?: Maybe<BaseSiteAddressModel>;
@@ -1995,16 +1977,11 @@ export type ClassroomModel = {
 
 export type ClassroomSortInput = {
   classroomImageUrl?: InputMaybe<SortEnumType>;
-  doesOwnerTeach?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
   isDummySchool?: InputMaybe<SortEnumType>;
-  isPrinciple?: InputMaybe<SortEnumType>;
   name?: InputMaybe<SortEnumType>;
-  numberOfAssistants?: InputMaybe<SortEnumType>;
-  numberOfOtherAssistants?: InputMaybe<SortEnumType>;
-  numberPractitioners?: InputMaybe<SortEnumType>;
   preschoolCode?: InputMaybe<SortEnumType>;
   siteAddress?: InputMaybe<SiteAddressSortInput>;
   siteAddressId?: InputMaybe<SortEnumType>;

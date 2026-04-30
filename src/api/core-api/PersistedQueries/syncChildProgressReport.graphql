@@ -1,0 +1,9 @@
+mutation updateChildProgressReport($input: ChildProgressReportInput, $id: UUID) {
+  updateChildProgressReport(input: $input, id: $id) {
+    id
+    reportContent
+    classroomGroupId
+    userId
+    childId
+  }
+}

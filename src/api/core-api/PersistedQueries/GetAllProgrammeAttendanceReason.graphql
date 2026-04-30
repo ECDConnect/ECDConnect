@@ -1,0 +1,6 @@
+query GetAllProgrammeAttendanceReason($isActive: Boolean = true) {
+  GetAllProgrammeAttendanceReason(where: { isActive: { eq: $isActive } }) {
+    id
+    reason
+  }
+}

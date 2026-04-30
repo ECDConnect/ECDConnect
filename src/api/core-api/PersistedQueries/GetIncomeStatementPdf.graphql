@@ -1,0 +1,3 @@
+query GetIncomeStatementPdf($statementId: UUID!) {
+  incomeStatementPdf(statementId: $statementId)
+}

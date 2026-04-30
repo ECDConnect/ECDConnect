@@ -178,7 +178,9 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     const promises: Promise<any>[] = !isCoach
       ? [
           appDispatch(
-            practitionerThunkActions.getAllPractitioners({})
+            practitionerThunkActions.getAllPractitioners({
+              overrideCache: true,
+            })
           ).unwrap(),
           appDispatch(documentThunkActions.getDocuments({})).unwrap(),
           appDispatch(staticDataThunkActions.getRoles({})).unwrap(),
@@ -578,7 +580,9 @@ const InitialStoreSetup: React.FC = ({ children }) => {
           await appDispatch(coachThunkActions.getCoachByUserId({})).unwrap())();
         (async () =>
           await appDispatch(
-            practitionerThunkActions.getAllPractitioners({})
+            practitionerThunkActions.getAllPractitioners({
+              overrideCache: true,
+            })
           ).unwrap())();
         (async () =>
           await appDispatch(
