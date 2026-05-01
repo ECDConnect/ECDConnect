@@ -18,6 +18,9 @@ if (
 
 const updateHandler = (registration: ServiceWorkerRegistration) => {
   if (window.confirm('An update is available. Would you like to reload?')) {
+    if (registration.waiting) {
+      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+    }
     window.location.reload();
   }
 };
