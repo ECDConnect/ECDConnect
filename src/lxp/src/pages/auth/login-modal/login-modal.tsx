@@ -28,7 +28,8 @@ import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
 import { triggerBackgroundSync } from '@/store/sync/sync.actions';
 const CryptoJS = require('crypto-js');
-const { version } = require('../../../../package.json');
+const version: string =
+  process.env.REACT_APP_VERSION ?? require('../../../../package.json').version;
 
 interface LoginModalProps {
   loginSuccessful: () => void;
