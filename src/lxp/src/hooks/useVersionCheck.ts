@@ -21,6 +21,10 @@ function isVersionBelowMinimum(current: string, minimum: string): boolean {
   return curPatch < minPatch;
 }
 
+// Falls back to local settings.json in dev when env var is not set
+const remoteConfigUrl =
+  process.env.REACT_APP_REMOTE_CONFIG_URL ?? '/settings.json';
+
 export const useVersionCheck = () => {
   const { isOnline } = useOnlineStatus();
   const [updateRequired, setUpdateRequired] = useState(false);
@@ -28,7 +32,7 @@ export const useVersionCheck = () => {
   useEffect(() => {
     if (!isOnline) return;
 
-    fetch(`/settings.json?v=${Date.now()}`)
+    fetch(`${remoteConfigUrl}?v=${Date.now()}`)
       .then((res) => res.json())
       .then((data: { minimumAppVersion?: string }) => {
         const minimum = data?.minimumAppVersion;
