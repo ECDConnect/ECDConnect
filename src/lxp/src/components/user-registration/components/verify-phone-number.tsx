@@ -23,7 +23,8 @@ import {
 import { useState } from 'react';
 import { useHistory } from 'react-router';
 import ReactGA from 'react-ga4';
-const { version } = require('../../../../package.json');
+const version: string =
+  process.env.REACT_APP_VERSION ?? require('../../../../package.json').version;
 
 interface VerifyPhoneNumberProps {
   closeAction?: (item: boolean) => void;

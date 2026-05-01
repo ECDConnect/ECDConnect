@@ -59,6 +59,7 @@ import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { CommunityRouteState } from '@/pages/community/community.types';
 import { EditWhatsAppConsent } from './edit-whatsAppConsent/edit-whatsAppConsent';
 import { useTenant } from '@/hooks/useTenant';
+import { settingSelectors } from '@store/settings';
 
 export const PractitionerAbout: React.FC = () => {
   const location = useLocation<PractitionerAboutRouteState>();
@@ -69,7 +70,9 @@ export const PractitionerAbout: React.FC = () => {
   const isOnlineRef = useRef(isOnline);
 
   const { userProfilePicture, deleteDocument } = useDocuments();
-
+  const applicationVersion = useSelector(
+    settingSelectors.getApplicationVersion
+  );
   const communityProfile = useSelector(communitySelectors.getCommunityProfile);
   const [editProfilePictureVisible, setEditProfilePictureVisible] =
     useState(false);
@@ -570,6 +573,14 @@ export const PractitionerAbout: React.FC = () => {
             listItems={listItems}
             type={'ActionList'}
           ></StackedList>
+          {applicationVersion && (
+            <Typography
+              type="help"
+              className="pt-4 text-left"
+              color="textMid"
+              text={`Version ${applicationVersion}`}
+            />
+          )}
           {practitioner?.signingSignature && (
             <img
               alt="signature"
