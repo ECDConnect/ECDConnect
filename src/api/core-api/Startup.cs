@@ -210,6 +210,12 @@ namespace EcdLink.Api.CoreApi
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider, Microsoft.Extensions.Logging.ILogger<Startup> logger)
         {
+            // Must be first: sets Request.IsHttps from X-Forwarded-Proto so that UseHsts works behind Azure App Service's TLS termination
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            });
+
             if (env.IsDevelopment())
             {
                 DiagnosticListener.AllListeners.Subscribe(new DiagnosticObserver());
@@ -231,10 +237,6 @@ namespace EcdLink.Api.CoreApi
             {
                 app.UseResponseCompression();
             }
-            app.UseForwardedHeaders(new ForwardedHeadersOptions
-            {
-                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-            });
             app.UseRateLimiter();
             app.UseCors("CorsPolicy");
             app.UseCookiePolicy();
