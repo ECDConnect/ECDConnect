@@ -195,11 +195,26 @@ namespace ECDLink.UrlShortner.Managers
             if (string.IsNullOrWhiteSpace(token))
                 return null;
 
-            return await _dbContext.ShortUrls
-                .Where(x => x.Clicked == 0 && x.IsActive && x.URL.EndsWith(token))
+            string tokenParam = $"token={token}";
+
+            // Pull candidates from DB (coarse filter)
+            var candidates = await _dbContext.ShortUrls
+                .Where(x => x.Clicked == 0 && x.IsActive && x.URL.Contains(tokenParam))
                 .OrderByDescending(x => x.InsertedDate)
-                .Select(x => x.UserId)
-                .FirstOrDefaultAsync();
+                .Select(x => new { x.UserId, x.URL })
+                .ToListAsync();
+
+            // Precise match: extract the token query param and compare
+            return candidates
+                .FirstOrDefault(x =>
+                {
+                    if (!Uri.TryCreate(x.URL, UriKind.Absolute, out var uri))
+                        return false;
+
+                    var queryParams = System.Web.HttpUtility.ParseQueryString(uri.Query);
+                    return string.Equals(queryParams["token"], token, StringComparison.Ordinal);
+                })
+                ?.UserId;
         }
 
         public async Task UpdateMessageNotificationResult(Guid userId, string messageType, int notificationResult, Guid? messageLogId = null)
