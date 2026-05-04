@@ -9,6 +9,10 @@ import {
 import { ActionModal, DialogPosition, renderIcon } from '@ecdlink/ui';
 import { IonApp, IonRouterOutlet } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
+import '@ionic/react/css/core.css';
+import '@ionic/react/css/display.css';
+import '@ionic/react/css/flex-utils.css';
+import '@ionic/react/css/float-elements.css';
 import { default as React, useEffect, useState } from 'react';
 import ReactGA from 'react-ga4';
 import TagManager from 'react-gtm-module';
