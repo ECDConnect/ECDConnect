@@ -197,13 +197,6 @@ namespace EcdLink.Api.CoreApi
 
             ECDLink.AutomatedJobs.AutomatedJobsStartup.ConfigureServices(services, Configuration);
 
-            services.AddHsts(options =>
-            {
-                options.MaxAge = TimeSpan.FromDays(365);
-                options.IncludeSubDomains = true;
-                options.Preload = true;
-            });
-
             ConfigureCompression(services, Configuration);
         }
 
@@ -221,10 +214,6 @@ namespace EcdLink.Api.CoreApi
                 DiagnosticListener.AllListeners.Subscribe(new DiagnosticObserver());
 
                 app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                app.UseHsts();
             }
 
             ConfigureResponseHeaders(app);
@@ -266,17 +255,19 @@ namespace EcdLink.Api.CoreApi
             var headers = Configuration.GetSection("ResponseHeaders")
                 .GetChildren()
                 .ToDictionary(x => x.Key, x => x.Value);
-            if (headers.Count > 0)
+
+            app.Use(async (context, next) =>
             {
-                app.Use(async (context, next) =>
+                if (!Environment.IsDevelopment())
                 {
-                    foreach (var header in headers)
-                    {
-                        context.Response.Headers[header.Key] = header.Value;
-                    }
-                    await next();
-                });
-            }
+                    context.Response.Headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload";
+                }
+                foreach (var header in headers)
+                {
+                    context.Response.Headers[header.Key] = header.Value;
+                }
+                await next();
+            });
         }
 
         private void ConfigureLongPathProtection(IApplicationBuilder app)
