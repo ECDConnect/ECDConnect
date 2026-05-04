@@ -138,7 +138,10 @@ export const SignUp: React.FC = () => {
           setIsLoading(false);
           return;
         }
-        if (informationVerified.errorCode === 1) {
+        if (
+          informationVerified.errorCode === 1 ||
+          informationVerified.errorCode === 4
+        ) {
           setRequestError(`If you are having trouble, tap "Get help"`);
           setIsLoading(false);
           return;
