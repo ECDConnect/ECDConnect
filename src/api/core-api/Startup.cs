@@ -197,23 +197,28 @@ namespace EcdLink.Api.CoreApi
 
             ECDLink.AutomatedJobs.AutomatedJobsStartup.ConfigureServices(services, Configuration);
 
+            services.AddHsts(options =>
+            {
+                options.MaxAge = TimeSpan.FromDays(365);
+                options.IncludeSubDomains = true;
+                options.Preload = true;
+            });
+
             ConfigureCompression(services, Configuration);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider, Microsoft.Extensions.Logging.ILogger<Startup> logger)
         {
-            // Must be first: sets Request.IsHttps from X-Forwarded-Proto so that UseHsts works behind Azure App Service's TLS termination
-            app.UseForwardedHeaders(new ForwardedHeadersOptions
-            {
-                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-            });
-
             if (env.IsDevelopment())
             {
                 DiagnosticListener.AllListeners.Subscribe(new DiagnosticObserver());
 
                 app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                app.UseHsts();
             }
 
             ConfigureResponseHeaders(app);
@@ -226,6 +231,10 @@ namespace EcdLink.Api.CoreApi
             {
                 app.UseResponseCompression();
             }
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            });
             app.UseRateLimiter();
             app.UseCors("CorsPolicy");
             app.UseCookiePolicy();
@@ -255,19 +264,17 @@ namespace EcdLink.Api.CoreApi
             var headers = Configuration.GetSection("ResponseHeaders")
                 .GetChildren()
                 .ToDictionary(x => x.Key, x => x.Value);
-
-            app.Use(async (context, next) =>
+            if (headers.Count > 0)
             {
-                if (!Environment.IsDevelopment())
+                app.Use(async (context, next) =>
                 {
-                    context.Response.Headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload";
-                }
-                foreach (var header in headers)
-                {
-                    context.Response.Headers[header.Key] = header.Value;
-                }
-                await next();
-            });
+                    foreach (var header in headers)
+                    {
+                        context.Response.Headers[header.Key] = header.Value;
+                    }
+                    await next();
+                });
+            }
         }
 
         private void ConfigureLongPathProtection(IApplicationBuilder app)
