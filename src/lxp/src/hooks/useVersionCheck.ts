@@ -61,7 +61,7 @@ export const useVersionCheck = () => {
         });
 
     check();
-    const interval = setInterval(check, 1 * 60 * 1000);
+    const interval = setInterval(check, 10 * 60 * 1000);
     return () => clearInterval(interval);
   }, [isOnline, remoteConfigUrl]);
 
