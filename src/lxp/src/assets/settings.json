@@ -4,5 +4,5 @@
   "themeUrl": "https://ecdconnectstoragedev.blob.core.windows.net/theme/ecdconnect.json",
   "facebookAppId": "",
   "googleClientId": "",
-  "minimumAppVersion": "1.0.0"
+  "minimumAppVersion": "1.1.1"
 }
