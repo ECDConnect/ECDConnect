@@ -32,17 +32,22 @@ export const useVersionCheck = () => {
   useEffect(() => {
     if (!isOnline) return;
 
-    fetch(`${remoteConfigUrl}?v=${Date.now()}`)
-      .then((res) => res.json())
-      .then((data: { minimumAppVersion?: string }) => {
-        const minimum = data?.minimumAppVersion;
-        if (minimum && isVersionBelowMinimum(currentVersion, minimum)) {
-          setUpdateRequired(true);
-        }
-      })
-      .catch(() => {
-        // Network error or malformed JSON — don't block the user
-      });
+    const check = () =>
+      fetch(`${remoteConfigUrl}?v=${Date.now()}`)
+        .then((res) => res.json())
+        .then((data: { minimumAppVersion?: string }) => {
+          const minimum = data?.minimumAppVersion;
+          if (minimum && isVersionBelowMinimum(currentVersion, minimum)) {
+            setUpdateRequired(true);
+          }
+        })
+        .catch(() => {
+          // Network error or malformed JSON — don't block the user
+        });
+
+    check();
+    const interval = setInterval(check, 5 * 60 * 1000);
+    return () => clearInterval(interval);
   }, [isOnline]);
 
   return { updateRequired };
