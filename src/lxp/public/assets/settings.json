@@ -2,7 +2,7 @@
   "graphQlApi": "https://ecd-connect-develop-api.azurewebsites.net/graphql/",
   "authApi": "https://ecd-connect-develop-api.azurewebsites.net",
   "themeUrl": "https://ecdconnectstoragedev.blob.core.windows.net/theme/ecdconnect.json",
+  "configUrl": "https://ecdconnectstoragedev.blob.core.windows.net/config/remote-config.json",
   "facebookAppId": "",
-  "googleClientId": "",
-  "minimumAppVersion": "1.0.0"
+  "googleClientId": ""
 }

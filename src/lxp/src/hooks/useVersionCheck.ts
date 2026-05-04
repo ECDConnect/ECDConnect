@@ -21,22 +21,37 @@ function isVersionBelowMinimum(current: string, minimum: string): boolean {
   return curPatch < minPatch;
 }
 
-// Falls back to local settings.json in dev when env var is not set
-const remoteConfigUrl =
-  process.env.REACT_APP_REMOTE_CONFIG_URL ?? '/settings.json';
-
 export const useVersionCheck = () => {
   const { isOnline } = useOnlineStatus();
   const [updateRequired, setUpdateRequired] = useState(false);
+  // In local dev REACT_APP_REMOTE_CONFIG_URL can be set directly; in production
+  // the URL is read at runtime from settings.json (one build, multiple environments)
+  const [remoteConfigUrl, setRemoteConfigUrl] = useState<string>(
+    process.env.REACT_APP_REMOTE_CONFIG_URL ?? ''
+  );
 
   useEffect(() => {
-    if (!isOnline) return;
+    if (remoteConfigUrl) return;
+    fetch(`${window.location.origin}/settings.json`)
+      .then((res) => res.json())
+      .then((data: { configUrl?: string }) => {
+        if (data?.configUrl) setRemoteConfigUrl(data.configUrl);
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    console.log('remote url : ', remoteConfigUrl);
+    if (!isOnline || !remoteConfigUrl) return;
+    console.log('current version : ', currentVersion);
 
     const check = () =>
       fetch(`${remoteConfigUrl}?v=${Date.now()}`)
         .then((res) => res.json())
         .then((data: { minimumAppVersion?: string }) => {
           const minimum = data?.minimumAppVersion;
+          console.log('minimum version : ', minimum);
+
           if (minimum && isVersionBelowMinimum(currentVersion, minimum)) {
             setUpdateRequired(true);
           }
@@ -46,9 +61,9 @@ export const useVersionCheck = () => {
         });
 
     check();
-    const interval = setInterval(check, 5 * 60 * 1000);
+    const interval = setInterval(check, 1 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [isOnline]);
+  }, [isOnline, remoteConfigUrl]);
 
   return { updateRequired };
 };
