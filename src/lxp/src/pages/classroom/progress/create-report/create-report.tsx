@@ -141,6 +141,7 @@ export const ProgressCreateReport: React.FC = () => {
             className="mt-6 mb-4"
             onChange={(event) => setChildEnjoys(event.target.value)}
             value={childEnjoys}
+            maxCharacters={500}
           />
         )}
         {/* STEP 2 */}
@@ -155,6 +156,7 @@ export const ProgressCreateReport: React.FC = () => {
               className="mt-6 mb-4"
               onChange={(event) => setGoodProgressWith(event.target.value)}
               value={goodProgressWith}
+              maxCharacters={250}
             />
             {!!currentReport?.notes && (
               <>
@@ -184,6 +186,7 @@ export const ProgressCreateReport: React.FC = () => {
             className="mt-6 mb-4"
             onChange={(event) => setHowCanCaregiverSupport(event.target.value)}
             value={howCanCaregiverSupport}
+            maxCharacters={500}
           />
         )}
         <Button
