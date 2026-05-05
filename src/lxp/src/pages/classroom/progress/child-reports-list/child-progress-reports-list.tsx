@@ -97,11 +97,17 @@ export const ChildProgressReportsList: React.FC = () => {
     },
   ];
 
-  const reports = isWalkthrough ? walkthroughReports : detailedReports;
+  const currentYear = new Date().getFullYear();
+  const filteredReports = detailedReports.filter(
+    (report) =>
+      report.reportingPeriodStartDate.getFullYear() === currentYear ||
+      !!report.dateCompleted
+  );
+  const reports = isWalkthrough ? walkthroughReports : filteredReports;
 
   const showShareButton = useMemo<boolean>(() => {
-    return detailedReports.filter((x) => !!x.dateCompleted).length > 0;
-  }, [detailedReports]);
+    return filteredReports.filter((x) => !!x.dateCompleted).length > 0;
+  }, [filteredReports]);
 
   return (
     <BannerWrapper

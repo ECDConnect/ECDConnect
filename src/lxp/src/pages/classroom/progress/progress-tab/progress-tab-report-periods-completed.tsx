@@ -37,16 +37,23 @@ export const ProgressTabReportPeriodsCompleted: React.FC = () => {
    * Calculate progress per report period
    */
   const reportProgress = useMemo(() => {
-    return reportPeriods.map((period) => {
-      const reports = allProgressReports.filter(
-        (r) => r.childProgressReportPeriodId === period.id
-      );
-      const completed = reports.filter((r) => !!r.dateCompleted).length;
-      const percentage = reports.length
-        ? Math.ceil((completed / reports.length) * 100)
-        : 0;
-      return { ...period, percentage };
-    });
+    const currentYear = new Date().getFullYear();
+    return reportPeriods
+      .filter((period) =>
+        period.startDate
+          ? new Date(period.startDate).getFullYear() === currentYear
+          : false
+      )
+      .map((period) => {
+        const reports = allProgressReports.filter(
+          (r) => r.childProgressReportPeriodId === period.id
+        );
+        const completed = reports.filter((r) => !!r.dateCompleted).length;
+        const percentage = reports.length
+          ? Math.ceil((completed / reports.length) * 100)
+          : 0;
+        return { ...period, percentage };
+      });
   }, [reportPeriods, allProgressReports]);
 
   /**
