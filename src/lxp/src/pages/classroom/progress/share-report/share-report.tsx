@@ -154,6 +154,15 @@ export const ProgressShareReport: React.FC = () => {
     }
   };
 
+  const dropDownList = detailedReports
+    .filter((x) => !!x.dateCompleted)
+    .map((x) => ({
+      label: `Report ${x.reportingPeriodNumber} - ${new Date(
+        x.reportingPeriodEndDate
+      ).getFullYear()}`,
+      value: x.id,
+    }));
+
   return (
     <BannerWrapper
       size={'small'}
@@ -197,14 +206,7 @@ export const ProgressShareReport: React.FC = () => {
           textColor="textMid"
           placeholder={'Tap to choose report'}
           labelColor="textDark"
-          list={detailedReports
-            .filter((x) => !!x.dateCompleted)
-            .map((x) => ({
-              label: `Report ${x.reportingPeriodNumber} - ${new Date(
-                x.reportingPeriodEndDate
-              ).getFullYear()}`,
-              value: x.id,
-            }))}
+          list={dropDownList}
           selectedValue={selectedReport}
           onChange={async (item) => {
             setSelectedReport(item);
@@ -268,7 +270,7 @@ export const ProgressShareReport: React.FC = () => {
           type="filled"
           icon={'ShareIcon'}
           text={isLoading ? 'Loading report...' : 'Share report'}
-          disabled={!selectedReport || !isReportReady}
+          disabled={!selectedReport || !isReportReady || !dropDownList.length}
           isLoading={isLoading}
         />
       </div>
