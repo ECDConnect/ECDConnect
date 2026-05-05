@@ -272,7 +272,7 @@ namespace EcdLink.Api.CoreApi.Services
             // 1. Active reports within period
             // 2. Completed reports outside period
             var reportPeriods = _childProgressReportPeriodRepo.GetAll()
-                                        .Where(x => classroomIds.Contains(x.ClassroomId) && x.IsActive && x.StartDate.Year == today.Year)
+                                        .Where(x => classroomIds.Contains(x.ClassroomId) && x.IsActive)
                                         .Select(x => new { x.Id, x.StartDate, x.EndDate }).AsNoTracking().AsQueryable();
 
             var allPeriodIds = reportPeriods.Select(x => x.Id);
