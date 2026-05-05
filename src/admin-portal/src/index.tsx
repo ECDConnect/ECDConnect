@@ -13,6 +13,7 @@ ReactDOM.render(
       themeUrl: process.env.REACT_APP_THEME || '',
       facebookAppId: '',
       googleClientId: '',
+      configUrl: process.env.REACT_REMOTE_CONFIG_URL || '',
     }}
   >
     <SnackbarProvider>

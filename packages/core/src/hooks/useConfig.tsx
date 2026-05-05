@@ -37,6 +37,7 @@ function ConfigProvider({
           Config.themeUrl = data.themeUrl;
           Config.facebookAppId = data.facebookAppId;
           Config.googleClientId = data.googleClientId;
+          Config.configUrl = data.configUrl;
         }
 
         setLoading(false);
@@ -55,6 +56,7 @@ function ConfigProvider({
       Config.themeUrl = config.themeUrl;
       Config.facebookAppId = config.facebookAppId;
       Config.googleClientId = config.googleClientId;
+      Config.configUrl = config.configUrl;
     } else {
       getData();
     }

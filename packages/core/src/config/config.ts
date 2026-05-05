@@ -4,6 +4,7 @@ export type ConfigType = {
   themeUrl: string;
   facebookAppId: string | undefined;
   googleClientId: string | undefined;
+  configUrl: string | undefined;
 };
 
 export const Config: ConfigType = {
@@ -12,6 +13,7 @@ export const Config: ConfigType = {
   themeUrl: '',
   facebookAppId: '',
   googleClientId: '',
+  configUrl: '',
 };
 
 export const toolbarOptions = [

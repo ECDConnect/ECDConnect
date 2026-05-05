@@ -70,7 +70,8 @@ import { triggerBackgroundSync } from '@/store/sync/sync.actions';
 import { ReactComponent as RobotImage } from '../../assets/iconRobot.svg';
 import { cloneDeep } from 'lodash';
 
-const { version } = require('../../../package.json');
+const version: string =
+  process.env.REACT_APP_VERSION ?? require('../../../package.json').version;
 export interface DashboardRouteState {
   isFromLogin?: boolean;
   isFromCompleteProfile?: boolean;
