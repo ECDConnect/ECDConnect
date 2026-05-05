@@ -22,7 +22,8 @@ import InitialNotificationSetup from './initial-notifications-setup';
 import InitialStoreSetup from './initial-store-setup';
 import { LoginModal } from './pages/auth/login-modal/login-modal';
 import { authActions, authSelectors } from './store/auth';
-import { useInactivityLock } from './hooks/useInactivityLock';
+import { useVersionCheck } from './hooks/useVersionCheck';
+import { UpdateRequired } from './pages/update-required/update-required';
 import { differenceInHours, isSameDay } from 'date-fns';
 import { stopReportingRuntimeErrors } from 'react-error-overlay';
 import { useTenant } from './hooks/useTenant';
@@ -42,6 +43,7 @@ const App: React.FC = () => {
   const user = useSelector(authSelectors.getAuthUser);
   const userExpired = useSelector(authSelectors.getUserExpired);
   const isAppLocked = useSelector(authSelectors.getIsAppLocked);
+  const { updateRequired } = useVersionCheck();
   const [freeMemory, setFreeMemory] = useState(0);
   const [errorMessage, setErrorMessage] = useState(false);
 
@@ -327,7 +329,7 @@ const App: React.FC = () => {
       <Helmet>
         <title>{getTitle()}</title>
       </Helmet>
-      {routerContent}
+      {updateRequired ? <UpdateRequired /> : routerContent}
     </IonApp>
   );
 
