@@ -53,10 +53,12 @@ export const useProgressForChild = (childId: string) => {
   // Sets up reports, adding details for reporting period, skill names (for locale) etc
   const detailedReports = useMemo<ChildProgressDetailedReport[]>(() => {
     // Filter out incomplete reports from past reporting periods
-    const details = allReports.map((report) => {
+    const details = allReports.flatMap((report) => {
       const reportingPeriod = allReportingPeriods.find(
         (x) => x.id === report.childProgressReportPeriodId
       );
+
+      if (!reportingPeriod) return [];
 
       const doNotKnowSkillCount = report.skillObservations.filter(
         (x) => x.value === ProgressSkillValues.DoNotKnow
@@ -108,12 +110,12 @@ export const useProgressForChild = (childId: string) => {
                   skillObs.value === ProgressSkillValues.Yes)),
           };
         }),
-        reportingPeriodStartDate: reportingPeriod!.startDate,
-        reportingPeriodEndDate: reportingPeriod!.endDate,
-        reportingPeriodNumber: reportingPeriod!.reportNumber,
+        reportingPeriodStartDate: reportingPeriod.startDate,
+        reportingPeriodEndDate: reportingPeriod.endDate,
+        reportingPeriodNumber: reportingPeriod.reportNumber,
         ageInMonthsAtReport: !!child?.user?.dateOfBirth
           ? differenceInMonths(
-              new Date(reportingPeriod!.endDate),
+              new Date(reportingPeriod.endDate),
               new Date(child.user.dateOfBirth)
             )
           : undefined,
