@@ -9,6 +9,8 @@ using ECDLink.Security.Helpers;
 using ECDLink.Tenancy.Context;
 using ECDLink.Tenancy.Model;
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.Security.Managers
@@ -56,18 +58,39 @@ namespace EcdLink.Api.CoreApi.Security.Managers
         public async Task SendForgotPasswordMessageAsync(ApplicationUser user, string token)
         {
             var encodedToken = TokenHelper.EncodeToken(token);
+            var loginTypes = new List<string> {"google", "facebook"};
 
-            var forgotPasswordCallback = $"{_options.Value.ForgotPassword}?username={user.UserName}&token={encodedToken}";
-            var applicationName = TenantExecutionContext.Tenant.ApplicationName;
+            var isGoogleFacebookLogin = loginTypes.Contains(user.RegisterType);
 
-            var notificationProvider = _notificationProviderFactory.Create(user);
-            await notificationProvider
-              .SetMessageTemplate(TemplateTypeEnum.ForgotPassword)
-              .AddOrUpdateFieldReplacement(MessageTemplateConstants.PasswordResetLink, forgotPasswordCallback)
-              .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
-              .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, user.FirstName)
-              .AddOrUpdateFieldReplacement(MessageTemplateConstants.Username, user.UserName)
-              .SendMessageAsync();
+            if (isGoogleFacebookLogin)
+            {
+                var applicationName = TenantExecutionContext.Tenant.ApplicationName;
+                var loginLink = $"https://{TenantExecutionContext.Tenant.SiteAddress}/login";
+                var loginPlatform = char.ToUpper(user.RegisterType[0], CultureInfo.CurrentCulture).ToString() + user.RegisterType.Substring(1);
+
+                var notificationProvider = _notificationProviderFactory.Create(user);
+                await notificationProvider
+                .SetMessageTemplate(TemplateTypeEnum.ForgotPasswordGoogleFacebook)
+                .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
+                .AddOrUpdateFieldReplacement(MessageTemplateConstants.LoginLink, loginLink)
+                .AddOrUpdateFieldReplacement(MessageTemplateConstants.LoginPlatform, loginPlatform)
+                .SendMessageAsync();
+            } 
+            else
+            {
+                var forgotPasswordCallback = $"{_options.Value.ForgotPassword}?username={user.UserName}&token={encodedToken}";
+                var applicationName = TenantExecutionContext.Tenant.ApplicationName;
+
+                var notificationProvider = _notificationProviderFactory.Create(user);
+                await notificationProvider
+                .SetMessageTemplate(TemplateTypeEnum.ForgotPassword)
+                .AddOrUpdateFieldReplacement(MessageTemplateConstants.PasswordResetLink, forgotPasswordCallback)
+                .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
+                .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, user.FirstName)
+                .AddOrUpdateFieldReplacement(MessageTemplateConstants.Username, user.UserName)
+                .SendMessageAsync();
+            }
+            
         }
 
         public async Task SendPortalForgotPasswordMessageAsync(ApplicationUser user, string token)
