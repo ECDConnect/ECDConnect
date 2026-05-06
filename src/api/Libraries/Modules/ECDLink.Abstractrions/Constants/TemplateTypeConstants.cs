@@ -3,6 +3,7 @@ namespace ECDLink.Abstractrions.Constants
     public static class TemplateTypeConstants
     {
         public const string ForgotPassword = "forgot-password";
+        public const string ForgotPasswordGoogleFacebook = "forgot-password-google-facebook";
         public const string AuthCode = "auth-code";
         public const string OAWLAuthCode = "oa-wl-auth-code";
         public const string PasswordChangedByAdmin = "password-changed-by-admin";
