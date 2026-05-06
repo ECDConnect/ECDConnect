@@ -2,6 +2,11 @@ export const useBrowserVersionCheck = () => {
   const checkBrowserVersion = () => {
     const ua = navigator.userAgent;
 
+    // Edge (Chromium-based) — UA contains "Chrome/" so must be excluded first
+    if (/Edg\//.test(ua)) {
+      return true;
+    }
+
     // Chrome / Chromium
     const chromeMatch = new RegExp(/Chrome\/(\d+)/).exec(ua);
     if (chromeMatch) {
