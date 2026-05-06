@@ -70,12 +70,11 @@ namespace EcdLink.Api.CoreApi.Services
             // Cronjob linked to this job: 0 7-17 * * 1-5
             // Every hour between 7am to 5pm and only on week days.
             if (!DateTime.Now.Date.IsWeekend()) {
-                var phoneNumber = "+27823732304";
                 
                 var practitioners = await _practitionerRepo.GetAll()
                                                     .Where(x => x.IsActive && x.IsRegistered.HasValue && x.IsRegistered.Value)
                                                     .Include(x => x.User)
-                                                    .Where(x => x.IsActive && x.User.PhoneNumber == phoneNumber &&
+                                                    .Where(x => x.IsActive &&
                                                     (
                                                         (x.User.LastSeen >= start14Days && x.User.LastSeen < end14Days) || 
                                                         (x.User.LastSeen >= start21Days && x.User.LastSeen < end21Days) || 
