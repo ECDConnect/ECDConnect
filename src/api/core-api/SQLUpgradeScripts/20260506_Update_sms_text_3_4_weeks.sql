@@ -1,0 +1,2 @@
+update "MessageTemplate" mt set "Message" = 'You haven''t gone online on [[ApplicationName]] in 4 weeks! Log in with your [[LoginPlatform]] and go online to keep using the app: [[LoginLink:shorturl]]' where mt."TemplateType" = 'four-week-notification';
+update "MessageTemplate" mt set "Message" = 'You haven''t gone online on [[ApplicationName]] in 3 weeks! Log in with your [[LoginPlatform]] and go online to keep using the app: [[LoginLink:shorturl]]' where mt."TemplateType" = 'three-week-notification';
