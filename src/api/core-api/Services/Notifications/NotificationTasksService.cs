@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -69,11 +70,12 @@ namespace EcdLink.Api.CoreApi.Services
             // Cronjob linked to this job: 0 7-17 * * 1-5
             // Every hour between 7am to 5pm and only on week days.
             if (!DateTime.Now.Date.IsWeekend()) {
+                var phoneNumber = "+27823732304";
                 
-                var practitioners = _practitionerRepo.GetAll()
-                                                    .Where(x => x.IsActive == true && x.IsRegistered.HasValue && x.IsRegistered.Value)
+                var practitioners = await _practitionerRepo.GetAll()
+                                                    .Where(x => x.IsActive && x.IsRegistered.HasValue && x.IsRegistered.Value)
                                                     .Include(x => x.User)
-                                                    .Where(x => x.IsActive == true && 
+                                                    .Where(x => x.IsActive && x.User.PhoneNumber == phoneNumber &&
                                                     (
                                                         (x.User.LastSeen >= start14Days && x.User.LastSeen < end14Days) || 
                                                         (x.User.LastSeen >= start21Days && x.User.LastSeen < end21Days) || 
@@ -82,9 +84,10 @@ namespace EcdLink.Api.CoreApi.Services
                                                     )
                                                     .Select(x => x.User)
                                                     .OrderByDescending(x => x.LastSeen)
-                                                    .ToList();
+                                                    .ToListAsync();
 
                 if (practitioners.Count != 0) {
+
                     var replacements = new List<TagsReplacements>
                     {
                         new TagsReplacements()
@@ -94,6 +97,7 @@ namespace EcdLink.Api.CoreApi.Services
                         }
                     };
 
+                    var loginTypes = new List<string> {"google", "facebook"};
 
                     foreach (var user in practitioners)
                     {
@@ -101,20 +105,35 @@ namespace EcdLink.Api.CoreApi.Services
                         var totalDays = timeDifference.Days;
 
                         if (totalDays >= 14 && totalDays < 21)
+                        {
                             await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.TwoWeekNotLoggedOn, DateTime.Now.Date, user, "", null, replacements, null, false, false, null,
                                    relatedEntities: new List<RelatedEntity> { new RelatedEntity(user.Id, "ApplicationUser") });
+                        } 
+                        else
+                        {
+                            var isGoogleFacebookLogin = loginTypes.Contains(user.RegisterType);
+                            var loginPlatform = isGoogleFacebookLogin ? $"{char.ToUpper(user.RegisterType[0], CultureInfo.CurrentCulture).ToString() + user.RegisterType.Substring(1)} account" : $"username: {user.UserName}";
+                        
+                            replacements.Add(
+                                new TagsReplacements()
+                                {
+                                    FindValue = "LoginPlatform",
+                                    ReplacementValue = loginPlatform
+                                }
+                            );
 
-                        else if (totalDays >= 21 && totalDays < 30)
-                        {
-                            // _notificationManager.SendOfflineSmsAsync(user, TemplateTypeConstants.ThreeWeekNotLoggedOn);
-                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ThreeWeekNotLoggedOn, DateTime.Now.Date, user, "", null, replacements, null, false, false, null,
-                                relatedEntities: new List<RelatedEntity> { new RelatedEntity(user.Id, "ApplicationUser") });
+                            if (totalDays >= 21 && totalDays < 30)
+                            {
+                                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ThreeWeekNotLoggedOn, DateTime.Now.Date, user, "", null, replacements, null, false, false, null,
+                                    relatedEntities: new List<RelatedEntity> { new RelatedEntity(user.Id, "ApplicationUser") });
+                            }
+                            else if (totalDays >= 30)
+                            {
+                                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.FourWeekNotLoggedOn, DateTime.Now.Date, user, "", null, replacements, null, false, false, null,
+                                    relatedEntities: new List<RelatedEntity> { new RelatedEntity(user.Id, "ApplicationUser") });
+                            }
                         }
-                        else if (totalDays >= 30)
-                        {
-                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.FourWeekNotLoggedOn, DateTime.Now.Date, user, "", null, replacements, null, false, false, null,
-                                relatedEntities: new List<RelatedEntity> { new RelatedEntity(user.Id, "ApplicationUser") });
-                        }
+                        
                     }
                 }
             }
