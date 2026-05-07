@@ -212,7 +212,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             // Caller must be the user themselves, an admin/super-admin, or have hierarchy authority
-            if (user.Id != currentUserId)
+            var currentUserIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
+
+            if (user.Id != currentUserId && !currentUserIsSuperAdmin && !currentUserIsAdmin)
             {
                 if (!(updatingPractitioner || updatingPrincipal || updatingCoach || updatingChild))
                 {
