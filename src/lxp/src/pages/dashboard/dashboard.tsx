@@ -804,6 +804,21 @@ export const Dashboard: React.FC = () => {
       icon: styles.communityIconName,
       current: false,
       showDivider: true,
+      nestedChildren: [
+        {
+          name: NavigationNames.Community.Community,
+          href: ROUTES.COMMUNITY.ROOT,
+          onNavigation: onNavigation,
+          current: false,
+        },
+        {
+          name: NavigationNames.Community.Resources,
+          href: ROUTES.COMMUNITY.ROOT,
+          onNavigation: onNavigation,
+          params: { activeTabIndex: 1 },
+          current: false,
+        },
+      ],
     },
     {
       name: NavigationNames.Training,
