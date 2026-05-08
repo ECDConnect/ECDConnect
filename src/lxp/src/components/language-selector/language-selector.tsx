@@ -15,6 +15,7 @@ export interface LanguageSelectorProps extends ComponentBaseProps {
   labelClassName?: string;
   selectLanguage: (value: LanguageDto) => void;
   availableLanguages?: LanguageCode[];
+  languageOptions?: LanguageDto[];
   notLogged?: boolean;
   showOfflineAlert?: boolean;
   isConsentScreen?: boolean;
@@ -27,6 +28,7 @@ export const LanguageSelector = ({
   labelClassName,
   selectLanguage,
   availableLanguages,
+  languageOptions,
   showOfflineAlert = false,
   className,
   isConsentScreen,
@@ -44,6 +46,10 @@ export const LanguageSelector = ({
   }, [currentLocale]);
 
   const currentLanguages = useMemo(() => {
+    if (languageOptions?.length) {
+      return languageOptions;
+    }
+
     const filtered = availableLanguages?.length
       ? languages?.filter((lang) =>
           availableLanguages.includes(lang.locale as LanguageCode)
@@ -51,7 +57,7 @@ export const LanguageSelector = ({
       : languages?.filter((lang) => lang.locale !== 'other');
 
     return filtered || [];
-  }, [languages, availableLanguages]);
+  }, [languages, availableLanguages, languageOptions]);
 
   const setLanguage = useCallback(
     (nextLocale: string) => {
@@ -109,7 +115,7 @@ export const LanguageSelector = ({
             label: language.description,
           }))}
         onChange={setLanguage}
-        className={`${isConsentScreen ? 'w-44' : 'w-auto'}`}
+        className={`${isConsentScreen ? 'w-44' : 'w-44'}`}
       />
     </div>
   );

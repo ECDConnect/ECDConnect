@@ -323,6 +323,8 @@ export const OAAgreements: React.FC<OAAgreementsProps> = ({ closeAction }) => {
           textColor="white"
           text="Next"
           disabled={
+            !termsAndConditions ||
+            !permissionsAgreement ||
             shareConsent === undefined ||
             !isValidPhoneNumber ||
             phoneNumber === ''

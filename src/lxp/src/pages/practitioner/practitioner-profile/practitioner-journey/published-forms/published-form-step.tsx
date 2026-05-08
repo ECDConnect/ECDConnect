@@ -520,9 +520,9 @@ export const PublishedFormStep: React.FC<PublishedFormStepProps> = ({
 
                           <div className="mt-2 flex gap-3">
                             <ButtonGroup<boolean>
-                              notSelectedColor="quatenaryBg"
+                              notSelectedColor="secondaryAccent2"
                               textColor="quatenary"
-                              color="quatenary"
+                              color="secondary"
                               type={ButtonGroupTypes.Button}
                               options={options}
                               onOptionSelected={(value) =>
