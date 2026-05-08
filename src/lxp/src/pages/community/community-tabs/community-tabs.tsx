@@ -9,11 +9,10 @@ import { CommunityLinks } from './components/community-links/community-links';
 import { CommunityRouteState } from '../community.types';
 import { useAppDispatch } from '@/store';
 import { communityThunkActions } from '@/store/community';
-import { useSelector } from 'react-redux';
-import { userSelectors } from '@/store/user';
 
 export const COMMUNITY_TABS = {
   CONNECT: 0,
+  RESOURCES: 1,
 };
 
 export const CommunityTabs = ({
@@ -28,7 +27,9 @@ export const CommunityTabs = ({
   const history = useHistory();
   const date = format(new Date(), 'dd LLLL y');
   const { state } = useLocation<CommunityRouteState>();
-  const [selectedTabIndex, setSelectedTabIndex] = useState<number>(0);
+  const [selectedTabIndex, setSelectedTabIndex] = useState<number>(
+    state?.activeTabIndex !== undefined ? state?.activeTabIndex : 0
+  );
   const appDispatch = useAppDispatch();
 
   // only fetch once

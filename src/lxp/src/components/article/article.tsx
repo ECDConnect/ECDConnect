@@ -40,6 +40,7 @@ export const Article = ({
   const [availableLanguages, setAvailableLanguages] = useState([
     language.locale as LanguageCode,
   ]);
+  const [languageOptions, setLanguageOptions] = useState<LanguageDto[]>([]);
   const consent = useSelector(contentConsentSelectors.getConsentSelector);
   const dialog = useDialog();
   const tenant = useTenant();
@@ -106,11 +107,11 @@ export const Article = ({
       }
 
       if (consentFilter?.availableLanguages !== undefined) {
+        const langs = consentFilter.availableLanguages ?? [];
+        setLanguageOptions(langs);
         setAvailableLanguages(
-          consentFilter?.availableLanguages
-            ? consentFilter.availableLanguages?.map((item) => {
-                return item?.locale as LanguageCode;
-              })
+          langs.length
+            ? langs.map((item) => item?.locale as LanguageCode)
             : [language.locale as LanguageCode]
         );
       }
@@ -155,11 +156,11 @@ export const Article = ({
     }
 
     if (consentFilter?.availableLanguages !== undefined) {
+      const langs = consentFilter.availableLanguages ?? [];
+      setLanguageOptions(langs);
       setAvailableLanguages(
-        consentFilter?.availableLanguages
-          ? consentFilter.availableLanguages?.map((item) => {
-              return item?.locale as LanguageCode;
-            })
+        langs.length
+          ? langs.map((item) => item?.locale as LanguageCode)
           : [language.locale as LanguageCode]
       );
     }
@@ -218,6 +219,7 @@ export const Article = ({
                   currentLocale="en-za"
                   selectLanguage={(data) => changeLanugage(data)}
                   availableLanguages={availableLanguages}
+                  languageOptions={languageOptions}
                   notLogged={true}
                   isConsentScreen={isConsentScreen}
                 />
