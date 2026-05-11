@@ -21,19 +21,7 @@ class ContentReportService {
   async getUserContentChildProgressReports(userId: string): Promise<any[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query GetUserContentChildProgressReport($UserId: String, $Locale: String) {
-          GetUserContentChildProgressReport(UserId: $UserId, Locale: $Locale) {          
-            contentItem {
-              id
-              contentTypeId
-              name
-              reference              
-            }
-            content      
-          }
-        }
-      `,
+      id: 'GetUserContentChildProgressReport',
       variables: {
         UserId: userId,
         Locale: this._locale,
@@ -54,17 +42,7 @@ class ContentReportService {
   ): Promise<ChildProgressReport> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation createChildProgressReport($input: ChildProgressReportInput) {
-          createChildProgressReport(input: $input) {
-            id
-            reportContent
-            classroomGroupId
-            userId
-            childId
-          }
-        }
-      `,
+      id: 'createChildProgressReport',
       variables: {
         input: input,
       },
@@ -84,17 +62,7 @@ class ContentReportService {
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation updateChildProgressReport($input: ChildProgressReportInput, $id: UUID) {
-          updateChildProgressReport(input: $input, id: $id) {
-            id
-            reportContent
-            classroomGroupId
-            userId
-            childId
-          }
-        }
-      `,
+      id: 'syncChildProgressReport',
       variables: {
         input: input,
         id: input.Id,
@@ -116,17 +84,7 @@ class ContentReportService {
   ): Promise<ChildProgressReport> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation updateChildProgressReport($input: ChildProgressReportInput,$id:UUID!) {
-          updateChildProgressReport(input: $input,id:$id) {
-            id
-            reportContent
-            classroomGroupId
-            userId
-            childId
-          }
-        }
-      `,
+      id: 'updateChildProgressReport',
       variables: {
         input: input,
         id: id,
@@ -149,11 +107,7 @@ class ContentReportService {
   ): Promise<string> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query generateChildProgressReport($childId: UUID!,$classgroupId:UUID!,$reportDate:DateTime!) {
-          generateChildProgressReport(childId: $childId,classgroupId:$classgroupId,reportDate:$reportDate)
-        }
-      `,
+      id: 'generateChildProgressReport',
       variables: {
         childId: childId,
         classgroupId: classgroupId,
@@ -173,30 +127,7 @@ class ContentReportService {
   ): Promise<ChildProgressReportSummaryModel[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query childProgressReportSummary($count: Int!) {
-          childProgressReportSummary(count: $count) {    
-            reportId      
-            categories {
-              achievedLevelId
-              categoryId
-              tasks {
-                levelId
-                skillId
-                value
-              }       
-            }
-            childId
-            childFirstname
-            childSurname
-            classroomName
-            reportDate      
-            reportPeriod
-            reportDateCreated
-            reportDateCompleted
-        }
-      }
-      `,
+      id: 'childProgressReportSummary',
       variables: {
         count: count,
       },
@@ -214,42 +145,7 @@ class ContentReportService {
   ): Promise<ChildProgressObservationReport[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query childProgressReports($count: Int!) {
-          childProgressReports(count: $count) {  
-            id
-            categories {
-              achievedLevelId
-              categoryId
-              status
-              supportingTask {
-                taskDescription
-                taskId
-                todoText
-              }
-              tasks {
-                description
-                levelId
-                skillId
-                value
-              }
-            }
-            childId
-            childFirstname
-            childSurname
-            classroomName
-            dateCompleted
-            dateCreated
-            reportingPeriod
-            reportingDate
-            howCanCaregiverHelpChild
-            practitionerPhotoUrl
-            practitionerSurname
-            practitionerFirstname
-            childEnjoys 
-          }
-        }
-      `,
+      id: 'childProgressReports',
       variables: {
         count: count,
       },
@@ -267,47 +163,7 @@ class ContentReportService {
   ): Promise<ChildProgressObservationReport> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query childProgressReport($reportId: UUID!) {
-          childProgressReport(reportId: $reportId) {  
-          id
-          categories {
-            achievedLevelId
-            categoryId
-            status
-            missingTasks {
-              description
-              levelId
-              skillId
-              value
-            }
-            supportingTask {
-              taskDescription
-              taskId
-              todoText
-            }
-            tasks {
-              description
-              levelId
-              skillId
-              value
-            }
-          }
-          childId
-          childFirstname
-          childSurname
-          classroomName
-          dateCompleted
-          dateCreated
-          reportingPeriod
-          reportingDate
-          howCanCaregiverHelpChild
-          practitionerPhotoUrl
-          practitionerSurname
-          practitionerFirstname
-          childEnjoys 
-        }
-      }`,
+      id: 'childProgressReport',
       variables: {
         reportId: reportId,
       },

@@ -85,7 +85,7 @@ export const SwitchPrincipal: React.FC<SwapPrincipalProps> = () => {
       );
 
       await appDispatch(
-        practitionerThunkActions.getAllPractitioners({})
+        practitionerThunkActions.getAllPractitioners({ overrideCache: true })
       ).unwrap();
     }
   };

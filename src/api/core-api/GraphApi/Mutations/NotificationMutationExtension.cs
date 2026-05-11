@@ -29,33 +29,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class NotificationMutationExtension
     {
-        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Create)]
-        public async Task<bool> SendNotificationToUser(
-          [Service] ApplicationUserManager userManager,
-          [Service] INotificationService notificationService,
-          [Service] IHttpContextAccessor httpContextAccessor,
-          [Service] HierarchyEngine engine,
-          string userType,
-          string templateType, string userId = null, DateTime? startDate = null, DateTime? endDate = null)
-        {
-            if (startDate == null)
-                startDate = DateTime.Now.Date;
-            if (userId != null)
-            {
-                var callerId = httpContextAccessor.HttpContext.GetUser().Id;
-                var callerIsAdmin = await userManager.IsInRoleAsync(new ApplicationUser { Id = callerId }, Roles.ADMINISTRATOR);
-                if (!callerIsAdmin && !engine.UserInHierarchy(callerId, Guid.Parse(userId)))
-                    throw new HotChocolate.Execution.QueryException("You are not authorized to send notifications to this user.");
-
-                var userToSend = await userManager.FindByIdAsync(userId);
-                return await notificationService.SendNotificationAsync(userType, templateType, (DateTime)startDate, userToSend);
-            }
-            else
-            {
-                return await notificationService.SendNotificationAsync(userType, templateType, (DateTime)startDate);
-            }
-        }
-
         [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Update)]
         public async Task<bool> DisableNotification([Service] INotificationService notificationService, string notificationId)
         {
@@ -66,28 +39,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public async Task<bool> MarkAsReadNotification([Service] INotificationService notificationService, string notificationId)
         {
             return await notificationService.MarkAsReadNotification(notificationId);
-        }
-
-        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Update)]
-        public async Task<bool> ExpireNotification([Service] INotificationService notificationService, string notificationId)
-        {
-            return await notificationService.ExpireNotification(notificationId);
-        }
-
-        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Update)]
-        public async Task<bool> ExpireNotificationsTypesForUser(
-            [Service] INotificationService notificationService,
-            [Service] IHttpContextAccessor httpContextAccessor,
-            [Service] ApplicationUserManager userManager,
-            [Service] HierarchyEngine engine,
-            string userId, string templateType, string searchCriteria = null)
-        {
-            var callerId = httpContextAccessor.HttpContext.GetUser().Id;
-            var callerIsAdmin = await userManager.IsInRoleAsync(new ApplicationUser { Id = callerId }, Roles.ADMINISTRATOR);
-            if (!callerIsAdmin && !engine.UserInHierarchy(callerId, Guid.Parse(userId)))
-                throw new HotChocolate.Execution.QueryException("You are not authorized to manage notifications for this user.");
-
-            return await notificationService.ExpireNotificationsTypesForUser(userId, templateType, searchCriteria);
         }
 
         [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Create)]

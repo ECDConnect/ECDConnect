@@ -126,40 +126,7 @@ export class BackendNotificationsValidator implements NotificationValidator {
         data: { allNotifications: Notification[] };
         errors?: {};
       }>(``, {
-        query: `
-        query allNotifications($userId: String) {
-          allNotifications(userId: $userId) {
-            id
-            fromUserId
-            messageProtocol
-            message
-            messageTemplateType
-            subject
-            sentByUserId
-            from
-            id
-            messageDate
-            messageEndDate
-            status
-            cTA
-            cTAText
-            ordering
-            messageTemplate
-              {
-                id
-                ordering
-                templateType
-                subject
-                message
-                cTA
-                cTAText
-                typeCode                        
-              }
-             action 
-          }
-        }
-
-      `,
+        id: 'allNotifications',
         variables: {
           ...input,
         },

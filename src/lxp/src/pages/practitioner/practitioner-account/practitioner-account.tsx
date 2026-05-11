@@ -25,9 +25,13 @@ import {
 } from '@schemas/practitioner/practitioner-account';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { analyticsActions } from '@store/analytics';
+import { settingSelectors } from '@store/settings';
 
 export default function PractitionerAccount() {
   const user = useSelector(userSelectors.getUser);
+  const applicationVersion = useSelector(
+    settingSelectors.getApplicationVersion
+  );
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
@@ -118,6 +122,14 @@ export default function PractitionerAccount() {
           type={'ActionList'}
           className={'px-4'}
         ></StackedList>
+        {applicationVersion && (
+          <Typography
+            type="help"
+            className="px-4 pt-4 text-center"
+            color="textLight"
+            text={`Version ${applicationVersion}`}
+          />
+        )}
       </BannerWrapper>
       <Dialog
         borderRadius="normal"

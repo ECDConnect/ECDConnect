@@ -1,0 +1,38 @@
+query GetPractitionerByIdNumber($idNumber: String) {
+  practitionerByIdNumber(idNumber: $idNumber) {
+    appUser {
+      id
+      idNumber
+      firstName
+      surname
+      userName
+      practitionerObjectData {
+        isRegistered
+        isPrincipal
+        id
+        shareInfo
+        programmeType
+        principalHierarchy
+        dateLinked
+        dateAccepted
+        dateToBeRemoved
+        isLeaving
+        progress
+        usePhotoInReport
+        isCompletedBusinessWalkThrough
+      }
+      userPermissions {
+        id
+        isActive
+        permissionId
+        permission {
+          id
+          name
+        }
+      }
+    }
+    isRegistered
+    belongsToPreschool
+    note
+  }
+}

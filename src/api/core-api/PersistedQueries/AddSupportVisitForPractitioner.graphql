@@ -1,0 +1,5 @@
+mutation AddSupportVisitForPractitioner($input: SupportVisitModelInput) {
+  addSupportVisitForPractitioner(input: $input) {
+    id
+  }
+}

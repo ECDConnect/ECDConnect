@@ -434,9 +434,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.View)]
-        public List<PractitionerModel> GetAllPractitioners([Service] PersonnelService personnelService)
+        public async Task<List<PractitionerModel>> GetAllPractitioners([Service] PersonnelService personnelService)
         {
-            return personnelService.GetAllPractitioners();
+            return await personnelService.GetAllPractitionersAsync();
         }
 
 

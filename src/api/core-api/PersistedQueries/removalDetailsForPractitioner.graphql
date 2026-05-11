@@ -1,0 +1,14 @@
+query removalDetailsForPractitioner($userId: String) {
+  removalDetailsForPractitioner(userId: $userId) {
+    dateOfRemoval
+    id
+    reasonDetails
+    reasonForPractitionerLeavingProgrammeId
+    removedByUserId
+    classReassignments {
+      id
+      reassignedClass
+      reassignedToPractitioner
+    }
+  }
+}

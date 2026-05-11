@@ -1,0 +1,9 @@
+ query GetCommunitySkills() {
+    communitySkills() {
+        id
+        name
+        description
+        imageName
+        ordering
+    }
+}  

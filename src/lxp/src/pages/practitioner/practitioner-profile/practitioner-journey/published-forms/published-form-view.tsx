@@ -65,7 +65,7 @@ const FeedbackSection: React.FC<FeedbackSectionProps> = ({
           showIcon
           showDivider={false}
           withBorderRadius
-          className="no-hand-cursor"
+          className="no-hand-cursor py-2"
         />
       ))}
       <Divider dividerType="dashed" className="my-2" />
@@ -135,7 +135,7 @@ export const ViewPublishedForm: React.FC<ViewPublishedFormProps> = ({
         />
         <Divider dividerType="dashed" className="my-2" />
         {/* Preschool detail */}
-        {timelineReport?.preschoolDetail && (
+        {timelineReport?.preschoolDetail?.length! > 0 && (
           <>
             <Typography
               className="mt-3"
@@ -144,7 +144,7 @@ export const ViewPublishedForm: React.FC<ViewPublishedFormProps> = ({
               text={'Preschool detail'}
             />
 
-            {timelineReport.preschoolDetail.map((detail, index) => (
+            {timelineReport.preschoolDetail?.map((detail, index) => (
               <Typography
                 key={`preschool-detail-${index}`}
                 type={'markdown'}
@@ -319,7 +319,7 @@ export const ViewPublishedForm: React.FC<ViewPublishedFormProps> = ({
                 iconColor="successMain"
                 showIcon
                 dividerType="none"
-                className="no-hand-cursor"
+                className="no-hand-cursor py-2"
               />
             ))}
             <Divider dividerType="dashed" className="my-2" />
@@ -342,7 +342,7 @@ export const ViewPublishedForm: React.FC<ViewPublishedFormProps> = ({
                 iconColor="errorMain"
                 showIcon
                 dividerType="none"
-                className="no-hand-cursor"
+                className="no-hand-cursor py-2"
               />
             ))}
             <Divider dividerType="dashed" className="my-2" />

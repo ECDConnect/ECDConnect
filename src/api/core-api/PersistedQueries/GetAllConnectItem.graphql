@@ -1,0 +1,6 @@
+query GetAllConnectItem($locale: String) {
+  GetAllConnectItem(locale: $locale) {
+    buttonText
+    link
+  }
+}

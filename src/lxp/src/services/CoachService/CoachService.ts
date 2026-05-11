@@ -14,51 +14,7 @@ class CoachService {
   async getCoachByUserId(userId: string): Promise<CoachDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query coachByUserId($userId: String) {
-          coachByUserId(userId: $userId) {
-            id
-            user {
-              id
-              userName
-              email
-              isSouthAfricanCitizen
-              verifiedByHomeAffairs
-              dateOfBirth
-              idNumber
-              firstName
-              surname
-              fullName
-              contactPreference
-              genderId
-              phoneNumber
-              profileImageUrl
-              roles {
-                id
-                name
-              }
-            }
-            siteAddressId
-            siteAddress {
-              id
-              provinceId
-              province {
-                id
-                description
-              }
-              name
-              addressLine1
-              addressLine2
-              addressLine3
-              postalCode
-              ward
-              isActive
-            }
-            signingSignature
-            isActive
-          }
-        }
-      `,
+      id: 'coachByUserId',
       variables: {
         userId: userId,
       },
@@ -74,56 +30,7 @@ class CoachService {
   async getCoachByCoachId(userId: string): Promise<CoachDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query coachByCoachUserId($userId: String) {
-        coachByCoachUserId(userId: $userId) {
-          signingSignature
-          id
-          startDate
-          user {
-            id
-            userName
-            email
-            isSouthAfricanCitizen
-            verifiedByHomeAffairs
-            dateOfBirth
-            idNumber
-            firstName
-            surname
-            fullName
-            contactPreference
-            genderId
-            phoneNumber
-            profileImageUrl
-            roles {
-              id
-              name
-            }
-          }
-          siteAddressId
-            siteAddress {
-              id
-              provinceId
-              province {
-                id
-                description
-              }
-                name
-                addressLine1
-                addressLine2
-                addressLine3
-                postalCode
-                ward
-                isActive
-            }
-            signingSignature
-            isActive
-            practitionerVisits {
-              id
-            }
-        }
-      }
-      `,
+      id: 'coachByCoachUserId',
       variables: {
         userId: userId,
       },
@@ -139,13 +46,7 @@ class CoachService {
   async coachNameByUserId(userId: string): Promise<CoachDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query coachNameByUserId($userId: String) {
-        coachNameByUserId(userId: $userId) {
-
-        }
-      }
-      `,
+      id: 'coachNameByUserId',
       variables: {
         userId: userId,
       },
@@ -161,13 +62,7 @@ class CoachService {
   async updateCoach(coachId: string, coach: CoachInput): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation updateCoach($id: UUID!, $input: CoachInput) {
-          updateCoach(id: $id, input: $input) {
-            id
-          }
-        }
-      `,
+      id: 'updateCoach',
       variables: {
         id: coachId,
         input: coach,
@@ -188,11 +83,7 @@ class CoachService {
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation saveCoachContact($practitionerId: UUID!, $actionItemType: Int!, $period: DateTime!) {
-          saveCoachContact(practitionerId: $practitionerId, actionItemType: $actionItemType, period: $period)
-        }
-      `,
+      id: 'saveCoachContact',
       variables: {
         practitionerId: practitionerId,
         actionItemType: actionItemType,
@@ -215,14 +106,7 @@ class CoachService {
       data: { childProgressReportsStatus: ChildProgressReportsStatus };
       errors?: {};
     }>(``, {
-      query: `
-      query getChildProgressReportsStatus($userId: String) {
-        childProgressReportsStatus(userId: $userId) {
-          completedReports
-          numberOfChildren
-        }
-       }
-      `,
+      id: 'childProgressReportsStatus',
       variables: {
         userId: userId,
       },
@@ -245,23 +129,7 @@ class CoachService {
       data: { allClassroomGroupsForCoach: SimpleClassroomGroupDto[] };
       errors?: {};
     }>(``, {
-      query: `
-        query GetAllClassroomGroupsForCoach($userId: String) {
-          allClassroomGroupsForCoach(userId: $userId) {
-            id
-            classroomId
-            name
-            userId
-            learners {
-              learnerId
-              childUserId
-              startedAttendance
-              stoppedAttendance
-              isActive
-            }
-          }
-        }
-          `,
+      id: 'GetAllClassroomGroupsForCoach',
       variables: {
         userId: userId,
       },

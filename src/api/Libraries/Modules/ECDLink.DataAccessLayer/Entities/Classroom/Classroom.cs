@@ -36,16 +36,6 @@ namespace ECDLink.DataAccessLayer.Entities.Classroom
         public string Name { get; set; }
         public string ClassroomImageUrl { get; set; }
 
-        public bool? IsPrinciple { get; set; }
-
-        public int? NumberPractitioners { get; set; }
-
-        public int? NumberOfAssistants { get; set; }
-
-        public int? NumberOfOtherAssistants { get; set; }
-
-        public bool? DoesOwnerTeach { get; set; }
-
         [GraphQLIgnore]
         public string Hierarchy { get; set; }
 

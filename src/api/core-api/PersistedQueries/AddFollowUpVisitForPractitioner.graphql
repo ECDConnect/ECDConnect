@@ -1,0 +1,5 @@
+mutation AddFollowUpVisitForPractitioner($input: FollowUpVisitModelInput) {
+  addFollowUpVisitForPractitioner(input: $input) {
+    id
+  }
+}

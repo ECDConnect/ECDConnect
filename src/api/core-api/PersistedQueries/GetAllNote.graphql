@@ -1,0 +1,15 @@
+query GetAllNote($createdUserId: UUID) {
+  GetAllNote(where: {
+    and: [{
+      createdUserId: { eq: $createdUserId }
+    }]
+  }) {
+    id
+    name
+    bodyText
+    noteTypeId
+    userId
+    insertedDate
+    isActive
+  }
+}

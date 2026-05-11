@@ -1,0 +1,8 @@
+mutation updatePrincipalInvitation($practitionerId: String, $principalId: String, $accepted: Boolean!) {
+  updatePrincipalInvitation(practitionerId: $practitionerId, principalId: $principalId, accepted: $accepted) {
+    leavingDate
+    acceptedDate
+    linkedDate
+    leaving
+  }
+}

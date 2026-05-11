@@ -1,0 +1,27 @@
+query getChildProgressReportsForUser($userId: UUID!) {
+  childProgressReportsForUser(userId: $userId) {
+    id
+    dateCreated
+    childId
+    dateCompleted
+    notes
+    howToSupport
+    childProgressReportPeriodId
+    observationsCompleteDate
+    childEnjoys
+    goodProgressWith
+    howCanCaregiverSupport
+    classroomName
+    practitionerName
+    principalName
+    principalPhoneNumber
+    skillObservations {
+      skillId
+      value
+    }
+    skillsToWorkOn {
+      skillId
+      howToSupport
+    }
+  }
+}

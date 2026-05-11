@@ -1,0 +1,11 @@
+query attendance($startDate: DateTime!, $endDate: DateTime!) {
+  attendance(startDate: $startDate, endDate: $endDate) {
+    classroomProgrammeId
+    userId
+    attended
+    attendanceDate
+    weekOfYear
+    monthOfYear
+    year
+  }
+}

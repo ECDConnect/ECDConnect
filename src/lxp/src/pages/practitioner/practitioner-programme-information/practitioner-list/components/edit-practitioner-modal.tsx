@@ -67,6 +67,9 @@ export const EditPractitionerModal = ({
       setExisitingRemovals(
         existingRemovals.filter((x) => x.userId !== removingPractitionerId)
       );
+      await appDispatch(
+        practitionerThunkActions.getAllPractitioners({ overrideCache: true })
+      ).unwrap();
       setRemovingPractitionerId(undefined);
     }
   };

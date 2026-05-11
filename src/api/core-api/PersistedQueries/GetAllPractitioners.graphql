@@ -1,0 +1,79 @@
+query GetAllPractitioners {
+  allPractitioners {
+    id
+    userId
+    isPrincipal
+    programmeType
+    principalHierarchy
+    isActive
+    coachHierarchy
+    isRegistered
+    shareInfo
+    signingSignature
+    dateLinked
+    dateAccepted
+    dateToBeRemoved
+    daysAbsentLastMonth
+    permissions {
+      id
+      isActive
+      permissionId
+      permissionName
+      permissionNormalizedName
+      permissionGrouping
+    }
+    siteAddress {
+      addressLine1
+      addressLine2
+      addressLine3
+      area
+      id
+      municipality
+      name
+      postalCode
+      province {
+        id
+        description
+      }
+      provinceId
+      updatedBy
+      updatedDate
+      ward
+    }
+    isLeaving
+    user {
+      gender {
+        description
+      }
+      emergencyContactFirstName
+      emergencyContactSurname
+      emergencyContactPhoneNumber
+      idNumber
+      fullName
+      firstName
+      surname
+      userName
+      id
+      email
+      phoneNumber
+      profileImageUrl
+      roles {
+        id
+        name
+      }
+    }
+    progress
+    usePhotoInReport
+    isCompletedBusinessWalkThrough
+    absentees {
+      absentDate
+      absentDateEnd
+      className
+      classroomGroupId
+      reason
+      reassignedToPerson
+      reassignedToUserId
+      absenteeId
+    }
+  }
+}

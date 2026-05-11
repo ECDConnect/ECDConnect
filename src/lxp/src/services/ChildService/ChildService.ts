@@ -27,78 +27,7 @@ class ChildService {
       data: { childrenForClassroomGroup: ChildDto[] };
       errors?: {};
     }>(``, {
-      query: `query($classRoomGroupId: UUID!) {
-           childrenForClassroomGroup(classRoomGroupId: $classRoomGroupId) {
-            id
-            workflowStatusId
-            insertedDate
-            allergies
-            disabilities
-            otherHealthConditions
-            otherLanguages
-            isActive
-            insertedBy
-            userId
-            user {
-              id
-              firstName
-              surname
-              fullName
-              email
-              genderId
-              dateOfBirth
-              profileImageUrl
-              isActive
-              isSouthAfricanCitizen
-              verifiedByHomeAffairs
-              userLanguages {
-                languageId
-              }
-            }
-            caregiverId 
-            caregiver {
-              id
-              phoneNumber
-              idNumber
-              firstName
-              surname
-              fullName  
-              siteAddressId          
-              siteAddress {
-                id
-                provinceId
-                province {
-                  id
-                  description
-                }
-                name
-                addressLine1
-                addressLine2
-                addressLine3
-                postalCode
-                ward
-                isActive
-              }
-              relationId
-              educationId
-              emergencyContactFirstName
-              emergencyContactSurname
-              emergencyContactPhoneNumber
-              additionalFirstName
-              additionalSurname
-              additionalPhoneNumber
-              joinReferencePanel
-              contribution
-              grants {
-                id
-                description
-              }
-              isActive
-              isAllowedCustody
-            }
-          }
-        }
-      `,
+      id: 'childrenForClassroomGroup',
       variables: {
         classRoomGroupId: classroomGroupId,
       },
@@ -117,78 +46,7 @@ class ChildService {
       data: { childrenForClassroom: ChildDto[] };
       errors?: {};
     }>(``, {
-      query: `query($userId: UUID!) {
-           childrenForClassroom(userId: $userId) {
-            id
-            workflowStatusId
-            insertedDate
-            allergies
-            disabilities
-            otherHealthConditions
-            otherLanguages
-            isActive
-            insertedBy
-            userId
-            user {
-              id
-              firstName
-              surname
-              fullName
-              email
-              genderId
-              dateOfBirth
-              profileImageUrl
-              isActive
-              isSouthAfricanCitizen
-              verifiedByHomeAffairs
-              userLanguages {
-                languageId
-              }
-            }
-            caregiverId 
-            caregiver {
-              id
-              phoneNumber
-              idNumber
-              firstName
-              surname
-              fullName  
-              siteAddressId          
-              siteAddress {
-                id
-                provinceId
-                province {
-                  id
-                  description
-                }
-                name
-                addressLine1
-                addressLine2
-                addressLine3
-                postalCode
-                ward
-                isActive
-              }
-              relationId
-              educationId
-              emergencyContactFirstName
-              emergencyContactSurname
-              emergencyContactPhoneNumber
-              additionalFirstName
-              additionalSurname
-              additionalPhoneNumber
-              joinReferencePanel
-              contribution
-              grants {
-                id
-                description
-              }
-              isActive
-              isAllowedCustody
-            }
-          }
-        }
-      `,
+      id: 'childrenForClassroom',
       variables: {
         userId: userId,
       },
@@ -207,78 +65,7 @@ class ChildService {
       data: { GetChildById: ChildDto };
       errors?: {};
     }>(``, {
-      query: `query($id: UUID!) {
-          GetChildById(id: $id) {
-            id
-            workflowStatusId
-            insertedDate
-            allergies
-            disabilities
-            otherHealthConditions
-            otherLanguages
-            isActive
-            insertedBy
-            userId
-            user {
-              id
-              firstName
-              surname
-              fullName
-              email
-              genderId
-              dateOfBirth
-              profileImageUrl
-              isActive
-              isSouthAfricanCitizen
-              verifiedByHomeAffairs
-              userLanguages {
-                languageId
-              }
-            }
-            caregiverId 
-            caregiver {
-              id
-              phoneNumber
-              idNumber
-              firstName
-              surname
-              fullName  
-              siteAddressId          
-              siteAddress {
-                id
-                provinceId
-                province {
-                  id
-                  description
-                }
-                name
-                addressLine1
-                addressLine2
-                addressLine3
-                postalCode
-                ward
-                isActive
-              }
-              relationId
-              educationId
-              emergencyContactFirstName
-              emergencyContactSurname
-              emergencyContactPhoneNumber
-              additionalFirstName
-              additionalSurname
-              additionalPhoneNumber
-              joinReferencePanel
-              contribution
-              grants {
-                id
-                description
-              }
-              isActive
-              isAllowedCustody
-            }
-          }
-        }
-      `,
+      id: 'GetChildById',
       variables: {
         id: childId,
       },
@@ -297,78 +84,7 @@ class ChildService {
       data: { GetAllChild: ChildDto[] };
       errors?: {};
     }>(``, {
-      query: `query($isActive: Boolean = true) {
-          GetAllChild(where: { isActive: { eq: $isActive } }) {
-            id
-            workflowStatusId
-            insertedDate
-            allergies
-            disabilities
-            otherHealthConditions
-            otherLanguages
-            isActive
-            insertedBy
-            userId
-            user {
-              id
-              firstName
-              surname
-              fullName
-              email
-              genderId
-              dateOfBirth
-              profileImageUrl
-              isActive
-              isSouthAfricanCitizen
-              verifiedByHomeAffairs
-              userLanguages {
-                languageId
-              }
-            }
-            caregiverId 
-            caregiver {
-              id
-              phoneNumber
-              idNumber
-              firstName
-              surname
-              fullName  
-              siteAddressId          
-              siteAddress {
-                id
-                provinceId
-                province {
-                  id
-                  description
-                }
-                name
-                addressLine1
-                addressLine2
-                addressLine3
-                postalCode
-                ward
-                isActive
-              }
-              relationId
-              educationId
-              emergencyContactFirstName
-              emergencyContactSurname
-              emergencyContactPhoneNumber
-              additionalFirstName
-              additionalSurname
-              additionalPhoneNumber
-              joinReferencePanel
-              contribution
-              grants {
-                id
-                description
-              }
-              isActive
-              isAllowedCustody
-            }
-          }
-        }
-      `,
+      id: 'GetAllChild',
     });
 
     if (response.status !== 200 || !!response.data.errors) {
@@ -383,14 +99,7 @@ class ChildService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
 
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query allChildrenForCoach {
-          allChildrenForCoach {
-            id
-            userId
-          }
-        }    
-      `,
+      id: 'allChildrenForCoach',
     });
 
     if (response.status !== 200) {
@@ -408,12 +117,7 @@ class ChildService {
       data: { updateChildAndCaregiver: boolean };
       errors?: {};
     }>(``, {
-      query: `
-        mutation UpdateChildAndCaregiver($input: UpdateChildAndCaregiverInput) {
-          updateChildAndCaregiver(input: $input){
-          }
-        }
-      `,
+      id: 'UpdateChildAndCaregiver',
       variables: {
         input: input,
       },
@@ -432,12 +136,7 @@ class ChildService {
       data: { removeChild: boolean };
       errors?: {};
     }>(``, {
-      query: `
-        mutation RemoveChild($input: UpdateChildAndCaregiverInput) {
-          removeChild(input: $input){
-          }
-        }
-      `,
+      id: 'RemoveChild',
       variables: {
         input: input,
       },
@@ -453,12 +152,7 @@ class ChildService {
   async calculateChildrenRegistrationRemoval(userId: string): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation CalculateChildrenRegistrationRemoval($userId: String) {
-          calculateChildrenRegistrationRemoval(userId: $userId){
-          }
-        }
-      `,
+      id: 'CalculateChildrenRegistrationRemoval',
       variables: {
         userId,
       },
@@ -476,13 +170,7 @@ class ChildService {
   async createChild(input: ChildInput): Promise<ChildDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation createChild($input: ChildInput) {
-          createChild(input: $input){
-            id
-          }
-        }
-      `,
+      id: 'createChild',
       variables: {
         input: input,
       },
@@ -502,17 +190,7 @@ class ChildService {
   ): Promise<ChildRegistrationDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation generateCaregiverChildToken($firstname: String, $surname: String, $classgroupId: UUID!) {
-          generateCaregiverChildToken(firstname: $firstname,surname: $surname, classgroupId: $classgroupId) {
-            childId
-            childUserId
-            addedByUserId
-            classroomGroupId
-            caregiverRegistrationUrl
-          }
-        }
-      `,
+      id: 'generateCaregiverChildToken',
       variables: {
         firstname: firstname,
         surname: surname,
@@ -535,17 +213,7 @@ class ChildService {
   ): Promise<ChildRegistrationDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation refreshCaregiverChildToken($childId: UUID!,$classgroupId: UUID!) {
-          refreshCaregiverChildToken(childId: $childId, classgroupId: $classgroupId) {
-            childId
-            childUserId
-            addedByUserId
-            classroomGroupId
-            caregiverRegistrationUrl
-          }
-        }
-      `,
+      id: 'refreshCaregiverChildToken',
       variables: {
         childId: childId,
         classgroupId: classgroupId,
@@ -567,24 +235,7 @@ class ChildService {
   ): Promise<ChildRegistrationDetails> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query openAccessAddChildDetail($token:String) {
-          openAccessAddChildDetail(token:$token) {
-            child {
-              firstname
-              surname
-              groupName
-              userId
-            }
-            practitoner {
-              firstname
-              surname
-              phoneNumber
-            }
-            accessToken
-          }
-        }
-      `,
+      id: 'openAccessAddChildDetail',
       variables: {
         token: token,
       },
@@ -614,16 +265,7 @@ class ChildService {
   ): Promise<string> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation openAccessAddChild($token: String, 
-          $caregiver: AddChildCaregiverTokenModelInput, 
-          $siteAddress: AddChildSiteAddressTokenModelInput, 
-          $child: AddChildTokenModelInput,
-          $registration: AddChildRegistrationTokenModelInput,
-          $consent: AddChildUserConsentTokenModelInput) {
-            openAccessAddChild(token: $token,caregiver: $caregiver, siteAddress: $siteAddress, child: $child, registration: $registration, consent: $consent)
-        }
-      `,
+      id: 'openAccessAddChild',
       variables: {
         token: token,
         caregiver: caregiver,
@@ -651,13 +293,7 @@ class ChildService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
 
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query childCreatedByDetail($firstName: String, $surname: String, $practitionerId: String) {
-        childCreatedByDetail(firstName: $firstName, surname: $surname, practitionerId: $practitionerId) {
-            fullName childUserId createdByName createdById createdByDate practitionerName dateOfBirth profileImageUrl programmeName practitionerUserId
-        }
-      }
-      `,
+      id: 'childCreatedByDetail',
       variables: {
         practitionerId,
         firstName,

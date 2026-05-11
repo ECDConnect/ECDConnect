@@ -10,7 +10,8 @@ import { useAppDispatch } from '@store';
 import { authThunkActions } from '@store/auth';
 import { settingActions } from '@store/settings';
 import { VerifyPhoneNumberRouteState } from './verify-phone-number.types';
-const { version } = require('../../../../package.json');
+const version: string =
+  process.env.REACT_APP_VERSION ?? require('../../../../package.json').version;
 
 export const VerifyPhoneNumber = () => {
   const history = useHistory();

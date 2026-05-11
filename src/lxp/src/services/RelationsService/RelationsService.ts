@@ -11,14 +11,7 @@ class RelationsService {
   async getRelations(): Promise<RelationDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query GetAllRelation($isActive: Boolean = true){
-        GetAllRelation(where: { isActive: { eq: $isActive } }) {
-          id
-          description
-        }
-      }
-          `,
+      id: 'GetAllRelation',
     });
 
     if (response.status !== 200) {

@@ -15,6 +15,7 @@ module.exports = {
       /^border-/,
       /^focus:/,
       /^font-/,
+      /^gap-/,
       /^h-/,
       /^inset-/,
       /^mb-/,
@@ -35,9 +36,11 @@ module.exports = {
       'h-360px',
       '-top-1',
       '-right-1',
+      'text-base',
       'prose',
+      'markdown',
       'haAclf', // agreements
-      'S9gUrf-YoZ4jf' // google button
+      'S9gUrf-YoZ4jf', // google button
     ],
   },
 },

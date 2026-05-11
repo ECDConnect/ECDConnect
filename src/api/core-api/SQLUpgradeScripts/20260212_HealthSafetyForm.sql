@@ -19,11 +19,7 @@ VALUES(nextval('public."ContentTypeField_Id_seq"'),9, 'multiAnswers', 1, true, '
 
 INSERT INTO public."ContentTypeField"
 ("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName", "DisplayMainTable", "DisplayPage", "IsRequired")
-VALUES(nextval('public."ContentTypeField_Id_seq"'),10, 'info', 1, true, '', 41, current_date, current_date, NULL, NULL, 'Info page', true, true, true);
-
-INSERT INTO public."ContentTypeField"
-("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName", "DisplayMainTable", "DisplayPage", "IsRequired")
-VALUES(nextval('public."ContentTypeField_Id_seq"'), 6, 'minValue', 1, true, '', 42, current_date, current_date, NULL, NULL, 'Minimum value', true, true, true);
+VALUES(nextval('public."ContentTypeField_Id_seq"'),10, 'minValue', 1, true, '', 41, current_date, current_date, NULL, NULL, 'Minimum value', true, true, true);
 
 --FormQuestion: DATA INSERTS
 DO $$
@@ -403,7 +399,7 @@ BEGIN
 			(nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId4, page_5_questions, tenant_id::uuid, now(), now()),
             (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId7, 'true', tenant_id::uuid, now(), now()),
             (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId8, 'Add classroom', tenant_id::uuid, now(), now()),
-            (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId9, page_5_info, tenant_id::uuid, now(), now());
+            (nextval('public."ContentValue_Id_seq"'), new_content_id, locale_id::uuid, ctFieldId9, page_5_info, tenant_id::uuid, now(), now())
 		---------
 		new_content_id := nextval('public."Content_Id_seq"');
 		page_6_questions := (

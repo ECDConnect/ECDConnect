@@ -4,6 +4,7 @@ using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -28,6 +29,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           [Service] InvitationNotificationManager notificationManager,
           [Service] ApplicationUserManager userManager,
+          [Service] IHttpContextAccessor contextAccessor,
           string userId)
         {
             // TODO: Make a service for invitations.

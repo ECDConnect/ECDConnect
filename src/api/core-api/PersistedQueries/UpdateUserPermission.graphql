@@ -1,0 +1,11 @@
+mutation UpdateUserPermission($input: UpdateUserPermissionInputModelInput) {
+  updateUserPermission(input: $input) {
+    id
+    userId
+    permissionId
+    isActive
+    permissionName
+    permissionNormalizedName
+    permissionGrouping
+  }
+}
