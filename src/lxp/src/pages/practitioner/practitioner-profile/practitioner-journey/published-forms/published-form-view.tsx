@@ -65,7 +65,7 @@ const FeedbackSection: React.FC<FeedbackSectionProps> = ({
           showIcon
           showDivider={false}
           withBorderRadius
-          className="no-hand-cursor"
+          className="no-hand-cursor py-2"
         />
       ))}
       <Divider dividerType="dashed" className="my-2" />
@@ -319,7 +319,7 @@ export const ViewPublishedForm: React.FC<ViewPublishedFormProps> = ({
                 iconColor="successMain"
                 showIcon
                 dividerType="none"
-                className="no-hand-cursor"
+                className="no-hand-cursor py-2"
               />
             ))}
             <Divider dividerType="dashed" className="my-2" />
@@ -342,7 +342,7 @@ export const ViewPublishedForm: React.FC<ViewPublishedFormProps> = ({
                 iconColor="errorMain"
                 showIcon
                 dividerType="none"
-                className="no-hand-cursor"
+                className="no-hand-cursor py-2"
               />
             ))}
             <Divider dividerType="dashed" className="my-2" />
