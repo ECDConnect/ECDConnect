@@ -103,27 +103,27 @@ export const ListItem: React.FC<ListItemProps> = ({
       )}
       onClick={onButtonClick}
     >
-      <div className={'flex flex-row items-center'}>
+      <div className={'flex flex-row items-start'}>
         {showIcon &&
           (iconImageSrc ? (
             <div
               style={{ backgroundColor: iconImageBackgroundColor }}
-              className={`mr-4 rounded-full p-4`}
+              className={`mr-4 flex-shrink-0 self-start rounded-full p-4`}
             >
               <img src={iconImageSrc} className={'w-22 h-22'} />
             </div>
           ) : (
             <div
-              className={`bg-${iconBackgroundColor} p-13 mr-4 h-12 w-12 rounded-full`}
+              className={`bg-${iconBackgroundColor} mr-4 flex h-6 w-6 flex-shrink-0 items-center justify-center self-start rounded-full`}
             >
               {renderIcon(
                 iconName || 'InformationIcon',
-                `w-22 h-22 text-${iconColor}`
+                `w-4 h-4 text-${iconColor}`
               )}
             </div>
           ))}
 
-        <div className={'flex flex-col items-start justify-start'}>
+        <div className={'flex flex-col items-start justify-start self-center'}>
           <Typography
             type={titleTypographyType}
             hasMarkup={true}
