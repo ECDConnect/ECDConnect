@@ -20,6 +20,12 @@ const authSlice = createSlice({
     setUserExpired: (state) => {
       state.userExpired = false;
     },
+    lockApp: (state) => {
+      state.isAppLocked = true;
+    },
+    unlockApp: (state) => {
+      state.isAppLocked = false;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(login.fulfilled, (state, action) => {

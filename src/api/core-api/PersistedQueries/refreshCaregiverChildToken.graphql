@@ -1,0 +1,9 @@
+mutation refreshCaregiverChildToken($childId: UUID!, $classgroupId: UUID!) {
+  refreshCaregiverChildToken(childId: $childId, classgroupId: $classgroupId) {
+    childId
+    childUserId
+    addedByUserId
+    classroomGroupId
+    caregiverRegistrationUrl
+  }
+}

@@ -5,15 +5,14 @@ namespace ECDLink.Security.Secrets
 {
     public static class SecretManager
     {
-        public static SymmetricSecurityKey GetSymmetricSecurityKey()
+        public static SymmetricSecurityKey GetSymmetricSecurityKey(string key)
         {
-            var secretKey = "iNivDmHLpUA223sqsfhqGbMRdRj1PVkH"; // todo: get this from somewhere secure
-            return new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secretKey));
+            return new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key));
         }
 
-        public static SigningCredentials GetSigningCredentials(string algorithm = SecurityAlgorithms.HmacSha256)
+        public static SigningCredentials GetSigningCredentials(string key, string algorithm = SecurityAlgorithms.HmacSha256)
         {
-            return new SigningCredentials(GetSymmetricSecurityKey(), algorithm);
+            return new SigningCredentials(GetSymmetricSecurityKey(key), algorithm);
         }
     }
 }

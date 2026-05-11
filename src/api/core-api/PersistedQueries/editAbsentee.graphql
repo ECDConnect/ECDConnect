@@ -1,0 +1,23 @@
+mutation editAbsentee(
+  $absenteeId: String
+  $deleteAbsentee: Boolean
+  $reassignedToPractitioner: String
+  $reason: String!
+  $absentDate: DateTime!
+  $absentDateEnd: DateTime!
+  $isRoleAssign: Boolean
+  $roleAssignedToUser: String
+) {
+  editAbsentee(
+    absenteeId: $absenteeId
+    deleteAbsentee: $deleteAbsentee
+    reassignedToPractitioner: $reassignedToPractitioner
+    reason: $reason
+    absentDate: $absentDate
+    absentDateEnd: $absentDateEnd
+    isRoleAssign: $isRoleAssign
+    roleAssignedToUser: $roleAssignedToUser
+  ) {
+    id
+  }
+}

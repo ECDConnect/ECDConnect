@@ -508,7 +508,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
     await handleReassignments();
     await refreshClassroom();
     await appDispatch(
-      practitionerThunkActions.getAllPractitioners({})
+      practitionerThunkActions.getAllPractitioners({ overrideCache: true })
     ).unwrap();
 
     if (isLoggedInUser) {

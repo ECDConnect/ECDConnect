@@ -1,0 +1,22 @@
+query childProgressReportSummary($count: Int!) {
+  childProgressReportSummary(count: $count) {
+    reportId
+    categories {
+      achievedLevelId
+      categoryId
+      tasks {
+        levelId
+        skillId
+        value
+      }
+    }
+    childId
+    childFirstname
+    childSurname
+    classroomName
+    reportDate
+    reportPeriod
+    reportDateCreated
+    reportDateCompleted
+  }
+}

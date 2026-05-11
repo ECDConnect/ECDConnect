@@ -1,0 +1,23 @@
+query GetAllActivity($locale: String) {
+  GetAllActivity(locale: $locale) {
+    id
+    name
+    type
+    subType
+    image
+    materials
+    description
+    notes
+    availableLanguages {
+      id
+      description
+      locale
+    }
+    subCategories {
+      id
+      imageUrl
+      name
+      imageHexColor
+    }
+  }
+}

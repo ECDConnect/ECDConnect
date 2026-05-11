@@ -1,0 +1,5 @@
+mutation updateUserConsent($id: UUID!, $input: UserConsentInput) {
+  updateUserConsent(id: $id, input: $input) {
+    id
+  }
+}

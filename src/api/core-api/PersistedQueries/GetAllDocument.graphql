@@ -1,0 +1,20 @@
+query GetAllDocument {
+  GetAllDocument {
+    id
+    isActive
+    user {
+      firstName
+      surname
+    }
+    userId
+    reference
+    name
+    workflowStatusId
+    documentTypeId
+    documentType {
+      id
+      name
+      description
+    }
+  }
+}

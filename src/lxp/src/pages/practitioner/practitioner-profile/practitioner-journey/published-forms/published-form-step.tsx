@@ -348,7 +348,7 @@ export const PublishedFormStep: React.FC<PublishedFormStepProps> = ({
 
               {/* 🟩 Checkboxes */}
               {question.answerType === 'checkBox' && (
-                <div className="flex flex-col">
+                <div className="flex flex-col gap-2">
                   {question.formQuestionOptions?.length! > 0 ? (
                     question.formQuestionOptions?.map((item) => {
                       const isNone = item.name.toLowerCase().includes('none');
@@ -520,9 +520,9 @@ export const PublishedFormStep: React.FC<PublishedFormStepProps> = ({
 
                           <div className="mt-2 flex gap-3">
                             <ButtonGroup<boolean>
-                              notSelectedColor="quatenaryBg"
+                              notSelectedColor="secondaryAccent2"
                               textColor="quatenary"
-                              color="quatenary"
+                              color="secondary"
                               type={ButtonGroupTypes.Button}
                               options={options}
                               onOptionSelected={(value) =>

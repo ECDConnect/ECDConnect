@@ -236,6 +236,9 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
         existingRemovalId: existingRemoval?.id,
       })
     );
+    await appDispatch(
+      practitionerThunkActions.getAllPractitioners({ overrideCache: true })
+    ).unwrap();
 
     setExistingRemoval(undefined);
   };

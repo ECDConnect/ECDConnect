@@ -1,0 +1,13 @@
+query GetAllConsent($locale: String) {
+  GetAllConsent(locale: $locale) {
+    id
+    name
+    type
+    description
+    availableLanguages {
+      id
+      description
+      locale
+    }
+  }
+}

@@ -1,0 +1,22 @@
+mutation addUser($input: UserModelInput) {
+  addUser(input: $input) {
+    id
+    userName
+    email
+    isSouthAfricanCitizen
+    verifiedByHomeAffairs
+    dateOfBirth
+    idNumber
+    firstName
+    surname
+    fullName
+    contactPreference
+    genderId
+    phoneNumber
+    profileImageUrl
+    roles {
+      id
+      name
+    }
+  }
+}

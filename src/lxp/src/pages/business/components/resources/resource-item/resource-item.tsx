@@ -6,100 +6,130 @@ import {
   Button,
   CheckboxGroup,
   Divider,
+  LoadingSpinner,
   StatusChip,
   Typography,
 } from '@ecdlink/ui';
-import { ResourcesService } from '@/services/ResourcesService';
 import { ThumbUpIcon } from '@heroicons/react/solid';
 import { ResourcesNames } from '../resources.types';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { authSelectors } from '@/store/auth';
-import { ContentTypeEnum } from '@ecdlink/core';
+import { ContentTypeEnum, ResourceLocaleId } from '@ecdlink/core';
 import { staticDataSelectors } from '@/store/static-data';
 import { LanguageCode } from '@/i18n/types';
+import { useAppDispatch } from '@/store';
+import { resourcesThunkActions } from '@/store/resources';
 
 interface ResourceItemProps {
-  resource: any;
+  resourceId: number;
   onClose: () => void;
   handleGetResourcesQueries: any;
 }
 
 export const ResourceItem: React.FC<ResourceItemProps> = ({
-  resource,
+  resourceId,
   onClose,
   handleGetResourcesQueries,
 }) => {
+  const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
-  const userAuth = useSelector(authSelectors.getAuthUser);
-  const [locale, setLocale] = useState<string>(
-    '9688cd08-adef-408c-9d34-5d75ae5c44df'
-  );
-  const [language, setLanguage] = useState({ locale: 'en-za' });
+  const [locale, setLocale] = useState<string>(ResourceLocaleId);
+  const [language] = useState({ locale: 'en-za' });
   const languages = useSelector(staticDataSelectors.getLanguages);
   const [isLiked, setIsLiked] = useState(false);
-  const [resourceItem, setResourceItem] = useState(resource);
-
-  const resourceLanguages = languages.filter((item) =>
-    resourceItem['availableLanguages'].map((x: any) => x).includes(item.id)
-  );
-
-  const availableLanguages: LanguageCode[] = resourceLanguages
-    ? resourceLanguages?.map((item) => {
-        return item?.locale as LanguageCode;
-      })
-    : [language?.locale as LanguageCode];
-
-  const handleCheckIfUserLiked = useCallback(async () => {
-    const response = await new ResourcesService(
-      userAuth?.auth_token!
-    )?.getResourceLikedStatusForUser(resource?.id);
-
-    if (response) {
-      setIsLiked(response?.isActive);
-    }
-  }, [resource?.id, userAuth?.auth_token]);
-
-  useEffect(() => {
-    handleCheckIfUserLiked();
-  }, []);
-
-  const handleUpdateResourceLike = useCallback(
-    async (isLikedByUser) => {
-      const response = await new ResourcesService(
-        userAuth?.auth_token!
-      )?.updateResourceLikes(
-        resource?.id,
-        ContentTypeEnum?.ClassroomBusinessResource,
-        isLikedByUser
-      );
-
-      if (response) {
-        handleGetResourcesQueries();
-      }
-    },
-    [handleGetResourcesQueries, resource?.id, userAuth?.auth_token]
-  );
+  const [resourceItem, setResourceItem] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleGetResourceByLanguage = useCallback(async () => {
-    const response = await new ResourcesService(
-      userAuth?.auth_token!
-    )?.resourceByLanguage(
-      resource?.id,
-      ContentTypeEnum?.ClassroomBusinessResource,
-      locale
-    );
-
-    if (response) {
+    try {
+      const response = await appDispatch(
+        resourcesThunkActions.getResourceByLanguage({
+          contentId: resourceId,
+          contentTypeId: ContentTypeEnum?.ClassroomBusinessResource,
+          localeId: locale,
+          sectionType: 'business',
+        })
+      ).unwrap();
       setResourceItem(response);
+    } catch (error) {
+      console.error('Failed to fetch getResourceByLanguage:', error);
     }
-  }, [locale, resource?.id, userAuth?.auth_token]);
+  }, [appDispatch, locale, resourceId]);
 
   useEffect(() => {
     if (locale) {
       handleGetResourceByLanguage();
     }
   }, [handleGetResourceByLanguage, locale]);
+
+  const resourceLanguages = languages?.filter((item) => {
+    const availableLangs = resourceItem?.['availableLanguages'] ?? [];
+    return availableLangs.some((lang: any) => lang.id === item.id);
+  });
+
+  const availableLanguages: LanguageCode[] = resourceLanguages?.length
+    ? resourceLanguages.map((item) => item?.locale as LanguageCode)
+    : [language?.locale as LanguageCode];
+
+  const handleCheckIfUserLiked = useCallback(async () => {
+    if (!resourceId) return;
+
+    try {
+      const response = await appDispatch(
+        resourcesThunkActions.getResourceLikedStatusForUser({
+          contentId: resourceId,
+        })
+      ).unwrap();
+
+      setIsLiked(!!response);
+    } catch (error) {
+      console.error('Failed to fetch getResourceLikedStatusForUser:', error);
+    }
+  }, [appDispatch, resourceId]);
+
+  useEffect(() => {
+    handleCheckIfUserLiked();
+  }, [handleCheckIfUserLiked]);
+
+  const handleUpdateResourceLike = useCallback(
+    async (isLikedByUser: boolean) => {
+      try {
+        setIsLoading(true);
+        await appDispatch(
+          resourcesThunkActions.updateResourceLikes({
+            contentId: resourceId,
+            contentTypeId: ContentTypeEnum?.ClassroomBusinessResource,
+            liked: isLikedByUser,
+          })
+        ).unwrap();
+
+        await appDispatch(
+          resourcesThunkActions.getResourceByLanguage({
+            contentId: resourceId,
+            localeId: ResourceLocaleId,
+            contentTypeId: ContentTypeEnum?.ClassroomBusinessResource,
+            overrideCache: true,
+            sectionType: 'business',
+          })
+        ).unwrap();
+
+        // Refresh the like count shown in this item
+        await handleGetResourceByLanguage();
+
+        handleGetResourcesQueries();
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Failed to updateResourceLikes:', error);
+      }
+    },
+    [
+      appDispatch,
+      resourceId,
+      handleGetResourceByLanguage,
+      handleGetResourcesQueries,
+      setIsLoading,
+    ]
+  );
 
   const getChipStatusColor = (resourceType: string) => {
     switch (resourceType) {
@@ -115,7 +145,7 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
   };
 
   const renderResourceDataType = useMemo(() => {
-    if (resource?.dataFree === 'true' || resource?.dataFree === true) {
+    if (resourceItem?.dataFree === 'true' || resourceItem?.dataFree === true) {
       return (
         <Alert
           className="mt-2 mb-4 rounded-md"
@@ -134,23 +164,22 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
         />
       );
     }
-  }, [resource?.dataFree]);
+  }, [resourceItem?.dataFree]);
 
   const handleShare = useCallback(async () => {
     if (navigator?.share) {
       try {
         await navigator?.share({
           title: 'Share resource',
-          url: resource?.link,
+          url: resourceItem?.link,
         });
-        console.log('Content shared successfully');
       } catch (error) {
         console.error('Error sharing the content:', error);
       }
     } else {
       alert('Web Share API not supported in this browser.');
     }
-  }, [resource?.link]);
+  }, [resourceItem?.link]);
 
   return (
     <div>
@@ -194,7 +223,7 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
               Number(resourceItem?.numberLikes) > 0
                 ? 'bg-successMain'
                 : 'bg-infoMain'
-            }  full mr-4 flex items-center gap-2 rounded-full px-3 py-0.5 text-white`}
+            } full mr-4 flex items-center gap-2 rounded-full px-3 py-0.5 text-white`}
           >
             <ThumbUpIcon className="h-5 w-5 text-white" />
             <div>
@@ -203,6 +232,13 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
                 : '0 likes'}
             </div>
           </div>
+          {isLoading && (
+            <LoadingSpinner
+              size={'medium'}
+              spinnerColor={'quatenary'}
+              backgroundColor={'uiBg'}
+            />
+          )}
         </div>
         <Typography
           type="help"

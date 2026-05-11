@@ -192,34 +192,31 @@ export const getPractitionerByUserId = createAsyncThunk<
 
 export const getPractitionerPermissions = createAsyncThunk<
   PractitionerDto,
-  { userId: string },
+  { userId: string } & OverrideCache,
   ThunkApiType<RootState>
 >(
   'getPractitionerPermissions',
   // eslint-disable-next-line no-empty-pattern
-  async ({ userId }, { getState, rejectWithValue }) => {
+  async ({ userId, overrideCache = false }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
+      practitioner: { practitioner: practionerCache },
     } = getState();
 
+    // === CACHE CHECK ===
+    if (!overrideCache && practionerCache?.permissions?.length) {
+      return practionerCache;
+    }
+
+    // === FETCH FROM API ===
     try {
-      let practitioner: PractitionerDto | undefined;
-
-      if (userId === null || userId?.trim() === '') {
-        return rejectWithValue('no user id supplied');
-      }
-
-      if (userAuth?.auth_token) {
-        practitioner = await new PractitionerService(
-          userAuth?.auth_token
-        ).getPractitionerPermissions(userId);
-      } else {
+      if (!userAuth?.auth_token) {
         return rejectWithValue('no access token, profile check required');
       }
 
-      if (!practitioner) {
-        return rejectWithValue('Error getting practitioner by user id');
-      }
+      const practitioner: PractitionerDto = await new PractitionerService(
+        userAuth?.auth_token
+      ).getPractitionerPermissions(userId);
 
       return practitioner;
     } catch (err) {
@@ -230,30 +227,31 @@ export const getPractitionerPermissions = createAsyncThunk<
 
 export const getAllPractitioners = createAsyncThunk<
   PractitionerDto[],
-  {},
+  {} & OverrideCache,
   ThunkApiType<RootState>
 >(
   PractitionerActions.GET_ALL_PRACTITIONERS,
   // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
+  async ({ overrideCache = false }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
+      practitioner: { practitioners: practitionersCache },
     } = getState();
 
-    try {
-      let practitioners: PractitionerDto[] | undefined;
+    // === CACHE CHECK ===
+    if (!overrideCache && practitionersCache?.length) {
+      return practitionersCache;
+    }
 
-      if (userAuth?.auth_token) {
-        practitioners = await new PractitionerService(
-          userAuth?.auth_token
-        ).getAllPractitioners();
-      } else {
+    // === FETCH FROM API ===
+    try {
+      if (!userAuth?.auth_token) {
         return rejectWithValue('no access token, profile check required');
       }
 
-      if (!practitioners) {
-        return rejectWithValue('Error getting practitioner');
-      }
+      const practitioners: PractitionerDto[] = await new PractitionerService(
+        userAuth?.auth_token
+      ).getAllPractitioners();
 
       return practitioners;
     } catch (err) {

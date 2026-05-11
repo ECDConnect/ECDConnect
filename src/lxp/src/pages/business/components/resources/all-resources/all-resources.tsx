@@ -95,6 +95,8 @@ export const AllResources: React.FC<AllResourcesprops> = ({
     [likedByUserFilter]
   );
 
+  const [selectedResource, setSelectedResource] = useState<any>(null);
+
   const resourcesLiked = resources?.filter((item1) =>
     resourcesLikedByUser?.find((item2) => item1.id === item2.contentId)
   );
@@ -151,6 +153,10 @@ export const AllResources: React.FC<AllResourcesprops> = ({
 
   const [resourcesData, setResourcesData] = useState(resourcesSorted);
 
+  useEffect(() => {
+    setResourcesData(resourcesSorted);
+  }, [resources]); // Re-sync when resources prop changes
+
   const [dataTypeFilter, setDataTypeFilter] = useState<
     SearchDropDownOption<string>[]
   >([]);
@@ -192,11 +198,12 @@ export const AllResources: React.FC<AllResourcesprops> = ({
             'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
           showIcon: false,
           onActionClick: () => {
+            setSelectedResource(item);
             dialog({
               position: DialogPosition.Full,
               render: (onClose) => (
                 <ResourceItem
-                  resource={item}
+                  resourceId={selectedResource?.id || item.id}
                   onClose={onClose}
                   handleGetResourcesQueries={handleGetResourcesQueries}
                 />
@@ -242,7 +249,7 @@ export const AllResources: React.FC<AllResourcesprops> = ({
               position: DialogPosition.Full,
               render: (onClose) => (
                 <ResourceItem
-                  resource={item}
+                  resourceId={selectedResource?.id || item.id}
                   onClose={onClose}
                   handleGetResourcesQueries={handleGetResourcesQueries}
                 />

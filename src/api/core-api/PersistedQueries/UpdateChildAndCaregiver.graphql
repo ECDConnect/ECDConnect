@@ -1,0 +1,3 @@
+mutation UpdateChildAndCaregiver($input: UpdateChildAndCaregiverInput) {
+  updateChildAndCaregiver(input: $input)
+}

@@ -1,0 +1,5 @@
+mutation CancelCalendarEvent($id: UUID!) {
+  cancelCalendarEvent(id: $id) {
+    id
+  }
+}

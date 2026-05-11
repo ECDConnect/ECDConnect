@@ -1,0 +1,3 @@
+query GetResourceLikedStatusForUser($contentId: Int!) {
+  resourceLikedStatusForUser(contentId: $contentId)
+}

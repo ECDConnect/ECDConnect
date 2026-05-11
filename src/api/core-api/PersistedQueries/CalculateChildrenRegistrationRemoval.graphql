@@ -1,0 +1,3 @@
+mutation CalculateChildrenRegistrationRemoval($userId: String) {
+  calculateChildrenRegistrationRemoval(userId: $userId)
+}

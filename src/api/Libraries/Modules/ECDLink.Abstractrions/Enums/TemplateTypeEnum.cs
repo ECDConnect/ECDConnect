@@ -28,6 +28,7 @@ namespace ECDLink.Abstractrions.Enums
         FourteenDaysNotLoggedOn = 24,
         RejectedInvitation = 25,
         TwoWeekNotLoggedOn = 26,
-        CoachRemovePractitioner = 27
+        CoachRemovePractitioner = 27,
+        ForgotPasswordGoogleFacebook = 28,
     }
 }

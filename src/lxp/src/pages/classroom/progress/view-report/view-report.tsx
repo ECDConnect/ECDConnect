@@ -278,6 +278,7 @@ export const ProgressViewReport: React.FC = () => {
           text={'Share caregiver report'}
           icon={'ShareIcon'}
           textColor="white"
+          disabled={!report?.dateCompleted}
         />
         <Button
           onClick={() =>

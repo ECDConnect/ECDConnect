@@ -184,10 +184,7 @@ namespace ECDLink.Security.Api
             await _userManager.SetObjectDataAsync(user, tenantData.Id);
 
             // Check if logging into admin portal and deny non "administrators" or "Coaches" access.
-            var isAdminPortal = CheckHostUrlForAdminPortal(
-                TenantExecutionContext.Tenant.AdminSiteAddress,
-                TenantExecutionContext.Tenant.AdminTestSiteAddress,
-                _httpContextAccessor.HttpContext?.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri ?? (_httpContextAccessor.HttpContext?.Request.Host.Value ?? String.Empty));
+            var isAdminPortal = _httpContextAccessor.HttpContext.IsTenantAdminPortal();
 
             var userRoles = await _userManager.GetRolesAsync(user);
             var isAdministrator = userRoles.Contains(Roles.ADMINISTRATOR) || userRoles.Contains(Roles.SUPER_ADMINISTRATOR);
@@ -230,11 +227,6 @@ namespace ECDLink.Security.Api
             return userTenantId != null && tenantId != null && userTenantId == tenantId;
         }
 
-        private static bool CheckHostUrlForAdminPortal(string adminSiteAddress, string testAdminSiteAddress, string hostAddress)
-        {
-            return hostAddress.Contains(adminSiteAddress) || hostAddress.Contains(testAdminSiteAddress);
-        }
-
         private UnauthorizedObjectResult LoginUnauthorizedResult(string message = null, bool? lockedOut = null)
         {
             var tenantData = TenantExecutionContext.Tenant;
@@ -255,7 +247,10 @@ namespace ECDLink.Security.Api
         [AllowAnonymous]
         [HttpPost]
         [Route("forgot-password")]
-        public async Task<IActionResult> ForgotPassword([FromBody] SimpleUserModel model)
+        public async Task<IActionResult> ForgotPassword(
+            [FromServices] IHttpContextAccessor _httpContextAccessor, 
+            [FromBody] SimpleUserModel model
+        )
         {
             var userIdentifier = model?.Username ?? model?.Email ?? model.PhoneNumber;
             if (string.IsNullOrWhiteSpace(userIdentifier))
@@ -272,20 +267,14 @@ namespace ECDLink.Security.Api
                 : !string.IsNullOrEmpty(model.Email) ? await _securityManager.GetUserByEmailAsync(model.Email)
                 : await _securityManager.GetUserByPhoneNumberAsync(normalizePhoneNumber);
 
-
-            var tenant = TenantExecutionContext.Tenant;
-            var tenantId = tenant.Id;
-
-            if (user is null || user?.TenantId.Value != tenantId)
+            var tenant = _httpContextAccessor.HttpContext.GetTenant();
+            if (tenant == null)
             {
                 return Ok(); // BadRequest("Could not reset password");
             }
 
-            var sites = new List<string> { tenant.AdminSiteAddress, tenant.AdminTestSiteAddress };
-            var originHost = new Uri(Request.Headers.Origin);
-            var isPortal = sites.Contains($"{originHost.Host}:{originHost.Port}") || sites.Contains(originHost.Host);
-
-            var result = await _securityManager.ForgotPasswordAsync(user, isPortal);
+            var isAdminPortal = _httpContextAccessor.HttpContext.IsTenantAdminPortal();
+            var result = await _securityManager.ForgotPasswordAsync(user, isAdminPortal);
 
             if (!result)
             {

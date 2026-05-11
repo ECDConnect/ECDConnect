@@ -11,44 +11,7 @@ class InviteService {
   async getInvitesByPrincipalId(id: string): Promise<InviteDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query invitesByPrincipalId($id: String!) {
-        invitesByPrincipalId(id: $id) {
-          id
-          isAccepted
-          status
-          acceptedDate
-          rejectedDate
-          insertedDate
-          practitionerId
-          principalId
-          practitioner {
-            id
-            userId
-            user {
-              id
-              firstName
-              surname
-              fullName
-            }
-          }
-          principal {
-            id
-            userId
-            user {
-              id
-              firstName
-              surname
-              fullName
-            }
-          }
-          user {
-            id
-            phoneNumber
-          }
-        }
-      }
-    `,
+      id: 'invitesByPrincipalId',
       variables: {
         id: id,
       },
@@ -66,20 +29,7 @@ class InviteService {
   async getInviteByPractitionerId(id: string): Promise<InviteDto | null> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query inviteByPractitionerId($id: String!) {
-  inviteByPractitionerId(id: $id) {
-    id
-    status
-    isAccepted
-    principalId
-    practitionerId
-    principal {
-        userId
-    }
-  }
-}
-    `,
+      id: 'inviteByPractitionerId',
       variables: {
         id: id,
       },
@@ -91,13 +41,7 @@ class InviteService {
   async getInviteByPractitionerIdNum(idNum: string): Promise<InviteDto | null> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query inviteByPractitionerIdNum($idNum: String!) {
-  inviteByPractitionerIdNum(idNum: $idNum) {
-    id
-  }
-}
-    `,
+      id: 'inviteByPractitionerIdNum',
       variables: {
         idNum: idNum,
       },
@@ -112,13 +56,7 @@ class InviteService {
   ): Promise<InviteDto | null> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      mutation updateInviteStatus($id: String!, $isAccepted: Boolean!) {
-        updateInviteStatus(id: $id, isAccepted: $isAccepted) {
-          id
-        }
-      }
-    `,
+      id: 'updateInviteStatus',
       variables: {
         id: id,
         isAccepted: isAccepted,
@@ -131,12 +69,7 @@ class InviteService {
   async deleteInvite(id: string | undefined): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation RemoveInvite($id: String) {
-          RemoveInvite(id: $id) {
-          }
-        }
-      `,
+      id: 'RemoveInvite',
       variables: {
         id: id,
       },

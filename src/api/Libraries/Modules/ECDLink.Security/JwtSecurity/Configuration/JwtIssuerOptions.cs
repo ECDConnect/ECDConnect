@@ -6,6 +6,7 @@ namespace ECDLink.Security.JwtSecurity.Configuration
 {
     public class JwtIssuerOptions
     {
+        public string SecretKey { get; set; }
         public string Issuer { get; set; }
 
         public string Subject { get; set; }

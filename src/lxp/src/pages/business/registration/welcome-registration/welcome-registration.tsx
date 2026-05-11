@@ -140,15 +140,15 @@ export const WelcomeRegistration: React.FC<WelcomeRegistrationProps> = ({
     return <WelcomeStep onNext={handleStartRegistration} />;
   }
 
+  const backToDashboard = () => {
+    history.push('/');
+  };
+
   return (
     <StepViewer
       title="DBE registration helper"
       onBack={() => {
-        canGoBack()
-          ? goBackOneStep()
-          : history.push(ROUTES.BUSINESS, {
-              activeTabIndex: BusinessTabItems.REGISTRATION,
-            });
+        canGoBack() ? goBackOneStep() : backToDashboard();
       }}
       activeStep={activeStepKey}
       onClose={exitRegistrationPrompt}

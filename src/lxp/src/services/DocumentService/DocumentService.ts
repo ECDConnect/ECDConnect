@@ -12,31 +12,7 @@ class DocumentService {
   async getdocuments(userId: string): Promise<DocumentDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query GetAllDocument {
-          GetAllDocument {
-            id
-            isActive
-            user {
-              firstName
-              surname
-            }
-            userId
-            reference
-            name
-            workflowStatusId            
-            documentTypeId
-            documentType {
-              id
-              name
-              description
-            }
-          }
-        }        
-      `,
-      variables: {
-        createdUserId: userId,
-      },
+      id: 'GetAllDocument',
     });
 
     if (response.status !== 200) {
@@ -49,13 +25,7 @@ class DocumentService {
   async updateDocument(id: string, input: DocumentInput): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation updateDocument($id: UUID!,$input: DocumentInput) {
-          updateDocument(id: $id, input: $input) {
-            id
-          }
-        }
-      `,
+      id: 'updateDocument',
       variables: {
         id: id,
         input: input,
@@ -76,15 +46,7 @@ class DocumentService {
   ): Promise<FileReturnModel> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation fileUpload($file: String, $fileName: String, $fileType: FileTypeEnum!) {
-          fileUpload(file: $file, fileName: $fileName, fileType: $fileType) {
-            name
-            reference
-            url
-          }
-        }
-      `,
+      id: 'fileUpload',
       variables: {
         file: file,
         fileName: fileName,

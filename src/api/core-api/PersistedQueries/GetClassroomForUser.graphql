@@ -1,0 +1,50 @@
+query GetClassroomForUser($userId: UUID) {
+  classroomForUser(userId: $userId) {
+    id
+    name
+    classroomImageUrl
+    preschoolCode
+    isDummySchool
+    siteAddress {
+      id
+      area
+      name
+      addressLine1
+      addressLine2
+      addressLine3
+      latitude
+      longitude
+      municipality
+      postalCode
+      province {
+        id
+        description
+      }
+      provinceId
+      ward
+    }
+    principal {
+      userId
+      firstName
+      surname
+      phoneNumber
+      email
+      profileImageUrl
+    }
+    childProgressReportPeriods {
+      id
+      startDate
+      endDate
+      notifications {
+        subject
+        message
+        id
+        messageProtocol
+        cTAText
+        cTA
+        messageDate
+        messageEndDate
+      }
+    }
+  }
+}

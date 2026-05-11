@@ -1,0 +1,3 @@
+mutation disableNotification($notificationId: String!) {
+  disableNotification(notificationId: $notificationId)
+}

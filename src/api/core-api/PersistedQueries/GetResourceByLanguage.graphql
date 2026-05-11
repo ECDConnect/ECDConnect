@@ -1,0 +1,13 @@
+query GetResourceByLanguage($contentId: Int!, $contentTypeId: Int!, $localeId: UUID!) {
+  resourceByLanguage(contentId: $contentId, contentTypeId: $contentTypeId, localeId: $localeId) {
+    resourceType
+    title
+    shortDescription
+    link
+    longDescription
+    dataFree
+    sectionType
+    numberLikes
+    availableLanguages
+  }
+}

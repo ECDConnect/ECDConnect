@@ -70,7 +70,8 @@ import { triggerBackgroundSync } from '@/store/sync/sync.actions';
 import { ReactComponent as RobotImage } from '../../assets/iconRobot.svg';
 import { cloneDeep } from 'lodash';
 
-const { version } = require('../../../package.json');
+const version: string =
+  process.env.REACT_APP_VERSION ?? require('../../../package.json').version;
 export interface DashboardRouteState {
   isFromLogin?: boolean;
   isFromCompleteProfile?: boolean;
@@ -803,6 +804,21 @@ export const Dashboard: React.FC = () => {
       icon: styles.communityIconName,
       current: false,
       showDivider: true,
+      nestedChildren: [
+        {
+          name: NavigationNames.Community.Community,
+          href: ROUTES.COMMUNITY.ROOT,
+          onNavigation: onNavigation,
+          current: false,
+        },
+        {
+          name: NavigationNames.Community.Resources,
+          href: ROUTES.COMMUNITY.ROOT,
+          onNavigation: onNavigation,
+          params: { activeTabIndex: 1 },
+          current: false,
+        },
+      ],
     },
     {
       name: NavigationNames.Training,

@@ -11,16 +11,7 @@ class LanguageService {
   async getLanguages(): Promise<LanguageDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query GetAllLanguage($isActive: Boolean = true){
-        GetAllLanguage(where: { isActive: { eq: $isActive } }){
-            id
-            description
-            locale
-            isActive
-        }
-    }
-          `,
+      id: 'GetAllLanguage',
     });
 
     if (response.status !== 200) {
@@ -32,16 +23,7 @@ class LanguageService {
   async getOpenLanguages(): Promise<LanguageDto[]> {
     const apiInstance = api(Config.graphQlApi);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query openLanguage(){
-        openLanguage(){
-            id
-            description
-            locale
-            isActive
-        }
-      }
-      `,
+      id: 'openLanguage',
     });
 
     if (response.status !== 200) {

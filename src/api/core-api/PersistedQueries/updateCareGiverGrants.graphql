@@ -1,0 +1,3 @@
+mutation updateCareGiverGrants($childUserId: UUID!, $grantIds: [UUID!]) {
+  updateCareGiverGrants(childUserId: $childUserId, grantIds: $grantIds)
+}

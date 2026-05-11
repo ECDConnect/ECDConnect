@@ -1,0 +1,134 @@
+query GetCommunityProfile {
+  communityProfile {
+    id
+    userId
+    aboutShort
+    aboutLong
+    shareContactInfo
+    shareEmail
+    sharePhoneNumber
+    shareProfilePhoto
+    shareProvince
+    provinceId
+    provinceName
+    shareRole
+    clickedECDHeros
+    coachUserId
+    coachName
+    coachPhoneNumber
+    completenessPerc
+    completenessPercColor
+    completenessPercImage
+    insertedDate
+    profileSkills {
+      id
+      name
+      imageName
+      description
+      isActive
+      ordering
+    }
+    communityUser {
+      id
+      fullName
+      email
+      phoneNumber
+      whatsAppNumber
+      profilePhoto
+      roleName
+    }
+    acceptedConnections {
+      id
+      userId
+      aboutShort
+      aboutLong
+      shareEmail
+      sharePhoneNumber
+      shareProfilePhoto
+      shareProvince
+      provinceId
+      provinceName
+      shareRole
+      connectionAccepted
+      communityUser {
+        id
+        fullName
+        email
+        phoneNumber
+        whatsAppNumber
+        profilePhoto
+        roleName
+      }
+      profileSkills {
+        id
+        name
+        imageName
+        description
+        isActive
+        ordering
+      }
+    }
+    pendingConnections {
+      id
+      userId
+      aboutShort
+      aboutLong
+      shareEmail
+      sharePhoneNumber
+      shareProfilePhoto
+      shareProvince
+      provinceId
+      provinceName
+      shareRole
+      connectionAccepted
+      communityUser {
+        id
+        fullName
+        email
+        phoneNumber
+        whatsAppNumber
+        profilePhoto
+        roleName
+      }
+      profileSkills {
+        id
+        name
+        imageName
+        description
+        isActive
+        ordering
+      }
+    }
+    userConnectionRequests {
+      id
+      userId
+      aboutShort
+      aboutLong
+      shareEmail
+      sharePhoneNumber
+      shareProfilePhoto
+      shareProvince
+      provinceId
+      provinceName
+      shareRole
+      connectionAccepted
+      communityUser {
+        id
+        fullName
+        email
+        phoneNumber
+        whatsAppNumber
+        profilePhoto
+        roleName
+      }
+      profileSkills {
+        id
+        name
+        imageName
+        description
+        isActive
+        ordering
+      }
+    }
+  }
+}

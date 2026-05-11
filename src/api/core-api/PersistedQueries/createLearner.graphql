@@ -1,0 +1,8 @@
+mutation createLearner($input: LearnerInput) {
+  createLearner(input: $input) {
+    id
+    classroomGroupId
+    startedAttendance
+    userId
+  }
+}

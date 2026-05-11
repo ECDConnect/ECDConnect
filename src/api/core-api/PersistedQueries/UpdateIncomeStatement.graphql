@@ -1,0 +1,27 @@
+mutation UpdateIncomeStatement($input: IncomeStatementModelInput) {
+  updateIncomeStatement(input: $input) {
+    id
+    month
+    year
+    downloaded
+    incomeItems {
+      incomeTypeId
+      id
+      dateReceived
+      amount
+      childUserId
+      notes
+      numberOfChildrenCovered
+      payTypeId
+      photoProof
+    }
+    expenseItems {
+      expenseTypeId
+      id
+      datePaid
+      amount
+      notes
+      photoProof
+    }
+  }
+}

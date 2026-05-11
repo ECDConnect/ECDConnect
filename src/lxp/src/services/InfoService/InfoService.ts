@@ -12,50 +12,7 @@ class InfoService {
       data: { moreInformation: MoreInformation[] };
       errors?: {};
     }>(``, {
-      query: `
-        query GetMoreInformation($section: String, $locale: String) {
-          moreInformation(section: $section, locale: $locale){
-            descriptionA
-            descriptionAColor
-            descriptionB
-            descriptionBColor
-            descriptionBIcon
-            descriptionC
-            descriptionCColor
-            descriptionD
-            descriptionDColor
-            descriptionDIcon
-            headerA
-            headerB
-            headerC
-            headerD
-            id
-            infoBoxDescription
-            infoBoxIcon
-            infoBoxTitle
-            section
-            showDividerA
-            showDividerB
-            showDividerC
-            type
-            visit
-            availableLanguages {
-              id
-              locale
-            }
-            buttonlinkA
-            buttonlinkADescription
-            buttonlinkB
-            buttonlinkBDescription
-            buttonlinkC
-            buttonlinkCDescription
-            infoBoxBTitle
-            infoBoxBDescription
-            infoBoxBLink
-            infoBoxBLinkDescription
-          }
-        }    
-        `,
+      id: 'GetMoreInformation',
       variables: {
         section,
         locale,

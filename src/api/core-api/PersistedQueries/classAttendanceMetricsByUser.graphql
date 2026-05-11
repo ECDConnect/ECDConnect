@@ -1,0 +1,12 @@
+query classAttendanceMetricsByUser($userId: String, $startMonth: DateTime!, $endMonth: DateTime!) {
+  classAttendanceMetricsByUser(userId: $userId, startMonth: $startMonth, endMonth: $endMonth) {
+    childCount
+    attendancePercentage
+    month
+    year
+    classroomId
+    practitionerId
+    weekOfYear
+    classroomGroupId
+  }
+}

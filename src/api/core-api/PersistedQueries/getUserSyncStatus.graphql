@@ -1,0 +1,9 @@
+query getUserSyncStatus($lastSync: DateTime!, $classroomId: UUID!) {
+  userSyncStatus(lastSync: $lastSync, classroomId: $classroomId) {
+    syncChildren
+    syncClassroom
+    syncReportingPeriods
+    syncPoints
+    syncPermissions
+  }
+}

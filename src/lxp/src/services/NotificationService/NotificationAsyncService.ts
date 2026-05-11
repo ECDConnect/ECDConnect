@@ -20,11 +20,7 @@ class NotificationAsyncService {
       data: { disableNotification: undefined };
       errors?: {};
     }>(``, {
-      query: `
-        mutation disableNotification($notificationId: String!) {          
-          disableNotification(notificationId: $notificationId) {}        
-        }
-      `,
+      id: 'disableNotification',
       variables: {
         ...input,
       },
@@ -45,11 +41,7 @@ class NotificationAsyncService {
       data: { markAsReadNotification: undefined };
       errors?: {};
     }>(``, {
-      query: `
-        mutation markAsReadNotification($notificationId: String!) {          
-          markAsReadNotification(notificationId: $notificationId) {}        
-        }
-      `,
+      id: 'markAsReadNotification',
       variables: {
         ...input,
       },
@@ -72,41 +64,7 @@ class NotificationAsyncService {
       data: { allNotifications: Notification[] };
       errors?: {};
     }>(``, {
-      query: `
-        query allNotifications($userId: String) {
-          allNotifications(userId: $userId) {
-            id
-            fromUserId
-            messageProtocol
-            message
-            messageTemplateType
-            subject
-            sentByUserId
-            from
-            id
-            messageDate
-            messageEndDate
-            status
-            cTA
-            cTAText
-            ordering
-            readDate
-            messageTemplate
-              {
-                id
-                ordering
-                templateType
-                subject
-                message
-                cTA
-                cTAText
-                typeCode                        
-              }
-            action  
-          }
-        }
-
-      `,
+      id: 'allNotifications',
       variables: {
         ...input,
       },

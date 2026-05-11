@@ -10,35 +10,7 @@ class ContentRoutineService {
   async getProgrammeRoutines(locale: string): Promise<ProgrammeRoutineDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query GetAllProgrammeRoutine($locale: String) {
-        GetAllProgrammeRoutine(locale: $locale) {          
-          id
-          description
-          name
-          headerBanner            
-          routineItems {
-            id
-            sequence
-            name
-            description
-            image
-            imageBackgroundColor
-            icon
-            iconBackgroundColor
-            alert
-            timeSpan
-            routineSubItems {
-              id                
-              name
-              description
-              image
-              imageBackgroundColor
-              timeSpan
-            }              
-          }            
-        }
-      }`,
+      id: 'GetAllProgrammeRoutine',
       variables: {
         locale: locale,
       },

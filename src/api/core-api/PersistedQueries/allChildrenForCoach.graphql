@@ -1,0 +1,6 @@
+query allChildrenForCoach {
+  allChildrenForCoach {
+    id
+    userId
+  }
+}

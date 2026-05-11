@@ -1,0 +1,16 @@
+query openAccessAddChildDetail($token: String) {
+  openAccessAddChildDetail(token: $token) {
+    child {
+      firstname
+      surname
+      groupName
+      userId
+    }
+    practitoner {
+      firstname
+      surname
+      phoneNumber
+    }
+    accessToken
+  }
+}

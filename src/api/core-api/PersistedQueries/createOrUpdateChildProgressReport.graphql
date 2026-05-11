@@ -1,0 +1,3 @@
+mutation createOrUpdateChildProgressReport($input: ChildProgressReportModelInput) {
+  createOrUpdateChildProgressReport(input: $input)
+}

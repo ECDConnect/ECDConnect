@@ -1,0 +1,3 @@
+mutation cancelRemovalFromProgramme($removalId: String) {
+  cancelRemovalFromProgramme(removalId: $removalId)
+}

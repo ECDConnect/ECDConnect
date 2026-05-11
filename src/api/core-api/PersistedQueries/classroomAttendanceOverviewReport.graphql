@@ -1,0 +1,22 @@
+query classroomAttendanceOverviewReport($startDate: DateTime!, $endDate: DateTime!) {
+  classroomAttendanceOverviewReport(startDate: $startDate, endDate: $endDate) {
+    classroomAttendanceReport {
+      totalActualAttendance
+      totalExpectedAttendance
+      attendancePercentage
+      classgroupId
+      childFullName
+      childIdNumber
+      childUserId
+      month
+      year
+      attendance { key value }
+    }
+    totalAttendance { key value }
+    totalAttendanceStatsReport {
+      totalSessions
+      totalMonthlyAttendance
+      totalChildrenAttendedAllSessions
+    }
+  }
+}

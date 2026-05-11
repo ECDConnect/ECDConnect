@@ -18,7 +18,14 @@
     <None Remove="Tenancy\TempScripts\**" />
     <None Remove="Middleware\" />
     <None Remove="HtmlSanitizer" />
+    <None Remove="PersistedQueries\userById.graphql" />
     <None Remove="SQLUpgradeScripts" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Content Include="PersistedQueries\**\*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   
  
@@ -76,6 +83,6 @@
   <ItemGroup>
     <None Include="ECDLink.FileStorage.csproj" />
   </ItemGroup>
-  <ProjectExtensions><VisualStudio><UserProperties appsettings_1development_1json__JsonSchema="https://download.stackhawk.com/hawk/jsonconfig/hawkconfig.json" /></VisualStudio></ProjectExtensions>
+  <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
   
 </Project>

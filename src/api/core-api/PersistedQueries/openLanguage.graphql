@@ -1,0 +1,8 @@
+query openLanguage {
+  openLanguage {
+    id
+    description
+    locale
+    isActive
+  }
+}

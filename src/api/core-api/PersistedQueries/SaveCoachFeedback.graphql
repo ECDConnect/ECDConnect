@@ -1,0 +1,13 @@
+mutation SaveCoachFeedback($input: CoachFeedbackInputModelInput) {
+  saveCoachFeedback(input: $input) {
+    id
+    fromUserId
+    toUserId
+    supportRatingId
+    feedbackDetails
+    coachFeedbackTypes {
+      id
+      feedbackTypeId
+    }
+  }
+}

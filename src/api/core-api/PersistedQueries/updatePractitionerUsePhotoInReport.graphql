@@ -1,0 +1,3 @@
+mutation updatePractitionerUsePhotoInReport($practitionerId: String, $usePhotoInReport: String) {
+  updatePractitionerUsePhotoInReport(practitionerId: $practitionerId, usePhotoInReport: $usePhotoInReport)
+}

@@ -1,0 +1,3 @@
+mutation DeActivatePractitioner($userId: String, $leavingComment: String, $reasonForPractitionerLeavingId: String, $reasonDetails: String) {
+  deActivatePractitioner(userId: $userId, leavingComment: $leavingComment, reasonForPractitionerLeavingId: $reasonForPractitionerLeavingId, reasonDetails: $reasonDetails)
+}
