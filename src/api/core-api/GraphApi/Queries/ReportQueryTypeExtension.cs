@@ -500,7 +500,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                             Subject = $"{missedReports} Missed progress reports",
                             Icon = MetricsIconEnum.Error.ToString(),
                             Color = MetricsColorEnum.Error.ToString(),
-                            Message = $"{mostRecentCompletedPeriod.StartDate.ToString("MMMM yyyy")} - {mostRecentCompletedPeriod.EndDate.ToString("MMMM yyyy")}",
+                            Message = $"{mostRecentCompletedPeriod.StartDate.ToString("MMMM")} - {mostRecentCompletedPeriod.EndDate.ToString("MMMM yyyy")}",
                             Notes = "",
                             UserId = Guid.Parse(practitionerId),
                             UserType = "practitioner"
