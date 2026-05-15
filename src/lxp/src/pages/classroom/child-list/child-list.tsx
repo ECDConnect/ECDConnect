@@ -37,7 +37,6 @@ import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { ChildProfileRouteState } from '@/pages/child/child-profile/child-profile.types';
 import { useTenantModules } from '@/hooks/useTenantModules';
 import { useTenant } from '@/hooks/useTenant';
-import { useAppDispatch } from '@/store';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 const sortOptions: SearchSortOptions = {
