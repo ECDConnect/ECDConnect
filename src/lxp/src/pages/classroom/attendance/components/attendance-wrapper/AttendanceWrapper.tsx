@@ -63,18 +63,23 @@ export default function AttendanceWrapper() {
     tooltipProps,
   }: TooltipRenderProps) {
     return (
-      <div {...tooltipProps} className="ml-2">
+      <div {...tooltipProps} className="ml-2 max-w-xs">
         <Card className="rounded-2xl p-6">
           <div>
             {step.content && (
               <div className="flex items-center gap-2 align-middle">
-                <IconRobot className="mr-4 h-20 w-20" />
-                <Typography
-                  color={'textDark'}
-                  type={'h2'}
-                  weight={'normal'}
-                  text={String(step?.content)}
+                <IconRobot
+                  className="mr-4 shrink-0"
+                  style={{ width: 80, height: 80, minWidth: 80, minHeight: 80 }}
                 />
+                <div className="min-w-0">
+                  <Typography
+                    color={'textDark'}
+                    type={'h2'}
+                    weight={'normal'}
+                    text={String(step?.content)}
+                  />
+                </div>
               </div>
             )}
           </div>

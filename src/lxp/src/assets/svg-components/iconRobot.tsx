@@ -17,7 +17,7 @@ const iconRobot = (props: React.SVGProps<SVGSVGElement>) => (
       width="100"
       height="100"
     >
-      <circle cx="50" cy="50" r="50" fill="#FF2180" />
+      <circle cx="50" cy="50" r="50" fill="white" />
     </mask>
     <g mask="url(#mask0_3534_35440)">
       <rect

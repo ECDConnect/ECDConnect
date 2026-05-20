@@ -52,15 +52,6 @@ export default function StatementsWrapper() {
       target: '#createIncome',
       content: t("Let's go through one example! Tap income"),
       placement: 'bottom-end',
-      floaterProps: {
-        styles: {
-          floater: {
-            position: 'fixed',
-            top: 130,
-            left: 30,
-          },
-        },
-      },
       spotlightClicks: true,
     },
     {
@@ -74,8 +65,8 @@ export default function StatementsWrapper() {
     },
     {
       target: '#actionList1',
-      content: t("Let's pretend you received a donation today, tap here!"),
-      placement: 'bottom-end',
+      content: t('Lets pretend you received a donation today, tap "add"!'),
+      placement: 'top',
       offset: 10,
       spotlightClicks: true,
       disableBeacon: true,
@@ -134,18 +125,23 @@ export default function StatementsWrapper() {
     tooltipProps,
   }: TooltipRenderProps) {
     return (
-      <div {...tooltipProps} className="ml-2">
+      <div {...tooltipProps} className="ml-2 max-w-xs">
         <Card className="rounded-2xl p-6">
           <div>
             {step.content && (
               <div className="flex items-center gap-2 align-middle">
-                <IconRobotBlue />
-                <Typography
-                  color={'textDark'}
-                  type={'h2'}
-                  weight={'normal'}
-                  text={String(step?.content)}
+                <IconRobotBlue
+                  className="shrink-0"
+                  style={{ width: 80, height: 80, minWidth: 80, minHeight: 80 }}
                 />
+                <div className="min-w-0">
+                  <Typography
+                    color={'textDark'}
+                    type={'h2'}
+                    weight={'normal'}
+                    text={String(step?.content)}
+                  />
+                </div>
               </div>
             )}
           </div>
