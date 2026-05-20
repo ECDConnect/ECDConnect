@@ -1194,9 +1194,9 @@ export const Dashboard: React.FC = () => {
               <div id="wantToConnectWithPrincipal2">
                 <UserAvatar
                   size="sm-md"
-                  color="secondary"
+                  color="quatenary"
                   displayBorder
-                  borderColour="secondary"
+                  borderColour="quatenary"
                 />
               </div>
             </div>
