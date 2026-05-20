@@ -36,6 +36,29 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Portal
             contentRepo.Update(int.Parse(contentId), englishId, updateDict);
             return true;
         }
+        [Permission(PermissionGroups.JOURNEY, GraphActionEnum.Update)]
+        public async Task<bool> SaveHealthCertificateDetails(
+            AuthenticationDbContext dbContext,
+            Guid visitId,
+            string certificateName,
+            string certificateRegNr)
+        {
+            var visit = dbContext.Visits.FirstOrDefault(x => x.Id == visitId);
+            if (visit == null)
+                return false;
+
+            visit.CertificateName = certificateName;
+            visit.CertificateRegNr = certificateRegNr;
+            if (visit.CertificateCreated == null)
+            {
+                visit.CertificateCreated = DateTime.Now;
+            }
+            
+            dbContext.Visits.Update(visit);
+            await dbContext.SaveChangesAsync();
+
+            return true;
+        }
 
         [Permission(PermissionGroups.JOURNEY, GraphActionEnum.Create)]
         public async Task<AssessmentReport> SubmitJourneyAssessmentFormData(

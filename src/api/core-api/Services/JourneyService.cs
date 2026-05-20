@@ -104,11 +104,15 @@ namespace EcdLink.Api.CoreApi.Services
             var classroom = _classroomService.GetClassroomForUser((Guid)practitioner.UserId);
 
             var visitData = _dbContext.VisitData
+            .Include(x => x.Visit)
             .AsNoTracking()
             .Where(x => x.VisitId == visitId)
             .ToList();
 
             var formName = visitData.Select(x => x.VisitName).FirstOrDefault();
+            var certificateName = visitData.Select(x => x.Visit.CertificateName).FirstOrDefault();
+            var certificateRegNr = visitData.Select(x => x.Visit.CertificateRegNr).FirstOrDefault();
+            var visitCompletedDate = visitData.Select(x => x.Visit.ActualVisitDate).FirstOrDefault();
 
             var healthAndSafetyAnswers = visitData
                 .Where(x => (x.VisitSection == VisitSteps.Step1 ||
@@ -234,6 +238,9 @@ namespace EcdLink.Api.CoreApi.Services
                 ClassroomDetail = classroomDetail,
                 TextQuestion = Questions.NextStepQuestion,
                 TextAnswer = nextStepAnswer,
+                CertificateName = certificateName ?? "",
+                CertificateRegNr = certificateRegNr ?? "",
+                VisitCompletedDate = visitCompletedDate
             };
         }
 

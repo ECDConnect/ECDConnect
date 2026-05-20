@@ -34,6 +34,7 @@ export const PqaActions = {
   GET_JOURNEY_ASSESSMENT_FORM_DATA: 'getJourneyAssessmentFormData',
   SUBMIT_JOURNEY_ASSESSMENT_FORM_DATA: 'submitJourneyAssessmentFormData',
   GET_JOURNEY_ASSESSMENT_REPORT: 'getJourneyAssessmentReport',
+  SAVE_HEALTH_CERTIFICATE_DETAILS: 'saveHealthCertificateDetails',
 };
 
 export const addVisitFormData = createAsyncThunk<
@@ -498,6 +499,38 @@ export const submitJourneyAssessmentFormData = createAsyncThunk<
         return await new PQAService(
           userAuth?.auth_token
         ).submitJourneyAssessmentFormData(formId, formName, input);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const saveHealthCertificateDetails = createAsyncThunk<
+  boolean,
+  { visitId: string; certificateName: string; certificateRegNr: string },
+  ThunkApiType<RootState>
+>(
+  PqaActions.SAVE_HEALTH_CERTIFICATE_DETAILS,
+  async (
+    { visitId, certificateName, certificateRegNr },
+    { getState, rejectWithValue }
+  ) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new PQAService(
+          userAuth?.auth_token
+        ).saveHealthCertificateDetails(
+          visitId,
+          certificateName,
+          certificateRegNr
+        );
       } else {
         return rejectWithValue('no access token, profile check required');
       }
