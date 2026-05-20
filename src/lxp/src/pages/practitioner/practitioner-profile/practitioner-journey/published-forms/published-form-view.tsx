@@ -1,7 +1,6 @@
 import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router';
 import {
-  Alert,
   BannerWrapper,
   Button,
   Card,
@@ -18,6 +17,8 @@ import { ReactComponent as NeutralEmoticon } from '@/assets/neutral_blue_emotico
 import { ReactComponent as VeryUnhappy } from '@/assets/ECD_Connect_emoji_unhappy.svg';
 import { ReactComponent as MehEmoticon } from '@/assets/mehFace.svg';
 import { Score } from './score';
+import { useState } from 'react';
+import { PublishedFormCertificate } from './published-form-certificate';
 
 export type ViewPublishedFormProps = {
   onBack: () => void;
@@ -82,6 +83,20 @@ export const ViewPublishedForm: React.FC<ViewPublishedFormProps> = ({
   );
   const user = useSelector(userSelectors.getUser);
   const totalHealthCheckQuestions = 22;
+  const [showCertificateCheckForm, setShowCertificateCheckForm] =
+    useState(false);
+
+  if (showCertificateCheckForm) {
+    return (
+      <PublishedFormCertificate
+        completedVisitId={location.state.visitId}
+        certificateName={timelineReport?.certificateName}
+        certificateRegNr={timelineReport?.certificateRegNr}
+        visitCompletedDate={timelineReport?.visitCompletedDate}
+        onBack={setShowCertificateCheckForm}
+      />
+    );
+  }
 
   // Loading / Empty state
   if (!timelineReport) {
@@ -348,17 +363,33 @@ export const ViewPublishedForm: React.FC<ViewPublishedFormProps> = ({
             <Divider dividerType="dashed" className="my-2" />
           </>
         )}
+        <div className="mt-auto mb-4 mt-4">
+          {/* only applicable on health and safety check */}
+          {timelineReport.name === 'Health and safety check' && (
+            <Button
+              onClick={() => setShowCertificateCheckForm(true)}
+              className="mt-auto w-full"
+              iconPosition="start"
+              size="normal"
+              color="quatenary"
+              type="filled"
+              icon="DownloadIcon"
+              text="Download Certificate"
+              textColor="white"
+            />
+          )}
 
-        <Button
-          type="filled"
-          text="Close"
-          color="quatenary"
-          textColor="white"
-          className="mb-8 w-full rounded-2xl"
-          iconPosition="start"
-          icon="XIcon"
-          onClick={onBack}
-        />
+          <Button
+            type="outlined"
+            text="Close"
+            color="quatenary"
+            textColor="quatenary"
+            className="mb-8 mt-3 w-full rounded-2xl"
+            iconPosition="start"
+            icon="XIcon"
+            onClick={onBack}
+          />
+        </div>
       </div>
     </BannerWrapper>
   );

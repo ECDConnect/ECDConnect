@@ -296,6 +296,33 @@ class PQAService {
     return response.data.data.submitJourneyAssessmentFormData;
   }
 
+  async saveHealthCertificateDetails(
+    visitId: string,
+    certificateName: string,
+    certificateRegNr: string
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { saveHealthCertificateDetails: boolean };
+      errors?: {};
+    }>(``, {
+      id: 'SaveHealthCertificateDetails',
+      variables: {
+        visitId,
+        certificateName,
+        certificateRegNr,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Save Health Certificate Details failed - Server connection error'
+      );
+    }
+
+    return response.data.data.saveHealthCertificateDetails;
+  }
+
   async updateVisitPlannedVisitDate(
     input: UpdateVisitPlannedVisitDateModelInput
   ): Promise<Visit> {

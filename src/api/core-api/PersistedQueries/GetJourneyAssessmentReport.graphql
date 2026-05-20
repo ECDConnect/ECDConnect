@@ -12,5 +12,8 @@ query GetJourneyAssessmentReport($visitId: UUID!) {
     preschoolDetail
     classroomDetail
     safetyStandards
+    certificateName
+    certificateRegNr
+    visitCompletedDate
   }
 }
