@@ -365,30 +365,43 @@ export const ViewPublishedForm: React.FC<ViewPublishedFormProps> = ({
         )}
         <div className="mt-auto mb-4 mt-4">
           {/* only applicable on health and safety check */}
-          {timelineReport.name === 'Health and safety check' && (
+          {timelineReport.name === 'Health and safety check' ? (
+            <>
+              <Button
+                onClick={() => setShowCertificateCheckForm(true)}
+                className="mt-auto w-full"
+                iconPosition="start"
+                size="normal"
+                color="quatenary"
+                type="filled"
+                icon="DownloadIcon"
+                text="Download Certificate"
+                textColor="white"
+              />
+
+              <Button
+                type="outlined"
+                text="Close"
+                color="quatenary"
+                textColor="quatenary"
+                className="mb-8 mt-3 w-full rounded-2xl"
+                iconPosition="start"
+                icon="XIcon"
+                onClick={onBack}
+              />
+            </>
+          ) : (
             <Button
-              onClick={() => setShowCertificateCheckForm(true)}
-              className="mt-auto w-full"
-              iconPosition="start"
-              size="normal"
-              color="quatenary"
               type="filled"
-              icon="DownloadIcon"
-              text="Download Certificate"
+              text="Close"
+              color="quatenary"
               textColor="white"
+              className="mb-8 mt-3 w-full rounded-2xl"
+              iconPosition="start"
+              icon="XIcon"
+              onClick={onBack}
             />
           )}
-
-          <Button
-            type="outlined"
-            text="Close"
-            color="quatenary"
-            textColor="quatenary"
-            className="mb-8 mt-3 w-full rounded-2xl"
-            iconPosition="start"
-            icon="XIcon"
-            onClick={onBack}
-          />
         </div>
       </div>
     </BannerWrapper>
