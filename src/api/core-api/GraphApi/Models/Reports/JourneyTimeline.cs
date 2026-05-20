@@ -148,6 +148,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public DateTime GeneratedAt { get; set; } = DateTime.UtcNow;
         public string TextQuestion { get; set; }
         public string TextAnswer { get; set; }
+        public string CertificateName { get; set; }
+        public string CertificateRegNr { get; set; }
+        public DateTime? VisitCompletedDate { get; set; }
         public Guid VisitId { get; set; }
         public List<string> PreschoolDetail { get; set; } = new();
         public List<string> ClassroomDetail { get; set; } = new();

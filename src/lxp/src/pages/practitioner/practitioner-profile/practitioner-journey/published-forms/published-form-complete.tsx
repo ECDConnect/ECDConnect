@@ -20,7 +20,7 @@ import { computeClassroomMetrics } from '@/utils/classroom/classroomMetrics';
 export type CompletePublishedFormProps = {
   assessmentFormData: AssessmentFormDto;
   onBack: (value: boolean) => void;
-  onFormComplete: () => void;
+  onFormComplete: (visitId: string) => void;
 };
 
 export const CompletePublishedForm: React.FC<CompletePublishedFormProps> = ({
@@ -157,14 +157,14 @@ export const CompletePublishedForm: React.FC<CompletePublishedFormProps> = ({
       setIsSubmitting(true);
       try {
         const formInput = prepareSubmissionData(formPagesData);
-        await appDispatch(
+        const reportData = await appDispatch(
           submitJourneyAssessmentFormData({
             formId: assessmentFormData.id!,
             formName: assessmentFormData.name!,
             input: formInput,
           })
-        );
-        onFormComplete();
+        ).unwrap();
+        onFormComplete(reportData.visitId ?? '');
       } catch (error) {
         console.error('Failed to submit form data:', error);
       } finally {
