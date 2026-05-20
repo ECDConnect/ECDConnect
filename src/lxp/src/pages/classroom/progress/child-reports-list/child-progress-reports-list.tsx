@@ -100,7 +100,7 @@ export const ChildProgressReportsList: React.FC = () => {
   const currentYear = new Date().getFullYear();
   const filteredReports = detailedReports.filter(
     (report) =>
-      report.reportingPeriodStartDate.getFullYear() === currentYear ||
+      new Date(report.reportingPeriodStartDate).getFullYear() === currentYear &&
       !!report.dateCompleted
   );
   const reports = isWalkthrough ? walkthroughReports : filteredReports;
