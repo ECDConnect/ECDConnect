@@ -218,7 +218,7 @@ export const ProgressViewReport: React.FC = () => {
             />
             {doNotKnowSkillsByCategory.map((category) => (
               <div key={category.id}>
-                <Card className="bg-uiBg mb-4 rounded-2xl p-4">
+                <Card className="border-primary mb-4 rounded-2xl border p-4">
                   <div className="flex flex-row items-center">
                     <ImageWithFallback
                       src={category.imageUrl}

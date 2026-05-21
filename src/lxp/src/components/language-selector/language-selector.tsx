@@ -9,6 +9,7 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useTranslation } from 'react-i18next';
 
 export interface LanguageSelectorProps extends ComponentBaseProps {
+  showLabel?: boolean;
   currentLocale: string;
   disabled?: boolean;
   labelText?: string;
@@ -22,6 +23,7 @@ export interface LanguageSelectorProps extends ComponentBaseProps {
 }
 
 export const LanguageSelector = ({
+  showLabel = true,
   currentLocale,
   disabled,
   labelText,
@@ -97,17 +99,23 @@ export const LanguageSelector = ({
   }, [currentLocale, i18n.language]); // Better dependency
 
   return (
-    <div className={classNames(styles.localeDropDownWrapper, className)}>
-      <label className={labelClassName ?? styles.languageLabel}>
-        {labelText ?? 'Change Language:'}
-      </label>
+    <div
+      className={
+        showLabel ? classNames(styles.localeDropDownWrapper, className) : ''
+      }
+    >
+      {showLabel && (
+        <label className={labelClassName ?? styles.languageLabel}>
+          {labelText ?? 'Change Language:'}
+        </label>
+      )}
 
       <Dropdown
         fillType="clear"
         selectedValue={selectedLocale}
         disabled={disabled}
-        fillColor="quatenary"
-        labelColor="white"
+        fillColor={showLabel ? 'quatenary' : 'uiBg'}
+        labelColor={showLabel ? 'white' : 'primary'}
         list={currentLanguages
           .filter((x) => x.locale?.length > 0)
           .map((language) => ({
@@ -115,7 +123,7 @@ export const LanguageSelector = ({
             label: language.description,
           }))}
         onChange={setLanguage}
-        className={`${isConsentScreen ? 'w-44' : 'w-44'}`}
+        className={showLabel ? 'w-44' : `my-0 w-full`}
       />
     </div>
   );
