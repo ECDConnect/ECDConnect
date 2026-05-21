@@ -314,6 +314,7 @@ export const ProgressReportingPeriods: React.FC = () => {
 
   return (
     <BannerWrapper
+      subTitle={`Step ${currentStep} of 2`}
       title={'Child progress reporting periods'}
       color={'primary'}
       size="medium"
