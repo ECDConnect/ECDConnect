@@ -140,10 +140,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 registration.Subsidy = input.Subsidy.Value;
             }
 
-            if (input.RegistrationType != registration.RegistrationType)
+            if (input.RegistrationType.HasValue && input.RegistrationType.Value != registration.RegistrationType)
             {
-                changes["RegistrationType"] = (registration.RegistrationType, input.RegistrationType);
-                registration.RegistrationType = input.RegistrationType;
+                changes["RegistrationType"] = (registration.RegistrationType, input.RegistrationType.Value);
+                registration.RegistrationType = input.RegistrationType.Value;
             }
 
             if (input.Challenges != null)
