@@ -202,6 +202,7 @@ export const ProgressShareReport: React.FC = () => {
           </div>
         </Card>
         <Dropdown<string>
+          fillType="clear"
           label={'Which report would you like to share?'}
           textColor="textMid"
           placeholder={'Tap to choose report'}
@@ -215,9 +216,13 @@ export const ProgressShareReport: React.FC = () => {
           }}
           className="my-2"
         />
+        <Typography
+          color="textDark"
+          text={'Choose report language'}
+          type={'h4'}
+        />
         <LanguageSelector
-          labelText="Choose report language"
-          labelClassName="font-medium font-body text-textDark pr-2"
+          showLabel={false}
           currentLocale={currentReportLocale}
           selectLanguage={(data) => {
             changeLanguage(data);
