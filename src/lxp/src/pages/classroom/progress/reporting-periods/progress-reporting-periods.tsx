@@ -30,6 +30,7 @@ import { getAllNotifications } from '@/store/notifications/notifications.selecto
 import { notificationActions } from '@/store/notifications';
 import { disableBackendNotification } from '@/store/notifications/notifications.actions';
 import { EditLogo } from '@/pages/practitioner/practitioner-programme-information/edit-logo/edit-logo';
+import { QuestionMarkCircleIcon } from '@heroicons/react/solid';
 
 export type ProgressReportingPeriodsRouteState = {
   messageReference: string;
@@ -280,7 +281,11 @@ export const ProgressReportingPeriods: React.FC = () => {
       render: (submit, cancel) => (
         <ActionModal
           className="bg-white"
-          customIcon={<RobotIcon />}
+          customIcon={
+            <QuestionMarkCircleIcon className="text-infoMain mb-4 w-9" />
+          }
+          iconColor="white"
+          iconBorderColor="infoMain"
           importantText={'Would you like to add a preschool logo?'}
           detailText={`The logo you upload will be shown on all reports for this reporting period.`}
           actionButtons={[
