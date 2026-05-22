@@ -5,6 +5,7 @@ import {
   Button,
   Card,
   Colours,
+  DialogPosition,
   Divider,
   ListItem,
   Typography,
@@ -19,6 +20,9 @@ import { ReactComponent as MehEmoticon } from '@/assets/mehFace.svg';
 import { Score } from './score';
 import { useState } from 'react';
 import { PublishedFormCertificate } from './published-form-certificate';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useDialog } from '@ecdlink/core';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 
 export type ViewPublishedFormProps = {
   onBack: () => void;
@@ -77,7 +81,18 @@ const FeedbackSection: React.FC<FeedbackSectionProps> = ({
 export const ViewPublishedForm: React.FC<ViewPublishedFormProps> = ({
   onBack,
 }) => {
+  const { isOnline } = useOnlineStatus();
+  const dialog = useDialog();
   const location = useLocation<PractitionerProfileRouteState>();
+
+  const showOnlineOnly = () => {
+    dialog({
+      color: 'bg-white',
+      position: DialogPosition.Middle,
+      blocking: true,
+      render: (onSubmit) => <OnlineOnlyModal onSubmit={onSubmit} />,
+    });
+  };
   const timelineReport = useSelector(
     getJourneyAssessmentReportByIdSelector(location.state.visitId)
   );
@@ -368,7 +383,11 @@ export const ViewPublishedForm: React.FC<ViewPublishedFormProps> = ({
           {timelineReport.name === 'Health and safety check' ? (
             <>
               <Button
-                onClick={() => setShowCertificateCheckForm(true)}
+                onClick={() =>
+                  isOnline
+                    ? setShowCertificateCheckForm(true)
+                    : showOnlineOnly()
+                }
                 className="mt-auto w-full"
                 iconPosition="start"
                 size="normal"
