@@ -6,6 +6,8 @@ import { BannerWrapper, Button, FormInput, Typography } from '@ecdlink/ui';
 import { useState } from 'react';
 import signatureFile from '@/assets/certificates/signatureFile.png';
 import logoFile from '@/assets/certificates/logoFile.png';
+import { useSelector } from 'react-redux';
+import { practitionerSelectors } from '@/store/practitioner';
 
 export type PublishedFormCertificateProps = {
   completedVisitId: string;
@@ -26,6 +28,7 @@ export const PublishedFormCertificate: React.FC<
 }) => {
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   const saveAndDownload = async () => {
     const certificateId =
@@ -100,7 +103,9 @@ export const PublishedFormCertificate: React.FC<
     onBack(false);
   };
 
-  const [pdfFieldName, setPdfFieldName] = useState(certificateName || '');
+  const [pdfFieldName, setPdfFieldName] = useState(
+    certificateName || `${practitioner?.user?.firstName}`
+  );
 
   return (
     <BannerWrapper
@@ -118,7 +123,7 @@ export const PublishedFormCertificate: React.FC<
           color={'textDark'}
           className=""
           type="h2"
-          text={`Check certificate deails`}
+          text={`Check certificate details`}
         />
         <Typography
           className="mb-2"

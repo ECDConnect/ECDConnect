@@ -13,9 +13,9 @@ import { jsPDF } from 'jspdf';
 export function generateHealthSafetyCertificate(
   logoBase64: string,
   signatureBase64: string,
-  recipientName: string = 'Bulelwa Mahlangu',
-  completionDate: string = '24 April 2026',
-  certificateId: string = 'ECDC-HSC-2026-00001'
+  recipientName: string = 'Recipient Name',
+  completionDate: string = 'Completion Date',
+  certificateId: string = 'Certificate ID'
 ): jsPDF {
   // A4 landscape: 297 × 210 mm — portrait here to match the certificate
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
@@ -29,7 +29,7 @@ export function generateHealthSafetyCertificate(
   doc.rect(0, 0, pageW, pageH, 'F');
 
   // ─── Logo ──────────────────────────────────────────────────────────────────
-  const logoSize = 28; // diameter of the logo image
+  const logoSize = 30; // diameter of the logo image
   const logoX = cx - logoSize / 2;
   const logoY = 10;
 
@@ -42,21 +42,22 @@ export function generateHealthSafetyCertificate(
   // ─── Title ─────────────────────────────────────────────────────────────────
   doc.setFont('Helvetica', 'normal');
   doc.setFontSize(22);
-  doc.setTextColor(52, 73, 110); // steel-blue matching the certificate
+  doc.setTextColor(39, 56, 90); // #27385A
   doc.text('Certificate of Completion', cx, 52, { align: 'center' });
 
   doc.setFontSize(22);
+  doc.setTextColor(39, 56, 90); // #27385A
   doc.text('Health & Safety Check', cx, 62, { align: 'center' });
 
   // ─── "This certificate is awarded to" ────────────────────────────────────
   doc.setFontSize(11);
-  doc.setTextColor(80, 80, 80);
+  doc.setTextColor(39, 56, 90); // #27385A
   doc.text('This certificate is awarded to', cx, 78, { align: 'center' });
 
   // ─── Recipient name ────────────────────────────────────────────────────────
   doc.setFont('Helvetica', 'normal');
   doc.setFontSize(28);
-  doc.setTextColor(52, 73, 110);
+  doc.setTextColor(39, 56, 90); // #27385A
   doc.text(recipientName, cx, 94, { align: 'center' });
 
   // Thin decorative line under name
@@ -67,7 +68,7 @@ export function generateHealthSafetyCertificate(
   // ─── Body text ─────────────────────────────────────────────────────────────
   doc.setFont('Helvetica', 'normal');
   doc.setFontSize(10);
-  doc.setTextColor(80, 80, 80);
+  doc.setTextColor(39, 56, 90); // #27385A
 
   const bodyLines = [
     `for completing the ECD Connect Health & Safety Check on ${completionDate},`,
@@ -101,13 +102,13 @@ export function generateHealthSafetyCertificate(
   // Signatory name & title
   doc.setFont('Helvetica', 'normal');
   doc.setFontSize(9);
-  doc.setTextColor(60, 60, 60);
+  doc.setTextColor(39, 56, 90); // #27385A
   doc.text('Peter Schutte', cx, sigY + sigH + 6, { align: 'center' });
   doc.text('Head of ECD Connect', cx, sigY + sigH + 11, { align: 'center' });
 
   // ─── Footer disclaimer ─────────────────────────────────────────────────────
   doc.setFontSize(7);
-  doc.setTextColor(130, 130, 130);
+  doc.setTextColor(39, 56, 90); // #27385A
   doc.text(
     'This certificate reflects a self-assessment completed by the practitioner using ECD Connect. It is not an inspection, audit, or formal accreditation.',
     cx,
@@ -117,7 +118,7 @@ export function generateHealthSafetyCertificate(
 
   // ─── Certificate ID (bottom-right) ─────────────────────────────────────────
   doc.setFontSize(7);
-  doc.setTextColor(130, 130, 130);
+  doc.setTextColor(39, 56, 90); // #27385A
   doc.text(`Certificate ID: ${certificateId}`, pageW - 10, pageH - 5, {
     align: 'right',
   });
