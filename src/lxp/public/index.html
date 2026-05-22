@@ -53,13 +53,11 @@
     newwindow: true,
     nomessage: true,         
     onshow: function(infos) {   
-      console.log('browser-update.org onshow triggered!', infos);  
       window.dispatchEvent(new CustomEvent('browser-outdated', { detail: infos }));
     }
   };
 
   function $buo_f() {
-    console.log('Loading browser-update.org script...');
     var e = document.createElement("script");
     e.src = "//browser-update.org/update.min.js";
     document.body.appendChild(e);

@@ -150,7 +150,7 @@ export const ChildProgressReportsList: React.FC = () => {
           )}
         {/* NO REPORTS */}
         {!isWalkthrough &&
-          ((ageInMonths && ageInMonths < 78) || ageInMonths === 0) &&
+          ((ageInMonths && ageInMonths <= 78) || ageInMonths === 0) &&
           (!reports || reports.length === 0) && (
             <div className="flex h-full w-full flex-col">
               <Typography
