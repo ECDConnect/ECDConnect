@@ -41,16 +41,13 @@ export const useVersionCheck = () => {
   }, []);
 
   useEffect(() => {
-    console.log('remote url : ', remoteConfigUrl);
     if (!isOnline || !remoteConfigUrl) return;
-    console.log('current version : ', currentVersion);
 
     const check = () =>
       fetch(`${remoteConfigUrl}?v=${Date.now()}`)
         .then((res) => res.json())
         .then((data: { minimumAppVersion?: string }) => {
           const minimum = data?.minimumAppVersion;
-          console.log('minimum version : ', minimum);
 
           if (minimum && isVersionBelowMinimum(currentVersion, minimum)) {
             setUpdateRequired(true);
