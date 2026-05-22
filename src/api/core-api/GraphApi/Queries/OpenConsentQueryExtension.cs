@@ -4,6 +4,7 @@ using ECDLink.DataAccessLayer.Entities;
 using HotChocolate;
 using HotChocolate.Types;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -19,6 +20,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             string locale)
         {
             var language = localeService.GetLocale(locale);
+            if (language == null) return Enumerable.Empty<object>();
 
             var content = contentRepo.GetByValueKey("Consent", "name", name, language.Id);
 
