@@ -55,7 +55,7 @@ const contentConsentSlice = createSlice({
       const incoming = action.payload[0];
       const index = state.consent.findIndex(
         (item) =>
-          item.id === incoming.id &&
+          item.id === incoming?.id &&
           item.locale === locale &&
           item.name === name
       );

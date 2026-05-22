@@ -522,8 +522,7 @@ namespace ECDLink.ContentManagement.Repositories
                         .ThenInclude(ti => ti.ContentTypeField)
                     .Where(x => x.ContentType.Name == contentType
                             && x.IsActive
-                            && x.ContentValues.Any(y => y.LocaleId == localeId
-                                && y.ContentTypeField.FieldName == key
+                            && x.ContentValues.Any(y => y.ContentTypeField.FieldName == key
                                 && y.Value == value
                                 && (y.TenantId == tenantId || y.TenantId == null)))
                     .ToList();
@@ -537,8 +536,7 @@ namespace ECDLink.ContentManagement.Repositories
                         .Where(x => x.TenantId == null
                                 && x.ContentType.Name == contentType
                                 && x.IsActive
-                                && x.ContentValues.Any(y => y.LocaleId == localeId
-                                    && y.ContentTypeField.FieldName == key
+                                && x.ContentValues.Any(y => y.ContentTypeField.FieldName == key
                                     && y.Value == value))
                         .ToList();
 
