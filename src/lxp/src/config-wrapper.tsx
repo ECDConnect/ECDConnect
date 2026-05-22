@@ -31,7 +31,9 @@ const ConfigWrapper: React.FC = () => {
   if (loader) {
     return <Loader />;
   } else {
-    const pollUrl = new URL(APIs.onlineCheck, Config.authApi).href;
+    const pollUrl = Config.authApi
+      ? new URL(APIs.onlineCheck, Config.authApi).href
+      : '';
     return (
       <OnlineStatusProvider
         pollUrl={pollUrl}
