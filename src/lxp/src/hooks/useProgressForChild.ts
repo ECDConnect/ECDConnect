@@ -39,7 +39,12 @@ export const useProgressForChild = (childId: string) => {
     : undefined;
 
   const ageInMonths = !!child?.user?.dateOfBirth
-    ? differenceInMonths(new Date(), new Date(child.user.dateOfBirth))
+    ? differenceInMonths(
+        !!currentReportingPeriod
+          ? new Date(currentReportingPeriod.endDate)
+          : new Date(),
+        new Date(child.user.dateOfBirth)
+      )
     : undefined;
 
   const skillsForAgeGroup = useSelector(
