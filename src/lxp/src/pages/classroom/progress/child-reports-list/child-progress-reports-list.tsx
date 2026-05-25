@@ -103,8 +103,6 @@ export const ChildProgressReportsList: React.FC = () => {
     return detailedReports.filter((x) => !!x.dateCompleted).length > 0;
   }, [detailedReports]);
 
-  console.log('detailedReports', detailedReports);
-
   return (
     <BannerWrapper
       size={'small'}
