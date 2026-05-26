@@ -8,7 +8,7 @@ interface HighlightedCountProps {
 export const HighlightedCount: React.FC<HighlightedCountProps> = ({
   count,
 }) => (
-  <div className="bg-alertMain flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
-    <Typography type="h2" weight="bold" color="white" text={count.toString()} />
+  <div className="bg-errorMain flex h-8 w-8 shrink-0 items-center justify-center rounded-full">
+    <Typography type="h3" weight="bold" color="white" text={count.toString()} />
   </div>
 );

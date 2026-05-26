@@ -1,5 +1,8 @@
 import {
+  ActionModal,
   BannerWrapper,
+  Button,
+  DialogPosition,
   LoadingSpinner,
   StackedList,
   StackedListItemType,
@@ -21,6 +24,10 @@ import {
 } from '@/store/pqa/pqa.actions';
 import { CompletePublishedForm } from './published-form-complete';
 import { useSnackbar } from '@ecdlink/core/lib/services/snackbar';
+import { useDialog } from '@ecdlink/core';
+import { classroomsSelectors } from '@/store/classroom';
+import { ReactComponent as RobotIcon } from '@/assets/iconRobot.svg';
+import { PublishedFormCertificate } from './published-form-certificate';
 
 interface FormProps {
   onBack: () => void;
@@ -32,6 +39,8 @@ export const PublishedFormsList = ({ onBack }: FormProps) => {
   const tenant = useTenant();
   const [isLoading, setIsLoading] = useState(false);
   const { showMessage } = useSnackbar();
+  const dialog = useDialog();
+  const classroom = useSelector(classroomsSelectors.getClassroom);
 
   // Published Forms
   const publishedForms = useSelector(getJourneyTimelinePublishedFormsSelector);
@@ -73,16 +82,68 @@ export const PublishedFormsList = ({ onBack }: FormProps) => {
     setShowAssessmentFormData(true);
   };
 
-  const onFormComplete = () => {
+  const onFormComplete = (visitId: string) => {
     setShowAssessmentFormData(false);
-    showMessage({
-      message: `${
-        assessmentFormData.name === 'Self-assessment'
-          ? 'Self-assessment form'
-          : 'Health and safety check'
-      } completed!`,
+    if (assessmentFormData.name === 'Health and safety check') {
+      setCompletedVisitId(visitId);
+      showCertificatePopup();
+    } else {
+      showMessage({
+        message: `${
+          assessmentFormData.name === 'Self-assessment'
+            ? 'Self-assessment form'
+            : 'Health and safety check'
+        } completed!`,
+      });
+      onBack();
+    }
+  };
+
+  const [completedVisitId, setCompletedVisitId] = useState('');
+  const [showCertificateCheckForm, setShowCertificateCheckForm] =
+    useState(false);
+  const showCertificatePopup = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      blocking: true,
+      render: (onSubmit) => {
+        return (
+          <ActionModal
+            customIcon={<RobotIcon />}
+            title={`Well done ${classroom?.principal?.firstName}, your certificate is ready for download!`}
+            detailText={`You have completed the Health & Safety Check for ${classroom?.name}.`}
+            actionButtons={[
+              {
+                text: 'Download certificate',
+                textColour: 'white',
+                colour: 'quatenary',
+                type: 'filled',
+                onClick: () => {
+                  setShowAssessmentFormData(false);
+                  setShowCertificateCheckForm(true);
+                  onSubmit();
+                },
+                leadingIcon: 'DownloadIcon',
+              },
+              {
+                colour: 'quatenary',
+                text: 'Do this later',
+                textColour: 'quatenary',
+                type: 'outlined',
+                leadingIcon: 'ClockIcon',
+                onClick: () => {
+                  onSubmit();
+                },
+              },
+            ]}
+            icon={'QuestionMarkCircleIcon'}
+            iconClassName="w-96 h-96"
+            className="bg-white"
+            iconColor="infoMain"
+          />
+        );
+      },
     });
-    onBack();
   };
 
   if (showAssessmentFormData) {
@@ -95,6 +156,14 @@ export const PublishedFormsList = ({ onBack }: FormProps) => {
     );
   }
 
+  if (showCertificateCheckForm) {
+    return (
+      <PublishedFormCertificate
+        completedVisitId={completedVisitId}
+        onBack={setShowCertificateCheckForm}
+      />
+    );
+  }
   return (
     <BannerWrapper
       size="medium"

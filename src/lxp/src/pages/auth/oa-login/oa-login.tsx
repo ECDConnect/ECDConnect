@@ -525,14 +525,6 @@ export const OaLogin: React.FC = () => {
     if (!isAllowed) {
       displayIncorrectBrowserPopup();
     }
-
-    // Optional debug
-    console.log({
-      ua,
-      isChromeLike,
-      isIosSafari,
-      isAllowed,
-    });
   }, []);
 
   useEffect(() => {

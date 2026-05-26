@@ -1,11 +1,11 @@
 import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router';
 import {
-  Alert,
   BannerWrapper,
   Button,
   Card,
   Colours,
+  DialogPosition,
   Divider,
   ListItem,
   Typography,
@@ -18,6 +18,11 @@ import { ReactComponent as NeutralEmoticon } from '@/assets/neutral_blue_emotico
 import { ReactComponent as VeryUnhappy } from '@/assets/ECD_Connect_emoji_unhappy.svg';
 import { ReactComponent as MehEmoticon } from '@/assets/mehFace.svg';
 import { Score } from './score';
+import { useState } from 'react';
+import { PublishedFormCertificate } from './published-form-certificate';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useDialog } from '@ecdlink/core';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 
 export type ViewPublishedFormProps = {
   onBack: () => void;
@@ -76,12 +81,37 @@ const FeedbackSection: React.FC<FeedbackSectionProps> = ({
 export const ViewPublishedForm: React.FC<ViewPublishedFormProps> = ({
   onBack,
 }) => {
+  const { isOnline } = useOnlineStatus();
+  const dialog = useDialog();
   const location = useLocation<PractitionerProfileRouteState>();
+
+  const showOnlineOnly = () => {
+    dialog({
+      color: 'bg-white',
+      position: DialogPosition.Middle,
+      blocking: true,
+      render: (onSubmit) => <OnlineOnlyModal onSubmit={onSubmit} />,
+    });
+  };
   const timelineReport = useSelector(
     getJourneyAssessmentReportByIdSelector(location.state.visitId)
   );
   const user = useSelector(userSelectors.getUser);
   const totalHealthCheckQuestions = 22;
+  const [showCertificateCheckForm, setShowCertificateCheckForm] =
+    useState(false);
+
+  if (showCertificateCheckForm) {
+    return (
+      <PublishedFormCertificate
+        completedVisitId={location.state.visitId}
+        certificateName={timelineReport?.certificateName}
+        certificateRegNr={timelineReport?.certificateRegNr}
+        visitCompletedDate={timelineReport?.visitCompletedDate}
+        onBack={setShowCertificateCheckForm}
+      />
+    );
+  }
 
   // Loading / Empty state
   if (!timelineReport) {
@@ -348,17 +378,50 @@ export const ViewPublishedForm: React.FC<ViewPublishedFormProps> = ({
             <Divider dividerType="dashed" className="my-2" />
           </>
         )}
+        <div className="mt-auto mb-4 mt-4">
+          {/* only applicable on health and safety check */}
+          {timelineReport.name === 'Health and safety check' ? (
+            <>
+              <Button
+                onClick={() =>
+                  isOnline
+                    ? setShowCertificateCheckForm(true)
+                    : showOnlineOnly()
+                }
+                className="mt-auto w-full"
+                iconPosition="start"
+                size="normal"
+                color="quatenary"
+                type="filled"
+                icon="DownloadIcon"
+                text="Download Certificate"
+                textColor="white"
+              />
 
-        <Button
-          type="filled"
-          text="Close"
-          color="quatenary"
-          textColor="white"
-          className="mb-8 w-full rounded-2xl"
-          iconPosition="start"
-          icon="XIcon"
-          onClick={onBack}
-        />
+              <Button
+                type="outlined"
+                text="Close"
+                color="quatenary"
+                textColor="quatenary"
+                className="mb-8 mt-3 w-full rounded-2xl"
+                iconPosition="start"
+                icon="XIcon"
+                onClick={onBack}
+              />
+            </>
+          ) : (
+            <Button
+              type="filled"
+              text="Close"
+              color="quatenary"
+              textColor="white"
+              className="mb-8 mt-3 w-full rounded-2xl"
+              iconPosition="start"
+              icon="XIcon"
+              onClick={onBack}
+            />
+          )}
+        </div>
       </div>
     </BannerWrapper>
   );
