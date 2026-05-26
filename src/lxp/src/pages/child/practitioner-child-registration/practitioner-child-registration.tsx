@@ -80,14 +80,6 @@ export const PractitionerChildRegistration: React.FC = () => {
       >
         <ChildBasicInfo onSubmit={onBasicChildInfoSubmitted} />
       </Step>
-      {/* <Step
-        stepKey={PractitionerChildRegistrationSteps.caregiverLink}
-        viewBannerWapper={true}
-      >
-        {childDetails && (
-          <CaregiverLink onNewChild={onNewChild} childDetails={childDetails} />
-        )}
-      </Step> */}
     </StepViewer>
   );
 };

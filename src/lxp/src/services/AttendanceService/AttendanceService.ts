@@ -24,22 +24,7 @@ class AttendanceService {
       data: { attendance: AttendanceDto[] };
       errors?: {};
     }>(``, {
-      query: `
-      query attendance($startDate: DateTime!, $endDate: DateTime!) {
-        attendance(
-          startDate: $startDate
-          endDate: $endDate
-        ) {
-          classroomProgrammeId
-          userId
-          attended
-          attendanceDate
-          weekOfYear
-          monthOfYear
-          year
-        }
-      }
-      `,
+      id: 'attendance',
       variables: {
         startDate: startDate,
         endDate: endDate,
@@ -54,44 +39,13 @@ class AttendanceService {
   }
 
   async getClassroomAttendanceReport(
-    userId: string,
     startDate: Date,
     endDate: Date
   ): Promise<ClassRoomChildAttendanceMonthlyReportModel> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query classroomAttendanceOverviewReport(
-        $userId: String
-        $startDate: DateTime!
-        $endDate: DateTime!) {
-        classroomAttendanceOverviewReport(
-            userId: $userId
-            startDate: $startDate
-            endDate: $endDate) {
-        classroomAttendanceReport{
-            totalActualAttendance
-            totalExpectedAttendance
-            attendancePercentage
-            classgroupId
-            childFullName
-            childIdNumber
-            childUserId
-            month
-            year
-            attendance{ key value }
-        }
-        totalAttendance { key value }
-        totalAttendanceStatsReport {
-        totalSessions
-        totalMonthlyAttendance
-        totalChildrenAttendedAllSessions
-        }
-    }
-    }
-      `,
+      id: 'classroomAttendanceOverviewReport',
       variables: {
-        userId: userId,
         startDate: startDate,
         endDate: endDate,
       },
@@ -106,33 +60,13 @@ class AttendanceService {
   }
 
   async getMonthlyAttendanceReport(
-    userId: string,
     startDate: Date,
     endDate: Date
   ): Promise<MonthlyAttendanceRecord[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query monthlyAttendanceReport(
-        $userId: String
-        $startMonth: DateTime!
-        $endMonth: DateTime!) {
-        monthlyAttendanceReport(
-          userId: $userId
-          startMonth: $startMonth
-          endMonth: $endMonth          
-        ) {
-          month
-          monthOfYear
-          year
-          percentageAttendance
-          numberOfSessions
-          totalScheduledSessions
-        }
-      }
-      `,
+      id: 'monthlyAttendanceReport',
       variables: {
-        userId: userId,
         startMonth: startDate,
         endMonth: endDate,
       },
@@ -155,40 +89,7 @@ class AttendanceService {
   ): Promise<ChildAttendanceReportModel> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query childAttendanceReport(
-          $userId: String
-          $classgroupId: UUID!
-          $startDate: DateTime!
-          $endDate: DateTime!
-        ) {
-            childAttendanceReport(
-              userId: $userId
-              classgroupId: $classgroupId
-              startDate: $startDate
-              endDate: $endDate
-            ) {
-              totalExpectedAttendance
-              totalActualAttendance
-              attendancePercentage
-              classGroupAttendance {
-                classroomGroupId
-                classroomGroupName
-                startDate
-                endDate
-                expectedAttendance
-                attendancePercentage
-                monthlyAttendance {
-                  month
-                  monthNumber
-                  actualAttendance
-                  expectedAttendance
-                  attendancePercentage
-                }
-              }
-            }
-          }
-      `,
+      id: 'childAttendanceReport',
       variables: {
         userId: userId,
         classgroupId: classgroupId,
@@ -214,11 +115,7 @@ class AttendanceService {
       data: { trackAttendance: boolean };
       errors?: {};
     }>(``, {
-      query: `
-        mutation trackAttendance($attendance: [TrackAttendanceModelInput]) {
-          trackAttendance(attendance: $attendance)
-        }
-      `,
+      id: 'trackAttendance',
       variables: {
         attendance: attendance,
       },

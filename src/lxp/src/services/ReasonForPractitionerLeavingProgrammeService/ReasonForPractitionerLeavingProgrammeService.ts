@@ -15,14 +15,7 @@ class ReasonForPractitionerLeavingProgrammeService {
   > {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query GetAllReasonForPractitionerLeavingProgramme($isActive: Boolean = true){
-          GetAllReasonForPractitionerLeavingProgramme(where: { isActive: { eq: $isActive } }) {
-            id
-            description      
-          }
-        }
-          `,
+      id: 'GetAllReasonForPractitionerLeavingProgramme',
     });
     if (response.status !== 200) {
       throw new Error(

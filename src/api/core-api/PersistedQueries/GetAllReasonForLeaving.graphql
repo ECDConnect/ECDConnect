@@ -1,0 +1,6 @@
+query GetAllReasonForLeaving($isActive: Boolean = true) {
+  GetAllReasonForLeaving(where: { isActive: { eq: $isActive } }) {
+    id
+    description
+  }
+}

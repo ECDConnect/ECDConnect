@@ -1,0 +1,14 @@
+query GetPractitionerPermissions($userId: String) {
+  practitionerPermissions(userId: $userId) {
+    id
+    permissions {
+      id
+      userId
+      permissionId
+      isActive
+      permissionName
+      permissionNormalizedName
+      permissionGrouping
+    }
+  }
+}

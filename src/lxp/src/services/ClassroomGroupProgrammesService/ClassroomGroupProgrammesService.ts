@@ -14,13 +14,7 @@ class ClassroomGroupProgrammesService {
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation updateClassProgramme($id: UUID!,$input: ClassProgrammeInput) {
-          updateClassProgramme(id: $id, input: $input) {
-            id
-          }
-        }
-      `,
+      id: 'updateClassProgramme',
       variables: {
         id: id,
         input: input,

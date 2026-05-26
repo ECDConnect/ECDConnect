@@ -27,6 +27,7 @@ export interface GeneratePdfReportButtonProps {
   onClick?: () => void;
   tableHeaders?: any[];
   logo?: string;
+  classHeaders: any[];
 }
 
 const GeneratePdfReportButton = ({
@@ -48,6 +49,7 @@ const GeneratePdfReportButton = ({
   onClick,
   tableHeaders,
   logo,
+  classHeaders,
 }: GeneratePdfReportButtonProps) => {
   const { isOnline } = useOnlineStatus();
   const { generateReport } = useGenerateAttendancePdf();
@@ -90,7 +92,8 @@ const GeneratePdfReportButton = ({
                 pageOriantations,
                 tableHeaders,
                 outputName,
-                logo
+                logo,
+                classHeaders
               );
             }
       }

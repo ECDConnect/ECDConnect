@@ -14,15 +14,7 @@ class PermissionsService {
   async getPermissions(): Promise<PermissionDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query GetPractitionerRolePermissions() {
-    practitionerRolePermissions() {
-        id
-        name 
-        normalizedName
-        grouping
-    }
-}   `,
+      id: 'GetPractitionerRolePermissions',
     });
 
     if (response.status !== 200) {
@@ -39,17 +31,7 @@ class PermissionsService {
       data: { updateUserPermission: UserPermissionModel[] };
       errors?: {};
     }>(``, {
-      query: `mutation UpdateUserPermission($input: UpdateUserPermissionInputModelInput) {
-          updateUserPermission(input: $input) {
-            id
-            userId
-            permissionId
-            isActive
-            permissionName
-            permissionNormalizedName
-            permissionGrouping
-          }
-        }`,
+      id: 'UpdateUserPermission',
       variables: {
         input: input,
       },

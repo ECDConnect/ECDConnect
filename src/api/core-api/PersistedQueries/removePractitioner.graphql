@@ -1,0 +1,15 @@
+mutation removePractitioner(
+  $practitionerUserId: String
+  $reasonForPractitionerLeavingId: String
+  $reasonDetails: String
+  $newPrincipalId: String
+  $classroomGroupReassignments: [ClassroomGroupReassignmentsInput]
+) {
+  removePractitioner(
+    practitionerUserId: $practitionerUserId
+    reasonForPractitionerLeavingId: $reasonForPractitionerLeavingId
+    reasonDetails: $reasonDetails
+    newPrincipalId: $newPrincipalId
+    classroomGroupReassignments: $classroomGroupReassignments
+  )
+}

@@ -10,7 +10,6 @@ using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Calendar;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -26,6 +25,7 @@ using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
@@ -111,78 +111,122 @@ namespace ECDLink.Api.CoreApi.Services
 
         #region Practitioners
 
-        public List<PractitionerModel> GetAllPractitioners()
+        public async Task<List<PractitionerModel>> GetAllPractitionersAsync()
         {
-            ApplicationUser currentUser = (ApplicationUser)_contextAccessor.HttpContext.GetUser();
+            var currentUser = (ApplicationUser)_contextAccessor.HttpContext.GetUser();
 
-            List<Practitioner> practitioners = new List<Practitioner>();
+            if (currentUser == null)
+                return new List<PractitionerModel>();
+
+            IQueryable<Practitioner> query = _practiGenericRepo.GetAll()
+                .Where(x => x.IsActive)
+                .AsNoTracking();
 
             if (currentUser.coachObjectData != null)
             {
-                practitioners = _practiGenericRepo.GetAll().Where(x => x.IsActive == true && x.CoachHierarchy.HasValue && x.CoachHierarchy == currentUser.Id).OrderBy(x => x.User.FirstName).ToList();
+                query = query.Where(x => x.CoachHierarchy.HasValue && x.CoachHierarchy == currentUser.Id);
             }
-            else if (currentUser.principalObjectData != null && currentUser.principalObjectData.IsPrincipal.HasValue && currentUser.principalObjectData.IsPrincipal.Value)
+            else if (currentUser.principalObjectData?.IsPrincipal == true)
             {
-                practitioners = _practiGenericRepo.GetAll().Where(x => x.IsActive == true && x.PrincipalHierarchy.HasValue && x.PrincipalHierarchy.Value == currentUser.Id).OrderBy(x => x.User.FirstName).ToList();
+                query = query.Where(x => x.PrincipalHierarchy.HasValue && x.PrincipalHierarchy.Value == currentUser.Id);
             }
-
-            List<PractitionerModel> practitionerList = new List<PractitionerModel>();
-
-            foreach (var practitioner in practitioners)
+            else
             {
-                practitionerList.Add(GetPractitionerDetails(practitioner));
+                return new List<PractitionerModel>();
             }
 
-            return practitionerList;
+            var practitioners = await query
+                .Include(x => x.User)                    
+                .Include(x => x.Coach).ThenInclude(c => c.User)  // For CoachName & ProfilePic
+                .Include(x => x.User.UserPermissions)
+                .OrderBy(x => x.User.FirstName)
+                .AsNoTracking()
+                .ToListAsync();
+
+            return practitioners
+                .Select(GetPractitionerDetails)
+                .ToList();
         }
 
-        public PractitionerModel GetPractitionerDetails(Practitioner practitioner)
+        private static readonly IReadOnlyList<string> AllowedPermissions = new[]
+{
+    PractitionerPermissions.TakeAttendance,
+    PractitionerPermissions.CreateProgressReports,
+    PractitionerPermissions.ManageChildren,
+    PractitionerPermissions.PlanClassroomActivities
+};
+
+    public PractitionerModel GetPractitionerDetails(Practitioner practitioner)
+    {
+        if (practitioner == null)
+            return null;
+
+        var model = new PractitionerModel
         {
-            var practitionerRecord = new PractitionerModel
+            Id = practitioner.Id,
+            UserId = practitioner.UserId.Value,
+            IsPrincipal = practitioner.IsPrincipal,
+            IsRegistered = practitioner.IsRegistered,
+            PrincipalHierarchy = practitioner.PrincipalHierarchy,
+            AttendanceRegisterLink = practitioner.AttendanceRegisterLink,
+            ConsentForPhoto = practitioner.ConsentForPhoto,
+            ParentFees = practitioner.ParentFees,
+            LanguageUsedInGroups = practitioner.LanguageUsedInGroups,
+            SigningSignature = practitioner.SigningSignature,
+            StartDate = practitioner.StartDate,
+            ShareInfo = practitioner.ShareInfo,
+            DateLinked = practitioner.DateLinked,
+            DateAccepted = practitioner.DateAccepted,
+            DateToBeRemoved = practitioner.DateToBeRemoved,
+            IsLeaving = practitioner.IsLeaving,
+            Progress = practitioner.Progress,
+            IsCompletedBusinessWalkThrough = practitioner.IsCompletedBusinessWalkThrough,
+            ProgrammeType = practitioner.ProgrammeType,
+            CoachHierarchy = practitioner.CoachHierarchy,
+            CoachName = practitioner.Coach?.User?.FullName ?? string.Empty,
+            CoachProfilePic = practitioner.Coach?.User?.ProfileImageUrl ?? string.Empty,
+            UsePhotoInReport = practitioner.UsePhotoInReport,
+            ClickedCommunityTab = practitioner.ClickedCommunityTab,
+            CommunitySectionViewDate = practitioner.CommunitySectionViewDate,
+            ProgressWalkthroughComplete = practitioner.ProgressWalkthroughComplete,
+
+            // Permissions (filtered in-memory — fast since it's a small list)
+            Permissions = practitioner.User?.UserPermissions
+                ?.Where(x => AllowedPermissions.Contains(x.Permission.Name))
+                ?.Select(x => new UserPermissionModel(x))
+                ?.ToList() ?? new List<UserPermissionModel>()
+        };
+
+        // Load related data asynchronously
+        model.Absentees = _absenteeService.GetAbsenteeByUser(practitioner.UserId.ToString());
+
+         model.EcdRegistration = _dbContext.EcdRegistrations
+                .Where(x => x.PractitionerId == practitioner.Id && x.IsActive)
+                .OrderByDescending(x => x.InsertedDate)
+                .FirstOrDefault();
+
+        // Get full ApplicationUser (avoid .Result)
+        if (practitioner.UserId.HasValue)
+        {
+            var practitionerUser = _userManager.FindByIdAsync(practitioner.UserId.Value.ToString()).Result;
+            if (practitionerUser != null)
             {
-                Id = practitioner.Id,
-                UserId = practitioner.UserId.Value,
-                IsPrincipal = practitioner.IsPrincipal,
-                IsRegistered = practitioner.IsRegistered,
-                PrincipalHierarchy = practitioner.PrincipalHierarchy,
-                AttendanceRegisterLink = practitioner.AttendanceRegisterLink,
-                ConsentForPhoto = practitioner.ConsentForPhoto,
-                ParentFees = practitioner.ParentFees,
-                LanguageUsedInGroups = practitioner.LanguageUsedInGroups,
-                SigningSignature = practitioner.SigningSignature,
-                StartDate = practitioner.StartDate,
-                ShareInfo = practitioner.ShareInfo,
-                DateLinked = practitioner.DateLinked,
-                DateAccepted = practitioner.DateAccepted,
-                DateToBeRemoved = practitioner.DateToBeRemoved,
-                IsLeaving = practitioner.IsLeaving,
-                Progress = practitioner.Progress,
-                IsCompletedBusinessWalkThrough = practitioner.IsCompletedBusinessWalkThrough,
-                ProgrammeType = practitioner.ProgrammeType,
-                CoachHierarchy = practitioner.CoachHierarchy,
-                CoachName = practitioner.Coach != null ? practitioner.Coach.User.FullName : "",
-                CoachProfilePic = practitioner.Coach != null ? practitioner.Coach.User.ProfileImageUrl : "",
-                UsePhotoInReport = practitioner.UsePhotoInReport,
-                Permissions = practitioner.User.UserPermissions.Select(x => new UserPermissionModel(x)).ToList(),
-                ClickedCommunityTab = practitioner.ClickedCommunityTab,
-                CommunitySectionViewDate = practitioner.CommunitySectionViewDate,
-                ProgressWalkthroughComplete = practitioner.ProgressWalkthroughComplete
-            };
-
-            practitionerRecord.Absentees = _absenteeService.GetAbsenteeByUser(practitioner.UserId.ToString());
-
-            ApplicationUser practitionerUser = _userManager.FindByIdAsync(practitioner.UserId).Result;
-            if (practitionerUser != null) {
-                 practitionerRecord.User = practitionerUser;
+                model.User = practitionerUser;
             }
-            if (practitioner.SiteAddressId != null) {
-                SiteAddress address = _addressRepo.GetById((Guid)practitioner.SiteAddressId);
-                if (address != null) {
-                    practitionerRecord.SiteAddress = address;
-                }
-            }
-            return practitionerRecord;
         }
+
+        // Load SiteAddress if exists
+        if (practitioner.SiteAddressId.HasValue)
+        {
+            var address = _addressRepo.GetById(practitioner.SiteAddressId.Value);
+            if (address != null)
+            {
+                model.SiteAddress = address;
+            }
+        }
+
+        return model;
+    }
 
         public List<Practitioner> GetPractitionerPeers(string practitionerId)
         {
@@ -251,13 +295,6 @@ namespace ECDLink.Api.CoreApi.Services
                 return _practiGenericRepo.GetByUserId(parentUserId.Value);          
             }
             else return null;
-        }
-
-        public List<Practitioner> GetAllPractitionersForPrincipal(string userId)
-        {
-            List<Practitioner> practitioners = _practiRepo.GetAll().Where(x => x.PrincipalHierarchy == Guid.Parse(userId)).ToList();
-
-            return practitioners;
         }
 
         public string GetSiteNameForPractitioner(string userId)
@@ -361,7 +398,7 @@ namespace ECDLink.Api.CoreApi.Services
 
         public Practitioner PromotePractitionerToPrincipal(string userId, bool sendComm = false)
         {
-            var practitionerToPromote = _practiRepo.GetByUserId(userId);            
+            var practitionerToPromote = _practiGenericRepo.GetByUserId(userId);            
             if (practitionerToPromote!=null)
             {
                 practitionerToPromote.IsPrincipal = true;
@@ -387,6 +424,11 @@ namespace ECDLink.Api.CoreApi.Services
                         }
                     };
                     _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PromotedToPrincipalOrFAA, DateTime.Now.Date, practitionerToPromote.User, null, MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7), false, true);
+                }
+
+                if (practitionerToPromote.EcdRegistration == null)
+                {
+                     _notificationService.SendNotificationAsync(null, TemplateTypeConstants.DbeRegistration, DateTime.Now.Date, practitionerToPromote.User, null, MessageStatusConstants.Blue, null, null, false, true);
                 }
 
             }
@@ -671,9 +713,9 @@ namespace ECDLink.Api.CoreApi.Services
             return false;
         }
 
-        public bool UpdatePractitionerBusinessWalkthrough(string userId)
+        public bool UpdatePractitionerBusinessWalkthrough()
         {
-            Practitioner practitioner = _practiGenericRepo.GetByUserId(userId);
+            Practitioner practitioner = _practiGenericRepo.GetByUserId(_applicationUserId.ToString());
             practitioner.IsCompletedBusinessWalkThrough = true;
             practitioner.UpdatedBy = _applicationUserId.ToStringOrNull();
             practitioner.UpdatedDate = DateTime.Now;
@@ -681,11 +723,12 @@ namespace ECDLink.Api.CoreApi.Services
             return true;
         }
 
-        public void UpdatePractitioneProgressWalkthrough(string userId)
+        public bool UpdatePractitioneProgressWalkthrough()
         {
-            var practitioner = _practiGenericRepo.GetByUserId(userId);
+            var practitioner = _practiGenericRepo.GetByUserId(_applicationUserId.ToString());
             practitioner.ProgressWalkthroughComplete = true;
             _practiGenericRepo.Update(practitioner);
+            return true;
         }
 
         public Practitioner UpdatePractitionerCommunityTabStatus(string userId)
@@ -771,9 +814,6 @@ namespace ECDLink.Api.CoreApi.Services
                     Id = Guid.NewGuid(),
                     Name = userName + "'s testing pre-school",
                     UserId = userId,
-                    NumberPractitioners = 0,
-                    NumberOfAssistants = 0,
-                    NumberOfOtherAssistants = 0,
                     IsDummySchool = true,
                     Hierarchy = practitioner.Hierarchy
                 });

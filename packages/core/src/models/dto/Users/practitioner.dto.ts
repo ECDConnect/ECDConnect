@@ -3,6 +3,7 @@ import { EntityBase } from '../entity-base';
 import { SiteAddressDto } from '../SiteAddress';
 import { AbsenteeDto } from './absentee.dto';
 import { UserDto } from './user.dto';
+import { EcdRegistrationDto } from '../EcdRegistration';
 
 export interface PractitionerDto extends EntityBase {
   user?: UserDto;
@@ -34,12 +35,15 @@ export interface PractitionerDto extends EntityBase {
   progress?: number;
   usePhotoInReport?: string;
   isCompletedBusinessWalkThrough?: boolean;
+  syncedBusinessWalkThrough?: boolean;
   absentees?: AbsenteeDto[];
   daysAbsentLastMonth?: number | string;
   permissions?: UserPermissionDto[];
   communitySectionViewDate?: string;
   clickedCommunityTab?: boolean;
   progressWalkthroughComplete?: boolean;
+  syncedProgressWalkThrough?: boolean;
+  ecdRegistration?: EcdRegistrationDto;
 }
 
 export interface UserPermissionDto {

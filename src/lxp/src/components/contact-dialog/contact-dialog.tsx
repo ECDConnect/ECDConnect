@@ -7,9 +7,9 @@ import {
 } from '@ecdlink/ui';
 import { PhoneIcon } from '@heroicons/react/solid';
 import * as styles from './contact-dialog.styles';
-import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
 import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
 import { ContactDialogProps } from './contact-dialog.types';
+import WhatsAppIcon from '@/assets/logos/whatsapp';
 
 export const ContactDialog: React.FC<ContactDialogProps> = ({
   firstName,
@@ -72,11 +72,7 @@ export const ContactDialog: React.FC<ContactDialogProps> = ({
                 onClick={whatsapp}
               >
                 <div className="flex items-center justify-center">
-                  <img
-                    src={getLogo(LogoSvgs.whatsapp)}
-                    alt="whatsapp"
-                    className={styles.buttonIconStyle}
-                  />
+                  <WhatsAppIcon className={styles.buttonIconStyle} />
                   <Typography
                     text={`Whatsapp ${firstName}`}
                     type="button"

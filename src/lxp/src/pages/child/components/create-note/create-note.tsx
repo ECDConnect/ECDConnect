@@ -148,6 +148,7 @@ export const CreateNote: React.FC<CreateNoteProps> = ({
               'E.g. Themba’s mother shared some information about his health.'
             }
           />
+
           <Button
             onClick={() => handleFormSubmit(getNoteFormValues())}
             className="w-full"

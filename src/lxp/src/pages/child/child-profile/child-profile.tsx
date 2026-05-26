@@ -1,6 +1,5 @@
 import {
   AttendanceDto,
-  ChildAttendanceReportModel,
   useDialog,
   Document,
   ContentConsentTypeEnum,
@@ -18,7 +17,6 @@ import {
   Dialog,
   DialogPosition,
   Divider,
-  IMAGE_WIDTH,
   IMAGE_WIDTH_PROFILE,
   ListItem,
   ListItemProps,
@@ -33,9 +31,7 @@ import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useStaticData } from '@hooks/useStaticData';
 import { Age } from '@models/common/Age';
-import { AttendanceService } from '@services/AttendanceService';
-import { attendanceSelectors } from '@store/attendance';
-import { authSelectors } from '@store/auth';
+import { attendanceSelectors, attendanceThunkActions } from '@store/attendance';
 import { CaregiverContactReason } from '@store/caregiver/caregiver.types';
 import {
   childrenActions,
@@ -153,7 +149,6 @@ export const ChildProfile: React.FC = () => {
     notesSelectors.getNotesByUserId(child?.userId || child?.user?.id)
   );
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
-  const authUser = useSelector(authSelectors.getAuthUser);
 
   const childPhotoConsent = useSelector(
     userSelectors.getUserConsentByType(
@@ -195,8 +190,10 @@ export const ChildProfile: React.FC = () => {
     WorkflowStatusEnum.ChildExternalLink
   );
   const [notifications, setNotifications] = useState<ListItemProps[]>([]);
-  const [attendanceReport, setAttendanceReport] =
-    useState<ChildAttendanceReportModel>();
+
+  const attendanceReport = useSelector(
+    attendanceSelectors.getClassAttendanceForId(classroomGroup?.id!)
+  );
 
   const [isLoadingAttendance, setIsLoadingAttendance] = useState<boolean>(true);
   const { isLoading } = useThunkFetchCall(
@@ -244,23 +241,28 @@ export const ChildProfile: React.FC = () => {
     });
   }, [dialog]);
 
+  const childCreationPending =
+    child &&
+    (child?.workflowStatusId === childPendingWorkflowStatusId ||
+      child?.workflowStatusId === childExternalWorkflowStatusId);
+
   // TODO - This useEffect needs to be fixed, causing infinite re-renders!!!
   useEffect(() => {
-    if (!attendanceData || !child) return;
+    // we don't want to call this if child creation is not complete
+    if (!attendanceData || !child || childCreationPending) return;
 
     const fetchAttendance = async () => {
       setIsLoadingAttendance(true);
 
       try {
-        const data = await new AttendanceService(
-          authUser?.auth_token ?? ''
-        ).getChildAttendanceRecords(
-          child?.userId ?? child?.user?.id ?? '',
-          classroomGroup?.id ?? childId,
-          startOfISOWeekYear(new Date()),
-          currentDate
-        );
-        setAttendanceReport(data);
+        appDispatch(
+          attendanceThunkActions.getChildAttendanceRecords({
+            userId: child?.userId ?? child?.user?.id ?? '',
+            classgroupId: classroomGroup?.id ?? childId,
+            startDate: startOfISOWeekYear(new Date()),
+            endDate: currentDate,
+          })
+        ).unwrap();
       } catch (error) {
         console.error('Error fetching attendance:', error);
       } finally {

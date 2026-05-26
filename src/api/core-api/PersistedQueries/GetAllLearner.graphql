@@ -1,0 +1,10 @@
+query {
+  GetAllLearner {
+    id
+    classroomGroupId
+    startedAttendance
+    stoppedAttendance
+    userId
+    isActive
+  }
+}

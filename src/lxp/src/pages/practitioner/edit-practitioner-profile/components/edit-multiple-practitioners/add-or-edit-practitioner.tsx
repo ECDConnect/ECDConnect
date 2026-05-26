@@ -15,9 +15,10 @@ import {
   addPractitionerSchema,
   initialAddPractitionerValues,
 } from '@/schemas/practitioner/add-practitioner';
-import { PractitionerService } from '@/services/PractitionerService';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
+import { useAppDispatch } from '@/store';
+import { practitionerThunkActions } from '@/store/practitioner';
 
 export const AddOrEditPractitioner = ({
   onSubmit,
@@ -26,6 +27,7 @@ export const AddOrEditPractitioner = ({
   onSubmit: (data: AddPractitionerModel) => void;
   formData?: AddPractitionerModel;
 }) => {
+  const appDispatch = useAppDispatch();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const {
     register,
@@ -53,14 +55,18 @@ export const AddOrEditPractitioner = ({
     let _practitioner: UserDto = {} as UserDto;
 
     if (userAuth && idNumber) {
-      _practitioner = await new PractitionerService(
-        userAuth.auth_token
-      ).getPractitionerByIdNumber(idNumber);
+      _practitioner = await appDispatch(
+        practitionerThunkActions.getPractitionerByIdNumber({
+          idNumber: idNumber,
+        })
+      ).unwrap();
     }
     if (userAuth && passport) {
-      _practitioner = await new PractitionerService(
-        userAuth.auth_token
-      ).getPractitionerByIdNumber(passport);
+      _practitioner = await appDispatch(
+        practitionerThunkActions.getPractitionerByIdNumber({
+          idNumber: passport,
+        })
+      ).unwrap();
     }
     return _practitioner;
   };
@@ -106,9 +112,12 @@ export const AddOrEditPractitioner = ({
     const practitionerUserDetails = await getPractitionerDetailsByIdNumber();
     let practitionerDetails = {} as PractitionerDto;
     if (practitionerUserDetails.id && userAuth) {
-      practitionerDetails = await new PractitionerService(
-        userAuth?.auth_token ?? ''
-      ).getPractitionerByUserId(practitionerUserDetails.id);
+      practitionerDetails = await appDispatch(
+        practitionerThunkActions.getPractitionerByUserId({
+          userId: practitionerUserDetails.id,
+          overrideCache: true,
+        })
+      ).unwrap();
     }
 
     onSubmit({
@@ -250,7 +259,6 @@ export const AddOrEditPractitioner = ({
               title={'We do not have this practitioner on record.'}
               list={[
                 'Check if the ID you entered is correct.',
-                'Make sure the practitioner is a SmartStarter.',
                 'If you have entered the correct information, contact the call centre or tap Skip to solve the problem later.',
               ]}
               button={

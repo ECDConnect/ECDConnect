@@ -3,41 +3,43 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { ContentRoutineService } from '@services/ContentRoutineService';
 import { RootState, ThunkApiType } from '../../types';
 
+export const ProgrammeRoutineActions = {
+  GET_PROGRAMME_ROUTINES: 'getProgrammeRoutines',
+};
+
 export const getProgrammeRoutines = createAsyncThunk<
   ProgrammeRoutineDto[],
-  { locale: string },
+  { locale: string; overrideCache?: boolean },
   ThunkApiType<RootState>
 >(
-  'getProgrammeRoutines',
+  ProgrammeRoutineActions.GET_PROGRAMME_ROUTINES,
   // eslint-disable-next-line no-empty-pattern
-  async ({ locale }, { getState, rejectWithValue }) => {
+  async ({ locale, overrideCache = false }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       programmeRoutineData: { programmeRoutines: programmeRoutineCache },
     } = getState();
 
-    if (!programmeRoutineCache) {
-      try {
-        let programmeRoutines: ProgrammeRoutineDto[] | undefined;
-
-        if (userAuth?.auth_token) {
-          programmeRoutines = await new ContentRoutineService(
-            userAuth?.auth_token
-          ).getProgrammeRoutines(locale);
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        if (!programmeRoutines) {
-          return rejectWithValue('Error getting programme routines');
-        }
-
-        return programmeRoutines;
-      } catch (err) {
-        return rejectWithValue(err);
-      }
-    } else {
+    // === CACHE CHECK ===
+    if (
+      !overrideCache &&
+      programmeRoutineCache &&
+      programmeRoutineCache.length > 0
+    ) {
       return programmeRoutineCache;
+    }
+
+    // === FETCH FROM API ===
+    try {
+      if (!userAuth?.auth_token) {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return await new ContentRoutineService(
+        userAuth?.auth_token
+      ).getProgrammeRoutines(locale);
+    } catch (err) {
+      return rejectWithValue(err);
     }
   }
 );

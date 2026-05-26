@@ -17,6 +17,8 @@ import {
   updatePractitionerCommunityTabStatus,
   updatePractitionerProgressWalkthrough,
   getPractitionerPermissions,
+  updatePractitionerEcdRegistration,
+  createPractitionerEcdRegistration,
 } from './practitioner.actions';
 import {
   PractitionerState,
@@ -49,6 +51,30 @@ const practitionerSlice = createSlice({
     updatePractitioner: (state, action: PayloadAction<PractitionerDto>) => {
       if (state.practitioner) {
         state.practitioner = action.payload;
+      }
+    },
+    updateProgressWalkthroughComplete: (
+      state,
+      action: PayloadAction<boolean>
+    ) => {
+      if (state.practitioner) {
+        state.practitioner = {
+          ...state.practitioner,
+          progressWalkthroughComplete: action.payload,
+          syncedProgressWalkThrough: false,
+        };
+      }
+    },
+    updateBusinessWalkthroughComplete: (
+      state,
+      action: PayloadAction<boolean>
+    ) => {
+      if (state.practitioner) {
+        state.practitioner = {
+          ...state.practitioner,
+          isCompletedBusinessWalkThrough: action.payload,
+          syncedBusinessWalkThrough: false,
+        };
       }
     },
   },
@@ -116,6 +142,7 @@ const practitionerSlice = createSlice({
         state.practitioner = {
           ...state.practitioner,
           isCompletedBusinessWalkThrough: action.payload,
+          syncedBusinessWalkThrough: true,
         };
       }
     );
@@ -125,6 +152,7 @@ const practitionerSlice = createSlice({
         state.practitioner = {
           ...state.practitioner,
           progressWalkthroughComplete: action.payload,
+          syncedProgressWalkThrough: true,
         };
       }
     );
@@ -134,6 +162,24 @@ const practitionerSlice = createSlice({
         state.practitioner = {
           ...state.practitioner,
           usePhotoInReport: action.payload,
+        };
+      }
+    );
+    builder.addCase(
+      createPractitionerEcdRegistration.fulfilled,
+      (state, action) => {
+        state.practitioner = {
+          ...state.practitioner,
+          ecdRegistration: action.payload,
+        };
+      }
+    );
+    builder.addCase(
+      updatePractitionerEcdRegistration.fulfilled,
+      (state, action) => {
+        state.practitioner = {
+          ...state.practitioner,
+          ecdRegistration: action.payload,
         };
       }
     );

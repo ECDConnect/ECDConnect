@@ -16,19 +16,18 @@ import '@ionic/react/css/float-elements.css';
 import { default as React, useEffect, useState } from 'react';
 import ReactGA from 'react-ga4';
 import TagManager from 'react-gtm-module';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { AuthRoutes, PublicRoutes } from '@routes';
 import InitialNotificationSetup from './initial-notifications-setup';
 import InitialStoreSetup from './initial-store-setup';
 import { LoginModal } from './pages/auth/login-modal/login-modal';
-import { authSelectors } from './store/auth';
+import { authActions, authSelectors } from './store/auth';
+import { useVersionCheck } from './hooks/useVersionCheck';
+import { UpdateRequired } from './pages/update-required/update-required';
 import { differenceInHours, isSameDay } from 'date-fns';
-import { useAppDispatch } from './store';
-import { practitionerSelectors } from './store/practitioner';
 import { stopReportingRuntimeErrors } from 'react-error-overlay';
 import { useTenant } from './hooks/useTenant';
 import { Helmet } from 'react-helmet';
-import { userActions, userSelectors } from './store/user';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { FacebookProvider } from 'react-facebook';
 
@@ -40,15 +39,13 @@ const App: React.FC = () => {
   const tenant = useTenant();
   const { theme } = useTheme();
   const dialog = useDialog();
-  const dispatch = useAppDispatch();
+  const dispatch = useDispatch();
   const user = useSelector(authSelectors.getAuthUser);
   const userExpired = useSelector(authSelectors.getUserExpired);
+  const isAppLocked = useSelector(authSelectors.getIsAppLocked);
+  const { updateRequired } = useVersionCheck();
   const [freeMemory, setFreeMemory] = useState(0);
   const [errorMessage, setErrorMessage] = useState(false);
-
-  const userUnstableConnection = useSelector(
-    userSelectors.getUserUnstableConnection
-  );
 
   const isSslEnabled = window.location.protocol === 'https:';
 
@@ -156,6 +153,26 @@ const App: React.FC = () => {
   }, [userExpired]);
 
   useEffect(() => {
+    if (isAppLocked) {
+      dialog({
+        position: DialogPosition.Middle,
+        blocking: true,
+        render: (onSubmit) => {
+          return (
+            <LoginModal
+              loginSuccessful={() => {
+                dispatch(authActions.unlockApp());
+                onSubmit();
+              }}
+            />
+          );
+        },
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAppLocked]);
+
+  useEffect(() => {
     if (freeMemory !== 0 && freeMemory <= 200) {
       setErrorMessage(true);
       // Optionally block form or show message immediately
@@ -187,43 +204,6 @@ const App: React.FC = () => {
   const reloadView = () => {
     window.location.reload();
   };
-
-  useEffect(() => {
-    if (userUnstableConnection) {
-      dialog({
-        position: DialogPosition.Middle,
-        blocking: false,
-        render: (onSubmit, onClose) => {
-          return (
-            <ActionModal
-              customIcon={renderIcon(
-                'ExclamationIcon',
-                `z-20 w-28 h-28 text-alertMain`
-              )}
-              className={'bg-white'}
-              title={'Weak connection'}
-              detailText={
-                'Your internet connection is unstable. Turn off mobile data and Wi-Fi to keep using the app, or connect to a stronger network.'
-              }
-              actionButtons={[
-                {
-                  text: 'Okay',
-                  textColour: 'white',
-                  colour: 'quatenary',
-                  type: 'filled',
-                  leadingIcon: 'CheckCircleIcon',
-                  onClick: () => {
-                    dispatch(userActions.updateConnectionStatus(false));
-                    onSubmit();
-                  },
-                },
-              ]}
-            />
-          );
-        },
-      });
-    }
-  }, [dialog, dispatch, userUnstableConnection]);
 
   useEffect(() => {
     if (errorMessage) {
@@ -349,7 +329,7 @@ const App: React.FC = () => {
       <Helmet>
         <title>{getTitle()}</title>
       </Helmet>
-      {routerContent}
+      {updateRequired ? <UpdateRequired /> : routerContent}
     </IonApp>
   );
 

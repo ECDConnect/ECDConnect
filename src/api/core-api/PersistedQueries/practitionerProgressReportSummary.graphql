@@ -1,0 +1,26 @@
+query practitionerProgressReportSummary($reportingPeriod: String) {
+  practitionerProgressReportSummary(reportingPeriod: $reportingPeriod) {
+    reportingPeriod
+    classSummaries {
+      practitionerUserId
+      practitionerFullName
+      className
+      childCount
+      categories {
+        id
+        name
+        imageUrl
+        color
+        subCategories {
+          id
+          name
+          imageUrl
+          childrenPerSkill {
+            childCount
+            skill
+          }
+        }
+      }
+    }
+  }
+}

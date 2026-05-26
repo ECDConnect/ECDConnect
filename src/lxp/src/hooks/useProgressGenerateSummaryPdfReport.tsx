@@ -4,6 +4,8 @@ export const useProgressGenerateSummaryPdfReport = () => {
   // Convert jsPDF to Blob
   const htmlToPdfBlob = (src: HTMLElement, width: number): Promise<Blob> => {
     const doc = new jsPDF('portrait', 'pt', 'a4');
+    doc.setFont('Helvetica', 'normal', 'normal');
+    doc.setFontSize(10);
 
     return new Promise((resolve, reject) => {
       doc.html(src, {
@@ -31,51 +33,48 @@ export const useProgressGenerateSummaryPdfReport = () => {
   };
 
   const sharePdfReport = async (blob: Blob, filenameSuffix?: string) => {
-    const file = new File(
-      [blob],
-      `ProgressSummary${filenameSuffix || ''}.pdf`,
-      { type: 'application/pdf' }
-    );
+    const filename = `ProgressSummary${filenameSuffix || ''}.pdf`;
+    const file = new File([blob], filename, { type: 'application/pdf' });
 
-    // Check if Web Share API is available at all
-    if (navigator.share) {
+    if (
+      navigator.share &&
+      navigator.canShare &&
+      navigator.canShare({ files: [file] })
+    ) {
       try {
-        // Try sharing with file first
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            title: 'Progress Summary',
-            text: 'Here is the progress summary PDF.',
-            files: [file],
-          });
-          console.log('Shared successfully');
-        } else {
-          // Fallback: download instead of sharing
-          downloadPdf(blob, filenameSuffix);
-        }
+        await navigator.share({
+          title: 'Progress Summary Report',
+          text: `Here is the progress summary PDF`,
+          files: [file],
+        });
+        return; // Success
       } catch (err: any) {
-        if (err.name === 'AbortError') {
-          console.log('Share cancelled by user');
-        } else {
-          console.error('Sharing failed', err);
-          // Fallback to download
-          downloadPdf(blob, filenameSuffix);
+        if (err.name !== 'AbortError') {
+          console.error('Share failed, falling back to download', err);
         }
       }
-    } else {
-      // No share API - download directly
-      downloadPdf(blob, filenameSuffix);
     }
+
+    downloadPdf(blob, filenameSuffix);
   };
 
   const downloadPdf = (blob: Blob, filenameSuffix?: string) => {
+    const filename = `ProgressSummary${filenameSuffix || ''}.pdf`;
     const url = URL.createObjectURL(blob);
+
     const a = document.createElement('a');
     a.href = url;
-    a.download = `ProgressSummary${filenameSuffix || ''}.pdf`;
-    document.body.appendChild(a); // Required for Firefox
+    a.download = filename;
+    a.style.display = 'none';
+
+    document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+
+    // Small delay helps Chrome on Mac properly register the download
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 150);
   };
 
   // Functionality without share question/option
@@ -85,6 +84,8 @@ export const useProgressGenerateSummaryPdfReport = () => {
     filenameSuffix?: string
   ) => {
     const doc = new jsPDF('portrait', 'pt', 'a4');
+    doc.setFont('Helvetica', 'normal', 'normal');
+    doc.setFontSize(10);
 
     return doc.html(src, {
       callback: function (doc) {

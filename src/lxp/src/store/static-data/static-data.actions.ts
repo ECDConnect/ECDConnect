@@ -40,6 +40,35 @@ import { ReasonForPractitionerLeavingProgrammeService } from '@/services/ReasonF
 import PermissionsService from '@/services/PermissionsService/PermissionsService';
 import { RoleService } from '@/services/RoleService';
 import { SkillsService } from '@/services/SkillsService';
+import { CmsSyncStatus, MoreInformation } from '@ecdlink/graphql';
+import { SettingsService } from '@/services/SettingsService';
+import InfoService from '@/services/InfoService/InfoService';
+
+export const StaticDataActions = {
+  GET_RELATIONS: 'getRelations',
+  GET_PROGRAMME_TYPES: 'getProgrammeTypes',
+  GET_PROGRAMME_ATTENDANCE_REASONS: 'getProgrammeAttendanceReasons',
+  GET_GENDERS: 'getGenders',
+  GET_EDUCATION_LEVELS: 'getEducationLevels',
+  GET_HOLIDAYS: 'getHolidays',
+  GET_LANGUAGES: 'getLanguages',
+  GET_PROVINCES: 'getProvinces',
+  GET_OPEN_LANGUAGES: 'getOpenLanguages',
+  GET_RACES: 'getRaces',
+  GET_REASONS_FOR_LEAVING: 'getReasonsForLeaving',
+  GET_REASONS_FOR_PRACTITIONER_LEAVING: 'getReasonsForPractitionerLeaving',
+  GET_REASONS_FOR_PRACTITIONER_LEAVING_PROGRAMME:
+    'getReasonsForPractitionerLeavingProgramme',
+  GET_GRANTS: 'getGrants',
+  GET_DOCUMENT_TYPES: 'getDocumentTypes',
+  GET_WORKFLOW_STATUSES: 'getWorkflowStatuses',
+  GET_NOTE_TYPES: 'getNoteTypes',
+  GET_PERMISSIONS: 'getPermissions',
+  GET_ROLES: 'getRoles',
+  GET_COMMUNITY_SKILLS: 'getCommunitySkills',
+  GET_CMS_SYNC_STATUS: 'getCmsSyncStatus',
+  GET_MORE_INFORMATION: 'getMoreInformation',
+};
 
 export const getRelations = createAsyncThunk<
   RelationDto[],
@@ -47,7 +76,7 @@ export const getRelations = createAsyncThunk<
   {},
   ThunkApiType<RootState>
 >(
-  'getRelations',
+  StaticDataActions.GET_RELATIONS,
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
@@ -87,7 +116,7 @@ export const getProgrammeTypes = createAsyncThunk<
   {},
   ThunkApiType<RootState>
 >(
-  'getProgrammeTypes',
+  StaticDataActions.GET_PROGRAMME_TYPES,
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
@@ -127,7 +156,7 @@ export const getProgrammeAttendanceReasons = createAsyncThunk<
   {},
   ThunkApiType<RootState>
 >(
-  'getProgrammeAttendanceReasons',
+  StaticDataActions.GET_PROGRAMME_ATTENDANCE_REASONS,
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
@@ -170,7 +199,7 @@ export const getGenders = createAsyncThunk<
   {},
   ThunkApiType<RootState>
 >(
-  'getGenders',
+  StaticDataActions.GET_GENDERS,
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
@@ -208,7 +237,7 @@ export const getRaces = createAsyncThunk<
   {},
   ThunkApiType<RootState>
 >(
-  'getRaces',
+  StaticDataActions.GET_RACES,
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
@@ -246,7 +275,7 @@ export const getLanguages = createAsyncThunk<
   {},
   ThunkApiType<RootState>
 >(
-  'getLanguages',
+  StaticDataActions.GET_LANGUAGES,
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
@@ -283,28 +312,31 @@ export const getOpenLanguages = createAsyncThunk<
   // eslint-disable-next-line @typescript-eslint/ban-types
   {},
   ThunkApiType<RootState>
->('getLanguages', async (_, { getState, rejectWithValue }) => {
-  const {
-    staticData: { languages: languagesCache },
-  } = getState();
+>(
+  StaticDataActions.GET_OPEN_LANGUAGES,
+  async (_, { getState, rejectWithValue }) => {
+    const {
+      staticData: { languages: languagesCache },
+    } = getState();
 
-  if (!languagesCache) {
-    try {
-      let languages: LanguageDto[] | undefined;
-      languages = await new LanguageService('').getOpenLanguages();
+    if (!languagesCache) {
+      try {
+        let languages: LanguageDto[] | undefined;
+        languages = await new LanguageService('').getOpenLanguages();
 
-      if (!languages) {
-        return rejectWithValue('Error Languages');
+        if (!languages) {
+          return rejectWithValue('Error Languages');
+        }
+
+        return languages;
+      } catch (err) {
+        return rejectWithValue(err);
       }
-
-      return languages;
-    } catch (err) {
-      return rejectWithValue(err);
+    } else {
+      return languagesCache;
     }
-  } else {
-    return languagesCache;
   }
-});
+);
 
 export const getProvinces = createAsyncThunk<
   ProvinceDto[],
@@ -312,7 +344,7 @@ export const getProvinces = createAsyncThunk<
   {},
   ThunkApiType<RootState>
 >(
-  'getProvinces',
+  StaticDataActions.GET_PROVINCES,
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
@@ -352,7 +384,7 @@ export const getEducationLevels = createAsyncThunk<
   {},
   ThunkApiType<RootState>
 >(
-  'getEducationLevels',
+  StaticDataActions.GET_EDUCATION_LEVELS,
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
@@ -388,12 +420,12 @@ export const getEducationLevels = createAsyncThunk<
 
 export const getHolidays = createAsyncThunk<
   HolidayDto[],
-  { year: number },
+  { year: number; overrideCache?: boolean },
   ThunkApiType<RootState>
 >(
-  'getHolidays',
+  StaticDataActions.GET_HOLIDAYS,
   // eslint-disable-next-line no-empty-pattern
-  async ({ year }, { getState, rejectWithValue }) => {
+  async ({ year, overrideCache }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       staticData: { holidays: holidaysCache },
@@ -406,7 +438,7 @@ export const getHolidays = createAsyncThunk<
       }
     }
 
-    if (!holidaysCache || getNewHolidays) {
+    if (!holidaysCache || getNewHolidays || !!overrideCache) {
       try {
         let holidays: HolidayDto[] | undefined;
 
@@ -438,7 +470,7 @@ export const getReasonsForLeaving = createAsyncThunk<
   {},
   ThunkApiType<RootState>
 >(
-  'getReasonsForLeaving',
+  StaticDataActions.GET_REASONS_FOR_LEAVING,
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
@@ -478,7 +510,7 @@ export const getReasonsForPractitionerLeaving = createAsyncThunk<
   {},
   ThunkApiType<RootState>
 >(
-  'getReasonsForPractitionerLeaving',
+  StaticDataActions.GET_REASONS_FOR_PRACTITIONER_LEAVING,
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
@@ -520,7 +552,7 @@ export const getReasonsForPractitionerLeavingProgramme = createAsyncThunk<
   {},
   ThunkApiType<RootState>
 >(
-  'getReasonsForPractitionerLeavingProgramme',
+  StaticDataActions.GET_REASONS_FOR_PRACTITIONER_LEAVING_PROGRAMME,
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
@@ -562,7 +594,7 @@ export const getGrants = createAsyncThunk<
   {},
   ThunkApiType<RootState>
 >(
-  'getGrants',
+  StaticDataActions.GET_GRANTS,
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
@@ -597,7 +629,7 @@ export const getDocumentTypes = createAsyncThunk<
   {},
   ThunkApiType<RootState>
 >(
-  'getDocumentTypes',
+  StaticDataActions.GET_DOCUMENT_TYPES,
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
@@ -632,7 +664,7 @@ export const getWorkflowStatuses = createAsyncThunk<
   {},
   ThunkApiType<RootState>
 >(
-  'getWorkflowStatuses',
+  StaticDataActions.GET_WORKFLOW_STATUSES,
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
@@ -667,7 +699,7 @@ export const getNoteTypes = createAsyncThunk<
   {},
   ThunkApiType<RootState>
 >(
-  'getNoteTypes',
+  StaticDataActions.GET_NOTE_TYPES,
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
@@ -701,40 +733,43 @@ export const getPermissions = createAsyncThunk<
   // eslint-disable-next-line @typescript-eslint/ban-types
   {},
   ThunkApiType<RootState>
->('getPermissions', async (_, { getState, rejectWithValue }) => {
-  const {
-    auth: { userAuth },
-    staticData: { permissions: permissionsCache },
-  } = getState();
+>(
+  StaticDataActions.GET_PERMISSIONS,
+  async (_, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      staticData: { permissions: permissionsCache },
+    } = getState();
 
-  if (!permissionsCache) {
-    try {
-      let permissions: PermissionDto[] | undefined;
-      if (userAuth?.auth_token) {
-        permissions = await new PermissionsService(
-          userAuth?.auth_token
-        ).getPermissions();
+    if (!permissionsCache) {
+      try {
+        let permissions: PermissionDto[] | undefined;
+        if (userAuth?.auth_token) {
+          permissions = await new PermissionsService(
+            userAuth?.auth_token
+          ).getPermissions();
+        }
+
+        if (!permissions) {
+          return rejectWithValue('Error permissions');
+        }
+
+        return permissions;
+      } catch (err) {
+        return rejectWithValue(err);
       }
-
-      if (!permissions) {
-        return rejectWithValue('Error permissions');
-      }
-
-      return permissions;
-    } catch (err) {
-      return rejectWithValue(err);
+    } else {
+      return permissionsCache;
     }
-  } else {
-    return permissionsCache;
   }
-});
+);
 
 export const getRoles = createAsyncThunk<
   RoleDto[],
   // eslint-disable-next-line @typescript-eslint/ban-types
   {},
   ThunkApiType<RootState>
->('getRoles', async (_, { getState, rejectWithValue }) => {
+>(StaticDataActions.GET_ROLES, async (_, { getState, rejectWithValue }) => {
   const {
     auth: { userAuth },
     staticData: { roles: rolesCache },
@@ -748,7 +783,7 @@ export const getRoles = createAsyncThunk<
       }
 
       if (!roles) {
-        return rejectWithValue('Error permissions');
+        return rejectWithValue('Error getting roles');
       }
 
       return roles;
@@ -765,30 +800,98 @@ export const getCommunitySkills = createAsyncThunk<
   // eslint-disable-next-line @typescript-eslint/ban-types
   {},
   ThunkApiType<RootState>
->('getCommunitySkills', async (_, { getState, rejectWithValue }) => {
-  const {
-    auth: { userAuth },
-    staticData: { communitySkills: communitySkillsCache },
-  } = getState();
+>(
+  StaticDataActions.GET_COMMUNITY_SKILLS,
+  async (_, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      staticData: { communitySkills: communitySkillsCache },
+    } = getState();
 
-  if (!communitySkillsCache) {
+    if (!communitySkillsCache) {
+      try {
+        let communitySkills: ProfileSkillsDto[] | undefined;
+        if (userAuth?.auth_token) {
+          communitySkills = await new SkillsService(
+            userAuth?.auth_token
+          ).getCommunitySkills();
+        }
+
+        if (!communitySkills) {
+          return rejectWithValue('Error getting community skills');
+        }
+
+        return communitySkills;
+      } catch (err) {
+        return rejectWithValue(err);
+      }
+    } else {
+      return communitySkillsCache;
+    }
+  }
+);
+
+export const getCmsSyncStatus = createAsyncThunk<
+  any,
+  void,
+  ThunkApiType<RootState>
+>(
+  StaticDataActions.GET_CMS_SYNC_STATUS,
+  // eslint-disable-next-line no-empty-pattern
+  async (_, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      settings: { lastCmsDataSync },
+    } = getState();
+
     try {
-      let communitySkills: ProfileSkillsDto[] | undefined;
+      let cmsSyncStatus: CmsSyncStatus;
+
       if (userAuth?.auth_token) {
-        communitySkills = await new SkillsService(
+        cmsSyncStatus = await new SettingsService(
           userAuth?.auth_token
-        ).getCommunitySkills();
+        ).getCmsSyncStatus(new Date(lastCmsDataSync) || new Date());
+      } else {
+        return rejectWithValue('no access token, profile check required');
       }
 
-      if (!communitySkills) {
-        return rejectWithValue('Error communitySkills');
-      }
-
-      return communitySkills;
+      return cmsSyncStatus;
     } catch (err) {
       return rejectWithValue(err);
     }
-  } else {
-    return communitySkillsCache;
   }
-});
+);
+
+export const getMoreInformation = createAsyncThunk<
+  MoreInformation[],
+  { section: string; locale: string },
+  ThunkApiType<RootState>
+>(
+  StaticDataActions.GET_MORE_INFORMATION,
+  async ({ locale, section }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      staticData: { moreInformation: moreInformationCache },
+    } = getState();
+
+    const cacheKey = `${section}_${locale}`;
+    if (moreInformationCache[cacheKey]) {
+      return moreInformationCache[cacheKey];
+    }
+
+    try {
+      if (userAuth?.auth_token) {
+        const content = await new InfoService().getMoreInformation(
+          section,
+          locale
+        );
+
+        return content;
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);

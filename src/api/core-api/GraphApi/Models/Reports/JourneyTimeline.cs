@@ -58,7 +58,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public string Description { get; set; }
         public string StepNr { get; set; }
         public string FormQuestionsIds { get; set; }
-        
+
+        public string Info { get; set; }
+
+        public string IsScored { get; set; }
+        public string IsScoreResult { get; set; }
+        public string CanSkip { get; set; }         
+        public string MultiAnswers { get; set; }        
         public List<AssessmentQuestion> FormQuestions { get; set; }
         public AssessmentPage(Object record)
         {
@@ -67,12 +73,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
             item.TryGetValue("name", out var name);
             item.TryGetValue("description", out var description);
             item.TryGetValue("stepNr", out var stepNr);
+            item.TryGetValue("isScored", out var isScored);
+            item.TryGetValue("isScoreResult", out var isScoreResult);
+            item.TryGetValue("canSkip", out var canSkip);
+            item.TryGetValue("multiAnswers", out var multiAnswers);
             item.TryGetValue("formQuestions", out var formQuestions);
+            item.TryGetValue("info", out var info);
 
             Id = id.ToString();
             Name = name != null ? name.ToString() : "";
             Description = description != null ? description.ToString() : "";
             StepNr = stepNr != null ? stepNr.ToString() : "";
+            Info = info != null ? info.ToString() : "";
+            IsScored = isScored != null ? isScored.ToString() : "";
+            IsScoreResult = isScoreResult != null ? isScoreResult.ToString() : "";
+            CanSkip = canSkip != null ? canSkip.ToString() : "";
+            MultiAnswers = multiAnswers != null ? multiAnswers.ToString() : "";
             FormQuestionsIds = formQuestions != null ? formQuestions.ToString() : "";
         }
     }
@@ -83,6 +99,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public string Name { get; set; }
         public string Description { get; set; }
         public string AnswerType { get; set; }
+
+        public int MinValue { get; set; } = 0;
         public string FormQuestionOptionsIds { get; set; }
         public List<AssessmentOption> FormQuestionOptions { get; set; }
         public string Answer { get; set; }
@@ -94,12 +112,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
             item.TryGetValue("description", out var description);
             item.TryGetValue("answerType", out var answerType);
             item.TryGetValue("formQuestionOptions", out var formQuestionOptions);
-
+            item.TryGetValue("minValue", out var minValue);
             Id = id.ToString();
             Name = name != null ? name.ToString() : "";
             Description = description != null ? description.ToString() : "";
             AnswerType = answerType != null ? answerType.ToString() : "";
             FormQuestionOptionsIds = formQuestionOptions != null ? formQuestionOptions.ToString() : "";
+            MinValue = minValue != null ? Convert.ToInt32(minValue) : 0;
         }
     }
 
@@ -129,7 +148,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public DateTime GeneratedAt { get; set; } = DateTime.UtcNow;
         public string TextQuestion { get; set; }
         public string TextAnswer { get; set; }
+        public string CertificateName { get; set; }
+        public string CertificateRegNr { get; set; }
+        public DateTime? VisitCompletedDate { get; set; }
         public Guid VisitId { get; set; }
+        public List<string> PreschoolDetail { get; set; } = new();
+        public List<string> ClassroomDetail { get; set; } = new();
+        public List<string> SafetyStandards { get; set; } = new();
         public AssessmentReport()
         {
         }

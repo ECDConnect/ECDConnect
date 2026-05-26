@@ -1,0 +1,30 @@
+query allNotifications($userId: String) {
+  allNotifications(userId: $userId) {
+    id
+    fromUserId
+    messageProtocol
+    message
+    messageTemplateType
+    subject
+    sentByUserId
+    from
+    messageDate
+    messageEndDate
+    status
+    cTA
+    cTAText
+    ordering
+    readDate
+    messageTemplate {
+      id
+      ordering
+      templateType
+      subject
+      message
+      cTA
+      cTAText
+      typeCode
+    }
+    action
+  }
+}

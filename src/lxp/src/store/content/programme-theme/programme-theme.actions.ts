@@ -9,38 +9,36 @@ export const ProgrammeThemeActions = {
 
 export const getProgrammeThemes = createAsyncThunk<
   ProgrammeThemeDto[],
-  { locale: string },
+  { locale: string; overrideCache?: boolean },
   ThunkApiType<RootState>
 >(
   ProgrammeThemeActions.GET_PROGRAMME_THEMES,
-  async ({ locale }, { getState, rejectWithValue }) => {
+  async ({ locale, overrideCache = false }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       programmeThemeData: { programmeThemes: programmeThemeCache },
     } = getState();
 
-    if (!programmeThemeCache) {
-      try {
-        let programmeThemes: ProgrammeThemeDto[] | undefined;
-
-        if (userAuth?.auth_token) {
-          programmeThemes = await new ContentProgrammeThemeService(
-            userAuth?.auth_token
-          ).getProgrammeThemes(locale);
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        if (!programmeThemes) {
-          return rejectWithValue('Error getting programme themes');
-        }
-
-        return programmeThemes;
-      } catch (err) {
-        return rejectWithValue(err);
-      }
-    } else {
+    // === CACHE CHECK ===
+    if (
+      !overrideCache &&
+      programmeThemeCache &&
+      programmeThemeCache.length > 0
+    ) {
       return programmeThemeCache;
+    }
+
+    // === FETCH FROM API ===
+    try {
+      if (!userAuth?.auth_token) {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return await new ContentProgrammeThemeService(
+        userAuth?.auth_token
+      ).getProgrammeThemes(locale);
+    } catch (err) {
+      return rejectWithValue(err);
     }
   }
 );

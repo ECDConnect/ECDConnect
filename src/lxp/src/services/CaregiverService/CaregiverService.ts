@@ -12,50 +12,7 @@ class CaregiverService {
   async getCaregivers(): Promise<CaregiverDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query {
-          allCaregiver {
-            id
-            phoneNumber
-            idNumber
-            firstName
-            surname
-            fullName  
-            siteAddressId          
-            siteAddress {
-              id
-              provinceId
-              province {
-                id
-                description
-              }
-              name
-              addressLine1
-              addressLine2
-              addressLine3
-              postalCode
-              ward
-              isActive
-            }
-            relationId
-            educationId
-            emergencyContactFirstName
-            emergencyContactSurname
-            emergencyContactPhoneNumber
-            additionalFirstName
-            additionalSurname
-            additionalPhoneNumber
-            joinReferencePanel
-            contribution
-            grants {
-              id
-              description
-            }
-            isActive
-            isAllowedCustody
-          }
-        }        
-      `,
+      id: 'allCaregiver',
     });
 
     if (response.status !== 200) {
@@ -71,49 +28,7 @@ class CaregiverService {
   ): Promise<CaregiverDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation updateCaregiver($input: CaregiverInput, $id: UUID) {
-          updateCaregiver(input: $input, id: $id) {
-            id
-            phoneNumber
-            idNumber
-            firstName
-            surname
-            fullName  
-            siteAddressId          
-            siteAddress {
-              id
-              provinceId
-              province {
-                id
-                description
-              }
-              name
-              addressLine1
-              addressLine2
-              addressLine3
-              postalCode
-              ward
-            }
-            relationId
-            educationId
-            emergencyContactFirstName
-            emergencyContactSurname
-            emergencyContactPhoneNumber
-            additionalFirstName
-            additionalSurname
-            additionalPhoneNumber
-            joinReferencePanel
-            contribution
-            grants {
-              id
-              description
-            }
-            isActive
-            isAllowedCustody
-          }
-        }
-      `,
+      id: 'updateCaregiver',
       variables: {
         id: id,
         input: input,
@@ -130,47 +45,7 @@ class CaregiverService {
   async createCaregiver(input: CaregiverInput): Promise<CaregiverDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation createCaregiver($input: CaregiverInput) {
-          createCaregiver(input: $input) {
-            id
-            phoneNumber
-            idNumber
-            firstName
-            surname
-            fullName  
-            siteAddressId          
-            siteAddress {
-              id
-              province {
-                id
-                description
-              }
-              name
-              addressLine1
-              addressLine2
-              addressLine3
-              postalCode
-              ward
-            }
-            relationId
-            educationId
-            emergencyContactFirstName
-            emergencyContactSurname
-            emergencyContactPhoneNumber
-            additionalFirstName
-            additionalSurname
-            additionalPhoneNumber
-            joinReferencePanel
-            contribution
-            grants {
-              id
-              description
-            }
-            isActive
-          }
-        }
-      `,
+      id: 'createCaregiver',
       variables: {
         input: input,
       },
@@ -192,9 +67,7 @@ class CaregiverService {
       data: { updateCaregiverGrants: boolean };
       errors?: {};
     }>(``, {
-      query: `mutation updateCareGiverGrants($childUserId: UUID!, $grantIds: [UUID!] ) {
-        updateCareGiverGrants(childUserId: $childUserId, grantIds: $grantIds)
-      }`,
+      id: 'updateCareGiverGrants',
       variables: {
         childUserId: childUserId,
         grantIds: grantIds,

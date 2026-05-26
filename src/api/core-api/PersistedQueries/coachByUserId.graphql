@@ -1,0 +1,43 @@
+query coachByUserId($userId: String) {
+  coachByUserId(userId: $userId) {
+    id
+    user {
+      id
+      userName
+      email
+      isSouthAfricanCitizen
+      verifiedByHomeAffairs
+      dateOfBirth
+      idNumber
+      firstName
+      surname
+      fullName
+      contactPreference
+      genderId
+      phoneNumber
+      profileImageUrl
+      roles {
+        id
+        name
+      }
+    }
+    siteAddressId
+    siteAddress {
+      id
+      provinceId
+      province {
+        id
+        description
+      }
+      name
+      addressLine1
+      addressLine2
+      addressLine3
+      postalCode
+      ward
+      isActive
+    }
+    signingSignature
+    isActive
+  }
+}

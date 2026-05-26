@@ -36,6 +36,7 @@ export const EditName: React.FC<EditNameProps> = ({ setEditName, user }) => {
         cellphone: user.phoneNumber || '',
         email: user?.email! || '',
         whatsapp: user?.whatsappNumber || '',
+        synced: isOnline,
       };
       return tempPractitioner;
     } else {
@@ -62,65 +63,65 @@ export const EditName: React.FC<EditNameProps> = ({ setEditName, user }) => {
     if (copy) {
       copy.firstName = practitionerForm.name;
       copy.surname = practitionerForm.surname;
+      copy.synced = isOnline;
       appDispatch(userActions.updateUser(copy));
-      appDispatch(userThunkActions.updateUser(copy));
+
+      if (isOnline) {
+        appDispatch(userThunkActions.updateUser(copy));
+      }
       showMessage({ message: 'Name updated!' });
     }
   };
 
   return (
-    <div>
-      <BannerWrapper
-        size={'normal'}
-        renderBorder={true}
-        showBackground={false}
-        color={'primary'}
-        title={'Edit name'}
-        backgroundColour={'uiBg'}
-        displayOffline={!isOnline}
-        onBack={() => setEditName(false)}
-        onClose={() => setEditName(false)}
-      ></BannerWrapper>
+    <BannerWrapper
+      size={'normal'}
+      renderBorder={true}
+      showBackground={false}
+      color={'primary'}
+      title={'Edit name'}
+      displayOffline={!isOnline}
+      onBack={() => setEditName(false)}
+      onClose={() => setEditName(false)}
+    >
       <div className="w-12/12 wrapper-with-sticky-button px-4">
-        <div className="flex w-full justify-center">
-          <div className="flex flex-wrap justify-center">
-            <div className="w-full">
-              <Typography
-                type="h2"
-                text="Name"
-                color={'textDark'}
-                className="mt-4 w-11/12"
-              />
-            </div>
-            <div className="mt-2 flex w-full flex-col justify-center gap-4">
-              <FormInput<PractitionerAboutModel>
-                label={''}
-                visible={true}
-                nameProp={'name'}
-                className="w-full"
-                register={practitionerInfoFormRegister}
-                error={!!errors.name ? errors.name : undefined}
-              />
-            </div>
-            <div className="mt-4 -mb-4 h-full w-full self-end">
-              <Button
-                size="normal"
-                className="mb-4 w-full"
-                type="filled"
-                color="quatenary"
-                text="Save"
-                textColor="white"
-                icon="SaveIcon"
-                disabled={!!Object.keys(errors).length}
-                onClick={() => {
-                  savePractitionerUserData();
-                  setEditName(false);
-                }}
-              />
-            </div>
+        <div className="flex flex-wrap justify-center">
+          <div className="w-full">
+            <Typography
+              type="h2"
+              text="Name"
+              color={'textDark'}
+              className="mt-4 w-11/12"
+            />
+          </div>
+          <div className="mt-2 flex w-full flex-col justify-center gap-4">
+            <FormInput<PractitionerAboutModel>
+              label={''}
+              visible={true}
+              nameProp={'name'}
+              className="w-full"
+              register={practitionerInfoFormRegister}
+              error={!!errors.name ? errors.name : undefined}
+            />
+          </div>
+          <div className="mt-4 -mb-4 h-full w-full self-end">
+            <Button
+              size="normal"
+              className="mb-4 w-full"
+              type="filled"
+              color="quatenary"
+              text="Save"
+              textColor="white"
+              icon="SaveIcon"
+              disabled={!!Object.keys(errors).length}
+              onClick={() => {
+                savePractitionerUserData();
+                setEditName(false);
+              }}
+            />
           </div>
         </div>
       </div>
-    </div>
+    </BannerWrapper>
   );
 };

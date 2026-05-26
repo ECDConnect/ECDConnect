@@ -1,0 +1,6 @@
+query GetAllConnect($locale: String) {
+  GetAllConnect(locale: $locale) {
+    id
+    name
+  }
+}

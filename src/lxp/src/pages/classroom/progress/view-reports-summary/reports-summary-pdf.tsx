@@ -101,7 +101,7 @@ export const ProgresseportsSummaryPdf: React.FC<
             color="textDark"
             text={'Age:'}
           />
-          <Typography type="body" color="textDark" text={`${ageGroup.name}`} />
+          <Typography type="body" color="textDark" text={`${ageGroup?.name}`} />
         </div>
       </div>
       <Divider dividerType="dashed" />

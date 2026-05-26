@@ -5,7 +5,7 @@ import { clientsClaim } from 'workbox-core';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { precacheAndRoute, createHandlerBoundToURL } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
-import { CacheFirst } from 'workbox-strategies';
+import { CacheFirst, NetworkOnly } from 'workbox-strategies';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { PrecacheEntry } from 'workbox-precaching/_types';
 
@@ -32,6 +32,13 @@ const wb_manifest = [
 ];
 precacheAndRoute(wb_manifest);
 
+registerRoute(
+  ({ url }) =>
+    url.href.includes('ecdconnect_logo_long.png') ||
+    url.hostname.includes('blob.core.windows.net'),
+  new NetworkOnly() // or new StaleWhileRevalidate() if you want light caching
+);
+
 const fileExtensionRegexp = new RegExp('/[^/?]+\\.[^/]+$');
 registerRoute(({ request, url }) => {
   if (request.mode !== 'navigate') return false;
@@ -42,19 +49,18 @@ registerRoute(({ request, url }) => {
 
 registerRoute(
   ({ url, request }) => {
-    const cache =
+    return (
       url.pathname.endsWith('.png') ||
       url.pathname.endsWith('.ico') ||
-      url.pathname.endsWith('.svg');
-    // log(
-    //   `[ServiceWorker] Checking image: ${url.href}, cache: ${
-    //     cache ? 'Y' : 'N'
-    //   }, destination: ${request.destination}, mode: ${request.mode}`
-    // );
-    return cache;
+      url.pathname.endsWith('.svg') ||
+      url.hostname.includes('blob.core.windows.net')
+    );
   },
   new CacheFirst({
     cacheName: 'images',
+    fetchOptions: {
+      mode: 'no-cors', // ← crucial for cross-origin blobs
+    },
     plugins: [
       new ExpirationPlugin({
         maxEntries: 100,
@@ -65,9 +71,6 @@ registerRoute(
       }),
       {
         cacheWillUpdate: async ({ response }) => {
-          // log(
-          //   `[ServiceWorker] Cache update for ${response.url}, status: ${response.status}, type: ${response.type}`
-          // );
           if (response.status === 200 || response.status === 0) {
             return response;
           }
@@ -180,6 +183,16 @@ self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
+});
+
+self.addEventListener('install', (event) => {
+  // Force the new service worker to activate immediately
+  event.waitUntil(self.skipWaiting());
+});
+
+self.addEventListener('activate', (event) => {
+  // Take control of all open clients (tabs / PWA windows) immediately
+  event.waitUntil(self.clients.claim());
 });
 
 log('Installed');

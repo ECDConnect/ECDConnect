@@ -2,6 +2,7 @@ import { OfflineCache } from '@/models/sync/offline-cache';
 import { OfflineUpdate } from '@/models/sync/offline-update';
 import {
   AttendanceDto,
+  ChildAttendanceReportModel,
   ClassRoomChildAttendanceMonthlyReportModel,
   MonthlyAttendanceRecord,
 } from '@ecdlink/core';
@@ -14,6 +15,9 @@ export type AttendanceState = {
 
   monthlyAttendanceRecordsByUser: {
     [userId: string]: { data: MonthlyAttendanceRecord[] } & OfflineCache;
+  };
+  attendanceByUserId: {
+    [userId: string]: { data: ChildAttendanceReportModel } & OfflineCache;
   };
   // TODO: not sure if it's necessary to split by user
   classroomAttendanceOverviewReport: ({

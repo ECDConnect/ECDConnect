@@ -1,5 +1,4 @@
 import {
-  ChildDto,
   FormComponentProps,
   getAvatarColor,
   RoleSystemNameEnum,
@@ -215,11 +214,12 @@ export const ChildBasicInfo: React.FC<
   };
 
   // This should just sync children and classgroups (to get the newly created child)
-  const refetchData = async () => {
+  const refetchData = async (childId: string) => {
     if (isOnline) {
-      await dispatch(childrenThunkActions.getChildren({ overrideCache: true }));
+      const classroomGroupId = getSelectedClassroomGroupId();
+      await dispatch(childrenThunkActions.getChildById({ childId }));
       await dispatch(
-        classroomsThunkActions.getClassroomGroups({ overrideCache: true })
+        classroomsThunkActions.getClassroomGroupForClassId({ classroomGroupId })
       );
     }
   };
@@ -246,14 +246,14 @@ export const ChildBasicInfo: React.FC<
     }
     setRegisteredChild(newChild);
     showMenuOptions(newChild);
-    refetchData();
+    refetchData(newChild.childId);
   };
 
   const createLocalUser = async (newChild: ChildRegistrationDto) => {
     const childInformation = {
       dobDay: 1,
       dobMonth: 1,
-      dobYear: 2015,
+      dobYear: 1,
       firstname: firstName,
       surname: surname,
       playgroupId: getSelectedClassroomGroupId(),

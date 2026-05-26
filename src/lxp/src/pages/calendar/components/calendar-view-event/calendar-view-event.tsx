@@ -48,7 +48,7 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
         <ActionModal
           icon="ExclamationCircleIcon"
           importantText={`You cannot start this visit`}
-          detailText={`This visit has been completed or the start date has not arrived yet. Please go to the SmartStarter's journey to see which visit to complete next.`}
+          detailText={`This visit has been completed or the start date has not arrived yet. Please go to the practitioner's journey to see which visit to complete next.`}
           actionButtons={[
             {
               text: 'Close',

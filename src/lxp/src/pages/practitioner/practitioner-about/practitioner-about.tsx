@@ -20,7 +20,7 @@ import {
   renderIcon,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { cloneDeep } from 'lodash';
 import { useSelector } from 'react-redux';
@@ -42,15 +42,10 @@ import ROUTES from '@routes/routes';
 import { EditCellPhoneNumber } from './edit-cellphone-number/edit-cellphone-number';
 import { EditEmail } from './edit-email/edit-email';
 import { EditName } from './edit-name/edit-name';
-import {
-  practitionerSelectors,
-  practitionerThunkActions,
-} from '@/store/practitioner';
+import { practitionerSelectors } from '@/store/practitioner';
 import { NextOfKin } from './next-of-kin/next-of-kin';
-import { getReportingPeriodForProfileUsePhotoInReport } from '@/utils/child/child-profile-utils';
 import { PractitionerAboutRouteState } from './practitioner-about.types';
 import { BackToCommunityDialog } from '@/pages/coach/coach-about/components/back-to-community-dialog/indext';
-import { useTenant } from '@/hooks/useTenant';
 import { DialogFormInput } from '@/models/practitioner/DialogFormInput';
 import {
   PractitionerAccountModel,
@@ -60,6 +55,11 @@ import {
 import { UserResetPasswrodParams } from '@/store/user/user.types';
 import { communitySelectors } from '@/store/community';
 import TransparentLayer from '../../../assets/TransparentLayer.png';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+import { CommunityRouteState } from '@/pages/community/community.types';
+import { EditWhatsAppConsent } from './edit-whatsAppConsent/edit-whatsAppConsent';
+import { useTenant } from '@/hooks/useTenant';
+import { settingSelectors } from '@store/settings';
 
 export const PractitionerAbout: React.FC = () => {
   const location = useLocation<PractitionerAboutRouteState>();
@@ -67,22 +67,33 @@ export const PractitionerAbout: React.FC = () => {
   const dialog = useDialog();
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
-  const { userProfilePicture, deleteDocument } = useDocuments();
+  const isOnlineRef = useRef(isOnline);
 
+  const { userProfilePicture, deleteDocument } = useDocuments();
+  const applicationVersion = useSelector(
+    settingSelectors.getApplicationVersion
+  );
   const communityProfile = useSelector(communitySelectors.getCommunityProfile);
   const [editProfilePictureVisible, setEditProfilePictureVisible] =
     useState(false);
   const [editiCellPhoneNumber, setEditiCellPhoneNumber] = useState(false);
   const [editName, setEditName] = useState(false);
   const [editEmail, setEditEmail] = useState(false);
+  const [editWhatsAppConsent, setEditWhatsAppConsent] = useState(false);
   const [addNextToKin, setAddNextToKin] = useState(false);
   const [editFieldVisible, setEditFieldVisible] = useState(false);
   const tenant = useTenant();
   const appName = tenant?.tenant?.applicationName;
+  const isOpenAccess = tenant?.isOpenAccess;
 
   const isFromCommunityWelcome = location?.state?.isFromCommunityWelcome;
   const wasFromCommunityWelcome = usePrevious(isFromCommunityWelcome);
   const [openChangeCommunityPic, setOpenChangeCommunityPic] = useState(false);
+  const userData = useSelector(userSelectors.getUser);
+
+  useEffect(() => {
+    isOnlineRef.current = isOnline;
+  }, [isOnline]);
 
   const [dialogFormInput, setDialogFormInput] = useState<
     DialogFormInput<PractitionerAccountModel>
@@ -117,10 +128,10 @@ export const PractitionerAbout: React.FC = () => {
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
   const pictureStorageKey = LocalStorageKeys.practitionerProfilePicture;
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
-  const reportingPeriod = useMemo(
-    () => getReportingPeriodForProfileUsePhotoInReport(new Date()),
-    []
-  );
+  // const reportingPeriod = useMemo(
+  //   () => getReportingPeriodForProfileUsePhotoInReport(new Date()),
+  //   []
+  // );
 
   const avatar =
     userProfilePicture?.file ||
@@ -154,166 +165,127 @@ export const PractitionerAbout: React.FC = () => {
     mode: 'onChange',
   });
 
-  const handleUsingPhotoInReports = (using: boolean) => {
-    dialog({
-      position: DialogPosition.Bottom,
-      render: (submit, cancel) => (
-        <ActionModal
-          className="bg-white"
-          icon={'QuestionMarkIcon'}
-          iconColor="white"
-          iconBorderColor="infoMain"
-          importantText={
-            using
-              ? `Your ${appName} profile photo will be added to the ${reportingPeriod.monthName} ${reportingPeriod.year} progress reports`
-              : `Your ${appName} profile photo will not be added to the ${reportingPeriod.monthName} ${reportingPeriod.year} progress reports`
-          }
-          detailText={
-            using
-              ? `You have already created at least one caregiver report and cannot change this choice for the ${reportingPeriod.monthName} ${reportingPeriod.year} reports.
+  // const handleUsingPhotoInReports = (using: boolean) => {
+  //   dialog({
+  //     position: DialogPosition.Bottom,
+  //     render: (submit, cancel) => (
+  //       <ActionModal
+  //         className="bg-white"
+  //         icon={'QuestionMarkIcon'}
+  //         iconColor="white"
+  //         iconBorderColor="infoMain"
+  //         importantText={
+  //           using
+  //             ? `Your ${appName} profile photo will be added to the ${reportingPeriod.monthName} ${reportingPeriod.year} progress reports`
+  //             : `Your ${appName} profile photo will not be added to the ${reportingPeriod.monthName} ${reportingPeriod.year} progress reports`
+  //         }
+  //         detailText={
+  //           using
+  //             ? `You have already created at least one caregiver report and cannot change this choice for the ${reportingPeriod.monthName} ${reportingPeriod.year} reports.
 
-            If you want to change your profile photo, tap the camera icon on your profile.`
-              : `You have already created at least one caregiver report and cannot change this choice for the ${reportingPeriod.monthName} ${reportingPeriod.year} reports.`
-          }
-          actionButtons={[
-            {
-              text: 'Close',
-              textColour: 'primary',
-              colour: 'primary',
-              type: 'outlined',
-              onClick: () => {
-                submit();
-              },
-              leadingIcon: 'XIcon',
-            },
-          ]}
-        />
-      ),
-    });
-  };
-
-  const updatePractitionerUsePhotoReportPermission = async (
-    usePhotoInReport: string
-  ) => {
-    await appDispatch(
-      practitionerThunkActions.updatePractitionerUsePhotoInReport({
-        practitionerId: practitioner?.userId,
-        usePhotoInReport: usePhotoInReport,
-      })
-    );
-  };
-
-  const promptPhotoReportPermission = () => {
-    dialog({
-      position: DialogPosition.Middle,
-      render: (submit, cancel) => (
-        <ActionModal
-          className="bg-white"
-          icon={'QuestionMarkCircleIcon'}
-          iconColor="white"
-          iconBorderColor="infoMain"
-          importantText={`Would you like to include your profile photo on your ${reportingPeriod?.monthName} ${reportingPeriod?.year} child progress reports?`}
-          actionButtons={[
-            {
-              text: 'Yes, include photo!',
-              textColour: 'white',
-              colour: 'primary',
-              type: 'filled',
-              onClick: () => {
-                submit();
-                updatePractitionerUsePhotoReportPermission(
-                  `${reportingPeriod?.monthName}-${reportingPeriod?.year}-yes`
-                );
-              },
-              leadingIcon: 'CheckCircleIcon',
-            },
-            {
-              text: 'No, skip',
-              textColour: 'primary',
-              colour: 'primary',
-              type: 'outlined',
-              onClick: () => {
-                submit();
-                updatePractitionerUsePhotoReportPermission(
-                  `${reportingPeriod?.monthName}-${reportingPeriod?.year}-no`
-                );
-              },
-              leadingIcon: 'ClockIcon',
-            },
-          ]}
-        />
-      ),
-    });
-  };
-
-  // const getPhotoOnProgressReportItem = (): ActionListDataItem => {
-  //   var item: ActionListDataItem = {
-  //     title: `Photo on ${reportingPeriod.monthName} progress report`,
-  //     subTitle: '',
-  //     switchTextStyles: true,
-  //     actionName: '',
-  //     actionIcon: '',
-  //     buttonType: 'filled',
-  //     onActionClick: () => {},
-  //   };
-  //   const prefix = `${reportingPeriod.monthName}-${reportingPeriod.year}-`;
-  //   const hasAnswered =
-  //     !!practitioner?.usePhotoInReport &&
-  //     practitioner?.usePhotoInReport.startsWith(prefix);
-  //   const answer = hasAnswered
-  //     ? practitioner?.usePhotoInReport?.endsWith('-yes')
-  //       ? 'yes'
-  //       : 'no'
-  //     : undefined;
-  //   if (!hasAnswered && !hasCreatedReportForCurrentPeriod) {
-  //     item = {
-  //       ...item,
-  //       subTitle: `Add your photo to ${reportingPeriod.monthName} report`,
-  //       actionName: 'Add',
-  //       actionIcon: 'PlusIcon',
-  //       onActionClick: () => {
-  //         promptPhotoReportPermission();
-  //       },
-  //     };
-  //   }
-  //   if (hasAnswered && !hasCreatedReportForCurrentPeriod) {
-  //     item = {
-  //       ...item,
-  //       subTitle:
-  //         answer === 'yes'
-  //           ? `Photo added to ${reportingPeriod.monthName} report`
-  //           : `Photo not added to ${reportingPeriod.monthName} report`,
-  //       actionName: 'Edit',
-  //       actionIcon: 'PencilIcon',
-  //       onActionClick: () => {
-  //         promptPhotoReportPermission();
-  //       },
-  //     };
-  //   }
-  //   if (hasAnswered && hasCreatedReportForCurrentPeriod) {
-  //     item = {
-  //       ...item,
-  //       subTitle:
-  //         answer === 'yes'
-  //           ? `Photo added to ${reportingPeriod.monthName} report`
-  //           : `Photo not added to ${reportingPeriod.monthName} report`,
-  //       actionName: 'View',
-  //       actionIcon: 'EyeIcon',
-  //       onActionClick: () => {
-  //         handleUsingPhotoInReports(answer === 'yes');
-  //       },
-  //     };
-  //   }
-  //   return item;
+  //           If you want to change your profile photo, tap the camera icon on your profile.`
+  //             : `You have already created at least one caregiver report and cannot change this choice for the ${reportingPeriod.monthName} ${reportingPeriod.year} reports.`
+  //         }
+  //         actionButtons={[
+  //           {
+  //             text: 'Close',
+  //             textColour: 'primary',
+  //             colour: 'primary',
+  //             type: 'outlined',
+  //             onClick: () => {
+  //               submit();
+  //             },
+  //             leadingIcon: 'XIcon',
+  //           },
+  //         ]}
+  //       />
+  //     ),
+  //   });
   // };
 
-  const setNewStackListItems = (currentUser: UserDto) => {
-    const list: ActionListDataItem[] = [
+  // const updatePractitionerUsePhotoReportPermission = async (
+  //   usePhotoInReport: string
+  // ) => {
+  //   await appDispatch(
+  //     practitionerThunkActions.updatePractitionerUsePhotoInReport({
+  //       practitionerId: practitioner?.userId,
+  //       usePhotoInReport: usePhotoInReport,
+  //     })
+  //   );
+  // };
+
+  // const promptPhotoReportPermission = () => {
+  //   dialog({
+  //     position: DialogPosition.Middle,
+  //     render: (submit, cancel) => (
+  //       <ActionModal
+  //         className="bg-white"
+  //         icon={'QuestionMarkCircleIcon'}
+  //         iconColor="white"
+  //         iconBorderColor="infoMain"
+  //         importantText={`Would you like to include your profile photo on your ${reportingPeriod?.monthName} ${reportingPeriod?.year} child progress reports?`}
+  //         actionButtons={[
+  //           {
+  //             text: 'Yes, include photo!',
+  //             textColour: 'white',
+  //             colour: 'primary',
+  //             type: 'filled',
+  //             onClick: () => {
+  //               submit();
+  //               updatePractitionerUsePhotoReportPermission(
+  //                 `${reportingPeriod?.monthName}-${reportingPeriod?.year}-yes`
+  //               );
+  //             },
+  //             leadingIcon: 'CheckCircleIcon',
+  //           },
+  //           {
+  //             text: 'No, skip',
+  //             textColour: 'primary',
+  //             colour: 'primary',
+  //             type: 'outlined',
+  //             onClick: () => {
+  //               submit();
+  //               updatePractitionerUsePhotoReportPermission(
+  //                 `${reportingPeriod?.monthName}-${reportingPeriod?.year}-no`
+  //               );
+  //             },
+  //             leadingIcon: 'ClockIcon',
+  //           },
+  //         ]}
+  //       />
+  //     ),
+  //   });
+  // };
+
+  const communityHandler = useCallback(() => {
+    if (!isOnlineRef.current) {
+      return dialog({
+        color: 'bg-white',
+        position: DialogPosition.Middle,
+        blocking: true,
+        render: (onSubmit) => <OnlineOnlyModal onSubmit={onSubmit} />,
+      });
+    }
+
+    history.push(
+      communityProfile ? ROUTES.COMMUNITY.PROFILE : ROUTES.COMMUNITY.WELCOME,
       {
+        isFromAboutPage: true,
+      } as CommunityRouteState
+    );
+  }, [communityProfile, history, dialog]);
+
+  const setNewStackListItems = (currentUser: UserDto) => {
+    const list: ActionListDataItem[] = [];
+
+    if (currentUser.registerType === 'username') {
+      list.push({
         title: 'Username',
         subTitle: currentUser?.userName,
         switchTextStyles: true,
-      },
+      });
+    }
+    list.push(
       {
         title: 'Name',
         subTitle: currentUser?.firstName || 'Add name',
@@ -373,11 +345,30 @@ export const PractitionerAbout: React.FC = () => {
         buttonType: 'filled',
         buttonColor: communityProfile ? 'secondaryAccent2' : 'quatenary',
         textColor: communityProfile ? 'secondary' : 'white',
-        onActionClick: communityProfile
-          ? () => history.push(ROUTES.COMMUNITY.PROFILE)
-          : () => history.push(ROUTES.COMMUNITY.WELCOME),
-      },
-    ];
+        onActionClick: () => {
+          communityHandler();
+        },
+      }
+    );
+
+    if (isOpenAccess) {
+      list.push({
+        title: 'WhatsApp updates',
+        subTitle:
+          userData?.whatsAppConsent === true
+            ? 'Receiving updates'
+            : userData?.whatsAppConsent === false
+            ? 'Not receiving updates'
+            : 'No response',
+        switchTextStyles: true,
+        actionName: 'Edit',
+        actionIcon: 'PencilIcon',
+        buttonType: 'filled',
+        onActionClick: () => {
+          setEditWhatsAppConsent(true);
+        },
+      });
+    }
 
     setListItems(list);
   };
@@ -467,9 +458,12 @@ export const PractitionerAbout: React.FC = () => {
       if (imageBaseString?.length > 0) {
         copy.profileImageUrl = imageBaseString;
       }
+      copy.synced = isOnline;
 
       appDispatch(userActions.updateUser(copy));
-      appDispatch(userThunkActions.updateUser(copy));
+      if (isOnline) {
+        appDispatch(userThunkActions.updateUser(copy));
+      }
 
       setNewStackListItems(copy);
       if (isFromCommunityWelcome) {
@@ -533,6 +527,16 @@ export const PractitionerAbout: React.FC = () => {
       <Dialog fullScreen visible={editEmail} position={DialogPosition.Top}>
         <EditEmail setEditEmail={setEditEmail} user={user} />
       </Dialog>
+      <Dialog
+        fullScreen
+        visible={editWhatsAppConsent}
+        position={DialogPosition.Top}
+      >
+        <EditWhatsAppConsent
+          setEditWhatsAppConsent={setEditWhatsAppConsent}
+          user={user}
+        />
+      </Dialog>
       <Dialog fullScreen visible={addNextToKin} position={DialogPosition.Top}>
         <NextOfKin setAddNextOfKin={setAddNextToKin} user={user} />
       </Dialog>
@@ -569,6 +573,14 @@ export const PractitionerAbout: React.FC = () => {
             listItems={listItems}
             type={'ActionList'}
           ></StackedList>
+          {applicationVersion && (
+            <Typography
+              type="help"
+              className="pt-4 text-left"
+              color="textMid"
+              text={`Version ${applicationVersion}`}
+            />
+          )}
           {practitioner?.signingSignature && (
             <img
               alt="signature"

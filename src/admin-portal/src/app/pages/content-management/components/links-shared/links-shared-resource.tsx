@@ -22,6 +22,7 @@ export const LinksSharedResource = ({
   const [resourcesLinks, setResourcesLinks] = useState<ResourceLink[]>([]);
   const [isSubmitButtonClicked, setIsSubmitButtonClicked] = useState(false);
   const dialog = useDialog();
+
   const getAllCall = `GetAll${contentType.name}`;
   const fields =
     contentType.fields?.map((field) => {

@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
-import localForage from 'localforage';
 import { getProgrammeRoutines } from './programme-routine.actions';
 import { ProgrammeRoutineState } from './programme-routine.types';
+import { setFulfilledThunkActionStatus } from '@/store/utils';
 
 const initialState: ProgrammeRoutineState = {
   programmeRoutines: undefined,
@@ -11,13 +11,14 @@ const programmeRoutineSlice = createSlice({
   name: 'programmeRoutine',
   initialState,
   reducers: {
-    resetProgrammeRoutineState: (state) => {
+    resetProgrammeRoutine: (state) => {
       state.programmeRoutines = initialState.programmeRoutines;
     },
   },
   extraReducers: (builder) => {
     builder.addCase(getProgrammeRoutines.fulfilled, (state, action) => {
       state.programmeRoutines = action.payload;
+      setFulfilledThunkActionStatus(state, action);
     });
   },
 });
@@ -25,14 +26,4 @@ const programmeRoutineSlice = createSlice({
 const { reducer: programmeRoutineReducer, actions: programmeRoutineActions } =
   programmeRoutineSlice;
 
-const programmeRoutinePersistConfig = {
-  key: 'programmeRoutine',
-  storage: localForage,
-  blacklist: [],
-};
-
-export {
-  programmeRoutinePersistConfig,
-  programmeRoutineReducer,
-  programmeRoutineActions,
-};
+export { programmeRoutineReducer, programmeRoutineActions };

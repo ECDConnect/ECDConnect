@@ -5,6 +5,7 @@ import {
   Button,
   Card,
   Colours,
+  DialogPosition,
   Divider,
   ListItem,
   Typography,
@@ -14,7 +15,14 @@ import { userSelectors } from '@/store/user';
 import { PractitionerProfileRouteState } from '../../practitioner-profile.types';
 import { ReactComponent as PositiveEmoticon } from '@/assets/positive-green-emoticon.svg';
 import { ReactComponent as NeutralEmoticon } from '@/assets/neutral_blue_emoticon.svg';
+import { ReactComponent as VeryUnhappy } from '@/assets/ECD_Connect_emoji_unhappy.svg';
 import { ReactComponent as MehEmoticon } from '@/assets/mehFace.svg';
+import { Score } from './score';
+import { useState } from 'react';
+import { PublishedFormCertificate } from './published-form-certificate';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useDialog } from '@ecdlink/core';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 
 export type ViewPublishedFormProps = {
   onBack: () => void;
@@ -62,7 +70,7 @@ const FeedbackSection: React.FC<FeedbackSectionProps> = ({
           showIcon
           showDivider={false}
           withBorderRadius
-          className="no-hand-cursor"
+          className="no-hand-cursor py-2"
         />
       ))}
       <Divider dividerType="dashed" className="my-2" />
@@ -73,11 +81,37 @@ const FeedbackSection: React.FC<FeedbackSectionProps> = ({
 export const ViewPublishedForm: React.FC<ViewPublishedFormProps> = ({
   onBack,
 }) => {
+  const { isOnline } = useOnlineStatus();
+  const dialog = useDialog();
   const location = useLocation<PractitionerProfileRouteState>();
+
+  const showOnlineOnly = () => {
+    dialog({
+      color: 'bg-white',
+      position: DialogPosition.Middle,
+      blocking: true,
+      render: (onSubmit) => <OnlineOnlyModal onSubmit={onSubmit} />,
+    });
+  };
   const timelineReport = useSelector(
     getJourneyAssessmentReportByIdSelector(location.state.visitId)
   );
   const user = useSelector(userSelectors.getUser);
+  const totalHealthCheckQuestions = 22;
+  const [showCertificateCheckForm, setShowCertificateCheckForm] =
+    useState(false);
+
+  if (showCertificateCheckForm) {
+    return (
+      <PublishedFormCertificate
+        completedVisitId={location.state.visitId}
+        certificateName={timelineReport?.certificateName}
+        certificateRegNr={timelineReport?.certificateRegNr}
+        visitCompletedDate={timelineReport?.visitCompletedDate}
+        onBack={setShowCertificateCheckForm}
+      />
+    );
+  }
 
   // Loading / Empty state
   if (!timelineReport) {
@@ -117,7 +151,7 @@ export const ViewPublishedForm: React.FC<ViewPublishedFormProps> = ({
       onClose={onBack}
       backgroundColour="white"
     >
-      <div className="p-4">
+      <div className="w-full p-4">
         <Typography
           className="mt-3"
           type="h3"
@@ -130,6 +164,119 @@ export const ViewPublishedForm: React.FC<ViewPublishedFormProps> = ({
           text={`${user?.firstName ?? ''} ${user?.surname ?? ''}`}
         />
         <Divider dividerType="dashed" className="my-2" />
+        {/* Preschool detail */}
+        {timelineReport?.preschoolDetail?.length! > 0 && (
+          <>
+            <Typography
+              className="mt-3"
+              type="h3"
+              weight="bold"
+              text={'Preschool detail'}
+            />
+
+            {timelineReport.preschoolDetail?.map((detail, index) => (
+              <Typography
+                key={`preschool-detail-${index}`}
+                type={'markdown'}
+                text={detail}
+              />
+            ))}
+            <Divider dividerType="dashed" className="my-2" />
+          </>
+        )}
+
+        {timelineReport?.name === 'Health and safety check' && (
+          <>
+            <Typography
+              className="mt-3"
+              type="h3"
+              weight="bold"
+              text={'Health and Safety standards:'}
+            />
+            <div className="mb-4">
+              {timelineReport.safetyStandards?.length! > 0 ? (
+                <>
+                  <Card className="bg-alertBg rounded-2xl">
+                    <div className="flex items-center gap-4 p-4">
+                      <VeryUnhappy className="h-12 w-12 shrink-0 text-white" />{' '}
+                      <div className="flex-1">
+                        <Typography
+                          type="h3"
+                          color="textDark"
+                          weight="bold"
+                          text="Some areas need attention"
+                        />
+                      </div>
+                      <Score
+                        sum={
+                          totalHealthCheckQuestions -
+                          (timelineReport.safetyStandards?.length || 0)
+                        }
+                        total={totalHealthCheckQuestions}
+                      />
+                    </div>
+                  </Card>
+
+                  <Typography
+                    className="mt-3"
+                    type="h4"
+                    weight="bold"
+                    text={'These standards were not met:'}
+                  />
+                  {timelineReport.safetyStandards?.map((d, index) => (
+                    <Typography
+                      key={`safety-standard-${index}`}
+                      type={'markdown'}
+                      text={`• ${d}`}
+                    />
+                  ))}
+                  <Divider dividerType="dashed" className="my-2" />
+                </>
+              ) : (
+                <Card className="bg-successBg rounded-2xl">
+                  <div className="flex items-center gap-4 p-4">
+                    <PositiveEmoticon className="h-12 w-12 shrink-0 text-white" />{' '}
+                    <div className="flex-1">
+                      <Typography
+                        type="h3"
+                        color="textDark"
+                        weight="bold"
+                        text="All standards met!"
+                      />
+                    </div>
+                    <Score
+                      sum={totalHealthCheckQuestions}
+                      total={totalHealthCheckQuestions}
+                    />
+                  </div>
+                </Card>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* Classroom capacity */}
+        {timelineReport?.classroomDetail!! &&
+          timelineReport?.classroomDetail.length > 0 && (
+            <>
+              <Typography
+                className="mt-3"
+                type="h3"
+                weight="bold"
+                text={'Classroom capacity:'}
+              />
+              <div className="text-textMid bg-uiBg z-10 mx-auto w-full rounded-lg bg-white p-4">
+                {timelineReport.classroomDetail.map((detail, index) => (
+                  <Typography
+                    key={`classroom-detail-${index}`}
+                    type={'markdown'}
+                    text={detail}
+                  />
+                ))}
+              </div>
+              <Divider dividerType="dashed" className="my-2" />
+            </>
+          )}
 
         {/* Text Q&A */}
         {timelineReport?.textQuestion && (
@@ -202,7 +349,7 @@ export const ViewPublishedForm: React.FC<ViewPublishedFormProps> = ({
                 iconColor="successMain"
                 showIcon
                 dividerType="none"
-                className="no-hand-cursor"
+                className="no-hand-cursor py-2"
               />
             ))}
             <Divider dividerType="dashed" className="my-2" />
@@ -225,23 +372,56 @@ export const ViewPublishedForm: React.FC<ViewPublishedFormProps> = ({
                 iconColor="errorMain"
                 showIcon
                 dividerType="none"
-                className="no-hand-cursor"
+                className="no-hand-cursor py-2"
               />
             ))}
             <Divider dividerType="dashed" className="my-2" />
           </>
         )}
+        <div className="mt-auto mb-4 mt-4">
+          {/* only applicable on health and safety check */}
+          {timelineReport.name === 'Health and safety check' ? (
+            <>
+              <Button
+                onClick={() =>
+                  isOnline
+                    ? setShowCertificateCheckForm(true)
+                    : showOnlineOnly()
+                }
+                className="mt-auto w-full"
+                iconPosition="start"
+                size="normal"
+                color="quatenary"
+                type="filled"
+                icon="DownloadIcon"
+                text="Download Certificate"
+                textColor="white"
+              />
 
-        <Button
-          type="filled"
-          text="Close"
-          color="quatenary"
-          textColor="white"
-          className="mb-8 w-full rounded-2xl"
-          iconPosition="start"
-          icon="XIcon"
-          onClick={onBack}
-        />
+              <Button
+                type="outlined"
+                text="Close"
+                color="quatenary"
+                textColor="quatenary"
+                className="mb-8 mt-3 w-full rounded-2xl"
+                iconPosition="start"
+                icon="XIcon"
+                onClick={onBack}
+              />
+            </>
+          ) : (
+            <Button
+              type="filled"
+              text="Close"
+              color="quatenary"
+              textColor="white"
+              className="mb-8 mt-3 w-full rounded-2xl"
+              iconPosition="start"
+              icon="XIcon"
+              onClick={onBack}
+            />
+          )}
+        </div>
       </div>
     </BannerWrapper>
   );

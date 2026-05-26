@@ -1,0 +1,19 @@
+query GetJourneyAssessmentReport($visitId: UUID!) {
+  journeyAssessmentReport(visitId: $visitId) {
+    name
+    greenQuestions
+    blueQuestions
+    amberQuestions
+    dailyActivities
+    skippedActivities
+    textQuestion
+    textAnswer
+    visitId
+    preschoolDetail
+    classroomDetail
+    safetyStandards
+    certificateName
+    certificateRegNr
+    visitCompletedDate
+  }
+}

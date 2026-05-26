@@ -136,7 +136,7 @@ export const Step3ReAccreditation = ({
       <Alert
         className="mt-4"
         type="info"
-        title="These standards are also required. If they are not in place, SmartStarters should be able to show how they are working towards them."
+        title="These standards are also required. If they are not in place, practitioners should be able to show how they are working towards them."
       />
       <Divider dividerType="dashed" className="my-4" />
       {options.question1.map((item) => (

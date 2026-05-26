@@ -15,6 +15,7 @@ using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -39,7 +40,6 @@ namespace ECDLink.Core.Services
         private IGenericRepository<StatementsPayType, Guid> _statementsPayTypeRepo;
         private IGenericRepository<Child, Guid> _childRepo;
         private IGenericRepository<StatementsIncomeStatement, Guid> _statementsRepo;
-        private IGenericRepository<Practitioner, Guid> _practitionerRepo;
         private IGenericRepository<Classroom, Guid> _classroomRepo;
 
         private ApplicationUserManager _userManager;
@@ -75,7 +75,6 @@ namespace ECDLink.Core.Services
             _statementsPayTypeRepo = _repoFactory.CreateGenericRepository<StatementsPayType>(userContext: _applicationUserId);
             _childRepo = _repoFactory.CreateGenericRepository<Child>(userContext: _applicationUserId);
             _statementsRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
-            _practitionerRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
             _classroomRepo = _repoFactory.CreateGenericRepository<Classroom>(userContext: _applicationUserId);
 
             _pdfConverter = pdfConverter;
@@ -148,8 +147,8 @@ namespace ECDLink.Core.Services
                     IncomeTypeId = x.IncomeTypeId,
                     Notes = x.Notes,
                     PayTypeId = x.PayTypeId,
-                    Description = x.Description
-
+                    Description = x.Description,
+                    TenantId = TenantExecutionContext.Tenant.Id
                 }).ToList(),
                 ExpenseItems = input.ExpenseItems.Select(x => new StatementsExpenses
                 {
@@ -158,7 +157,8 @@ namespace ECDLink.Core.Services
                     DatePaid = x.DatePaid,
                     PhotoProof = x.PhotoProof,
                     ExpenseTypeId = x.ExpenseTypeId,
-                    Notes = x.Notes
+                    Notes = x.Notes,
+                    TenantId = TenantExecutionContext.Tenant.Id
                 }).ToList(),
             };
 
@@ -281,7 +281,8 @@ namespace ECDLink.Core.Services
                     IncomeTypeId = newItem.IncomeTypeId,
                     Notes = newItem.Notes,
                     PayTypeId = newItem.PayTypeId,
-                    StatementsIncomeStatementId = exisitingStatement.Id
+                    StatementsIncomeStatementId = exisitingStatement.Id,
+                    TenantId = TenantExecutionContext.Tenant.Id
                 });
             }
 
@@ -346,7 +347,8 @@ namespace ECDLink.Core.Services
                     Notes = newItem.Notes,
                     ExpenseTypeId = newItem.ExpenseTypeId,
                     DatePaid = newItem.DatePaid,
-                    StatementsIncomeStatementId = exisitingStatement.Id
+                    StatementsIncomeStatementId = exisitingStatement.Id,
+                    TenantId = TenantExecutionContext.Tenant.Id
                 });
             }
             #endregion
@@ -406,7 +408,7 @@ namespace ECDLink.Core.Services
             pdfDocumentHeader.SiteAddress = siteAddress.ToString();
 
             pdfDocumentHeader.ReportType = "StatementsPDF";
-            var userInfo = _documentManager.GetDocumentHeaderAddress(_userManager, pdfDocumentHeader, filename, classroom?.ClassroomImageUrl);
+            var userInfo = _documentManager.GetDocumentHeaderAddress(_userManager, pdfDocumentHeader, filename, classroom?.ClassroomImageUrl, classroom?.Name);
 
             html += userInfo;
 

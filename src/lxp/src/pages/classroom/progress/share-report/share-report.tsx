@@ -17,9 +17,7 @@ import { useProgressForChild } from '@/hooks/useProgressForChild';
 import ROUTES from '@/routes/routes';
 import { TabsItems } from '../../class-dashboard/class-dashboard.types';
 import { ContentTypeEnum, LanguageDto, useDialog } from '@ecdlink/core';
-import { ContentService } from '@/services/ContentService';
 import { useSelector } from 'react-redux';
-import { authSelectors } from '@/store/auth';
 import {
   progressTrackingActions,
   progressTrackingSelectors,
@@ -42,33 +40,25 @@ export const ProgressShareReport: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [pdfBlob, setPdfBlob] = useState<Blob>();
   const [isReportReady, setIsReportReady] = useState(false);
-
   const { isOnline } = useOnlineStatus();
-
   const { state: routeState } = useLocation<ProgressShareReportState>();
-
   const { child, detailedReports, currentAgeGroup } = useProgressForChild(
     routeState.childId
   );
-
   const { generateReportAndReturnBlob, sharePdfReport } = usePdfFromHtml();
-
   const [selectedReport, setSelectedReport] = useState<string | undefined>(
     routeState.reportId
   );
-
   const shareRef = useRef<HTMLDivElement>(null);
 
-  const userAuth = useSelector(authSelectors.getAuthUser);
-
   const changeLanguage = async (language: LanguageDto) => {
-    const hasTranslations = await new ContentService(
-      userAuth?.auth_token ?? ''
-    ).hasContentTypeBeenTranslated(
-      ContentTypeEnum.ProgressTrackingCategory,
-      currentAgeGroup?.id ?? 0,
-      language.id ?? ''
-    );
+    const hasTranslations = await appDispatch(
+      progressTrackingThunkActions.hasContentTypeBeenTranslated({
+        id: ContentTypeEnum.ProgressTrackingCategory,
+        ageGroup: currentAgeGroup?.id ?? 0,
+        localeId: language.id ?? '',
+      })
+    ).unwrap();
 
     if (hasTranslations) {
       await appDispatch(
@@ -76,7 +66,7 @@ export const ProgressShareReport: React.FC = () => {
           locale: language.locale,
         })
       ).unwrap();
-      await appDispatch(
+      appDispatch(
         progressTrackingActions.setLocale({ localeId: language.locale })
       );
     } else {
@@ -164,6 +154,15 @@ export const ProgressShareReport: React.FC = () => {
     }
   };
 
+  const dropDownList = detailedReports
+    .filter((x) => !!x.dateCompleted)
+    .map((x) => ({
+      label: `Report ${x.reportingPeriodNumber} - ${new Date(
+        x.reportingPeriodEndDate
+      ).getFullYear()}`,
+      value: x.id,
+    }));
+
   return (
     <BannerWrapper
       size={'small'}
@@ -203,18 +202,12 @@ export const ProgressShareReport: React.FC = () => {
           </div>
         </Card>
         <Dropdown<string>
+          fillType="clear"
           label={'Which report would you like to share?'}
           textColor="textMid"
           placeholder={'Tap to choose report'}
           labelColor="textDark"
-          list={detailedReports
-            .filter((x) => !!x.dateCompleted)
-            .map((x) => ({
-              label: `Report ${x.reportingPeriodNumber} - ${new Date(
-                x.reportingPeriodEndDate
-              ).getFullYear()}`,
-              value: x.id,
-            }))}
+          list={dropDownList}
           selectedValue={selectedReport}
           onChange={async (item) => {
             setSelectedReport(item);
@@ -223,9 +216,13 @@ export const ProgressShareReport: React.FC = () => {
           }}
           className="my-2"
         />
+        <Typography
+          color="textDark"
+          text={'Choose report language'}
+          type={'h4'}
+        />
         <LanguageSelector
-          labelText="Choose report language"
-          labelClassName="font-medium font-body text-textDark pr-2"
+          showLabel={false}
           currentLocale={currentReportLocale}
           selectLanguage={(data) => {
             changeLanguage(data);
@@ -278,13 +275,13 @@ export const ProgressShareReport: React.FC = () => {
           type="filled"
           icon={'ShareIcon'}
           text={isLoading ? 'Loading report...' : 'Share report'}
-          disabled={!selectedReport || !isReportReady}
+          disabled={!selectedReport || !isReportReady || !dropDownList.length}
           isLoading={isLoading}
         />
       </div>
       {!!selectedReport && (
         <div hidden={true}>
-          <div ref={shareRef} style={{ letterSpacing: '0.01px' }}>
+          <div ref={shareRef} style={{ letterSpacing: '0.02px' }}>
             <ProgressCaregiverReportPdf
               childId={routeState.childId}
               reportId={selectedReport}

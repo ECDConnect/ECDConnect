@@ -55,7 +55,8 @@ import { LoginResponse } from '@/types/facebook';
 import { triggerBackgroundSync } from '@/store/sync/sync.actions';
 
 const CryptoJS = require('crypto-js');
-const { version } = require('../../../../package.json');
+const version: string =
+  process.env.REACT_APP_VERSION ?? require('../../../../package.json').version;
 
 enum LoginErrorEnum {
   None,
@@ -524,14 +525,6 @@ export const OaLogin: React.FC = () => {
     if (!isAllowed) {
       displayIncorrectBrowserPopup();
     }
-
-    // Optional debug
-    console.log({
-      ua,
-      isChromeLike,
-      isIosSafari,
-      isAllowed,
-    });
   }, []);
 
   useEffect(() => {

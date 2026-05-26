@@ -26,7 +26,7 @@ import {
   notificationActions,
   notificationsSelectors,
 } from '@store/notifications';
-import { userSelectors } from '@store/user';
+import { userActions, userSelectors, userThunkActions } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
 import TransparentLayer from '../../assets/TransparentLayer.png';
@@ -67,8 +67,11 @@ import { usePointsToDoEmoji } from '@/hooks/usePointsToDoEmoji';
 import { Logout } from '../auth/logout/logout';
 import { useBrowserVersionCheck } from '@/hooks/useBrowserVersionCheck';
 import { triggerBackgroundSync } from '@/store/sync/sync.actions';
+import { ReactComponent as RobotImage } from '../../assets/iconRobot.svg';
+import { cloneDeep } from 'lodash';
 
-const { version } = require('../../../package.json');
+const version: string =
+  process.env.REACT_APP_VERSION ?? require('../../../package.json').version;
 export interface DashboardRouteState {
   isFromLogin?: boolean;
   isFromCompleteProfile?: boolean;
@@ -140,6 +143,19 @@ export const Dashboard: React.FC = () => {
       item?.permissionName === PermissionsNames.plan_classroom_actitivies
   );
 
+  const saveWhatsAppConsent = (consent: boolean) => {
+    const copy = cloneDeep(userData);
+    if (copy) {
+      copy.whatsAppConsent = consent;
+      copy.synced = isOnline;
+
+      appDispatch(userActions.updateUser(copy));
+      if (isOnline) {
+        appDispatch(userThunkActions.updateUser(copy));
+      }
+    }
+  };
+
   // calling centralized getUserSyncStatus without pushing offline data
   useEffect(() => {
     if (isOnline && !isCoach && practitioner) {
@@ -187,21 +203,32 @@ export const Dashboard: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    let isMounted = true;
+
     if (navigator?.storage?.estimate) {
       navigator.storage
         .estimate()
         .then((estimate) => {
-          if (estimate?.quota) {
+          if (isMounted && estimate?.quota) {
             const freeMemoryMB = estimate.quota / (1024 * 1024);
             setFreeMemory(Math.round(freeMemoryMB));
+          } else if (isMounted) {
+            setFreeMemory(0);
           }
         })
         .catch(() => {
-          setFreeMemory(0);
+          if (isMounted) {
+            setFreeMemory(0);
+          }
         });
-    } else {
+    } else if (isMounted) {
       setFreeMemory(0);
     }
+
+    // Cleanup: prevent state updates after unmount
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -312,6 +339,47 @@ export const Dashboard: React.FC = () => {
     });
   };
 
+  const handleWhatsAppConsent = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      blocking: true,
+      render: (onSubmit, onCancel) => {
+        return (
+          <ActionModal
+            title={`Stay in touch`}
+            className="bg-white"
+            detailText={`Would you like to receive occasional updates from ECD Connect on WhatsApp?`}
+            actionButtons={[
+              {
+                text: 'Yes',
+                textColour: 'white',
+                colour: 'quatenary',
+                type: 'filled',
+                onClick: () => {
+                  saveWhatsAppConsent(true);
+                  onSubmit();
+                },
+                leadingIcon: 'CheckCircleIcon',
+              },
+              {
+                text: 'No thanks',
+                textColour: 'quatenaryMain',
+                colour: 'quatenaryMain',
+                type: 'outlined',
+                onClick: () => {
+                  saveWhatsAppConsent(false);
+                  onSubmit();
+                },
+                leadingIcon: 'XIcon',
+              },
+            ]}
+            customIcon={<RobotImage />}
+          />
+        );
+      },
+    });
+  };
+
   useEffect(() => {
     if (practitioner?.startDate) {
       const diffDays = differenceInDays(
@@ -322,6 +390,12 @@ export const Dashboard: React.FC = () => {
       if (diffDays > 30 && !classroom?.preschoolCode && isOpenAccess) {
         handle30DaysExpired();
       }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (userData?.whatsAppConsent === null && isOpenAccess) {
+      handleWhatsAppConsent();
     }
   }, []);
 
@@ -418,14 +492,27 @@ export const Dashboard: React.FC = () => {
   const { userProfilePicture } = useDocuments();
 
   const initStaticStoreSetup = async () => {
-    const promises = [
-      appDispatch(
-        programmeThunkActions.getProgrammes({ classroomId: classroom?.id })
-      ).unwrap(),
-      appDispatch(statementsThunkActions.getAllExpensesTypes({})).unwrap(),
-      appDispatch(statementsThunkActions.getAllIncomeTypes({})).unwrap(),
-      appDispatch(statementsThunkActions.getAllPayType({})).unwrap(),
-    ];
+    const promises =
+      isPrincipal || (isOpenAccess && isTrialPeriod)
+        ? [
+            appDispatch(
+              programmeThunkActions.getProgrammes({
+                classroomId: classroom?.id,
+              })
+            ).unwrap(),
+            appDispatch(
+              statementsThunkActions.getAllExpensesTypes({})
+            ).unwrap(),
+            appDispatch(statementsThunkActions.getAllIncomeTypes({})).unwrap(),
+            appDispatch(statementsThunkActions.getAllPayType({})).unwrap(),
+          ]
+        : [
+            appDispatch(
+              programmeThunkActions.getProgrammes({
+                classroomId: classroom?.id,
+              })
+            ).unwrap(),
+          ];
 
     Promise.allSettled(promises);
   };
@@ -436,7 +523,10 @@ export const Dashboard: React.FC = () => {
 
   useEffect(() => {
     if (isOnline) {
-      initStaticStoreSetup();
+      if (!isCoach) {
+        initStaticStoreSetup();
+      }
+
       if (
         dashboardNotification?.isNew &&
         practitioner?.progress! >= 2 &&
@@ -690,6 +780,14 @@ export const Dashboard: React.FC = () => {
                 hideItem: !businessEnabled && isWhiteLabel,
               },
               {
+                name: NavigationNames.Business.Registration,
+                href: ROUTES.BUSINESS,
+                onNavigation: onNavigation,
+                params: { activeTabIndex: BusinessTabItems.REGISTRATION },
+                current: false,
+                hideItem: !businessEnabled,
+              },
+              {
                 name: NavigationNames.Business.Resources,
                 href: ROUTES.BUSINESS,
                 onNavigation: onNavigation,
@@ -706,6 +804,21 @@ export const Dashboard: React.FC = () => {
       icon: styles.communityIconName,
       current: false,
       showDivider: true,
+      nestedChildren: [
+        {
+          name: NavigationNames.Community.Community,
+          href: ROUTES.COMMUNITY.ROOT,
+          onNavigation: onNavigation,
+          current: false,
+        },
+        {
+          name: NavigationNames.Community.Resources,
+          href: ROUTES.COMMUNITY.ROOT,
+          onNavigation: onNavigation,
+          params: { activeTabIndex: 1 },
+          current: false,
+        },
+      ],
     },
     {
       name: NavigationNames.Training,
@@ -1081,9 +1194,9 @@ export const Dashboard: React.FC = () => {
               <div id="wantToConnectWithPrincipal2">
                 <UserAvatar
                   size="sm-md"
-                  color="secondary"
+                  color="quatenary"
                   displayBorder
-                  borderColour="secondary"
+                  borderColour="quatenary"
                 />
               </div>
             </div>

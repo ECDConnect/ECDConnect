@@ -28,7 +28,7 @@ export const ProgrammeObservations = ({
   });
 
   const answers = question.answer as string[];
-  const name = smartStarter?.user?.firstName || 'the smartStarter';
+  const name = smartStarter?.user?.firstName || 'the practitioner';
   const visitSection = 'Programme observations';
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
 

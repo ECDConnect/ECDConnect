@@ -2,9 +2,9 @@ import { usePractitionerAbsentees } from '@/hooks/usePractitionerAbsentees';
 import { useStoreSetup } from '@/hooks/useStoreSetup';
 import { ReassignClassPageState } from '@/pages/classroom/class-dashboard/practitioners/reassign-class/reassign-class.types';
 import ROUTES from '@/routes/routes';
-import { ClassroomGroupService } from '@/services/ClassroomGroupService';
 import { useAppDispatch } from '@/store';
 import { authSelectors } from '@/store/auth';
+import { classroomsThunkActions } from '@/store/classroom';
 import { practitionerThunkActions } from '@/store/practitioner';
 import { PractitionerDto } from '@ecdlink/core';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
@@ -44,25 +44,22 @@ export const LeaveCardMenu = ({
       setIsDeleting(true);
       try {
         for (const leave of currentClassesReassigned ?? []) {
-          await new ClassroomGroupService(userAuth.auth_token).editAbsentee(
-            leave?.absenteeId!,
-            true,
-            practitioner?.id!,
-            leave?.reason!,
-            new Date(leave?.absentDate),
-            new Date(leave?.absentDateEnd)
+          await appDispatch(
+            classroomsThunkActions.editAbsentee({
+              absenteeId: leave?.absenteeId!,
+              deleteAbsentee: true,
+              reassignedToPractitioner: practitioner?.id!,
+              reason: leave?.reason!,
+              absentDate: new Date(leave?.absentDate),
+              absentDateEnd: new Date(leave?.absentDateEnd),
+            })
           );
         }
         await refreshClassroom();
 
         // Invalidate or refetch absentees after deletion
         await appDispatch(
-          practitionerThunkActions.getAllPractitioners({})
-        ).unwrap();
-        await appDispatch(
-          practitionerThunkActions.getPractitionerByUserId({
-            userId: practitioner?.userId!,
-          })
+          practitionerThunkActions.getAllPractitioners({ overrideCache: true })
         ).unwrap();
       } catch (error) {
         console.error('Error deleting leave:', error);

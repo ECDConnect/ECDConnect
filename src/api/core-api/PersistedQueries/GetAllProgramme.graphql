@@ -1,0 +1,20 @@
+query GetAllProgramme($classroomId: UUID) {
+  GetAllProgramme(where: { and: [{ classroomId: { eq: $classroomId } }] }) {
+    id
+    insertedDate
+    classroomId
+    startDate
+    endDate
+    name
+    preferredLanguage
+    dailyProgrammes {
+      id
+      day
+      dayDate
+      smallGroupActivityId
+      largeGroupActivityId
+      storyActivityId
+      storyBookId
+    }
+  }
+}

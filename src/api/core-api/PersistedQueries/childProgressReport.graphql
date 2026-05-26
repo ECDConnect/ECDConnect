@@ -1,0 +1,40 @@
+query childProgressReport($reportId: UUID!) {
+  childProgressReport(reportId: $reportId) {
+    id
+    categories {
+      achievedLevelId
+      categoryId
+      status
+      missingTasks {
+        description
+        levelId
+        skillId
+        value
+      }
+      supportingTask {
+        taskDescription
+        taskId
+        todoText
+      }
+      tasks {
+        description
+        levelId
+        skillId
+        value
+      }
+    }
+    childId
+    childFirstname
+    childSurname
+    classroomName
+    dateCompleted
+    dateCreated
+    reportingPeriod
+    reportingDate
+    howCanCaregiverHelpChild
+    practitionerPhotoUrl
+    practitionerSurname
+    practitionerFirstname
+    childEnjoys
+  }
+}

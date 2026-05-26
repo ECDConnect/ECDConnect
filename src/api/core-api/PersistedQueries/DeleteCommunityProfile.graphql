@@ -1,0 +1,3 @@
+mutation DeleteCommunityProfile($communityProfileId: UUID!) {
+  deleteCommunityProfile(communityProfileId: $communityProfileId)
+}

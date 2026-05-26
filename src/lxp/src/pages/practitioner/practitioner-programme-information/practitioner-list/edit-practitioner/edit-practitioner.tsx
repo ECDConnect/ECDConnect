@@ -1,5 +1,5 @@
-import { FormInput, Button, BannerWrapper } from '@ecdlink/ui';
-import { PractitionerDto } from '@ecdlink/core';
+import { FormInput, Button, BannerWrapper, DialogPosition } from '@ecdlink/ui';
+import { PractitionerDto, useDialog } from '@ecdlink/core';
 import { useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { EditPractitionerProps } from './edit-practitioner.types';
@@ -12,6 +12,7 @@ import {
 import { useAppDispatch } from '@store';
 import { practitionerThunkActions } from '@/store/practitioner';
 import { useHistory } from 'react-router-dom';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 
 export const EditPractitioner: React.FC<EditPractitionerProps> = ({
   setEditiPractitionerVisible,
@@ -19,6 +20,7 @@ export const EditPractitioner: React.FC<EditPractitionerProps> = ({
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
   const history = useHistory();
+  const dialog = useDialog();
 
   const {
     register: practitionerInfoFormRegister,
@@ -29,6 +31,15 @@ export const EditPractitioner: React.FC<EditPractitionerProps> = ({
     mode: 'onBlur',
     reValidateMode: 'onChange',
   });
+
+  const showOnlineOnly = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit) => {
+        return <OnlineOnlyModal onSubmit={onSubmit} />;
+      },
+    });
+  };
 
   const { firstName, surname } = useWatch({
     control: practitionerInfoFormControl,
@@ -106,7 +117,11 @@ export const EditPractitioner: React.FC<EditPractitionerProps> = ({
                 text="Remove practitioner"
                 textColor="primary"
                 icon="TrashIcon"
-                onClick={() => {}}
+                onClick={() => {
+                  if (!isOnline) {
+                    showOnlineOnly();
+                  }
+                }}
               />
             </div>
           </div>

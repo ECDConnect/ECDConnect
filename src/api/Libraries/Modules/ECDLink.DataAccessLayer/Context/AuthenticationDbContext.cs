@@ -32,7 +32,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<TenantEntity> Tenants { get; set; }
         public DbSet<TenantSetupInfo> TenantSetupInfo { get; set; }
         public DbSet<Module> Modules { get; set; }
-        public DbSet<TenantHasModule> TenantHasModules { get; set; } 
+        public DbSet<TenantHasModule> TenantHasModules { get; set; }
         public DbSet<JWTUserTokensEntity> JWTTokens { get; set; }
         public DbSet<MessageTemplate> MessageTemplates { get; set; }
         public DbSet<MessageLog> MessageLogs { get; set; }
@@ -54,7 +54,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<UserConsent> UserConsents { get; set; }
         public DbSet<Absentees> Absents { get; set; }
         public DbSet<ProgrammeType> ProgrammeTypes { get; set; }
- 
+
         public DbSet<SystemLog> SystemLogs { get; set; }
         public DbSet<PractitionerRemovalHistory> PractitionerRemovalHistories { get; set; }
 
@@ -125,7 +125,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<Visit> Visits { get; set; }
         public DbSet<VisitData> VisitData { get; set; }
         public DbSet<VisitDataStatus> VisitDataStatus { get; set; }
-    
+
         // Calendar
         public DbSet<CalendarEvent> CalendarEvents { get; set; }
         public DbSet<CalendarEventParticipant> CalendarEventParticipants { get; set; }
@@ -139,7 +139,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<UserHelp> UserHelp { get; set; }
 
         // Training
-        public DbSet<UserTrainingCourse> UserTrainingCourses {  get; set; }
+        public DbSet<UserTrainingCourse> UserTrainingCourses { get; set; }
 
         // Community
         public DbSet<SupportRating> SupportRatings { get; set; }
@@ -156,6 +156,12 @@ namespace ECDLink.DataAccessLayer.Context
 
         public DbSet<Holiday> Holidays { get; set; }
         public DbSet<Invite> Invite { get; set; }
+
+        public DbSet<AppLog> AppLog { get; set; }
+
+        public DbSet<EcdRegistration> EcdRegistrations { get; set; }
+
+        public DbSet<EcdRegistrationHistory> EcdRegistrationHistory { get; set; }
 
         public AuthenticationDbContext(DbContextOptions<AuthenticationDbContext> options)
                : base(options)
@@ -237,6 +243,34 @@ namespace ECDLink.DataAccessLayer.Context
             builder.Entity<MessageLogRelatedTo>(x =>
             {
                 x.HasKey(e => new { e.MessageLogId, e.RelatedEntityId });
+            });
+            builder.Entity<AppLog>(entity =>
+           {
+               entity.HasKey(e => e.Id);
+           });
+            builder.Entity<EcdRegistration>(entity =>
+    {
+        entity.ToTable("EcdRegistration");
+        entity.Property(e => e.Subsidy)
+              .HasConversion<string>();
+
+        entity.Property(e => e.RegistrationType)
+              .HasConversion<string>()
+              .IsRequired(false);
+
+        entity.Property(e => e.Challenges)
+              .HasConversion<string>();
+
+    });
+
+            builder.Entity<EcdRegistrationHistory>(entity =>
+            {
+                entity.ToTable("EcdRegistrationHistory");
+                entity.Property(e => e.OldValue)
+                      .HasColumnType("jsonb");
+                entity.Property(e => e.NewValue)
+                      .HasColumnType("jsonb");
+                entity.HasIndex(h => h.EcdRegistrationId);
             });
         }
     }

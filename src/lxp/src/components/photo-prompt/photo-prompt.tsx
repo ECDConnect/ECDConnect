@@ -13,6 +13,7 @@ import {
 import { useCallback, useEffect, useState } from 'react';
 import * as styles from './photo-prompt.styles';
 import { PhotoPromptActionType } from './photo-prompt.types';
+import { allProfileEmojis } from '@/assets/profile-emojis';
 
 import womanEmoji from '@/assets/emojis/womanEmoji.png';
 import manEmoji from '@/assets/emojis/manEmoji.png';
@@ -24,9 +25,6 @@ import penguinEmoji from '@/assets/emojis/penguinEmoji.png';
 import monkeyEmoji from '@/assets/emojis/avatar_monkey.png';
 
 import { XIcon } from '@heroicons/react/solid';
-
-// Total number of profile emojis available
-const PROFILE_EMOJI_COUNT = 38;
 
 export interface PhotoPromptProps extends ComponentBaseProps {
   title: string;
@@ -68,37 +66,9 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
     monkeyEmoji,
   ];
 
-  const loadProfileEmojis = useCallback(async () => {
-    if (profileEmojis.length > 0) return; // already loaded
-
-    setProfileEmojisLoading(true);
-    try {
-      const indices = Array.from(
-        { length: PROFILE_EMOJI_COUNT },
-        (_, i) => (i < PROFILE_EMOJI_COUNT - 1 ? `${i + 1}` : '') // last file is animoji.svg (no number)
-      );
-
-      const loaded = await Promise.all(
-        indices.map((n) => {
-          const fileName = n ? `animoji-${n}` : 'animoji';
-          return import(`@/assets/profile-emojis/${fileName}.png`).then(
-            (mod) => mod.default as string
-          );
-        })
-      );
-
-      setProfileEmojis(loaded);
-    } finally {
-      setProfileEmojisLoading(false);
-    }
-  }, [profileEmojis.length]);
-
   const openEmojis = useCallback(async () => {
     setEmojisSection(true);
-    if (isProfileEmojis) {
-      await loadProfileEmojis();
-    }
-  }, [isProfileEmojis, loadProfileEmojis]);
+  }, [isProfileEmojis]);
 
   const getActions = useCallback(() => {
     const actionsList: ActionSelectItem<PhotoPromptActionType>[] = [];
@@ -192,7 +162,7 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
     getActions();
   }, [getActions]);
 
-  const activeEmojis = isProfileEmojis ? profileEmojis : emojis;
+  const activeEmojis = isProfileEmojis ? allProfileEmojis : emojis;
 
   return (
     <>

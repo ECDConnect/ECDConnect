@@ -8,7 +8,6 @@ import {
   useState,
 } from 'react';
 import { Colours } from '../../models';
-
 import { classNames, renderIcon } from '../../utils';
 import Button from '../button/button';
 import Typography from '../typography/typography';
@@ -77,7 +76,7 @@ export const Steps = ({ items, typeColor }: StepsProps) => {
       todo: {
         style: `bg-${
           itemColor || typeColor?.todo || 'tertiaryAccent2'
-        } border-2 border-primary`,
+        } border-2 border-successMain`,
         icon: icon?.todo || '',
         border: 'border-solid',
       },
@@ -173,7 +172,7 @@ export const Steps = ({ items, typeColor }: StepsProps) => {
                         : `var(--${
                             item.color ||
                             typeColor?.todoAndInProgress ||
-                            'primary'
+                            'successMain'
                           })`,
                     height: refs && refs[index]?.current?.clientHeight,
                     left: 14,

@@ -1,0 +1,6 @@
+query GetAllProvince($isActive: Boolean = true) {
+  GetAllProvince(where: { isActive: { eq: $isActive } }) {
+    id
+    description
+  }
+}

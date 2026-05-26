@@ -37,7 +37,7 @@ export const DiscussionNotes = ({
   const [answer, setAnswer] = useState<string | Maybe<string> | undefined>('');
 
   const question = `What next steps or plans to improve did you discuss with {client}?`;
-  const name = smartStarter?.user?.firstName || 'the smartStarter';
+  const name = smartStarter?.user?.firstName || 'the practitioner';
   const visitSection = 'Discussion notes';
 
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';

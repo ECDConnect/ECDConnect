@@ -1,0 +1,12 @@
+query inviteByPractitionerId($id: String!) {
+  inviteByPractitionerId(id: $id) {
+    id
+    status
+    isAccepted
+    principalId
+    practitionerId
+    principal {
+      userId
+    }
+  }
+}

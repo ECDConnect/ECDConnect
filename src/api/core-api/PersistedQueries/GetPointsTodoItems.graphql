@@ -1,0 +1,9 @@
+query GetPointsTodoItems($userId: UUID!) {
+  pointsTodoItems(userId: $userId) {
+    signedUpForApp
+    isPartOfPreschool
+    savedIncomeOrExpense
+    plannedOneDay
+    viewedCommunitySection
+  }
+}

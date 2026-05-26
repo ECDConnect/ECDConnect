@@ -1,0 +1,5 @@
+mutation createChild($input: ChildInput) {
+  createChild(input: $input) {
+    id
+  }
+}

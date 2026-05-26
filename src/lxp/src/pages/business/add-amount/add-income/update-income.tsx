@@ -4,12 +4,13 @@ import { useAppDispatch } from '@store';
 import * as styles from './add-income.styles';
 import DonationsOrVouchers from './components/donations-or-vouchers/donations-or-vouchers';
 import OtherIncome from './components/other-income/other-income';
-import { statementsActions } from '@/store/statements';
+import { statementsActions, statementsThunkActions } from '@/store/statements';
 import { IncomeItemDto, IncomeTypeIds } from '@ecdlink/core';
 import DbeSubsidy from './components/dbe-subsidy/dbe-subsidy';
 import EditPreschoolFees from './components/preschool-fees/edit-preschool-fees';
 import ROUTES from '@/routes/routes';
 import { BusinessTabItems } from '../../business.types';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export type UpdateIncomeState = {
   statementId: string;
@@ -19,18 +20,25 @@ export type UpdateIncomeState = {
 export const UpdateIncome: React.FC = () => {
   const history = useHistory();
   const appDispatch = useAppDispatch();
+  const { isOnline } = useOnlineStatus();
 
   const location = useLocation<UpdateIncomeState>();
   const statementId = location.state.statementId;
   const incomeItem = location.state.incomeItem;
 
   const onSubmit = useCallback((updatedItem: IncomeItemDto) => {
+    // update redux
     appDispatch(
       statementsActions.addOrUpdateIncomeItems({
         statementId,
         incomeItems: [updatedItem],
       })
     );
+    if (isOnline) {
+      // send change to backend
+      appDispatch(statementsThunkActions.upsertIncomeStatements({})).unwrap();
+    }
+
     history.push(ROUTES.BUSINESS, {
       activeTabIndex: BusinessTabItems.MONEY,
     });

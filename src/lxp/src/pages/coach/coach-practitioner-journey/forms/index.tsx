@@ -127,7 +127,7 @@ export const Form = ({
   );
 
   const practitioner = useSelector(getPractitionerByUserId(practitionerId));
-  const firstName = practitioner?.user?.firstName || 'the SmartStarter';
+  const firstName = practitioner?.user?.firstName || 'the Practitioner';
   const step16Question1Answer = sectionQuestions
     ?.find((item) => item.visitSection === step16VisitSection)
     ?.questions.find((item) => item.question === step16Question1)?.answer;
@@ -810,7 +810,7 @@ export const Form = ({
       }
 
       history.push(ROUTES.COACH.PRACTITIONERS);
-      showMessage({ message: 'SmartStarter removed' });
+      showMessage({ message: 'Practitioner removed' });
     }
   }, [
     history,
@@ -875,7 +875,7 @@ export const Form = ({
         }
         {...(visitName === visitTypes.delicensing && {
           submitButton: {
-            text: 'Remove SmartStarter',
+            text: 'Remove Practitioner',
             icon: 'TrashIcon',
           },
         })}

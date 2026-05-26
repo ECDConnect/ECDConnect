@@ -16,28 +16,7 @@ class ProgrammeService {
   async getProgrammes(classroomId: string): Promise<ProgrammeDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query GetAllProgramme($classroomId: UUID) {
-        GetAllProgramme(where: { and: [{ classroomId: { eq: $classroomId } }] }) {
-          id
-          insertedDate
-          classroomId
-          startDate
-          endDate
-          name
-          preferredLanguage
-          dailyProgrammes {
-            id
-            day
-            dayDate
-            smallGroupActivityId
-            largeGroupActivityId
-            storyActivityId
-            storyBookId
-          }
-        }
-      }
-      `,
+      id: 'GetAllProgramme',
       variables: {
         classroomId: classroomId,
       },
@@ -55,12 +34,7 @@ class ProgrammeService {
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation updateProgrammes($programmeInput: ProgrammeModelInput) {
-          updateProgrammes(programmeInput: $programmeInput) {
-          }
-        }
-      `,
+      id: 'updateProgrammes',
       variables: {
         programmeInput: programmeInput,
       },
@@ -76,13 +50,7 @@ class ProgrammeService {
   async updateProgramme(id: string, input: ProgrammeInput): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation updateProgramme($input: ProgrammeInput, $id: UUID) {
-          updateProgramme(id: $id, input: $input) {
-            id
-          }
-        }
-      `,
+      id: 'updateProgramme',
       variables: {
         id: id,
         input: input,
@@ -102,13 +70,7 @@ class ProgrammeService {
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation updateDailyProgramme($input: DailyProgrammeInput, $id: UUID) {
-          updateDailyProgramme(id: $id, input: $input) {
-            id
-          } 
-        }
-      `,
+      id: 'updateDailyProgramme',
       variables: {
         id: id,
         input: input,
@@ -127,31 +89,7 @@ class ProgrammeService {
   async getUserProgrammes(): Promise<ProgrammeDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query GetUserProgrammes {
-        userProgrammes {
-          id
-          insertedDate
-          classroomId
-          classroomGroupId
-          startDate
-          endDate
-          name
-          preferredLanguage
-          dailyProgrammes {
-            insertedDate
-            isActive
-            id
-            day
-            dayDate
-            smallGroupActivityId
-            largeGroupActivityId
-            storyActivityId
-            storyBookId
-          }
-        }
-      }
-      `,
+      id: 'GetUserProgrammes',
     });
 
     if (response.status !== 200) {

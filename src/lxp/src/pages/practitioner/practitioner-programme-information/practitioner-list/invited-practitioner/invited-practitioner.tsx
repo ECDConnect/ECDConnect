@@ -10,9 +10,7 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { InvitedPractitionerRouteState } from './invited-practitioner.types';
 import { addDays, differenceInMinutes, format } from 'date-fns';
 import { useEffect, useState } from 'react';
-import { authSelectors } from '@/store/auth';
 import { useSelector } from 'react-redux';
-import { PractitionerService } from '@/services/PractitionerService';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { useDialog, useSnackbar } from '@ecdlink/core';
 import { useAppDispatch } from '@/store';
@@ -26,7 +24,7 @@ import { useHistory } from 'react-router';
 import { copyToClip } from '@utils/common/clipboard.utils';
 import { useTenant } from '@/hooks/useTenant';
 import { formatPhonenumberLocal } from '@utils/common/contact-details.utils';
-import { InviteService } from '@/services/InviteService';
+import { invitesThunkActions } from '@/store/invites';
 
 export const InvitedPractitioner: React.FC<InvitedPractitionerRouteState> = ({
   setPractitionerInviteModal,
@@ -39,7 +37,6 @@ export const InvitedPractitioner: React.FC<InvitedPractitionerRouteState> = ({
   const [showAlert, setShowAlert] = useState(false);
   const [inviteDates, setInviteDates] = useState<Date[]>();
   const [isLoading, setIsLoading] = useState(false);
-  const userAuth = useSelector(authSelectors.getAuthUser);
   const [timeSinceLastInvite, setTimeSinceLastInvite] = useState<number>(1000);
   const [isSending, setIsSending] = useState(false);
 
@@ -58,10 +55,9 @@ export const InvitedPractitioner: React.FC<InvitedPractitionerRouteState> = ({
   const getInviteDetails = async () => {
     setIsLoading(true);
     if (!!userId) {
-      const dates = await new PractitionerService(
-        userAuth?.auth_token || ''
-      ).GetAllPractitionerInvites(userId);
-
+      const dates = await appDispatch(
+        practitionerThunkActions.getAllPractitionerInvites({ userId: userId })
+      ).unwrap();
       dates.sort();
 
       if (!!dates.length) {
@@ -97,9 +93,11 @@ export const InvitedPractitioner: React.FC<InvitedPractitionerRouteState> = ({
       ) {
         setShowAlert(true);
         setIsSending(true);
-        await new PractitionerService(
-          userAuth?.auth_token || ''
-        ).SendPractitionerInviteToApplication(userId);
+        await appDispatch(
+          practitionerThunkActions.sendPractitionerInviteToApplication({
+            userId: userId,
+          })
+        );
         await getInviteDetails();
         setShowAlert(false);
       }
@@ -109,18 +107,21 @@ export const InvitedPractitioner: React.FC<InvitedPractitionerRouteState> = ({
   };
 
   const removePractitioner = async () => {
-    await new PractitionerService(
-      userAuth?.auth_token || ''
-    ).UpdatePrincipalInvitation(userId!, practitioner?.id!, false);
-
     await appDispatch(
-      practitionerThunkActions.getAllPractitioners({})
+      practitionerThunkActions.updatePrincipalInvitation({
+        userId: userId!,
+        principalHierarchy: practitioner?.id!,
+        accepted: false,
+      })
+    );
+    await appDispatch(
+      practitionerThunkActions.getAllPractitioners({ overrideCache: true })
     ).unwrap();
 
     setInvites(
-      await new InviteService(
-        userAuth?.auth_token || ''
-      ).getInvitesByPrincipalId(practitioner?.id!)
+      await appDispatch(
+        invitesThunkActions.getInvitesByPrincipalId({})
+      ).unwrap()
     );
 
     showMessage({
@@ -192,7 +193,7 @@ export const InvitedPractitioner: React.FC<InvitedPractitionerRouteState> = ({
       renderBorder={true}
       className="w-full justify-center p-2"
     >
-      <div>
+      <div className="p-4">
         <Alert
           className="mt-4 w-full rounded-xl"
           type={'error'}
@@ -270,39 +271,45 @@ export const InvitedPractitioner: React.FC<InvitedPractitionerRouteState> = ({
         </>
       )}
 
-      <div className="flex w-full justify-center">
-        <Button
-          disabled={
-            isLoading ||
-            (!!inviteDates &&
-              (inviteDates.length >= 5 || timeSinceLastInvite < 60))
-          }
-          text="Re-send invitation"
-          icon="PaperAirplaneIcon"
-          type={'filled'}
-          color={'quatenary'}
-          textColor={'white'}
-          className="mt-4 w-full"
-          onClick={sendPractitionerInvite}
-        />
-      </div>
-      <div className="mt-2 flex w-full justify-center">
-        <Button
-          size="normal"
-          className="mb-4 w-full"
-          type="outlined"
-          color="quatenary"
-          text="Remove practitioner"
-          textColor="quatenary"
-          icon="TrashIcon"
-          onClick={() => {
-            removePractitioner();
-            setPractitionerInviteModal(false);
-            history.push(ROUTES.BUSINESS, {
-              activeTabIndex: BusinessTabItems.STAFF,
-            });
-          }}
-        />
+      <div className="p-4">
+        <div className="flex w-full justify-center">
+          <Button
+            disabled={
+              isLoading ||
+              (!!inviteDates &&
+                (inviteDates.length >= 5 || timeSinceLastInvite < 60))
+            }
+            text="Re-send invitation"
+            icon="PaperAirplaneIcon"
+            type={'filled'}
+            color={'quatenary'}
+            textColor={'white'}
+            className="w-full shadow-xl"
+            onClick={sendPractitionerInvite}
+          />
+        </div>
+        <div className="flex w-full justify-center">
+          <Button
+            size="normal"
+            className="mt-4 mb-4 w-full"
+            type="outlined"
+            color="quatenary"
+            text="Remove practitioner"
+            textColor="quatenary"
+            icon="TrashIcon"
+            onClick={() => {
+              if (isOnline) {
+                removePractitioner();
+                setPractitionerInviteModal(false);
+                history.push(ROUTES.BUSINESS, {
+                  activeTabIndex: BusinessTabItems.STAFF,
+                });
+              } else {
+                showOnlineOnly();
+              }
+            }}
+          />
+        </div>
       </div>
     </BannerWrapper>
   );

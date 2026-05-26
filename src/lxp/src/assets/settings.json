@@ -1,14 +1,8 @@
 {
-<<<<<<< HEAD
-  "graphQlApi": "https://localhost:5001/graphql/",
-  "authApi": "https://localhost:5001",
-  "themeUrl": "https://localhost:5001/storage/theme/ecdconnect.json"
-}
-=======
   "graphQlApi": "https://ecd-connect-develop-api.azurewebsites.net/graphql/",
   "authApi": "https://ecd-connect-develop-api.azurewebsites.net",
   "themeUrl": "https://ecdconnectstoragedev.blob.core.windows.net/theme/ecdconnect.json",
+  "configUrl": "https://ecdconnectstoragedev.blob.core.windows.net/config/remote-config.json",
   "facebookAppId": "",
   "googleClientId": ""
 }
->>>>>>> bitbucket/master

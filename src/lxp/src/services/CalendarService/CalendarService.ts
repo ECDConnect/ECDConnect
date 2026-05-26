@@ -27,15 +27,7 @@ class CalendarService {
   async getCalendarEventTypes(locale: string): Promise<CalendarEventTypeDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query GetAllCalendarEventType($locale: String) {
-        GetAllCalendarEventType(locale: $locale) {
-          id
-          name
-          colour
-        }
-      }        
-      `,
+      id: 'GetAllCalendarEventType',
       variables: {
         locale: locale,
       },
@@ -52,38 +44,7 @@ class CalendarService {
   async getCalendarEvents(start: Date): Promise<CalendarEventDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query userCalendarEvents($start: DateTime!) {
-          userCalendarEvents(start: $start) {    
-            allDay
-            description
-            end
-            eventType
-            id
-            name
-            participants {
-              id
-              isActive
-              participantUserId
-              participantUser {
-                firstName
-                surname
-              }
-            }
-            start
-            action
-            isActive
-            userId
-            user {
-              firstName
-              surname
-            }
-            visit {
-              attended
-            }
-          }
-        }
-    `,
+      id: 'userCalendarEvents',
       variables: {
         start: start.toISOString(),
       },
@@ -120,13 +81,7 @@ class CalendarService {
         inputModel
       );
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation updateCalendarEvent($input: CalendarEventModelInput, $id: UUID!) {
-          updateCalendarEvent(input: $input, id: $id) {
-            id
-          }
-        }
-      `,
+      id: 'updateCalendarEvent',
       variables: {
         input: input,
         id: id,
@@ -146,13 +101,7 @@ class CalendarService {
     const input =
       calendarConvert.CalendarEventModel.CalendarEventModelInput(event);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation updateCalendarEvent($input: CalendarEventModelInput, $id: UUID!) {
-          updateCalendarEvent(input: $input, id: $id) {
-            id
-          }
-        }
-      `,
+      id: 'updateCalendarEvent',
       variables: {
         input: input,
         id: event.id,
@@ -172,15 +121,7 @@ class CalendarService {
       data: { cancelCalendarEvent: { id: string } };
       errors?: {};
     }>(``, {
-      query: `
-      mutation CancelCalendarEvent($id: UUID!) {
-        cancelCalendarEvent(
-          id: $id
-        ) {
-          id
-        }
-      }
-      `,
+      id: 'CancelCalendarEvent',
       variables: {
         ...input,
       },
