@@ -1,19 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
 using ECDLink.PostgresTenancy.Entities;
 
 namespace ECDLink.PostgresTenancy.Services
 {
     public interface IJWTService
     {
-        public JWTUserTokensEntity GetByKey(string key);
-
-        public JWTUserTokensEntity GetById(Guid key);
-
+        JWTUserTokensEntity GetByKey(string key);
+        JWTUserTokensEntity GetById(Guid id);
         JWTUserTokensEntity GetByToken(string token);
-
-        public JWTUserTokensEntity InsertToken(JWTUserTokensEntity model);
-
+        IList<JWTUserTokensEntity> GetAllActiveByUserId(Guid id);
+        JWTUserTokensEntity InsertToken(JWTUserTokensEntity model);
         bool InvalidateExistingTokens(Guid id);
-
+        void UpdateLastSeenByToken(string token);
+        bool RevokeToken(string tokenKey);
     }
 }

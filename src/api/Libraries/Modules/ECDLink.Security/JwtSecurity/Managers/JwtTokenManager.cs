@@ -7,6 +7,7 @@ using ECDLink.Security.JwtSecurity.Factories;
 using ECDLink.Security.Managers;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
@@ -25,18 +26,21 @@ namespace ECDLink.Security.JwtSecurity.Managers
         private IJWTService _jwtService;
         private readonly IClaimsManager _claimsManager;
         private readonly TokenValidationParameters _parameters;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public JwtTokenManager(
             IJwtFactory jwtFactory,
             IClaimsManager claimsManager,
             [Service] IJWTService jWTService,
-            TokenValidationParameters parameters
+            TokenValidationParameters parameters,
+            IHttpContextAccessor httpContextAccessor
             )
         {
             _jwtFactory = jwtFactory;
             _claimsManager = claimsManager;
             _parameters = parameters;
             _jwtService = jWTService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<string> GenerateJwt(ClaimsIdentity identity, string userId, JwtEncoderEnum encoderType, bool? resetData)
@@ -146,7 +150,7 @@ namespace ECDLink.Security.JwtSecurity.Managers
                 // Validation 3 - validate expiry date
                 var utcExpiryDate = long.Parse(tokenInVerification.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Exp).Value);
 
-                var expiryDate = DateTimeHelper.GetDateFromEpoch(utcExpiryDate).AddDays(35);
+                var expiryDate = DateTimeHelper.GetDateFromEpoch(utcExpiryDate);
 
                 var expiryDateValue = expiryDate.ToEpochTime();
                 var currentDateValue = DateTime.UtcNow.ToEpochTime();
@@ -176,11 +180,21 @@ namespace ECDLink.Security.JwtSecurity.Managers
         public async Task<JWTUserTokensEntityReturn> StoreJWTToken(string auth_token, string expiresIn, string contextIdentifier, string role)
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
+            var now = DateTime.UtcNow;
+            var userAgent = _httpContextAccessor.HttpContext?.Request.Headers["User-Agent"].ToString();
 
-            //remove previous tokens first
-            _jwtService.InvalidateExistingTokens(Guid.Parse(contextIdentifier));
-
-            var insertedJWTToken = _jwtService.InsertToken(new JWTUserTokensEntity() { InsertedDate = DateTime.Now, UserId = Guid.Parse(contextIdentifier), Token = auth_token, TokenKey = Guid.NewGuid().ToString(), ExpiresIn = expiresIn, TenantId = tenantId, Role = role });
+            var insertedJWTToken = _jwtService.InsertToken(new JWTUserTokensEntity()
+            {
+                InsertedDate = now,
+                LastSeenAt = now,
+                UserId = Guid.Parse(contextIdentifier),
+                Token = auth_token,
+                TokenKey = Guid.NewGuid().ToString(),
+                ExpiresIn = expiresIn,
+                TenantId = tenantId,
+                Role = role,
+                DeviceInfo = userAgent
+            });
             return new JWTUserTokensEntityReturn() { id = insertedJWTToken.TokenKey, auth_token = insertedJWTToken.TokenKey, expires_in = insertedJWTToken.ExpiresIn };
         }
 
