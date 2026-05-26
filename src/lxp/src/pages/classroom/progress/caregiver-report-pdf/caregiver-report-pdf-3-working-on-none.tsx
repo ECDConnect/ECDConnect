@@ -30,7 +30,7 @@ export const ProgressCaregiverReportWorkingOnNonePage: React.FC<
       style={{ height: '1100px', position: 'relative', overflow: 'hidden' }}
     >
       <div className="mb-4 flex flex-row">
-        <img src={pinkFaceImg} className="mr-4 h-20 w-20" />
+        <img src={pinkFaceImg} className="mr-4 h-20 w-20" alt="pinkFace" />
         <Typography
           type="h1"
           color="textDark"
@@ -55,6 +55,7 @@ export const ProgressCaregiverReportWorkingOnNonePage: React.FC<
       <img
         src={yellowFaceImg}
         className="mr-auto ml-auto mt-40 mb-10 h-40 w-40"
+        alt="yellowFace"
       />
       <Typography
         type="h1"
@@ -71,7 +72,11 @@ export const ProgressCaregiverReportWorkingOnNonePage: React.FC<
       />
       <Card className="bg-textDark mb-4 mt-8 flex flex-col rounded-2xl p-4">
         <div className="flex flex-row">
-          <img src={lightbulbEmoji} className="mr-4 h-14 w-14" />
+          <img
+            src={lightbulbEmoji}
+            className="mr-4 h-14 w-14"
+            alt="lightbulbEmoji"
+          />
           <Typography
             type="h2"
             color="white"
@@ -89,8 +94,15 @@ export const ProgressCaregiverReportWorkingOnNonePage: React.FC<
 
       <img
         src={backgroundImg}
-        className="m-4 w-full"
-        style={{ position: 'absolute', bottom: 0, left: 0 }}
+        className="opacity-75"
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          height: '210px',
+          width: '100%',
+        }}
+        alt="background"
       />
     </div>
   );

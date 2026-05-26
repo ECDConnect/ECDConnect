@@ -95,6 +95,10 @@ export const AllResources: React.FC<AllResourcesprops> = ({
     [likedByUserFilter]
   );
 
+  useEffect(() => {
+    setResourcesData(resourcesSorted);
+  }, [resources]); // Re-sync when resources prop changes
+
   const resourcesLiked = resources?.filter((item1) =>
     resourcesLikedByUser?.find((item2) => item1.id === item2.contentId)
   );
@@ -135,33 +139,19 @@ export const AllResources: React.FC<AllResourcesprops> = ({
     [filteredByUserLiked, resourceTypeItem, resources]
   );
 
-  const resourcesSorted = useMemo(
-    () =>
-      resourceTypeItem
-        ? filteredByType?.sort((a, b) =>
-            Number(a.numberLikes) > Number(b.numberLikes)
-              ? -1
-              : Number(a.numberLikes) < Number(b.numberLikes)
-              ? 1
-              : 0
-          )
-        : filteredByUserLiked?.length > 0
-        ? filteredByUserLiked?.sort((a, b) =>
-            Number(a.numberLikes) > Number(b.numberLikes)
-              ? -1
-              : Number(a.numberLikes) < Number(b.numberLikes)
-              ? 1
-              : 0
-          )
-        : resources?.sort((a, b) =>
-            Number(a.numberLikes) > Number(b.numberLikes)
-              ? -1
-              : Number(a.numberLikes) < Number(b.numberLikes)
-              ? 1
-              : 0
-          ),
-    [filteredByType, filteredByUserLiked, resourceTypeItem, resources]
-  );
+  const resourcesSorted = useMemo(() => {
+    const baseArray = resourceTypeItem
+      ? filteredByType
+      : filteredByUserLiked?.length > 0
+      ? filteredByUserLiked
+      : resources;
+
+    return [...(baseArray ?? [])].sort((a, b) => {
+      const likesA = Number(a?.numberLikes) || 0;
+      const likesB = Number(b?.numberLikes) || 0;
+      return likesB - likesA; // descending order
+    });
+  }, [resourceTypeItem, filteredByType, filteredByUserLiked, resources]);
 
   const [resourcesData, setResourcesData] = useState(resourcesSorted);
 
@@ -210,7 +200,7 @@ export const AllResources: React.FC<AllResourcesprops> = ({
               position: DialogPosition.Full,
               render: (onClose) => (
                 <ResourceItem
-                  resource={item}
+                  resourceId={item.id}
                   onClose={onClose}
                   handleGetResourcesQueries={handleGetResourcesQueries}
                 />
@@ -256,7 +246,7 @@ export const AllResources: React.FC<AllResourcesprops> = ({
               position: DialogPosition.Full,
               render: (onClose) => (
                 <ResourceItem
-                  resource={item}
+                  resourceId={item.id}
                   onClose={onClose}
                   handleGetResourcesQueries={handleGetResourcesQueries}
                 />

@@ -1,0 +1,10 @@
+query GetJourneyTimeline($userId: UUID!) {
+  journeyTimeline(userId: $userId) {
+    name
+    dateCompleted
+    dateValue
+    iconName
+    type
+    visitId
+  }
+}

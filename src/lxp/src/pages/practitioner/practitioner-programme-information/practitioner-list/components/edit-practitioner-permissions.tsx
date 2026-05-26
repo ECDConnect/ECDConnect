@@ -2,14 +2,12 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useTenant } from '@/hooks/useTenant';
 import { useTenantModules } from '@/hooks/useTenantModules';
 import { PermissionsNames } from '@/pages/principal/components/add-practitioner/add-practitioner.types';
-import PermissionsService from '@/services/PermissionsService/PermissionsService';
 import { useAppDispatch } from '@/store';
 import { authSelectors } from '@/store/auth';
 import { classroomsSelectors } from '@/store/classroom';
 import { practitionerThunkActions } from '@/store/practitioner';
 import { staticDataSelectors } from '@/store/static-data';
 import { PractitionerDto, useSnackbar } from '@ecdlink/core';
-import { UpdateUserPermissionInputModelInput } from '@ecdlink/graphql';
 import { BannerWrapper, Button, CheckboxGroup, Typography } from '@ecdlink/ui';
 import {
   AcademicCapIcon,
@@ -78,20 +76,19 @@ export const EditPractitionerPermissions = ({
 
   const handleUpdatePermissions = useCallback(async () => {
     setIsLoading(true);
-    const updatePermissionInput: UpdateUserPermissionInputModelInput = {
-      userId: practitioner?.userId,
-      permissionIds: permissionsAdded,
-    };
 
-    await new PermissionsService(userAuth?.auth_token!)
-      .UpdateUserPermission(updatePermissionInput)
-      .then(() => {
-        showMessage({
-          message: 'App rules updated',
-          type: 'success',
-          duration: 3000,
-        });
+    await appDispatch(
+      practitionerThunkActions.updatePractitionerPermissions({
+        userId: practitioner?.userId!,
+        permissionsIds: permissionsAdded,
+      })
+    ).then(() => {
+      showMessage({
+        message: 'App rules updated',
+        type: 'success',
+        duration: 3000,
       });
+    });
 
     await appDispatch(
       practitionerThunkActions.getAllPractitioners({})

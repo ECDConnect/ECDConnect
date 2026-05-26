@@ -106,7 +106,7 @@ namespace EcdLink.Api.CoreApi.Services
 
                 if (practitioner != null && user != null)
                 {
-                    practitioner.CoachHierarchy = null;
+                    //practitioner.CoachHierarchy = null;
                     practitioner.PrincipalHierarchy = null;
                     practitioner.DateToBeRemoved = DateTime.Now;
                     practitioner.IsLeaving = true;
@@ -129,7 +129,9 @@ namespace EcdLink.Api.CoreApi.Services
                     _notificationService.ExpireNotificationsTypesForUser(removal.UserId.ToString(), TemplateTypeConstants.ProgrammeInvitation);
                     _notificationService.ExpireNotificationsTypesForUser(removal.UserId.ToString(), TemplateTypeConstants.ReassignedToNewClass);
                 }
+
             }
         }
     }
 }
+

@@ -6,8 +6,8 @@ export interface ChildInformationFormModel {
   surname?: string;
   playgroupId: string;
   childIdField?: string;
-  dobDay: number;
-  dobMonth: number;
+  dobDay: number | undefined;
+  dobMonth: number | undefined;
   dobYear: number | undefined;
   dob?: Date;
   dobValid?: boolean;

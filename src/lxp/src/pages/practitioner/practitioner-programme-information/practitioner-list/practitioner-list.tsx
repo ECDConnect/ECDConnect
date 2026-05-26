@@ -12,24 +12,27 @@ import { PractitionerColleagues } from '@ecdlink/graphql';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   PractitionerListProps,
   PractitionerListRouteState,
 } from './practitioner-list.types';
-import { practitionerSelectors } from '@/store/practitioner';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
 import { userSelectors } from '@store/user';
-import { PractitionerService } from '@/services/PractitionerService';
 import { authSelectors } from '@/store/auth';
 import { OtherPractitionerProfile } from './other-practitioner-view/other-practitioner';
 import ROUTES from '@routes/routes';
 import { EditPractitionerModal } from './components/edit-practitioner-modal';
 import TransparentLayer from '../../../../assets/TransparentLayer.png';
-import { InviteService } from '@/services/InviteService';
 import { InviteDto } from '@ecdlink/core/src/models/dto/Invite/invite.dto';
 import { InvitedPractitioner } from './invited-practitioner/invited-practitioner';
 import { formatPhonenumberLocal } from '@utils/common/contact-details.utils';
 import { useTenant } from '@/hooks/useTenant';
+import { invitesThunkActions } from '@/store/invites';
+import { useAppDispatch } from '@/store/config/config';
 
 export const PractitionerList: React.FC<PractitionerListProps> = () => {
   const location = useLocation<PractitionerListRouteState>();
@@ -56,26 +59,29 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
   const [selectedInvite, setSelectedInvite] = useState<InviteDto>();
   const [isLoading, setIsLoading] = useState(false);
   const tenant = useTenant();
+  const appDispatch = useAppDispatch();
   const isOpenAccess = tenant?.isOpenAccess;
+  const isMounted = useRef(true);
 
   const getPractitionerColleagues = async () => {
     // Check if the practitioner exists
     let practitionerColleagues: PractitionerColleagues[] = [];
-    let invites: InviteDto[] = [];
     let practitionerInvites: PractitionerColleagues[] = [];
 
     if (userAuth) {
       setIsLoading(true);
-      practitionerColleagues = await new PractitionerService(
-        userAuth?.auth_token
-      ).practitionerColleagues(user?.id!);
+      practitionerColleagues = await appDispatch(
+        practitionerThunkActions.getPractitionerColleagues({
+          userId: user?.id!,
+        })
+      ).unwrap();
       if (isOpenAccess) {
-        invites = await new InviteService(
-          userAuth?.auth_token
-        ).getInvitesByPrincipalId(user?.id!);
-        setInvites(invites);
-      }
+        const invites = await appDispatch(
+          invitesThunkActions.getInvitesByPrincipalId({})
+        ).unwrap();
 
+        setInvites(invites || []);
+      }
       setIsLoading(false);
     }
 
@@ -100,8 +106,13 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
   };
 
   useEffect(() => {
+    isMounted.current = true;
+
     getPractitionerColleagues();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    return () => {
+      isMounted.current = false;
+    };
   }, []);
 
   useEffect(() => {

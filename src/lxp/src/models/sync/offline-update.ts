@@ -1,3 +1,3 @@
 export type OfflineUpdate = {
-  synced: boolean;
+  synced?: boolean;
 };

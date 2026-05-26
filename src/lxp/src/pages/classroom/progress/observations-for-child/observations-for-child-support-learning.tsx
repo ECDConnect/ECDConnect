@@ -104,6 +104,7 @@ export const ObservationsForChildSupportLearning: React.FC<
                 onChange={(event) =>
                   updateSkillToWorkOn(skill.skillId, event.target.value)
                 }
+                maxCharacters={500}
                 value={skill.howToSupport}
               />
             </div>

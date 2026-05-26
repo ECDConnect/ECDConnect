@@ -79,7 +79,7 @@ namespace ECDLink.Security
             {
                 options.Issuer = jwtAppSettingOptions[nameof(JwtIssuerOptions.Issuer)];
                 options.Audience = jwtAppSettingOptions[nameof(JwtIssuerOptions.Audience)];
-                options.SigningCredentials = SecretManager.GetSigningCredentials();
+                options.SigningCredentials = SecretManager.GetSigningCredentials(jwtAppSettingOptions[nameof(JwtIssuerOptions.SecretKey)]);
             });
 
             services.Configure<JwtIssuerOverrides>(options =>
@@ -96,7 +96,7 @@ namespace ECDLink.Security
                 ValidAudience = jwtAppSettingOptions[nameof(JwtIssuerOptions.Audience)],
 
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = SecretManager.GetSymmetricSecurityKey(),
+                IssuerSigningKey = SecretManager.GetSymmetricSecurityKey(jwtAppSettingOptions[nameof(JwtIssuerOptions.SecretKey)]),
 
                 RequireExpirationTime = false,
                 ValidateLifetime = true,

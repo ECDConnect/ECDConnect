@@ -3,7 +3,6 @@ export * from './useTheme';
 export * from './useQueryParams';
 export * from './useConfig';
 export * from './useStepNavigation';
-export * from './useUser';
 export * from './useClearSiteData';
 export * from './usePrevious';
 export * from './useSessionStore';

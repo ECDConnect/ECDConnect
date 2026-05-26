@@ -175,6 +175,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         public List<ClassroomMetricReport> GetClassAttendanceMetrics(
             [Service] AttendanceTrackingRepository attendanceRepo,
             [Service] AttendanceService attendanceService,
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] HierarchyEngine engine,
             DateTime startMonth,
             DateTime endMonth)
         {
@@ -183,7 +185,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             List<ClassroomMetricReport> metrics = new List<ClassroomMetricReport>();
             foreach (var practitioner in practitioners)
             {
-                var metric = GetClassAttendanceMetricsByUser(attendanceRepo, attendanceService, practitioner.UserId.ToString(), startMonth.Date, endMonth.GetEndOfDay());
+                var metric = GetClassAttendanceMetricsByUser(attendanceRepo, attendanceService, contextAccessor, engine, practitioner.UserId.ToString(), startMonth.Date, endMonth.GetEndOfDay());
                 if (metric.Any())
                 {
                     metrics.AddRange(metric);
@@ -198,10 +200,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     [Service] AttendanceTrackingRepository attendanceRepo,
                     [Service] AttendanceService attendanceService,
                     [Service] AuthenticationDbContext dbContext,
+                    [Service] IHttpContextAccessor contextAccessor,
+                    HierarchyEngine hierarchyEngine,
                     string userId,
                     DateTime startMonth,
                     DateTime endMonth)
         {
+            var callerId = contextAccessor.HttpContext.GetUser().Id;
+            if (!hierarchyEngine.UserInHierarchy(callerId, Guid.Parse(userId), true))
+                throw new UnauthorizedAccessException("You do not have permission to view attendance for this user.");
+
             var metric = new List<ClassroomMetricReport>();
 
             var fromDate = startMonth.GetStartOfMonth();
@@ -252,10 +260,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         public List<ClassroomMetricReport> GetClassAttendanceMetricsByUser(
             [Service] AttendanceTrackingRepository attendanceRepo,
             [Service] AttendanceService attendanceService,
+            [Service] IHttpContextAccessor contextAccessor,
+            HierarchyEngine hierarchyEngine,
             string userId,
             DateTime startMonth,
             DateTime endMonth)
         {
+            var callerId = contextAccessor.HttpContext.GetUser().Id;
+            if (!hierarchyEngine.UserInHierarchy(callerId, Guid.Parse(userId), true))
+                throw new UnauthorizedAccessException("You do not have permission to view attendance metrics for this user.");
+
             var metric = new List<ClassroomMetricReport>();
 
             var fromDate = startMonth.GetStartOfMonth();
@@ -382,6 +396,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var user = contextAccessor.HttpContext.GetUser();
             var uId = user?.Id ?? throw new ArgumentNullException("User.Id");
 
+            if (!hierarchyEngine.UserInHierarchy(uId, Guid.Parse(practitionerId), true))
+                throw new UnauthorizedAccessException("You do not have permission to view action items for this practitioner.");
+
             var childRepo = repoFactory.CreateGenericRepository<Child>(userContext: uId);
             var practRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
             var classroomGroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
@@ -483,7 +500,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                             Subject = $"{missedReports} Missed progress reports",
                             Icon = MetricsIconEnum.Error.ToString(),
                             Color = MetricsColorEnum.Error.ToString(),
-                            Message = $"{mostRecentCompletedPeriod.StartDate.ToString("MMMM yyyy")} - {mostRecentCompletedPeriod.EndDate.ToString("MMMM yyyy")}",
+                            Message = $"{mostRecentCompletedPeriod.StartDate.ToString("MMMM")} - {mostRecentCompletedPeriod.EndDate.ToString("MMMM yyyy")}",
                             Notes = "",
                             UserId = Guid.Parse(practitionerId),
                             UserType = "practitioner"
@@ -1015,6 +1032,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] AuthenticationDbContext dbContext,
             [Service] MonthlyAttendanceReport monthlyAttendanceReportService,
             [Service] IAbsenteeService absenteeService,
+            [Service] HierarchyEngine engine,
             IGenericRepositoryFactory repoFactory,
             string type)
         {
@@ -1033,6 +1051,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         attendanceService,
                         dbContext,
                         absenteeService,
+                        contextAccessor,
+                        engine,
                         repoFactory,
                         uId.ToString(),
                         type).ToList();
@@ -1385,6 +1405,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] AttendanceService attendanceService,
             [Service] AuthenticationDbContext dbContext,
             [Service] IAbsenteeService absenteeService,
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] HierarchyEngine engine,
             IGenericRepositoryFactory repoFactory,
             string uId,
             string mode)
@@ -1487,7 +1509,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
                 #region ATTENDANCE
                 var monthlyReport = monthlyAttendanceReportService.GenerateMonthlyAttendanceReport(practitioner.UserId.ToString(), previousMonthStart, previousMonthEnd).SingleOrDefault();
-                var metrics = GetClassAttendanceByUser(attendanceRepo, attendanceService, dbContext, practitioner.UserId.ToString(), previousMonthStart.Date, previousMonthEnd.GetEndOfDay());
+                var metrics = GetClassAttendanceByUser(attendanceRepo, attendanceService, dbContext, contextAccessor, engine, practitioner.UserId.ToString(), previousMonthStart.Date, previousMonthEnd.GetEndOfDay());
                 if (monthlyReport != null)
                 {
                     if (monthlyReport.TotalScheduledSessions > 0)

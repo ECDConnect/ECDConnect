@@ -1,0 +1,5 @@
+mutation updateClassroom($id: UUID!, $input: ClassroomInput) {
+  updateClassroom(id: $id, input: $input) {
+    id
+  }
+}

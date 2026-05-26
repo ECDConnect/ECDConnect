@@ -9,7 +9,6 @@ import {
 } from '@ecdlink/ui';
 import { ResourcesIcons, ResourcesNames } from './resources.types';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ResourcesService } from '@/services/ResourcesService';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import { AllResources } from './all-resources/all-resources';
@@ -18,20 +17,25 @@ import { ComingSoon } from '@/pages/business/components/coming-soon/coming-soon'
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { useDialog } from '@ecdlink/core';
+import { resourcesSelectors, resourcesThunkActions } from '@/store/resources';
+import { useHistory } from 'react-router';
+import ROUTES from '@/routes/routes';
+import { TabsItems } from '../class-dashboard/class-dashboard.types';
+import { useAppDispatch } from '@/store';
 
 export const Resources = () => {
+  const appDispatch = useAppDispatch();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const user = useSelector(userSelectors.getUser);
-  const [locale, setLocale] = useState<string>(
-    '9688cd08-adef-408c-9d34-5d75ae5c44df'
-  );
-  const [resources, setResources] = useState<any[]>([]);
   const [resourcesLikedByUser, setResourcesLikedByUser] = useState<any[]>([]);
   const [viewAllResources, setViewAllResources] = useState(false);
   const [resourceTypeItem, setResourceTypeItem] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { isOnline } = useOnlineStatus();
   const dialog = useDialog();
+  const history = useHistory();
+
+  const resources = useSelector(resourcesSelectors.getClassroomResources);
 
   const activitiesResources = useMemo(
     () =>
@@ -60,20 +64,10 @@ export const Resources = () => {
     [resources]
   );
 
-  const handleGetResources = useCallback(async () => {
-    const response = await new ResourcesService(
-      userAuth?.auth_token!
-    )?.getResources(locale, 'classroom', '', [], [], null, null);
-
-    if (response) {
-      setResources(response);
-    }
-  }, [locale, userAuth?.auth_token]);
-
   const handleGetResourcesLikedByUser = useCallback(async () => {
-    const response = await new ResourcesService(
-      userAuth?.auth_token!
-    )?.allResourceLikesForUser(user?.id!);
+    const response = await appDispatch(
+      resourcesThunkActions.getAllResourceLikesForUser({ overrideCache: true })
+    ).unwrap();
 
     if (response) {
       setResourcesLikedByUser(response);
@@ -81,11 +75,12 @@ export const Resources = () => {
   }, [user?.id, userAuth?.auth_token]);
 
   const handleGetResourcesQueries = useCallback(async () => {
-    setIsLoading(true);
-    await handleGetResources();
-    await handleGetResourcesLikedByUser();
-    setIsLoading(false);
-  }, [handleGetResources, handleGetResourcesLikedByUser]);
+    if (isOnline) {
+      setIsLoading(true);
+      await handleGetResourcesLikedByUser();
+      setIsLoading(false);
+    }
+  }, [handleGetResourcesLikedByUser, isOnline]);
 
   useEffect(() => {
     handleGetResourcesQueries();
@@ -161,9 +156,18 @@ export const Resources = () => {
     dialog({
       color: 'bg-white',
       position: DialogPosition.Middle,
-      render: (onSubmit) => <OnlineOnlyModal onSubmit={onSubmit} />,
+      render: (onSubmit) => (
+        <OnlineOnlyModal
+          onSubmit={() => {
+            history.replace(ROUTES.CLASSROOM.ROOT, {
+              activeTabIndex: TabsItems.CLASSES,
+            });
+            onSubmit();
+          }}
+        />
+      ),
     });
-  }, [dialog]);
+  }, [dialog, history.push]);
 
   const hasResources = resourceItems?.length > 0;
 

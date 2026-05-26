@@ -29,9 +29,7 @@ export const getUser = createAsyncThunk<
         let user: UserDto | undefined;
 
         if (userAuth?.auth_token) {
-          user = await new UserService(userAuth?.auth_token).getUserById(
-            userAuth.id
-          );
+          user = await new UserService(userAuth?.auth_token).getUser();
         } else {
           return rejectWithValue('no access token, profile check required');
         }
@@ -204,6 +202,44 @@ export const updateUser = createAsyncThunk<any, {}, ThunkApiType<RootState>>(
   }
 );
 
+export const syncUser = createAsyncThunk<any, {}, ThunkApiType<RootState>>(
+  'syncUser',
+  async ({}, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      user: { user },
+    } = getState();
+
+    // 1. Hard Failure: No token
+    if (!userAuth?.auth_token) {
+      return rejectWithValue('No access token found');
+    }
+
+    // 2. Success Case: User is already synced, nothing to do!
+    if (user?.synced || !user) {
+      return ['no_update_required'];
+    }
+
+    if ('synced' in user === false) {
+      return ['no_update_required'];
+    }
+
+    // 3. Action Case: User needs syncing
+    try {
+      const userModelInput: UserModelInput = mapUser(user);
+      const update = await new UserService(userAuth.auth_token).updateUser(
+        userAuth.id,
+        userModelInput
+      );
+
+      if (!update) return rejectWithValue('Error updating user');
+      return [update];
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 export const getUserSyncStatus = createAsyncThunk<
   any,
   {},
@@ -214,7 +250,6 @@ export const getUserSyncStatus = createAsyncThunk<
   async ({}, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      user: { user },
       settings: { lastDataSync },
       classroomData: { classroom },
     } = getState();
@@ -222,11 +257,10 @@ export const getUserSyncStatus = createAsyncThunk<
     try {
       let userSyncStatus: UserSyncStatus;
 
-      if (userAuth?.auth_token && user) {
+      if (userAuth?.auth_token) {
         userSyncStatus = await new UserService(
           userAuth?.auth_token
         ).getUserSyncStatus(
-          userAuth.id,
           new Date(lastDataSync) || new Date(),
           classroom?.id || newGuid()
         );
@@ -304,4 +338,5 @@ const mapUser = (user: Partial<UserDto>): UserModelInput => ({
     user.languageId && user.languageId.length ? user.languageId : null,
   whatsAppNumber: user.whatsappNumber ? user.whatsappNumber : null,
   resetData: user.resetData || false,
+  whatsAppConsent: user.whatsAppConsent || false,
 });

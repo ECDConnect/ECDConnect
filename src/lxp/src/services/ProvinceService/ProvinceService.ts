@@ -11,14 +11,7 @@ class ProvinceService {
   async getProvinces(): Promise<ProvinceDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query GetAllProvince($isActive: Boolean = true){
-          GetAllProvince(where: { isActive: { eq: $isActive } }) {
-            id
-            description      
-          }
-        }
-          `,
+      id: 'GetAllProvince',
     });
 
     if (response.status !== 200) {

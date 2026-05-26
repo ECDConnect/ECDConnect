@@ -8,6 +8,7 @@ using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -28,26 +29,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class NotificationMutationExtension
     {
-        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Create)]
-        public async Task<bool> SendNotificationToUser(
-          [Service] ApplicationUserManager userManager,
-          [Service] INotificationService notificationService,
-          string userType,
-          string templateType, string userId = null, DateTime? startDate = null, DateTime? endDate = null)
-        {
-            if (startDate == null)
-                startDate = DateTime.Now.Date;
-            if (userId != null)
-            {
-                var userToSend = await userManager.FindByIdAsync(userId);
-                return await notificationService.SendNotificationAsync(userType, templateType, (DateTime)startDate, userToSend);
-            }
-            else
-            {
-                return await notificationService.SendNotificationAsync(userType, templateType, (DateTime)startDate);
-            }
-        }
-
         [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Update)]
         public async Task<bool> DisableNotification([Service] INotificationService notificationService, string notificationId)
         {
@@ -58,18 +39,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public async Task<bool> MarkAsReadNotification([Service] INotificationService notificationService, string notificationId)
         {
             return await notificationService.MarkAsReadNotification(notificationId);
-        }
-
-        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Update)]
-        public async Task<bool> ExpireNotification([Service] INotificationService notificationService, string notificationId)
-        {
-            return await notificationService.ExpireNotification(notificationId);
-        }
-
-        [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Update)]
-        public async Task<bool> ExpireNotificationsTypesForUser([Service] INotificationService notificationService, string userId, string templateType, string searchCriteria = null)
-        {
-            return await notificationService.ExpireNotificationsTypesForUser(userId, templateType, searchCriteria);
         }
 
         [Permission(PermissionGroups.NOTIFICATIONS, GraphActionEnum.Create)]
@@ -132,6 +101,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             MessageLogModel input)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
+
+            if (!contextAccessor.HttpContext.IsInRole(new[] { Roles.ADMINISTRATOR, Roles.SUPER_ADMINISTRATOR }))
+            {
+                throw new UnauthorizedAccessException("You do not have permission to perform this action.");
+            }
+
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
             var messageTemplateRepo = repoFactory.CreateGenericRepository<MessageTemplate>(userContext: uId);

@@ -20,7 +20,7 @@ import { useAppDispatch } from '@store';
 import { userActions, userThunkActions } from '@store/user';
 import { cloneDeep } from 'lodash';
 import { VerifyPhoneNumberAuthCode } from '@/components/user-registration/components/verify-phone-number';
-import { AuthService } from '@/services/AuthService';
+import { authThunkActions } from '@/store/auth';
 
 export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
   setEditiCellPhoneNumber,
@@ -85,15 +85,16 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
       } else {
         copy.whatsappNumber = practitionerForm?.whatsapp;
       }
-
       // await appDispatch(userActions.updateUser(copy));
       // const updatedUser = await appDispatch(userThunkActions.updateUser(copy));
       // setIsLoading(false);
 
-      const resendAuthCode = await new AuthService().SendOAAuthCode(
-        user?.userName!,
-        practitionerForm.cellphone!
-      );
+      const resendAuthCode = await appDispatch(
+        authThunkActions.sendOAAuthCode({
+          username: user?.userName!,
+          phoneNumber: practitionerForm.cellphone!,
+        })
+      ).unwrap();
 
       if (resendAuthCode) {
         setOpenVerifyPhoneNumber(true);
@@ -115,9 +116,12 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
       } else {
         copy.whatsappNumber = practitionerForm?.whatsapp;
       }
+      copy.synced = isOnline;
 
       await appDispatch(userActions.updateUser(copy));
-      await appDispatch(userThunkActions.updateUser(copy));
+      if (isOnline) {
+        await appDispatch(userThunkActions.updateUser(copy));
+      }
       setIsLoading(false);
     }
   };

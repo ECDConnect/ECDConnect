@@ -1,0 +1,23 @@
+query GetUserProgrammes {
+  userProgrammes {
+    id
+    insertedDate
+    classroomId
+    classroomGroupId
+    startDate
+    endDate
+    name
+    preferredLanguage
+    dailyProgrammes {
+      insertedDate
+      isActive
+      id
+      day
+      dayDate
+      smallGroupActivityId
+      largeGroupActivityId
+      storyActivityId
+      storyBookId
+    }
+  }
+}

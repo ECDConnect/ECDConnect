@@ -1,8 +1,8 @@
 import { coachSelectors } from '@/store/coach';
-import { LogoSvgs, getLogo } from '@/utils/common/svg.utils';
 import { useSnackbar } from '@ecdlink/core';
 import { Button, Typography } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
+import WhatsAppIcon from '@/assets/logos/whatsapp';
 
 export const CoachInfo = () => {
   const coach = useSelector(coachSelectors.getCoach);
@@ -54,11 +54,7 @@ export const CoachInfo = () => {
       <div className="mt-4 flex  flex-wrap gap-4">
         <Button color="primary" type="outlined" onClick={onWhatsapp}>
           <div className="flex items-center justify-center">
-            <img
-              src={getLogo(LogoSvgs.whatsapp)}
-              alt="whatsapp"
-              className="text-primary mr-1 h-5 w-5"
-            />
+            <WhatsAppIcon className="text-primary mr-1 h-5 w-5" />
             <Typography
               text={`Whatsapp ${coach?.user?.firstName}`}
               type="button"

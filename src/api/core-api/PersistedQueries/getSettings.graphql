@@ -1,0 +1,11 @@
+query getSettings {
+  settings {
+    Reporting {
+      ChildProgressReportMonths
+    }
+    Children {
+      ChildInitialObservationPeriod
+      ChildExpiryTime
+    }
+  }
+}

@@ -184,10 +184,7 @@ namespace ECDLink.Security.Api
             await _userManager.SetObjectDataAsync(user, tenantData.Id);
 
             // Check if logging into admin portal and deny non "administrators" or "Coaches" access.
-            var isAdminPortal = CheckHostUrlForAdminPortal(
-                TenantExecutionContext.Tenant.AdminSiteAddress,
-                TenantExecutionContext.Tenant.AdminTestSiteAddress,
-                _httpContextAccessor.HttpContext?.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri ?? (_httpContextAccessor.HttpContext?.Request.Host.Value ?? String.Empty));
+            var isAdminPortal = _httpContextAccessor.HttpContext.IsTenantAdminPortal();
 
             var userRoles = await _userManager.GetRolesAsync(user);
             var isAdministrator = userRoles.Contains(Roles.ADMINISTRATOR) || userRoles.Contains(Roles.SUPER_ADMINISTRATOR);
@@ -215,21 +212,7 @@ namespace ECDLink.Security.Api
 
             var jwt = await _securityManager.GenerateJwtForUserAsync(user, JwtEncoderEnum.Standard);
             var jwtObj = JsonConvert.DeserializeObject<JwtObject>(jwt);
-
-            // If the user reaches the confirm auth code screen, but for some reason leaves the flow. And after that, the user tries to log in directly with the username,
-            // we should check the auth code status. If it's not confirmed yet, we should redirect the user to the confirm auth code screen again.
-            var latestMessage = await (from m in _dbContext.MessageLogs
-                                       where m.TenantId == tenantData.Id
-                                            && (m.To == user.PendingPhoneNumber || m.To == user.PhoneNumber)
-                                            && m.MessageTemplateType == TemplateTypeConstants.OAWLAuthCode
-                                       select new { m.Id, m.InsertedDate, m.IsActive }
-                                       )
-                                       .OrderByDescending(x => x.InsertedDate)
-                                       .FirstOrDefaultAsync();
-            if (latestMessage != null)
-            {
-                jwtObj.userMustConfirmAuthCode = latestMessage.IsActive;
-            }
+            jwtObj.userMustConfirmAuthCode = false;     // phone number code is confirmed before username is created now (changes because of SSO)
             jwtObj.loginType = isGoogleAccount ? "google" : isFacebookAccount ? "facebook" : "";
             jwtObj.userName = user.UserName;
 
@@ -242,11 +225,6 @@ namespace ECDLink.Security.Api
         private static bool ValidateTenantForUser(Guid? userTenantId, Guid? tenantId)
         {
             return userTenantId != null && tenantId != null && userTenantId == tenantId;
-        }
-
-        private static bool CheckHostUrlForAdminPortal(string adminSiteAddress, string testAdminSiteAddress, string hostAddress)
-        {
-            return hostAddress.Contains(adminSiteAddress) || hostAddress.Contains(testAdminSiteAddress);
         }
 
         private UnauthorizedObjectResult LoginUnauthorizedResult(string message = null, bool? lockedOut = null)
@@ -269,7 +247,10 @@ namespace ECDLink.Security.Api
         [AllowAnonymous]
         [HttpPost]
         [Route("forgot-password")]
-        public async Task<IActionResult> ForgotPassword([FromBody] SimpleUserModel model)
+        public async Task<IActionResult> ForgotPassword(
+            [FromServices] IHttpContextAccessor _httpContextAccessor, 
+            [FromBody] SimpleUserModel model
+        )
         {
             var userIdentifier = model?.Username ?? model?.Email ?? model.PhoneNumber;
             if (string.IsNullOrWhiteSpace(userIdentifier))
@@ -286,20 +267,14 @@ namespace ECDLink.Security.Api
                 : !string.IsNullOrEmpty(model.Email) ? await _securityManager.GetUserByEmailAsync(model.Email)
                 : await _securityManager.GetUserByPhoneNumberAsync(normalizePhoneNumber);
 
-
-            var tenant = TenantExecutionContext.Tenant;
-            var tenantId = tenant.Id;
-
-            if (user is null || user?.TenantId.Value != tenantId)
+            var tenant = _httpContextAccessor.HttpContext.GetTenant();
+            if (tenant == null)
             {
                 return Ok(); // BadRequest("Could not reset password");
             }
 
-            var sites = new List<string> { tenant.AdminSiteAddress, tenant.AdminTestSiteAddress };
-            var originHost = new Uri(Request.Headers.Origin);
-            var isPortal = sites.Contains($"{originHost.Host}:{originHost.Port}") || sites.Contains(originHost.Host);
-
-            var result = await _securityManager.ForgotPasswordAsync(user, isPortal);
+            var isAdminPortal = _httpContextAccessor.HttpContext.IsTenantAdminPortal();
+            var result = await _securityManager.ForgotPasswordAsync(user, isAdminPortal);
 
             if (!result)
             {

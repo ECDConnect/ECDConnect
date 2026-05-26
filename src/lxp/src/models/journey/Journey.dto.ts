@@ -17,16 +17,22 @@ export type AssessmentPageDto = {
   id: string;
   name: string;
   stepNr: string;
+  isScored?: string;
+  isScoreResult?: string;
+  canSkip?: string;
+  multiAnswers?: string;
+  info?: string;
 };
 
 export type AssessmentQuestionDto = {
-  answerType: 'radioButton' | 'checkBox' | 'text';
+  answerType: 'radioButton' | 'checkBox' | 'text' | 'input' | 'number' | 'map';
   description: string;
   formQuestionOptions?: AssessmentOptionDto[];
   id: string;
   name: string;
   answer?: string;
   answerId?: string;
+  minValue?: number;
 };
 
 export type AssessmentOptionDto = {
@@ -45,4 +51,10 @@ export type AssessmentReportDto = {
   textQuestion?: string;
   textAnswer?: string;
   visitId?: string;
+  preschoolDetail?: string[];
+  safetyStandards?: string[];
+  classroomDetail?: string[];
+  certificateName?: string;
+  certificateRegNr?: string;
+  visitCompletedDate?: string;
 };

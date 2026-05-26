@@ -59,6 +59,9 @@ namespace ECDLink.ContentManagement.Repositories
                 { "defaultName", animalNature.DefaultName },
             };
             _contentRepo.Create(ContentTypeConstants.ThemeId, englishId, newDict);
+            // Invalidate the validation cache so the next GetThemeRecords call sees the
+            // newly created theme instead of the cached null and trying to create it again.
+            _contentRepo.InvalidateValidateCache(ContentTypeConstants.ThemeId, englishId, "DefaultNature", TenantExecutionContext.Tenant.Id);
         }
         public void CreateDefaultAnimalTheme(Guid englishId, Guid oaTenantId, int oaContentId)
         {
@@ -82,6 +85,7 @@ namespace ECDLink.ContentManagement.Repositories
                 { "defaultName", animalTheme.DefaultName },
             };
             _contentRepo.Create(ContentTypeConstants.ThemeId, englishId, newDict);
+            _contentRepo.InvalidateValidateCache(ContentTypeConstants.ThemeId, englishId, "DefaultAnimal", TenantExecutionContext.Tenant.Id);
         }
         public string CreateNatureThemeDays(Guid englishId)
         {

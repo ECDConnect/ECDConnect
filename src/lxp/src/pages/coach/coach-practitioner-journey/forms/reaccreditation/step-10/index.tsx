@@ -83,7 +83,7 @@ export const Step10ReAccreditation = ({
   const firstName =
     smartStarter?.user?.firstName ||
     smartStarter?.firstName ||
-    'the SmartStarter';
+    'the practitioner';
 
   const [visitIdFromPractitionerJourney] = useSessionStorage(
     practitionerVisitIdKey

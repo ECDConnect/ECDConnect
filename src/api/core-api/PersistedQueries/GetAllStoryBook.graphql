@@ -1,0 +1,27 @@
+query GetAllStoryBook($locale: String) {
+  GetAllStoryBook(locale: $locale) {
+    id
+    name
+    type
+    author
+    illustrator
+    bookLocation
+    bookLocationLink
+    keywords
+    availableLanguages {
+      id
+      description
+      locale
+    }
+    storyBookParts {
+      id
+      part
+      partText
+      storyBookPartQuestions {
+        id
+        name
+        question
+      }
+    }
+  }
+}

@@ -1,0 +1,12 @@
+mutation AddCoachVisitInviteForPractitioner($input: VisitModelInput) {
+  addCoachVisitInviteForPractitioner(input: $input) {
+    id
+    plannedVisitDate
+    actualVisitDate
+    attended
+    visitType {
+      name
+      description
+    }
+  }
+}

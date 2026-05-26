@@ -15,28 +15,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     public class CommunityProfileQueryExtension
     {
         [Permission(PermissionGroups.COMMUNITY, GraphActionEnum.View)]
-        public CommunityProfileModel GetCommunityProfile([Service] ICommunityService communityService, Guid userId)
+        public CommunityProfileModel GetCommunityProfile([Service] ICommunityService communityService)
         {
-            if (string.IsNullOrEmpty(userId.ToString()))
-            {
-                throw new ArgumentException("UserId is empty");
-            }
-            return communityService.GetCommunityProfile(userId);
+            return communityService.GetCommunityProfile();
         }
 
         [Permission(PermissionGroups.COMMUNITY, GraphActionEnum.View)]
         public List<CommunityConnectionModel> GetUsersToConnectWith(
             [Service] ICommunityService communityService,
-            Guid userId,
             List<Guid> provinceIds = null,
             List<Guid> communitySkillIds = null,
             List<string> connectionTypes = null)
         {
-            if (string.IsNullOrEmpty(userId.ToString()))
-            {
-                throw new ArgumentException("UserId is empty");
-            }
-            return communityService.GetUsersToConnectWith(userId, provinceIds, communitySkillIds, connectionTypes);
+            return communityService.GetUsersToConnectWith(provinceIds, communitySkillIds, connectionTypes);
         }
 
         [Permission(PermissionGroups.COMMUNITY, GraphActionEnum.View)]
@@ -63,15 +54,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Permission(PermissionGroups.COMMUNITY, GraphActionEnum.View)]
         public List<CommunityConnectionModel> GetOtherConnections(
             [Service] ICommunityService communityService,
-            Guid userId,
             List<Guid> provinceIds = null,
             List<Guid> communitySkillIds = null)
         {
-            if (string.IsNullOrEmpty(userId.ToString()))
-            {
-                throw new ArgumentException("UserId is empty");
-            }
-            return communityService.GetOtherConnections(userId, provinceIds, communitySkillIds);
+            return communityService.GetOtherConnections(provinceIds, communitySkillIds);
         }
 
     }

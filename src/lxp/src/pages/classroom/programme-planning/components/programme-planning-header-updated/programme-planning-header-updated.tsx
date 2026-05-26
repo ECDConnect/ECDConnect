@@ -215,12 +215,6 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
 
   const onClickTheme = async () => {
     if (isOnline) {
-      if (themes.length === 0) {
-        await appDispatch(
-          programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
-        );
-      }
-
       if (!themeName || themeName === 'No theme') {
         history.push(ROUTES.PROGRAMMES.THEME, {
           classroomGroupId,
@@ -241,10 +235,10 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
   useEffect(() => {
     if (newMonthYearList.length === 0) {
       const datesToAdd: DropDownOption<string>[] = [];
-      var selectedDropDownLabel = '';
+      let selectedDropDownLabel = '';
       if (selectedDate) {
-        for (var i = 0; i < 10; i++) {
-          var listItem: Date = addMonths(threeMonthsBack, i);
+        for (let i = 0; i < 10; i++) {
+          const listItem: Date = addMonths(threeMonthsBack, i);
           if (
             format(listItem, 'MMM yyyy') === format(selectedDate, 'MMM yyyy')
           ) {
@@ -270,12 +264,12 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
 
   const monthYearHandler = useCallback(
     (index: number) => {
-      var selectedListValue = newMonthYearList[index];
-      var arrListValue = selectedListValue.label.split(' ');
-      var year = Number(arrListValue[1]);
-      var monthName = arrListValue[0];
-      var monthNr = new Date(monthName + '-1-01').getMonth();
-      var newDate = new Date(year, monthNr, selectedDate?.getDate());
+      const selectedListValue = newMonthYearList[index];
+      const arrListValue = selectedListValue.label.split(' ');
+      const year = Number(arrListValue[1]);
+      const monthName = arrListValue[0];
+      const monthNr = new Date(monthName + '-1-01').getMonth();
+      const newDate = new Date(year, monthNr, selectedDate?.getDate());
 
       setSelectedDate(newDate);
 

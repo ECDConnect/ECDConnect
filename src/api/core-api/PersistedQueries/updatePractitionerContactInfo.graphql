@@ -1,0 +1,11 @@
+mutation updatePractitionerContactInfo($practitionerId: String, $firstName: String, $lastName: String, $phoneNumber: String, $email: String) {
+  updatePractitionerContactInfo(practitionerId: $practitionerId, firstName: $firstName, lastName: $lastName, phoneNumber: $phoneNumber, email: $email) {
+    id
+    idNumber
+    firstName
+    nickFirstName
+    nickSurname
+    email
+    phoneNumber
+  }
+}

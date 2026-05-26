@@ -17,7 +17,6 @@ import {
   OnNext,
   PractitionerSetupSteps,
 } from '../../setup-principal/setup-principal.types';
-import { useEffect } from 'react';
 import { ClassroomDto } from '@/models/classroom/classroom.dto';
 import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
 
@@ -60,12 +59,6 @@ export const AddProgrammeForm: React.FC<{
       id: classroomId,
       name: programme?.name ?? '',
       isDummySchool: false,
-      numberPractitioners: programme?.smartStartPractitioners
-        ? +programme?.smartStartPractitioners
-        : 0,
-      numberOfOtherAssistants: programme?.nonSmartStartPractitioners
-        ? +programme?.nonSmartStartPractitioners
-        : 0,
       classroomImageUrl: '',
       principal: {
         email: user?.email!,
@@ -119,12 +112,6 @@ export const AddProgrammeForm: React.FC<{
       id: classroomId,
       name: programme?.name ?? '',
       isDummySchool: false,
-      numberPractitioners: programme?.smartStartPractitioners
-        ? +programme?.smartStartPractitioners
-        : 0,
-      numberOfOtherAssistants: programme?.nonSmartStartPractitioners
-        ? +programme?.nonSmartStartPractitioners
-        : 0,
       classroomImageUrl: '',
       siteAddress: classroom?.siteAddress!,
       principal: {

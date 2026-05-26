@@ -1,5 +1,4 @@
 import {
-  ChildAttendanceReportModel,
   ChildGroupingAttendanceReportModel,
   RoleSystemNameEnum,
 } from '@ecdlink/core';
@@ -20,10 +19,8 @@ import {
   badScoreThreshold,
   goodScoreThreshold,
 } from '@models/classroom/attendance/ClassAttendance';
-import { AttendanceService } from '@services/AttendanceService';
 import { useAppDispatch } from '@store';
 import { attendanceSelectors, attendanceThunkActions } from '@store/attendance';
-import { authSelectors } from '@store/auth';
 import { childrenSelectors } from '@store/children';
 import { analyticsActions } from '@store/analytics';
 import {
@@ -50,7 +47,6 @@ export const ChildAttendanceReportPage: React.FC = () => {
 
   const child = useSelector(childrenSelectors.getChildById(childId));
 
-  const attendanceData = useSelector(attendanceSelectors.getTrackedAttendance);
   const learner = useSelector(
     classroomsSelectors.getChildLearnerByClassroomGroup(
       classroomGroupId,
@@ -71,18 +67,14 @@ export const ChildAttendanceReportPage: React.FC = () => {
   }, [isOnline]);
 
   const currentYear = getYear(new Date());
-  const [childAttendanceReportData, setChildAttendanceReportData] =
-    useState<ChildAttendanceReportModel>({
-      totalActualAttendance: 0,
-      totalExpectedAttendance: 0,
-      classGroupAttendance: [],
-      attendancePercentage: 0,
-    });
+  const childAttendanceReportData = useSelector(
+    attendanceSelectors.getClassAttendanceForId(child?.userId || childUserId)
+  );
+
   const [attendancePercentage, setAttendancePercentage] = useState<number>(0);
   const [classroomGroup, setClassroomGroup] =
     useState<ChildGroupingAttendanceReportModel>();
 
-  const authUser = useSelector(authSelectors.getAuthUser);
   const user = useSelector(userSelectors.getUser);
   const isCoach = user?.roles?.some(
     (role) => role.systemName === RoleSystemNameEnum.Coach
@@ -101,48 +93,69 @@ export const ChildAttendanceReportPage: React.FC = () => {
   };
 
   useEffect(() => {
-    async function init() {
-      // TODO: update sync rules, today its syncing all attendance records every time we visit this page
-      if (attendanceData && attendanceData.length > 0) {
-        appDispatch(attendanceThunkActions.trackAttendanceSync({})).unwrap();
-      }
-      const startDate = new Date(learner?.startedAttendance || new Date());
-      const endDate = new Date();
-
-      await new AttendanceService(authUser?.auth_token ?? '')
-        .getChildAttendanceRecords(
-          child?.userId ?? childUserId ?? child?.user?.id ?? '',
-          classroomGroupId,
-          startDate,
-          endDate
-        )
-        .then((data) => {
-          setChildAttendanceReportData(data);
-        });
-
+    // Only run if we don't already have meaningful data
+    if (childAttendanceReportData?.classGroupAttendance?.length > 0) {
       setIsLoading(false);
+      return;
     }
-    init().catch(console.error);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+
+    const userId = child?.userId ?? childUserId ?? child?.user?.id ?? '';
+
+    if (!userId || !classroomGroupId) {
+      console.warn('Missing userId or classroomGroupId → skipping fetch');
+      setIsLoading(false);
+      return;
+    }
+
+    const start = new Date(learner?.startedAttendance || Date.now());
+    const end = new Date();
+
+    setIsLoading(true);
+
+    appDispatch(
+      attendanceThunkActions.getChildAttendanceRecords({
+        userId,
+        classgroupId: classroomGroupId,
+        startDate: start,
+        endDate: end,
+      })
+    )
+      .unwrap()
+      .catch(console.error)
+      .finally(() => setIsLoading(false));
+  }, [
+    childAttendanceReportData?.classGroupAttendance?.length,
+    child?.userId,
+    childUserId,
+    child?.user?.id,
+    classroomGroupId,
+    learner?.startedAttendance,
+    appDispatch,
+  ]);
 
   useEffect(() => {
     if (!childAttendanceReportData) return;
-    setAttendancePercentage(childAttendanceReportData.attendancePercentage);
-    const group = childAttendanceReportData.classGroupAttendance.find(
-      (x) => x.classroomGroupId === classroomGroupId
+
+    // Safe access with optional chaining + fallback
+    setAttendancePercentage(
+      childAttendanceReportData.attendancePercentage ?? null
     );
+
+    const group =
+      childAttendanceReportData.classGroupAttendance?.find(
+        (x) => x?.classroomGroupId === classroomGroupId
+      ) ?? undefined;
+
     setClassroomGroup(group);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [childAttendanceReportData]);
+  }, [childAttendanceReportData, classroomGroupId]);
 
   const attendancePerMonthArray =
-    childAttendanceReportData.classGroupAttendance.map((item) => {
-      return {
-        monthlyAttendance: item?.monthlyAttendance,
-        classroomGroup: item?.classroomGroupName,
-      };
-    });
+    childAttendanceReportData?.classGroupAttendance?.map((item) => ({
+      monthlyAttendance: item?.monthlyAttendance,
+      classroomGroup: item?.classroomGroupName,
+    })) ?? [];
 
   const attendanceArrayPerMonthSortedAndFiltered = attendancePerMonthArray
     .flatMap((group) =>
@@ -163,6 +176,36 @@ export const ChildAttendanceReportPage: React.FC = () => {
     history.push('/child-caregivers', { childId });
   };
 
+  const goBack = () => {
+    state?.selectedMonth
+      ? history.push(ROUTES.CLASSROOM.ATTENDANCE.MONTHLY_REPORT, {
+          selectedMonth: state?.selectedMonth,
+        } as MonthlyAttendanceReportRouteState)
+      : childId
+      ? history.push(ROUTES.CHILD_PROFILE, { childId })
+      : history.goBack();
+  };
+
+  if (!isOnline && attendanceArrayPerMonthSortedAndFiltered.length === 0) {
+    return (
+      <Dialog visible={!isOnline} position={DialogPosition.Middle}>
+        <OnlineOnlyModal
+          overrideText={'You need to go online to use this feature.'}
+          onSubmit={() => {
+            goBack();
+            // childUserId
+            //   ? history.push(ROUTES.CLASSROOM.ROOT, {
+            //       activeTabIndex: TabsItems.ATTENDANCE,
+            //     })
+            //   : childId
+            //   ? history.push(ROUTES.CHILD_PROFILE, { childId })
+            //   : history.goBack();
+          }}
+        ></OnlineOnlyModal>
+      </Dialog>
+    );
+  }
+
   return (
     <BannerWrapper
       isLoading={isLoading}
@@ -171,119 +214,95 @@ export const ChildAttendanceReportPage: React.FC = () => {
         if (isCoach) {
           history.goBack();
         } else {
-          state?.selectedMonth
-            ? history.push(ROUTES.CLASSROOM.ATTENDANCE.MONTHLY_REPORT, {
-                selectedMonth: state?.selectedMonth,
-              } as MonthlyAttendanceReportRouteState)
-            : childId
-            ? history.push(ROUTES.CHILD_PROFILE, { childId })
-            : history.goBack();
+          goBack();
         }
       }}
       size={'small'}
       title={`${child?.user?.firstName}'s attendance`}
       displayOffline={!isOnline}
     >
-      {isOnline ? (
-        <div className={'flex h-full w-full flex-col p-4'}>
-          <Typography
-            type="h1"
-            color={'primary'}
-            text={`Attendance ${currentYear}`}
-          />
+      <div className={'flex h-full w-full flex-col p-4'}>
+        <Typography
+          type="h1"
+          color={'primary'}
+          text={`Attendance ${currentYear}`}
+        />
 
-          {childAttendanceReportData?.totalExpectedAttendance !== 0 && (
-            <>
-              <div className={'flex w-full flex-row pt-4'}>
-                <StatusChip
-                  backgroundColour={getColor(attendancePercentage)}
-                  text={`${
-                    childAttendanceReportData?.totalActualAttendance ?? 0
-                  }/${childAttendanceReportData?.totalExpectedAttendance ?? 0}`}
-                  textColour={'white'}
-                  borderColour={getColor(attendancePercentage)}
-                />
-                <Typography
-                  className={'ml-2'}
-                  type="body"
-                  color={getColor(attendancePercentage)}
-                  text={`days attended so far this year.`}
-                />
-              </div>
-              <Typography
-                className={'mt-2 mb-4'}
-                type="body"
-                color={'textMid'}
-                text={getAttendanceText(attendancePercentage)}
+        {childAttendanceReportData?.totalExpectedAttendance !== 0 && (
+          <>
+            <div className={'flex w-full flex-row pt-4'}>
+              <StatusChip
+                backgroundColour={getColor(attendancePercentage)}
+                text={`${
+                  childAttendanceReportData?.totalActualAttendance ?? 0
+                }/${childAttendanceReportData?.totalExpectedAttendance ?? 0}`}
+                textColour={'white'}
+                borderColour={getColor(attendancePercentage)}
               />
-            </>
-          )}
-          <table className="text-textDark text-left">
-            <thead>
-              <tr className="bg-uiBg border-quatenary border-b">
-                <th className="w-1/2 py-3 pl-4">CLASS</th>
-                <th className="py-3 pl-4">MONTH</th>
-                <th>DAYS PRESENT</th>
-              </tr>
-            </thead>
-            <tbody>
-              {attendanceArrayPerMonthSortedAndFiltered &&
-                attendanceArrayPerMonthSortedAndFiltered.map((report, idx) => {
-                  const reportItemColor = getColor(report.attendancePercentage);
-                  const reportItemShape = getShape(report.attendancePercentage);
-                  if (!report?.expectedAttendance) return null;
+              <Typography
+                className={'ml-2'}
+                type="body"
+                color={getColor(attendancePercentage)}
+                text={`days attended so far this year.`}
+              />
+            </div>
+            <Typography
+              className={'mt-2 mb-4'}
+              type="body"
+              color={'textMid'}
+              text={getAttendanceText(attendancePercentage)}
+            />
+          </>
+        )}
+        <table className="text-textDark text-left">
+          <thead>
+            <tr className="bg-uiBg border-quatenary border-b">
+              <th className="w-1/2 py-3 pl-4">CLASS</th>
+              <th className="py-3 pl-4">MONTH</th>
+              <th>DAYS PRESENT</th>
+            </tr>
+          </thead>
+          <tbody>
+            {attendanceArrayPerMonthSortedAndFiltered?.map((report, idx) => {
+              const reportItemColor = getColor(report.attendancePercentage);
+              const reportItemShape = getShape(report.attendancePercentage);
+              if (!report?.expectedAttendance) return null;
 
-                  return (
-                    <tr
-                      key={`group-${report.classroomGroup}-month-${report.monthNumber}`}
-                      className={`${idx % 2 === 0 ? 'bg-uiBg' : 'bg-white'}`}
-                    >
-                      <td className="py-3 pl-4">{report.classroomGroup} </td>
-                      <td className="py-3 pl-4">{report.month} </td>
-                      <td className="flex items-center gap-2 py-3">
-                        <div
-                          className={getShapeClass(
-                            reportItemShape,
-                            reportItemColor
-                          )}
-                        />
-                        <Typography
-                          type="body"
-                          color={reportItemColor}
-                          text={`${report.actualAttendance} out of ${report.expectedAttendance}`}
-                        />
-                      </td>
-                    </tr>
-                  );
-                })}
-            </tbody>
-          </table>
-          <Button
-            color="quatenary"
-            type="filled"
-            onClick={contactCaregiver}
-            className="mt-auto w-full"
-            icon="ChatAlt2Icon"
-            text="Contact caregiver"
-            textColor="white"
-          />
-        </div>
-      ) : (
-        <Dialog visible={!isOnline} position={DialogPosition.Middle}>
-          <OnlineOnlyModal
-            overrideText={'You need to go online to use this feature.'}
-            onSubmit={() => {
-              childUserId
-                ? history.push(ROUTES.CLASSROOM.ROOT, {
-                    activeTabIndex: TabsItems.ATTENDANCE,
-                  })
-                : childId
-                ? history.push(ROUTES.CHILD_PROFILE, { childId })
-                : history.goBack();
-            }}
-          ></OnlineOnlyModal>
-        </Dialog>
-      )}
+              return (
+                <tr
+                  key={`group-${report.classroomGroup}-month-${report.monthNumber}`}
+                  className={`${idx % 2 === 0 ? 'bg-uiBg' : 'bg-white'}`}
+                >
+                  <td className="py-3 pl-4">{report.classroomGroup} </td>
+                  <td className="py-3 pl-4">{report.month} </td>
+                  <td className="flex items-center gap-2 py-3">
+                    <div
+                      className={getShapeClass(
+                        reportItemShape,
+                        reportItemColor
+                      )}
+                    />
+                    <Typography
+                      type="body"
+                      color={reportItemColor}
+                      text={`${report.actualAttendance} out of ${report.expectedAttendance}`}
+                    />
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        <Button
+          color="quatenary"
+          type="filled"
+          onClick={contactCaregiver}
+          className="mt-auto w-full"
+          icon="ChatAlt2Icon"
+          text="Contact caregiver"
+          textColor="white"
+        />
+      </div>
     </BannerWrapper>
   );
 };

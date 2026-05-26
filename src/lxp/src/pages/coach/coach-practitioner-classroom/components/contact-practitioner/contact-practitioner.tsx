@@ -16,10 +16,10 @@ import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { useDialog } from '@ecdlink/core';
 import { NotificationDisplay } from '@ecdlink/graphql';
 import ROUTES from '@/routes/routes';
-import { LogoSvgs, getLogo } from '@/utils/common/svg.utils';
 import { HighlightedCount } from '@/components/highlighted-count/highlighted-count';
 import { coachThunkActions } from '@store/coach';
 import { useAppDispatch } from '@store';
+import WhatsAppIcon from '@/assets/logos/whatsapp';
 
 interface ContactPractitionerProps {
   practitionerId: string;
@@ -111,7 +111,7 @@ export const ContactPractitioner: React.FC<ContactPractitionerProps> = ({
         onBack={onClose}
         displayOffline={!isOnline}
       >
-        <div className="px-4 pb-6">
+        <div className="px-4 pb-4">
           {notification?.subject && (
             <div className="mt-4 flex items-center gap-3">
               <HighlightedCount
@@ -122,6 +122,16 @@ export const ContactPractitioner: React.FC<ContactPractitionerProps> = ({
                 color="textDark"
                 className="leading-snug"
                 text={parseNotificationMessage(notification.subject).text}
+              />
+            </div>
+          )}
+          {notification?.message && (
+            <div className="mt-4 flex items-center gap-3">
+              <Typography
+                type="body"
+                color="textMid"
+                className="leading-snug"
+                text={parseNotificationMessage(notification.message).text}
               />
             </div>
           )}
@@ -171,10 +181,11 @@ export const ContactPractitioner: React.FC<ContactPractitionerProps> = ({
                   type="h3"
                   text={`Remind ${name} to track progress for the next reporting period`}
                   color="textDark"
+                  className="semi-bold"
                 />
                 <Typography
                   type="body"
-                  text={`${name} has missed the opportunity to submit reports. Please encourage them to start observing children for the next period.`}
+                  text={`${name} has missed the opportunity to submit reports. Please encourage ${name} to start observing children for the next period.`}
                   color="textMid"
                   className="mt-2"
                 />
@@ -206,7 +217,7 @@ export const ContactPractitioner: React.FC<ContactPractitionerProps> = ({
             )}
           </div>
 
-          <div className="flex-column mx-auto mt-8 w-11/12 items-center">
+          <div className="flex-column mx-auto mt-8 w-full items-center">
             <Typography type="h2" text={`Contact ${name}`} className="mb-2" />
             <Typography
               type="h5"
@@ -227,11 +238,7 @@ export const ContactPractitioner: React.FC<ContactPractitionerProps> = ({
                 disabled={!phone}
                 className="w-full justify-start"
               >
-                <img
-                  src={getLogo(LogoSvgs.whatsapp)}
-                  alt="WhatsApp"
-                  className="mr-3 h-5 w-5"
-                />
+                <WhatsAppIcon className="mr-3 h-5 w-5" />
                 <Typography
                   type="small"
                   weight="bold"

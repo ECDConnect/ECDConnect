@@ -16,6 +16,7 @@ import {
   getJourneyAssessmentFormData,
   getJourneyAssessmentReport,
   submitJourneyAssessmentFormData,
+  saveHealthCertificateDetails,
 } from './pqa.actions';
 import { PQAFormType, PQAState } from './pqa.types';
 import {
@@ -234,6 +235,22 @@ const pqaSlice = createSlice({
       addReAccreditationFollowUpVisitForPractitioner
     );
     setThunkActionStatus(builder, addSelfAssessmentForPractitioner);
+    setThunkActionStatus(builder, saveHealthCertificateDetails);
+    builder.addCase(saveHealthCertificateDetails.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+      const { visitId, certificateName, certificateRegNr } = action.meta.arg;
+
+      if (Array.isArray(state.journeyAssessmentReport)) {
+        state.journeyAssessmentReport = state.journeyAssessmentReport.map(
+          (item) => {
+            if (item.visitId === visitId) {
+              return { ...item, certificateName, certificateRegNr };
+            }
+            return item;
+          }
+        );
+      }
+    });
     builder.addCase(getPractitionerTimeline.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
       const practitionerId = action.meta.arg.userId;
@@ -313,8 +330,6 @@ const pqaSlice = createSlice({
       submitJourneyAssessmentFormData.fulfilled,
       (state, action) => {
         const { visitId } = action.payload.visitId;
-
-        console.log('pqa.submitJourneyAssessmentFormData', action.payload);
 
         // Initialize the array if it's not defined
         if (!Array.isArray(state.journeyAssessmentReport)) {

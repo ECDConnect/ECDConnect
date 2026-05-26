@@ -9,29 +9,31 @@ import {
 } from '@ecdlink/ui';
 import { ResourcesIcons, ResourcesNames } from './resources.types';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ResourcesService } from '@/services/ResourcesService';
 import { useSelector } from 'react-redux';
-import { authSelectors } from '@/store/auth';
 import { AllResources } from './all-resources/all-resources';
-import { userSelectors } from '@/store/user';
 import { ComingSoon } from '../coming-soon/coming-soon';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { useDialog } from '@ecdlink/core';
+import { ResourcesLikedDto, useDialog } from '@ecdlink/core';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+import { resourcesSelectors, resourcesThunkActions } from '@/store/resources';
+import { useAppDispatch } from '@/store';
 
-export const Resources = () => {
-  const userAuth = useSelector(authSelectors.getAuthUser);
-  const user = useSelector(userSelectors.getUser);
-  const [locale, setLocale] = useState<string>(
-    '9688cd08-adef-408c-9d34-5d75ae5c44df'
-  );
-  const [resources, setResources] = useState<any[]>([]);
-  const [resourcesLikedByUser, setResourcesLikedByUser] = useState<any[]>([]);
+interface ResourceProps {
+  setSelectedTabIndex: React.Dispatch<React.SetStateAction<number>>;
+}
+
+export const Resources = ({ setSelectedTabIndex }: ResourceProps) => {
+  const appDispatch = useAppDispatch();
+  const [resourcesLikedByUser, setResourcesLikedByUser] = useState<
+    ResourcesLikedDto[]
+  >([]);
   const [viewAllResources, setViewAllResources] = useState(false);
   const [resourceTypeItem, setResourceTypeItem] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { isOnline } = useOnlineStatus();
   const dialog = useDialog();
+
+  const resources = useSelector(resourcesSelectors.getBusinessResources);
 
   const activitiesResources = useMemo(
     () =>
@@ -58,32 +60,23 @@ export const Resources = () => {
     [resources]
   );
 
-  const handleGetResources = useCallback(async () => {
-    const response = await new ResourcesService(
-      userAuth?.auth_token!
-    )?.getResources(locale, 'business', '', [], [], null, null);
-
-    if (response) {
-      setResources(response);
-    }
-  }, [locale, userAuth?.auth_token]);
-
   const handleGetResourcesLikedByUser = useCallback(async () => {
-    const response = await new ResourcesService(
-      userAuth?.auth_token!
-    )?.allResourceLikesForUser(user?.id!);
+    const response = await appDispatch(
+      resourcesThunkActions.getAllResourceLikesForUser({ overrideCache: true })
+    ).unwrap();
 
     if (response) {
       setResourcesLikedByUser(response);
     }
-  }, [user?.id, userAuth?.auth_token]);
+  }, [appDispatch]);
 
   const handleGetResourcesQueries = useCallback(async () => {
-    setIsLoading(true);
-    await handleGetResources();
-    await handleGetResourcesLikedByUser();
-    setIsLoading(false);
-  }, [handleGetResources, handleGetResourcesLikedByUser]);
+    if (isOnline) {
+      setIsLoading(true);
+      await handleGetResourcesLikedByUser();
+      setIsLoading(false);
+    }
+  }, [handleGetResourcesLikedByUser, isOnline]);
 
   useEffect(() => {
     if (isOnline) {
@@ -155,7 +148,14 @@ export const Resources = () => {
     dialog({
       color: 'bg-white',
       position: DialogPosition.Middle,
-      render: (onSubmit) => <OnlineOnlyModal onSubmit={onSubmit} />,
+      render: (onSubmit) => (
+        <OnlineOnlyModal
+          onSubmit={() => {
+            setSelectedTabIndex(0);
+            onSubmit();
+          }}
+        />
+      ),
     });
   }, [dialog]);
 

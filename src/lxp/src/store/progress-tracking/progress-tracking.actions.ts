@@ -12,6 +12,7 @@ import { OverrideCache } from '@/models/sync/override-cache';
 import { isBefore } from 'date-fns';
 import { ChildProgressReportModelInput, ResourceLink } from '@ecdlink/graphql';
 import { ChildProgressReport } from '@/models/progress/child-progress-report';
+import { ContentService } from '@/services/ContentService';
 
 export const ProgressTrackingActions = {
   GET_PROGRESS_TRACKING_AGE_GROUPS: 'getProgressTrackingAgeGroup',
@@ -23,11 +24,14 @@ export const ProgressTrackingActions = {
   GET_CHILD_PROGRESS_REPORTS: 'getChildProgressReports',
   GET_CHILD_PROGRESS_REPORTS_FOR_PRACTITIONER:
     'getChildProgressReportsForPractitioner',
+  GET_CLASSROOM_PROGRESS_SUMMARY_DOWNLOADED:
+    'getClassroomProgressSummaryDownloaded',
+  HAS_CONTENT_TYPE_BEEN_TRANSLATED: 'hasContentTypeBeenTranslated',
 };
 
 export const getProgressTrackingAgeGroups = createAsyncThunk<
   ProgressTrackingAgeGroupDto[],
-  { locale: string } & OverrideCache,
+  { locale: string; overrideCache?: boolean },
   ThunkApiType<RootState>
 >(
   ProgressTrackingActions.GET_PROGRESS_TRACKING_AGE_GROUPS,
@@ -342,6 +346,62 @@ export const getChildProgressReportsForPractitioner = createAsyncThunk<
       }
     } catch (err) {
       return rejectWithValue(err);
+    }
+  }
+);
+
+export const hasContentTypeBeenTranslated = createAsyncThunk<
+  boolean,
+  { id: number; ageGroup: number; localeId: string },
+  ThunkApiType<RootState>
+>(
+  ProgressTrackingActions.HAS_CONTENT_TYPE_BEEN_TRANSLATED,
+  async ({ id, ageGroup, localeId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      if (!userAuth?.auth_token) {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return await new ContentService(
+        userAuth?.auth_token
+      ).hasContentTypeBeenTranslated(id, ageGroup, localeId);
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message ||
+          err?.message ||
+          'Failed to has Content Type Been Translated'
+      );
+    }
+  }
+);
+
+export const getClassroomProgressSummaryDownloaded = createAsyncThunk<
+  boolean,
+  { classroomGroupId: string },
+  ThunkApiType<RootState>
+>(
+  ProgressTrackingActions.GET_CLASSROOM_PROGRESS_SUMMARY_DOWNLOADED,
+  async ({ classroomGroupId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      if (!userAuth?.auth_token) {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return await new ProgressTrackingService(
+        userAuth?.auth_token
+      ).getClassroomProgressSummaryDownloaded(classroomGroupId);
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message ||
+          err?.message ||
+          'Failed to get Classroom Progress Summary Downloaded'
+      );
     }
   }
 );

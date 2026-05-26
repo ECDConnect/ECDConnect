@@ -1,0 +1,7 @@
+query GetAllWorkflowStatus($isActive: Boolean = true) {
+  GetAllWorkflowStatus(where: { isActive: { eq: $isActive } }) {
+    id
+    description
+    enumId
+  }
+}

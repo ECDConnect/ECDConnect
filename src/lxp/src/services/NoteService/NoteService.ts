@@ -12,23 +12,7 @@ class NoteService {
   async getNotes(userId: string): Promise<NoteDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query GetAllNote($createdUserId: UUID) {
-          GetAllNote (where: {
-            and: [{ 
-              createdUserId: {eq: $createdUserId}
-            }]
-          }) {
-            id
-            name
-            bodyText
-            noteTypeId
-            userId            
-            insertedDate
-            isActive
-          }
-        } 
-      `,
+      id: 'GetAllNote',
       variables: {
         createdUserId: userId,
       },
@@ -44,13 +28,7 @@ class NoteService {
   async updateNote(id: string, input: NoteInput): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation updateNote($input: NoteInput, $id: UUID) {
-          updateNote(input: $input, id: $id) {
-            id
-          }
-        }
-      `,
+      id: 'updateNote',
       variables: {
         id: id,
         input: input,
@@ -67,11 +45,7 @@ class NoteService {
   async deleteNote(id: string): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation deleteNote($id: UUID!) {
-          deleteNote(id: $id)
-        }
-      `,
+      id: 'deleteNote',
       variables: {
         id: id,
       },

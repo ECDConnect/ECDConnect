@@ -1,0 +1,89 @@
+query GetPractitionerByUserId($userId: String) {
+  practitionerByUserId(userId: $userId) {
+    id
+    userId
+    user {
+      gender {
+        description
+      }
+      firstName
+      surname
+      fullName
+      userName
+      email
+      isSouthAfricanCitizen
+      verifiedByHomeAffairs
+      idNumber
+      phoneNumber
+    }
+    siteAddress {
+      id
+      province {
+        id
+        description
+      }
+      name
+      addressLine1
+      addressLine2
+      addressLine3
+      postalCode
+      ward
+    }
+    programmeType
+    isPrincipal
+    isRegistered
+    principalHierarchy
+    coachHierarchy
+    coachName
+    coachProfilePic
+    attendanceRegisterLink
+    consentForPhoto
+    parentFees
+    languageUsedInGroups
+    signingSignature
+    startDate
+    shareInfo
+    dateLinked
+    dateAccepted
+    dateToBeRemoved
+    isLeaving
+    progress
+    usePhotoInReport
+    isCompletedBusinessWalkThrough
+    clickedCommunityTab
+    communitySectionViewDate
+    progressWalkthroughComplete
+    absentees {
+      absentDate
+      absentDateEnd
+      className
+      classroomGroupId
+      reason
+      reassignedToPerson
+      reassignedToUserId
+      absenteeId
+      loggedByPerson
+      loggedByUserId
+    }
+    permissions {
+      id
+      userId
+      permissionId
+      isActive
+      permissionName
+      permissionNormalizedName
+      permissionGrouping
+    }
+    ecdRegistration {
+      id
+      subsidy
+      registrationType
+      challenges
+      challengesOtherReason
+      hasBronzeCertificate
+      hasSilverCertificate
+      hasGoldCertificate
+      problemDescription
+    }
+  }
+}

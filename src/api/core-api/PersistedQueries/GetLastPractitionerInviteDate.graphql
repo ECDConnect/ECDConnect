@@ -1,0 +1,3 @@
+query GetLastPractitionerInviteDate($userId: String) {
+  lastPractitionerInviteDate(userId: $userId)
+}

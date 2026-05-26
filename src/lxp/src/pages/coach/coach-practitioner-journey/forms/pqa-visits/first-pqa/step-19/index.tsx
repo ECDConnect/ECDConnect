@@ -26,15 +26,18 @@ import { getAttendanceStatusCheck } from '@/utils/classroom/attendance/track-att
 import { getDay } from 'date-fns';
 import ClassProgrammeAttendanceList from '@/pages/classroom/attendance/components/class-programme-attendance-list/class-programme-attendance-list';
 import { AttendanceState } from '@/pages/classroom/attendance/components/attendance-list/attendance-list.types';
-import { PractitionerService } from '@/services/PractitionerService';
 import { ClassroomGroup } from '@ecdlink/graphql';
 import { authSelectors } from '@/store/auth';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { practitionerVisitIdKey } from '@/pages/practitioner/practitioner-profile/practitioner-journey/forms';
 import { getSectionsQuestionsByStep } from '@/store/pqa/pqa.selectors';
-import { practitionerSelectors } from '@/store/practitioner';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
 import { userSelectors } from '@/store/user';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
+import { useAppDispatch } from '@/store';
 
 export const step19Question2Pqa =
   'Does {client} need to register any children on Funda App?';
@@ -50,6 +53,7 @@ export const Step19 = ({
   setSectionQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
+  const appDispatch = useAppDispatch();
   const [presentChildrenCount, setPresentChildrenCount] = useState<number>(0);
   const [absentChildrenCount, setAbsentChildrenCount] = useState<number>(0);
   const [attendanceGroups, setAttendanceGroups] = useState<AttendanceState[]>();
@@ -237,12 +241,11 @@ export const Step19 = ({
   ]);
 
   const classroomsDetailsForPractitioner = useCallback(async () => {
-    // Needs to be updated
-    const classroomDetails = (await new PractitionerService(
-      userAuth?.auth_token!
-    ).getClassroomGroupClassroomsForPractitioner(
-      isPractitionerUser ? user?.id! : smartStarter?.userId!
-    )) as unknown;
+    const classroomDetails = await appDispatch(
+      practitionerThunkActions.getClassroomGroupClassroomsForPractitioner({
+        userId: isPractitionerUser ? user?.id! : smartStarter?.userId!,
+      })
+    ).unwrap();
 
     setPractitionerClassroomDetails(classroomDetails as ClassroomGroup[]);
     return classroomDetails;

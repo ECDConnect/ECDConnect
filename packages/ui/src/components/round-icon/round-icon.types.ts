@@ -3,6 +3,7 @@ import { Colours } from '../..';
 export type RoundIconProps = {
   icon?: string;
   imageUrl?: string;
+  svgIcon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   hexBackgroundColor?: string;
   backgroundColor?: Colours;
   iconColor?: Colours;

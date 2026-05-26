@@ -1,0 +1,28 @@
+query GetAllProgrammeRoutine($locale: String) {
+  GetAllProgrammeRoutine(locale: $locale) {
+    id
+    description
+    name
+    headerBanner
+    routineItems {
+      id
+      sequence
+      name
+      description
+      image
+      imageBackgroundColor
+      icon
+      iconBackgroundColor
+      alert
+      timeSpan
+      routineSubItems {
+        id
+        name
+        description
+        image
+        imageBackgroundColor
+        timeSpan
+      }
+    }
+  }
+}

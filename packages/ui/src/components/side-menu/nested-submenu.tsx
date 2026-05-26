@@ -16,6 +16,7 @@ export default function NestedSubMenu({ item, onNavigation }) {
   const handleOpenSubMenu = (v: any) => {
     setOpenSubMenu(!openSubMenu);
   };
+
   return (
     <div className="group w-full items-center">
       <Fragment key={item.name}>

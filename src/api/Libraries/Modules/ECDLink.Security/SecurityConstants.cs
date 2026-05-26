@@ -14,7 +14,7 @@ namespace ECDLink.Security
         {
             public static class JwtClaimIdentifiers
             {
-                public const string Rol = "rol", Id = "id", Type = "type", TenantId = "tenantId";
+                public const string Rol = "rol", Id = "id", Type = "type", TenantId = "tenantId", PersistedQuery = "persistedQuery";
             }
 
             public static class JwtTokenTypes

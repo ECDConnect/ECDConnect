@@ -1,0 +1,3 @@
+mutation updateProgrammes($programmeInput: ProgrammeModelInput) {
+  updateProgrammes(programmeInput: $programmeInput)
+}

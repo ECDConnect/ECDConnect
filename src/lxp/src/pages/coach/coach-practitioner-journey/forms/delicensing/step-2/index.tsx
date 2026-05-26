@@ -6,7 +6,7 @@ export const Step2Delicensing = ({
   smartStarter,
   setEnableButton,
 }: DynamicFormProps) => {
-  const firstName = smartStarter?.user?.firstName || 'The smartStarter';
+  const firstName = smartStarter?.user?.firstName || 'The practitioner';
 
   useEffect(() => {
     setEnableButton?.(true);
@@ -23,13 +23,13 @@ export const Step2Delicensing = ({
       />
       <Typography
         type="h2"
-        text={`Why is ${firstName} leaving SmartStart?`}
+        text={`Why is ${firstName} leaving the programme?`}
         color="textDark"
       />
       <FormInput label="Reason for leaving" value="Delicensed" disabled />
       <Alert
         type="info"
-        title="You cannot change the reason for leaving because the SmartStarter has been delicensed."
+        title={`You cannot change the reason for leaving because ${firstName} has been delicensed.`}
       />
     </div>
   );

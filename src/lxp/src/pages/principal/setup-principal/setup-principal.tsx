@@ -27,10 +27,8 @@ import {
 import { SetupClasses } from '../components/setup-classes/setup-classes';
 import { AddPhoto } from '@/pages/practitioner/edit-practitioner-profile/components/add-photo/add-photo';
 import { WelcomePage } from '@/components/welcome-page';
-import { staticDataSelectors } from '@/store/static-data';
 import { userSelectors } from '@/store/user';
 import { useStoreSetup } from '@/hooks/useStoreSetup';
-import { PractitionerService } from '@/services/PractitionerService';
 import ROUTES from '@/routes/routes';
 import { useNotificationService } from '@/hooks/useNotificationService';
 import { notificationActions } from '@/store/notifications';
@@ -42,9 +40,9 @@ import { useTenant } from '@/hooks/useTenant';
 import TransparentLayer from '../../../assets/TransparentLayer.png';
 import { usePractitionerNotification } from '@/hooks/usePractitionerNotification';
 import { ClassroomDto } from '@/models/classroom/classroom.dto';
-import { ClassroomService } from '@/services/ClassroomService';
 import { ClassroomDto as SimpleClassroomDto } from '@/models/classroom/classroom.dto';
 import { PrincipalInviteDto } from '@/models/practitioner/PrincipalInvite.dto';
+import { refreshToken } from '@/store/auth/auth.actions';
 
 export const SetupPrincipal: React.FC = () => {
   const history = useHistory();
@@ -103,9 +101,11 @@ export const SetupPrincipal: React.FC = () => {
   }, [practitioner?.principalHierarchy]);
 
   const getPrincipalClassroom = useCallback(async () => {
-    const classroom = await new ClassroomService(
-      userAuth?.auth_token!
-    ).getClassroomForUser(practitioner?.principalHierarchy!);
+    const classroom = await appDispatch(
+      classroomsThunkActions.getClassroomForUser({
+        userId: practitioner?.principalHierarchy!,
+      })
+    ).unwrap();
 
     if (classroom) {
       setPrincipalClassroom(classroom);
@@ -199,39 +199,50 @@ export const SetupPrincipal: React.FC = () => {
     if (isNotPrincipal === true && practitioner?.progress !== 1) {
       if (user) {
         if (practitionerPreschoolData && !!practitionerPreschoolData.userId) {
-          await new PractitionerService(
-            userAuth?.auth_token!
-          ).UpdatePractitionerProgress(user?.id!, 2.0);
-          await new PractitionerService(
-            userAuth?.auth_token!
-          ).AddPractitionerToPrincipal(practitionerPreschoolData);
+          await appDispatch(
+            practitionerThunkActions.updatePractitionerProgress({
+              practitionerId: user?.id!,
+              progress: 2.0,
+            })
+          );
+          await appDispatch(
+            practitionerThunkActions.addPractitionerToPrincipal(
+              practitionerPreschoolData
+            )
+          );
           const principalHierarchy = practitionerPreschoolData.userId;
           const userId = user?.id!;
           const accepted = true;
           await appDispatch(
             updatePrincipalInvitation({ userId, principalHierarchy, accepted })
           );
-          await new PractitionerService(
-            userAuth?.auth_token!
-          ).UpdatePractitionerShareInfo(user?.id!);
-
+          await appDispatch(
+            practitionerThunkActions.updatePractitionerShareInfo({
+              practitionerId: user?.id!,
+            })
+          );
           await appDispatch(
             practitionerThunkActions.getPractitionerByUserId({
               userId: user?.id!,
             })
           );
-          await appDispatch(practitionerThunkActions.getAllPractitioners({}));
           await appDispatch(
-            classroomsThunkActions.getClassroom({ overrideCache: true })
+            practitionerThunkActions.getAllPractitioners({
+              overrideCache: true,
+            })
+          );
+          await appDispatch(
+            classroomsThunkActions.getClassroomForUser({ overrideCache: true })
           ).unwrap();
         }
 
         if (practitionerPrincipalData) {
-          await new PractitionerService(
-            userAuth?.auth_token!
-          ).practitionerInvitePrincipal(
-            practitionerPrincipalData.principalPhoneNumber,
-            practitionerPrincipalData.userId
+          await appDispatch(
+            practitionerThunkActions.sendPractitionerInvitePrincipal({
+              principalPhoneNumber:
+                practitionerPrincipalData.principalPhoneNumber,
+              practitionerUserId: practitionerPrincipalData.userId,
+            })
           );
         }
 
@@ -283,26 +294,23 @@ export const SetupPrincipal: React.FC = () => {
       classroomsThunkActions.upsertClassroomGroupProgrammes({})
     );
     await appDispatch(classroomsThunkActions.getClassroomGroups({}));
-    // Update classroom number of practitioners
-    appDispatch(
-      classroomsActions.updateClassroomNumberPractitioners(
-        principalPractitioners?.length ?? 0
-      )
-    );
     // Update classroom data
     await syncClassroom();
     // Update the principal data
     if (userAuth?.auth_token && user?.id) {
       if (practitioner?.progress === 1.0 && !practitioner?.isPrincipal) {
-        await appDispatch(
+        appDispatch(
           notificationActions.addNotifications(practitionerNotification)
         );
         history.push(ROUTES.DASHBOARD, { isFromCompleteProfile: true });
         return;
       }
-      await new PractitionerService(
-        userAuth?.auth_token
-      ).PromotePractitionerToPrincipal(user?.id);
+      await appDispatch(
+        practitionerThunkActions.promotePractitionerToPrincipal({
+          userId: user?.id,
+        })
+      );
+      await appDispatch(refreshToken({}));
       await appDispatch(
         practitionerThunkActions.getPractitionerByUserId({
           userId: user?.id || '',
@@ -332,15 +340,15 @@ export const SetupPrincipal: React.FC = () => {
               principalPractitioner?.phoneNumber &&
               principalPractitioner?.userId !== inviTePractitionerUserId
             ) {
-              const principalInvite = await new PractitionerService(
-                userAuth?.auth_token!
+              const principalInvite = await appDispatch(
+                practitionerThunkActions.sendPractitionerInviteToPreschool({
+                  practitionerPhoneNumber: principalPractitioner?.phoneNumber,
+                  preSchoolNameCode: classroom?.preschoolCode!,
+                  preSchoolName: classroom?.name!,
+                  principalUserId: user?.id!,
+                })
               )
-                .sendPractitionerInviteToPreschool(
-                  principalPractitioner?.phoneNumber,
-                  classroom?.preschoolCode!,
-                  classroom?.name!,
-                  user?.id!
-                )
+                .unwrap()
                 .catch((error) => {
                   console.log(error);
                   return;
@@ -353,9 +361,9 @@ export const SetupPrincipal: React.FC = () => {
                 lastName: principalPractitioner.surname,
                 preschoolCode: '',
               };
-              await new PractitionerService(
-                userAuth?.auth_token
-              ).AddPractitionerToPrincipal(input);
+              await appDispatch(
+                practitionerThunkActions.addPractitionerToPrincipal(input)
+              );
             }
           });
           if (inviTePractitionerUserId) {
@@ -374,7 +382,9 @@ export const SetupPrincipal: React.FC = () => {
             ).unwrap();
           }
           await appDispatch(
-            practitionerThunkActions.getAllPractitioners({})
+            practitionerThunkActions.getAllPractitioners({
+              overrideCache: true,
+            })
           ).unwrap();
           await appDispatch(
             notificationActions.resetFrontendNotificationState()
@@ -388,9 +398,9 @@ export const SetupPrincipal: React.FC = () => {
           userId: inviTePractitionerUserId,
           preschoolCode: '',
         };
-        await new PractitionerService(
-          userAuth?.auth_token!
-        ).AddPractitionerToPrincipal(input);
+        await appDispatch(
+          practitionerThunkActions.addPractitionerToPrincipal(input)
+        );
 
         await appDispatch(
           practitionerThunkActions.updatePractitionerProgress({
@@ -406,7 +416,7 @@ export const SetupPrincipal: React.FC = () => {
           })
         ).unwrap();
         await appDispatch(
-          practitionerThunkActions.getAllPractitioners({})
+          practitionerThunkActions.getAllPractitioners({ overrideCache: true })
         ).unwrap();
         await appDispatch(notificationActions.resetFrontendNotificationState());
       }

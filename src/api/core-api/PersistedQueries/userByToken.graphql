@@ -1,0 +1,8 @@
+query userByToken($token: String) {
+  userByToken(token: $token) {
+    fullName
+    phoneNumber
+    roleName
+    userId
+  }
+}

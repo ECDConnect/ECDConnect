@@ -16,7 +16,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             [Service] IChildService childService,
             UpdateChildAndCaregiverInput input)
         {
-            childService.UpdateChild(input);
+            childService.UpdateChildAsync(input);
             return true;
         }
 

@@ -3,6 +3,7 @@ namespace ECDLink.Abstractrions.Constants
     public static class TemplateTypeConstants
     {
         public const string ForgotPassword = "forgot-password";
+        public const string ForgotPasswordGoogleFacebook = "forgot-password-google-facebook";
         public const string AuthCode = "auth-code";
         public const string OAWLAuthCode = "oa-wl-auth-code";
         public const string PasswordChangedByAdmin = "password-changed-by-admin";
@@ -59,6 +60,7 @@ namespace ECDLink.Abstractrions.Constants
         public const string ChildNotAssignedToClass = "child-unassigned-to-class"; // hub, push
         // row 20
         public const string SubmitWeeksAttendance = "submit-weekly-attendance"; // hub, push
+        public const string DbeRegistration = "dbe-registration";// hub, push
         // row 22
         public const string FinishProgressReport = "finish-progress-report"; // hub, push
         // row 23

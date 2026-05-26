@@ -9,9 +9,8 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { subYears } from 'date-fns';
-import { useEffect, useState } from 'react';
-import { useForm, useFormState, useWatch } from 'react-hook-form';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
 import { ShortMonths } from '../../../../constants/Dates';
 import {
   ChildInformationFormModel,
@@ -29,104 +28,92 @@ import {
 import { calculateFullAge } from '@utils/common/date.utils';
 import { ChildInformationFormProps } from './child-information-form.types';
 
+const CURRENT_YEAR = new Date().getFullYear();
+const YEARS = getArrayRange(CURRENT_YEAR - 10, CURRENT_YEAR);
+const DAYS = getArrayRange(1, 31);
+
 export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
   childInformation,
   onSubmit,
   variation,
 }) => {
-  const daysInMonth = getArrayRange(1, 31);
-  const currentYear = new Date().getFullYear();
-  const years: number[] = [];
-  for (let year = currentYear - 10; year <= currentYear; year++) {
-    years.push(year);
-  }
-
-  const [dayDropDownList, setDayDropDownList] = useState<
-    DropDownOption<number>[]
-  >([]);
-  const [monthDropDownList] = useState<DropDownOption<number>[]>(ShortMonths);
-  const [yearDropDownList, setYearDropDownList] = useState<
-    DropDownOption<number>[]
-  >([]);
-
-  const [alerts, setAlerts] = useState<AlertProps[]>();
+  const schema =
+    variation === 'practitioner'
+      ? childInformationFormSchema
+      : childInformationFormSchemaCaregiver;
 
   const {
-    getValues: getChildInformationFormValues,
-    setValue: setChildInformationFormValue,
-    register: childInformationFormRegister,
-    trigger: triggerChildInformationForm,
-    control: childInformationFormControl,
+    register,
+    control,
+    setValue,
+    getValues,
+    trigger,
+    formState: { isValid, errors },
   } = useForm<ChildInformationFormModel>({
-    resolver: yupResolver(
-      variation === 'practitioner'
-        ? childInformationFormSchema
-        : childInformationFormSchemaCaregiver
-    ),
+    resolver: yupResolver(schema),
     mode: 'onBlur',
     defaultValues: childInformation,
   });
 
-  const { childIdField, dobDay, dobMonth, dobYear } = useWatch({
-    control: childInformationFormControl,
-    defaultValue: childInformation,
-  });
+  const { childIdField, dobDay, dobMonth, dobYear } = useWatch({ control });
+  const [alerts, setAlerts] = useState<AlertProps[]>([]);
 
-  const { isValid, errors } = useFormState({
-    control: childInformationFormControl,
-  });
+  const dayOptions = useMemo(
+    () => [
+      { label: 'Day', value: undefined, disabled: true },
+      ...DAYS.map((d) => ({ label: String(d), value: d })),
+    ],
+    [DAYS]
+  );
 
-  useEffect(() => {
-    const dayDropDownListToAdd: DropDownOption<number>[] = [];
-    const yearDropDownListToAdd: DropDownOption<number>[] = [];
+  const monthOptions = useMemo(() => ShortMonths, []);
 
-    daysInMonth.forEach((day) => {
-      dayDropDownListToAdd.push({ label: day.toString(), value: day });
-    });
+  const yearOptions = useMemo<DropDownOption<number>[]>(
+    () => YEARS.map((y) => ({ label: y.toString(), value: y })),
+    []
+  );
 
-    setDayDropDownList(dayDropDownListToAdd);
-    years.forEach((year) => {
-      yearDropDownListToAdd.push({ label: year.toString(), value: year });
-    });
+  // Parse South African ID and auto-fill DOB
+  const autoFillDobFromId = useCallback(() => {
+    if (!childIdField || childIdField.length < 6) return;
 
-    setYearDropDownList(yearDropDownListToAdd);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    const cleanId = childIdField.replace(/\s/g, '');
+    if (!/^\d{6}/.test(cleanId)) return;
 
-  useEffect(() => {
-    setDateOfBirthById();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [childIdField]);
+    const yy = parseInt(cleanId.substring(0, 2), 10);
+    const currentYy = CURRENT_YEAR % 100;
 
-  useEffect(() => {
-    if (dobDay && dobMonth && dobYear) {
-      const dateOfBirth = new Date(dobYear, dobMonth - 1, dobDay);
-      setChildInformationFormValue('dob', dateOfBirth);
-      validateDateOfBirth();
+    const century = yy > currentYy ? '19' : '20';
+    const year = parseInt(century + cleanId.substring(0, 2), 10);
+    const month = parseInt(cleanId.substring(2, 4), 10);
+    const day = parseInt(cleanId.substring(4, 6), 10);
+
+    // Only update if values are plausible
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      setValue('dobYear', year, { shouldValidate: true });
+      setValue('dobMonth', month, { shouldValidate: true });
+      setValue('dobDay', day, { shouldValidate: true });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dobDay, dobMonth, dobYear]);
+  }, [childIdField, setValue]);
 
-  const validateDateOfBirth = () => {
-    const alertsArray: AlertProps[] = [];
-
+  const validateDateOfBirth = useCallback(() => {
     if (!dobDay || !dobMonth || !dobYear || dobYear === 1) {
-      setChildInformationFormValue('dobValid', false);
+      setValue('dobValid', false);
+      setAlerts([]);
       return;
     }
 
+    const alertsList: AlertProps[] = [];
+
+    // ID vs DOB mismatch check
     if (childIdField && childIdField.length >= 6) {
-      const idSubString = childIdField;
+      const cleanId = childIdField.replace(/\s/g, '');
+      const idDay = parseInt(cleanId.substring(4, 6), 10);
+      const idMonth = parseInt(cleanId.substring(2, 4), 10);
+      const idYear = parseInt('20' + cleanId.substring(0, 2), 10);
 
-      const day = idSubString.substring(4, 6);
-      const month = idSubString.substring(2, 4);
-      const year = `20${idSubString.substring(0, 2)}`;
-
-      const hasMisMatchWithId =
-        dobDay !== +day || dobMonth !== +month || dobYear !== +year;
-
-      if (hasMisMatchWithId) {
-        alertsArray.push({
+      if (dobDay !== idDay || dobMonth !== idMonth || dobYear !== idYear) {
+        alertsList.push({
           type: 'warning',
           title: idMismatchMessage,
           list: idMismatchList,
@@ -134,139 +121,133 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
       }
     }
 
-    // js months start at 0
-    const dateOfBirth = new Date(dobYear, dobMonth - 1, dobDay);
+    const dob = new Date(dobYear, dobMonth - 1, dobDay);
+    if (isNaN(dob.getTime())) return;
+
+    setValue('dob', dob);
+
     const today = new Date();
-    const { years: childAge } = calculateFullAge(dateOfBirth);
+    const { years: ageInYears } = calculateFullAge(dob);
 
-    let yearHigherThresholdBreach = false;
-
-    if (childAge > dobYearsBetweenHigher) {
-      alertsArray.push({
-        type: 'error',
-        title: olderMessage(childAge),
-        list: olderList,
-      });
-      yearHigherThresholdBreach = true;
-    }
-
-    if (dateOfBirth >= today) {
-      alertsArray.push({
+    // Future date
+    if (dob >= today) {
+      alertsList.push({
         type: 'error',
         title: invalidDateMessage,
         list: invalidDateList,
       });
     }
 
-    if (!yearHigherThresholdBreach && alertsArray.length === 0) {
-      alertsArray.push({
-        type: 'info',
-        title: `${yearsHeading(childAge)}`,
+    // Too old
+    if (ageInYears > dobYearsBetweenHigher) {
+      alertsList.push({
+        type: 'error',
+        title: olderMessage(ageInYears),
+        list: olderList,
       });
     }
 
-    if (alertsArray.filter((x) => x.type === 'error').length > 0) {
-      setChildInformationFormValue('dobValid', false);
-    } else {
-      setChildInformationFormValue('dobValid', true);
+    // Show age info when valid
+    if (alertsList.every((a) => a.type !== 'error')) {
+      alertsList.push({
+        type: 'info',
+        title: yearsHeading(ageInYears),
+      });
     }
-    triggerChildInformationForm();
-    setAlerts(alertsArray);
-  };
 
-  const setDateOfBirthById = () => {
-    if (!childIdField || childIdField.length < 6) return;
+    const hasError = alertsList.some((a) => a.type === 'error');
+    setValue('dobValid', !hasError, { shouldValidate: true });
 
-    const idSubString = childIdField.replaceAll(' ', '');
+    setAlerts(alertsList);
+    trigger();
+  }, [dobDay, dobMonth, dobYear, childIdField, setValue, trigger]);
 
-    const yearPrefix =
-      parseInt(idSubString.substring(0, 2), 10) >
-      parseInt(new Date().getFullYear().toString().substring(2, 4), 10)
-        ? '19'
-        : '20';
-    const year = yearPrefix + idSubString.substring(0, 2);
+  // Effects
+  useEffect(() => {
+    autoFillDobFromId();
+  }, [autoFillDobFromId]);
 
-    setChildInformationFormValue('dobYear', +year);
-    setChildInformationFormValue('dobMonth', +idSubString.substring(2, 4));
-    setChildInformationFormValue('dobDay', +idSubString.substring(4, 6));
-  };
+  useEffect(() => {
+    if (
+      dobDay &&
+      dobMonth &&
+      dobYear &&
+      !(dobDay === 1 && dobMonth === 1 && dobYear === 1)
+    ) {
+      validateDateOfBirth();
+    }
+  }, [dobDay, dobMonth, dobYear, validateDateOfBirth]);
 
-  const handleFormSubmit = () => {
-    if (isValid && onSubmit) {
-      onSubmit(getChildInformationFormValues());
+  const handleSubmit = () => {
+    if (isValid) {
+      onSubmit?.(getValues());
     }
   };
 
   return (
-    <div className={'flex h-full flex-col bg-white p-4'}>
-      <Typography type={'h2'} text={"Child's details"} color={'primary'} />
+    <div className="flex h-full flex-col bg-white p-4">
+      <Typography type="h2" text="Child's details" color="primary" />
+
       <FormInput<ChildInformationFormModel>
-        label={'ID number'}
-        className={'mt-4'}
-        hint={'Leave blank if not available'}
-        nameProp={'childIdField'}
-        register={childInformationFormRegister}
-        error={errors['childIdField']}
-        placeholder={'E.g. 1901010000000'}
+        label="ID number"
+        className="mt-4"
+        hint="Leave blank if not available"
+        nameProp="childIdField"
+        register={register}
+        error={errors.childIdField}
+        placeholder="E.g. 1901010000000"
         maxLength={13}
       />
+
       <Typography
         type="h4"
         color="textDark"
         text="Date of birth"
         className="mt-4"
       />
-      <div className={'flex items-center gap-2'}>
+
+      <div className="mt-2 flex items-center gap-2">
         <Dropdown
-          className="w-full"
-          placeholder={'Day'}
+          className="w-full flex-1"
+          placeholder="Day"
           textColor="textMid"
-          selectedValue={getChildInformationFormValues().dobDay}
-          list={dayDropDownList}
-          onChange={(item) => {
-            setChildInformationFormValue('dobDay', item as number);
-          }}
+          list={dayOptions}
+          selectedValue={dobDay ?? undefined}
+          onChange={(val) => setValue('dobDay', val as number | undefined)}
         />
+
         <Dropdown
-          className="w-full"
-          placeholder={'Month'}
+          className="w-full flex-1"
+          placeholder="Month"
           textColor="textMid"
-          list={monthDropDownList}
-          selectedValue={getChildInformationFormValues().dobMonth}
-          onChange={(item) => {
-            setChildInformationFormValue('dobMonth', item as number);
-          }}
+          list={monthOptions}
+          selectedValue={dobMonth ?? undefined}
+          onChange={(val) => setValue('dobMonth', val as number | undefined)}
         />
+
         <Dropdown
-          className="w-full"
-          placeholder={'Year'}
+          className="w-full flex-1"
+          placeholder="Year"
           textColor="textMid"
-          list={yearDropDownList}
-          selectedValue={getChildInformationFormValues().dobYear || undefined}
-          onChange={(item) => {
-            setChildInformationFormValue(
-              'dobYear',
-              (item as number) || undefined
-            );
-          }}
+          list={yearOptions}
+          selectedValue={dobYear ?? undefined}
+          onChange={(val) => setValue('dobYear', val as number | undefined)}
         />
       </div>
 
-      {alerts &&
-        alerts.map((alert: AlertProps, index: number) => {
-          return (
-            <Alert
-              key={'child-reg-alert-' + index}
-              className={'mt-5'}
-              title={alert.title}
-              message={alert.message}
-              list={alert.list}
-              type={alert.type}
-            />
-          );
-        })}
+      {alerts.map((alert, idx) => (
+        <Alert
+          key={`alert-${idx}`}
+          className="mt-5"
+          type={alert.type}
+          title={alert.title}
+          list={alert.list}
+          message={alert.message}
+        />
+      ))}
+
       <Button
-        onClick={handleFormSubmit}
+        onClick={handleSubmit}
         disabled={!isValid}
         className="mt-auto w-full"
         size="small"

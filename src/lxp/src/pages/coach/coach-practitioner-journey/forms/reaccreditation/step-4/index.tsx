@@ -22,12 +22,12 @@ export const Step4ReAccreditation = ({
   const [answer, setAnswer] = useState('');
 
   const question =
-    'Together with the SmartStarter, agree on what next steps can be taken and note them here:';
+    'Together with the practitioner, agree on what next steps can be taken and note them here:';
   const visitSection = 'Step 4';
   const name =
     smartStarter?.user?.firstName ||
     smartStarter?.firstName ||
-    'the SmartStarter';
+    'the practitioner';
 
   const [visitIdFromPractitionerJourney] = useSessionStorage(
     practitionerVisitIdKey

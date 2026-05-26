@@ -28,10 +28,12 @@ import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { useTenant } from '@/hooks/useTenant';
 import { userSelectors } from '@/store/user';
 import { useNotificationService } from '@/hooks/useNotificationService';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const tenant = useTenant();
+  const { isOnline } = useOnlineStatus();
   const isOpenAccess = tenant?.isOpenAccess;
   const { stopService } = useNotificationService();
   const practitioners = useSelector(
@@ -60,7 +62,7 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
     defaultValues: {
       classroomId: '',
       name: '',
-      practitionerId: '',
+      practitionerId: currentPractitioner?.userId,
       isFullDay: true,
     },
     reValidateMode: 'onBlur',
@@ -158,14 +160,16 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
         classroomsActions.createClassroomGroup(classroomGroupModel)
       );
 
-      (async () =>
-        await appDispatch(
-          practitionerThunkActions.getPractitionerByUserId({
-            userId: userData?.id || '',
-          })
-        ).unwrap())().then(() => {
-        stopService();
-      });
+      if (isOnline) {
+        (async () =>
+          await appDispatch(
+            practitionerThunkActions.getPractitionerByUserId({
+              userId: userData?.id || '',
+            })
+          ).unwrap())().then(() => {
+          stopService();
+        });
+      }
     }
   };
 
@@ -196,8 +200,8 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
           hint="Optional"
           placeholder={'e.g. Elephant'}
         />
-
-        <div>
+        {/* hiding this dropdown during setup - EC-4401 */}
+        <div className="hidden">
           <Controller
             name={'practitionerId'}
             defaultValue={''}

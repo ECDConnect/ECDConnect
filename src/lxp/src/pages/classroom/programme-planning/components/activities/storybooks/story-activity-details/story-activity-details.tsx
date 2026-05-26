@@ -21,21 +21,25 @@ import { useSelector } from 'react-redux';
 import LanguageSelector from '../../../../../../../components/language-selector/language-selector';
 import { StoryBookTypes } from '@enums/ProgrammeRoutineType';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { activitySelectors } from '@store/content/activity';
-import { storyBookSelectors } from '@store/content/story-book';
-import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
+import {
+  activitySelectors,
+  activityThunkActions,
+} from '@store/content/activity';
+import {
+  storyBookSelectors,
+  storyBookThunkActions,
+} from '@store/content/story-book';
+import WhatsAppIcon from '@/assets/logos/whatsapp';
 import StoryActivityCard from '../story-activity-card/story-activity-card';
 import StoryCard from '../story-card/story-card';
 import { StoryActivityDetailsProps } from './story-activity-details.types';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { staticDataSelectors } from '@/store/static-data';
-import { ContentStoryBookService } from '@/services/ContentStoryBookService';
-import { authSelectors } from '@store/auth';
-import { ContentActivityService } from '@/services/ContentActivityService';
 import { LanguageCode } from '@/i18n/types';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { practitionerSelectors } from '@/store/practitioner';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
+import { useAppDispatch } from '@/store';
 
 const StoryActivityDetails: React.FC<StoryActivityDetailsProps> = ({
   storyBookId,
@@ -149,6 +153,7 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
   isSelected,
   linkedActivity,
 }) => {
+  const appDispatch = useAppDispatch();
   const [isOnlineOnlyAlert, setOnlineOnlyAlert] = useState(false);
   const [currentStoryBook, setCurrentStoryBook] = useState(storyBook);
   const [currentStoryBookParts, setCurrentStoryBookParts] = useState(
@@ -157,7 +162,6 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
     )
   );
   const { isOnline } = useOnlineStatus();
-  const authUser = useSelector(authSelectors.getAuthUser);
   const languages = useSelector(staticDataSelectors.getLanguages);
   const defaultLanguage = languages?.find(
     (item: LanguageDto) => item?.locale === 'en-za'
@@ -189,9 +193,9 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
     if (hasTranslations) {
       let storyBooks: StoryBookDto[] | undefined;
 
-      storyBooks = await new ContentStoryBookService(
-        authUser?.auth_token || ''
-      ).getStoryBooks(language.locale);
+      storyBooks = await appDispatch(
+        storyBookThunkActions.getStoryBooks({ locale: language.locale })
+      ).unwrap();
 
       const translatedBook = storyBooks?.find(
         (item) => item.id === currentStoryBook.id
@@ -464,11 +468,7 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
                   size={'small'}
                   onClick={() => {}}
                 >
-                  <img
-                    src={getLogo(LogoSvgs.whatsapp)}
-                    className={'text-primary mr-1 h-5 w-5'}
-                    alt="whatsapp"
-                  />
+                  <WhatsAppIcon className="text-primary mr-1 h-5 w-5" />
                   <Typography
                     color={'primary'}
                     type={'small'}
@@ -650,17 +650,13 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
   onActivitySwitched,
   onStorySwitched,
 }) => {
-  const { hasPermissionToPlanClassroomActivities } = useUserPermissions();
-  const practitioner = useSelector(practitionerSelectors.getPractitioner);
-
+  const appDispatch = useAppDispatch();
   const [isOnlineOnlyAlert, setOnlineOnlyAlert] = useState(false);
   const [currentActivity, setCurrentActivity] = useState(activity);
-  const authUser = useSelector(authSelectors.getAuthUser);
   const languages = useSelector(staticDataSelectors.getLanguages);
   const defaultLanguage = languages?.find(
     (item: LanguageDto) => item?.locale === 'en-za'
   );
-
   const { isOnline } = useOnlineStatus();
 
   const handleActivitySwitched = () => {
@@ -681,11 +677,9 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
 
     if (hasTranslations) {
       let activities: ActivityDto[] | undefined;
-
-      activities = await new ContentActivityService(
-        authUser?.auth_token || ''
-      ).getActivities(language.locale);
-
+      activities = await appDispatch(
+        activityThunkActions.getActivities({ locale: language.locale })
+      ).unwrap();
       const translatedActivity = activities?.find(
         (item) => item.id === currentActivity.id
       );

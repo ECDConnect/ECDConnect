@@ -37,7 +37,8 @@ import ReactGA from 'react-ga4';
 import { triggerBackgroundSync } from '@/store/sync/sync.actions';
 
 var CryptoJS = require('crypto-js');
-const { version } = require('../../../../package.json');
+const version: string =
+  process.env.REACT_APP_VERSION ?? require('../../../../package.json').version;
 
 export const Login: React.FC = () => {
   const appDispatch = useAppDispatch();

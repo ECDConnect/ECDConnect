@@ -1,0 +1,5 @@
+mutation updateInviteStatus($id: String!, $isAccepted: Boolean!) {
+  updateInviteStatus(id: $id, isAccepted: $isAccepted) {
+    id
+  }
+}

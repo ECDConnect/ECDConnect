@@ -6,6 +6,7 @@ using ECDLink.Core.Caching.Configuration;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
+using ECDLink.DataAccessLayer.Entities;
 using ECDLink.EGraphQL.Constants;
 using ECDLink.Tenancy.Context;
 using Microsoft.EntityFrameworkCore;
@@ -28,8 +29,10 @@ namespace ECDLink.ContentManagement.Repositories
         private readonly ILogger<ContentManagementRepository> _logger;
         private readonly IMemoryCache _memoryCache;
         private readonly IConfiguration _configuration;
-        private readonly int _slidingExpiration = 10;
-        private readonly int _absoluteExpiration = 60;
+        // Sliding expiration is disabled (0) — it resets on every read and masks staleness.
+        // Absolute expiration is 10 minutes — content changes rarely; mutations invalidate the cache.
+        private readonly int _slidingExpiration = 0;
+        private readonly int _absoluteExpiration = 600;
 
         public ContentManagementRepository(ContentManagementDbContext context, 
                                            IFileService fileService, 
@@ -115,6 +118,14 @@ namespace ECDLink.ContentManagement.Repositories
                     _logger.LogWarning(errorMessage, contentTypeId);
                 }
 
+                // get all contentIds
+                var allContentIds = contents
+                    .Select(x => x.Id)
+                    .Distinct()
+                    .ToList();
+                // get dict languages for contentid 
+                var allLanguagesByContentIds = GetAllLanguagesByContentIds(allContentIds);
+
                 var allContentValuePairs = new List<object>();
 
                 foreach (var item in contents ?? new List<Content>())
@@ -136,10 +147,6 @@ namespace ECDLink.ContentManagement.Repositories
                      .Select(y => new { y.Id, y.ContentTypeField, y.Value, y.ContentId })
                      .OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId)
                      .ToList();
-
-                    //var allContents = contentValues.Union(noTenantContenValues).ToList();
-                    // Union just merges the two lists and no duplicates.  With ContentValues.Id in the object, it will never be duplicates.
-
 
                     var mergedContentValues = contentValues.ToDictionary(cv => new { cv.ContentTypeField, cv.ContentId });
                     foreach (var ntcv in noTenantContenValues)
@@ -165,7 +172,9 @@ namespace ECDLink.ContentManagement.Repositories
                     }
                     if (item.ContentValues.Any(x => x.ContentTypeField.FieldName == "availableLanguages"))
                     {
-                        var langsList = this.GetAllLanguagesForContentId(item.Id, item.ContentTypeId);
+                        var langsList = allLanguagesByContentIds.TryGetValue(item.Id, out var langs)
+                                        ? langs
+                                        : new List<Guid>();
                         if (!contentFieldValuePairs.ContainsKey("availableLanguages"))
                         {
                             //add list if non existent
@@ -285,6 +294,35 @@ namespace ECDLink.ContentManagement.Repositories
             return result;
         }
 
+        private Dictionary<int, List<Guid>> GetAllLanguagesByContentIds(
+                List<int> contentIds)  
+            {
+                if (contentIds == null || !contentIds.Any())
+                {
+                    return new Dictionary<int, List<Guid>>();
+                }
+
+                var languagesByContent = _context.ContentValues
+                    .Where(cv => contentIds.Contains(cv.ContentId))
+                    .Select(cv => new
+                    {
+                        cv.ContentId,
+                        cv.LocaleId
+                    })
+                    .GroupBy(x => x.ContentId)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g
+                            .Select(x => x.LocaleId)
+                            .Where(lang => lang != null)
+                            .Distinct()
+                            .ToList()
+                    );
+
+                return languagesByContent;
+            }
+
+        // This function is called from other extensions
         public List<Guid> GetAllLanguagesForContentId(int contentId, int contentTypeId)
         {
             var currentTenant = TenantExecutionContext.Tenant.Id;
@@ -350,6 +388,28 @@ namespace ECDLink.ContentManagement.Repositories
             string key = string.Format("Content.{0}.{1}.{2}.Ids.{3}", currentTenant, contentTypeId, localeId, string.Join(',', contentIds));
             if (!_memoryCache.TryGetValue<List<Object>>(key, out results))
             {
+                // Before hitting the DB, check whether the full GetAll list for this
+                // content type is already cached — if so, filter from there instead.
+                string allKey = string.Format("Content.{0}.{1}.{2}.All", currentTenant, contentTypeId, localeId);
+                if (_memoryCache.TryGetValue<List<object>>(allKey, out var allCached))
+                {
+                    var idSet = new HashSet<int>(contentIds);
+                    var fromAll = allCached
+                        .OfType<IDictionary<string, object>>()
+                        .Where(item => item.TryGetValue(ObjectFieldConstants.Identifier, out var idVal)
+                                    && int.TryParse(idVal?.ToString(), out var parsedId)
+                                    && idSet.Contains(parsedId))
+                        .Cast<object>()
+                        .ToList();
+
+                    if (fromAll.Count == idSet.Count)
+                    {
+                        _logger.LogDebug("Fetching from GetAll CACHE: {0}", key);
+                        _memoryCache.Set(key, fromAll, GetCacheOptions());
+                        return fromAll;
+                    }
+                }
+
                 _logger.LogDebug("Fetching from DB: {0}", key);
                 // TODO: Do we need to selectively skip the IsActive check?
                 var content = _context.Contents
@@ -448,17 +508,23 @@ namespace ECDLink.ContentManagement.Repositories
                 applicationName = argumentTenant.ApplicationName;
             }
             
+            var cacheKey = string.Format("Content.{0}.ByValueKey.{1}.{2}.{3}.{4}", tenantId, contentType, key, value, localeId);
+            if (_memoryCache.TryGetValue<List<object>>(cacheKey, out var cachedResult))
+            {
+                _logger.LogDebug("Fetching from CACHE: {0}", cacheKey);
+                return cachedResult;
+            }
+
+            _logger.LogDebug("Fetching from DB: {0}", cacheKey);
             var content = _context.Contents
                     .Include(i => i.ContentType)
                     .Include(i => i.ContentValues)
                         .ThenInclude(ti => ti.ContentTypeField)
-                    .Where(x =>  x.ContentType.Name == contentType
+                    .Where(x => x.ContentType.Name == contentType
                             && x.IsActive
-                            && x.ContentValues.Any(y => y.LocaleId == localeId)
-                            && x.ContentValues.Any(y => y.ContentTypeField.FieldName == key)
-                            && x.ContentValues.Any(y => y.Value == value)
-                            && x.ContentValues.Any(y => y.TenantId == tenantId || y.TenantId == null)
-                            )
+                            && x.ContentValues.Any(y => y.ContentTypeField.FieldName == key
+                                && y.Value == value
+                                && (y.TenantId == tenantId || y.TenantId == null)))
                     .ToList();
 
             // Use global tenant as a fallback, mostly for static and dynamic links
@@ -470,11 +536,8 @@ namespace ECDLink.ContentManagement.Repositories
                         .Where(x => x.TenantId == null
                                 && x.ContentType.Name == contentType
                                 && x.IsActive
-                                && x.ContentValues.Any(y => y.LocaleId == localeId)
-                                && x.ContentValues.Any(y => y.ContentTypeField.FieldName == key)
-                                && x.ContentValues.Any(y => y.Value == value)
-                                && x.ContentValues.Any(y => y.TenantId == tenantId)
-                                )
+                                && x.ContentValues.Any(y => y.ContentTypeField.FieldName == key
+                                    && y.Value == value))
                         .ToList();
 
             // No Content Found
@@ -483,6 +546,14 @@ namespace ECDLink.ContentManagement.Repositories
                 var errorMessage = "Could not find 'ContentType' with Name, key or value: {contentType}, {key}, {value}.";
                 _logger.LogWarning(errorMessage, contentType.ToString(), key, value);
             }
+
+            // get all contentIds
+            var allContentIds = content
+                .Select(x => x.Id)
+                .Distinct()
+                .ToList();
+            // get dict languages for contentid 
+            var allLanguagesByContentIds = GetAllLanguagesByContentIds(allContentIds);
 
             var allContentValuePairs = new List<object>();
 
@@ -512,7 +583,9 @@ namespace ECDLink.ContentManagement.Repositories
                 {
                     contentFieldValuePairs["updatedDate"] = item.UpdatedDate.ToString();
                 }
-                var langsList = this.GetAllLanguagesForContentId(item.Id, item.ContentTypeId);
+                var langsList = allLanguagesByContentIds.TryGetValue(item.Id, out var langs)
+                                        ? langs
+                                        : new List<Guid>();
                 if (!contentFieldValuePairs.ContainsKey("availableLanguages"))
                 {
                     //add list if non existent
@@ -552,6 +625,7 @@ namespace ECDLink.ContentManagement.Repositories
                 }
             }
 
+            _memoryCache.Set(cacheKey, allContentValuePairs, GetCacheOptions());
             return allContentValuePairs;
         }
 
@@ -652,6 +726,14 @@ namespace ECDLink.ContentManagement.Repositories
                 _logger.LogWarning(errorMessage, contentType.ToString(), "title", title);
             }
 
+            // get all contentIds
+            var allContentIds = content
+                .Select(x => x.Id)
+                .Distinct()
+                .ToList();
+            // get dict languages for contentid 
+            var allLanguagesByContentIds = GetAllLanguagesByContentIds(allContentIds);
+
             var allContentValuePairs = new List<object>();
 
             foreach (var item in content)
@@ -673,7 +755,9 @@ namespace ECDLink.ContentManagement.Repositories
                 {
                     contentFieldValuePairs["updatedDate"] = item.UpdatedDate.ToString();
                 }
-                var langsList = this.GetAllLanguagesForContentId(item.Id, item.ContentTypeId);
+                var langsList = allLanguagesByContentIds.TryGetValue(item.Id, out var langs)
+                                        ? langs
+                                        : new List<Guid>();
                 if (!contentFieldValuePairs.ContainsKey("availableLanguages"))
                 {
                     //add list if non existent
@@ -764,8 +848,12 @@ namespace ECDLink.ContentManagement.Repositories
             };
 
             _context.Contents.Add(newContent);
-
             _context.SaveChanges();
+
+            // Invalidate the GetAll cache so the new item appears immediately.
+            var currentTenantId = TenantExecutionContext.Tenant.Id;
+            _memoryCache.Remove(string.Format("Content.{0}.{1}.{2}.All", currentTenantId, contentTypeId, localeId));
+            InvalidateTargetedLinkCaches(contentTypeId, currentTenantId, localeId);
 
             return newContent.Id;
         }
@@ -831,11 +919,31 @@ namespace ECDLink.ContentManagement.Repositories
         }
         public ContentValue ValidateDefaultTemplateByContentTypeId(int contentTypeId, Guid localeId, string defaultName, Guid? tenantId)
         {
-            return _context.ContentValues.Where(x => x.TenantId == tenantId
-                                                    && x.Content.ContentTypeId == contentTypeId
-                                                    && x.Value == defaultName
-                                                    && x.LocaleId == localeId
-                                                    ).FirstOrDefault();
+            var cacheKey = $"Validate.{tenantId}.{contentTypeId}.{defaultName}.{localeId}";
+            if (!_memoryCache.TryGetValue(cacheKey, out ContentValue result))
+            {
+                result = _context.ContentValues
+                    .Where(x => x.TenantId == tenantId
+                             && x.Content.ContentTypeId == contentTypeId
+                             && x.Value == defaultName
+                             && x.LocaleId == localeId)
+                    .FirstOrDefault();
+
+                // Cache positive results for 30 min — stable once a theme exists for a tenant.
+                // Cache negative results for only 5 s so a just-created default is detected quickly.
+                var ttl = result != null ? TimeSpan.FromMinutes(30) : TimeSpan.FromSeconds(5);
+                _memoryCache.Set(cacheKey, result, ttl);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Removes the cached validation result so that a freshly created default template
+        /// is detected on the next call to ValidateDefaultTemplateByContentTypeId.
+        /// </summary>
+        public void InvalidateValidateCache(int contentTypeId, Guid localeId, string defaultName, Guid? tenantId)
+        {
+            _memoryCache.Remove($"Validate.{tenantId}.{contentTypeId}.{defaultName}.{localeId}");
         }
 
         public object GetDefaultTemplateById(int contentId, Guid localeId, Guid? currentTenant)
@@ -1020,32 +1128,22 @@ namespace ECDLink.ContentManagement.Repositories
                             .ToDictionary(k => k.ContentTypeField.FieldName, v => v.Value);
             objDict.Add(ObjectFieldConstants.Identifier, content.Id.ToString());
 
-            // Removing the cached keys for this object to ensure we see the change on the front-end
-            // clear cache for all key
-            string keyAll = string.Format("Content.{0}.{1}.{2}.All", currentTenantId, content.ContentTypeId, localeId);
-            _memoryCache.Remove(keyAll);
-            // clear cache for single key
-            var keySingle = string.Format("Content.{0}.{1}..Id.{2}", currentTenantId, localeId, contentId);
-            _memoryCache.Remove(keySingle);
+            // Invalidate cached entries so the change is visible immediately.
+            _memoryCache.Remove(string.Format("Content.{0}.{1}.{2}.All", currentTenantId, content.ContentTypeId, localeId));
+            _memoryCache.Remove(string.Format("Content.{0}.{1}..Id.{2}", currentTenantId, localeId, contentId));
+            InvalidateTargetedLinkCaches(content.ContentTypeId, (Guid)currentTenantId, localeId);
 
             return objDict.ToObject();
         }
 
         public bool Delete(int contentId)
         {
+            var currentTenantId = TenantExecutionContext.Tenant.Id;
             var content = _context.Contents
-                        .Include(c => c.ContentValues.Where(c => c.TenantId == TenantExecutionContext.Tenant.Id))
+                        .Include(c => c.ContentValues.Where(c => c.TenantId == currentTenantId))
                         .Where(x => x.Id == contentId)
                         .OrderBy(x => x.Id)
                         .FirstOrDefault();
-
-// I am not sure if default is applicable here!!!!
-            // Use global tenant as a fallback, mostly for static and dynamic links            
-            // content ??= _context.Contents
-            //               .Where(x => x.Id == contentId
-            //                 && x.TenantId == null)
-            //               .OrderBy(x => x.Id)
-            //               .FirstOrDefault();
 
             // No Content Found
             if (content == default)
@@ -1056,10 +1154,201 @@ namespace ECDLink.ContentManagement.Repositories
 
             content.IsActive = false;
             content.UpdatedDate = DateTime.UtcNow;
-
             _context.SaveChanges();
 
+            // Invalidate caches. Without a localeId parameter we remove the primary English
+            // locale cache; other locale caches expire within the absolute TTL window.
+            var englishId = new Guid("9688cd08-adef-408c-9d34-5d75ae5c44df");
+            _memoryCache.Remove(string.Format("Content.{0}.{1}.{2}.All", currentTenantId, content.ContentTypeId, englishId));
+            _memoryCache.Remove(string.Format("Content.{0}.{1}..Id.{2}", currentTenantId, englishId, contentId));
+            InvalidateTargetedLinkCaches(content.ContentTypeId, currentTenantId, englishId);
+
             return true;
+        }
+
+
+       public async Task<CmsSyncStatus> GetCmsSyncStatus(DateTime lastSync)
+        {
+            var tenantId = TenantExecutionContext.Tenant.Id;
+            var activitiesId = ContentTypeConstants.ActivityId;
+            var calendarEventTypeId = ContentTypeConstants.CalendarEventTypeId;
+            var storyBookId = ContentTypeConstants.StoryBookId;
+            var consentId = ContentTypeConstants.ConsentId;
+            var resourceLinkId = ContentTypeConstants.ResourceLinkId;
+            var resourcesId = ContentTypeConstants.ClassroomBusinessResourceId;
+            var progressTrackingAgeGroupId = ContentTypeConstants.ProgressTrackingAgeGroupId;
+            var programmeRoutineId = ContentTypeConstants.ProgrammeRoutineId;
+            var programmeThemeId = ContentTypeConstants.ThemeId;
+            var connectItemId = ContentTypeConstants.ConnectItemId;
+
+            var activitiesCount = await _context.ContentValues.FromSql($@"
+            SELECT DISTINCT c.""Id""
+            FROM ""ContentValue"" cv 
+            INNER JOIN ""Content"" c ON c.""Id"" = cv.""ContentId""
+            WHERE (cv.""TenantId"" = {tenantId} AND c.""IsActive"" = true AND c.""ContentTypeId"" = {activitiesId})
+            AND cv.""UpdatedDate"" > {lastSync}
+            ").CountAsync();
+
+            // not implementing tenantid
+            var calendarEventTypeCount = await _context.ContentValues.FromSql($@"
+            SELECT DISTINCT c.""Id""
+            FROM ""ContentValue"" cv 
+            INNER JOIN ""Content"" c ON c.""Id"" = cv.""ContentId""
+            WHERE (c.""IsActive"" = true AND c.""ContentTypeId"" = {calendarEventTypeId})
+            AND cv.""InsertedDate"" > {lastSync}
+            ").CountAsync();
+
+            var storyBookCount = await _context.ContentValues.FromSql($@"
+            SELECT DISTINCT c.""Id""
+            FROM ""ContentValue"" cv 
+            INNER JOIN ""Content"" c ON c.""Id"" = cv.""ContentId""
+            WHERE (cv.""TenantId"" = {tenantId} AND c.""IsActive"" = true AND c.""ContentTypeId"" = {storyBookId})
+            AND cv.""UpdatedDate"" > {lastSync}
+            ").CountAsync();
+
+            var consentCount = await _context.ContentValues.FromSql($@"
+            SELECT DISTINCT c.""Id""
+            FROM ""ContentValue"" cv 
+            INNER JOIN ""Content"" c ON c.""Id"" = cv.""ContentId""
+            WHERE (cv.""TenantId"" = {tenantId} AND c.""IsActive"" = true AND c.""ContentTypeId"" = {consentId})
+            AND cv.""UpdatedDate"" > {lastSync}
+            ").CountAsync();
+
+            var resourceLinkCount = await _context.ContentValues.FromSql($@"
+            SELECT DISTINCT c.""Id""
+            FROM ""ContentValue"" cv 
+            INNER JOIN ""Content"" c ON c.""Id"" = cv.""ContentId""
+            WHERE (cv.""TenantId"" = {tenantId} AND c.""IsActive"" = true AND c.""ContentTypeId"" = {resourceLinkId})
+            AND cv.""UpdatedDate"" > {lastSync}
+            ").CountAsync();
+
+            var resourceCount = await _context.ContentValues.FromSql($@"
+            SELECT DISTINCT c.""Id""
+            FROM ""ContentValue"" cv 
+            INNER JOIN ""Content"" c ON c.""Id"" = cv.""ContentId""
+            WHERE (cv.""TenantId"" = {tenantId} AND c.""IsActive"" = true AND c.""ContentTypeId"" = {resourcesId})
+            AND cv.""UpdatedDate"" > {lastSync}
+            ").CountAsync();
+
+            var progressTrackingAgeGroupCount = await _context.ContentValues.FromSql($@"
+            SELECT DISTINCT c.""Id""
+            FROM ""ContentValue"" cv 
+            INNER JOIN ""Content"" c ON c.""Id"" = cv.""ContentId""
+            WHERE (cv.""TenantId"" = {tenantId} AND c.""IsActive"" = true AND c.""ContentTypeId"" = {progressTrackingAgeGroupId})
+            AND cv.""UpdatedDate"" > {lastSync}
+            ").CountAsync();
+
+            var programmeRoutineCount = await _context.ContentValues.FromSql($@"
+            SELECT DISTINCT c.""Id""
+            FROM ""ContentValue"" cv 
+            INNER JOIN ""Content"" c ON c.""Id"" = cv.""ContentId""
+            WHERE (cv.""TenantId"" = {tenantId} AND c.""IsActive"" = true AND c.""ContentTypeId"" = {programmeRoutineId})
+            AND cv.""UpdatedDate"" > {lastSync}
+            ").CountAsync();
+
+            var programmeThemeCount = await _context.ContentValues.FromSql($@"
+            SELECT DISTINCT c.""Id""
+            FROM ""ContentValue"" cv 
+            INNER JOIN ""Content"" c ON c.""Id"" = cv.""ContentId""
+            WHERE (cv.""TenantId"" = {tenantId} AND c.""IsActive"" = true AND c.""ContentTypeId"" = {programmeThemeId})
+            AND cv.""UpdatedDate"" > {lastSync}
+            ").CountAsync();
+
+            var connectItemCount = await _context.ContentValues.FromSql($@"
+            SELECT DISTINCT c.""Id""
+            FROM ""ContentValue"" cv 
+            INNER JOIN ""Content"" c ON c.""Id"" = cv.""ContentId""
+            WHERE (cv.""TenantId"" = {tenantId} AND c.""IsActive"" = true AND c.""ContentTypeId"" = {connectItemId})
+            AND cv.""UpdatedDate"" > {lastSync}
+            ").CountAsync();
+
+            return new CmsSyncStatus
+            {
+                SyncActivities = activitiesCount >= 1,
+                SyncCalendarEventTypes = calendarEventTypeCount >= 1,
+                SyncStoryBooks = storyBookCount >= 1,
+                SyncConsent = consentCount >= 1,
+                SyncResourceLinks = resourceLinkCount >= 1,
+                SyncResources = resourceCount >= 1,
+                SyncAgeGroups = progressTrackingAgeGroupCount >= 1,
+                SyncProgrammeRoutines = programmeRoutineCount >= 1,
+                SyncProgrammeThemes = programmeThemeCount >= 1,
+                SyncConnectItem = connectItemCount >= 1
+            };
+        }
+
+        /// <summary>
+        /// Lean query returning (ThemeDayContentId, FieldName, ActivityContentId) triples
+        /// for the four link fields on ThemeDay records. Significantly cheaper than a full
+        /// GetAll(ThemeDayId) call when only linking information is needed.
+        /// Results are cached independently at 10 minutes and invalidated on mutation.
+        /// </summary>
+        public List<(string ThemeDayId, string FieldName, string ActivityId)> GetThemeDayActivityLinks(Guid localeId)
+        {
+            var currentTenant = TenantExecutionContext.Tenant.Id;
+            var cacheKey = $"ThemeDayLinks.{currentTenant}.{localeId}";
+
+            if (_memoryCache.TryGetValue(cacheKey, out List<(string, string, string)> cached))
+                return cached;
+
+            var activityFields = new[] { "storyBook", "smallGroupActivity", "largeGroupActivity", "storyActivity" };
+
+            var results = _context.ContentValues
+                .Where(cv => cv.Content.ContentTypeId == ContentTypeConstants.ThemeDayId
+                          && activityFields.Contains(cv.ContentTypeField.FieldName)
+                          && (cv.TenantId == currentTenant || cv.TenantId == null)
+                          && cv.Content.IsActive
+                          && cv.LocaleId == localeId)
+                .Select(cv => ValueTuple.Create(
+                    cv.ContentId.ToString(),
+                    cv.ContentTypeField.FieldName,
+                    cv.Value ?? ""))
+                .ToList();
+
+            _memoryCache.Set(cacheKey, results, TimeSpan.FromMinutes(10));
+            return results;
+        }
+
+        /// <summary>
+        /// Lean query returning (Name, ThemeDayIds, TenantId) per theme record.
+        /// Significantly cheaper than GetAll(ThemeId) when only link annotation is needed.
+        /// Results are cached independently at 10 minutes and invalidated on mutation.
+        /// </summary>
+        public List<(string Name, string ThemeDays, string TenantId)> GetThemeNameDayLinks(Guid localeId)
+        {
+            var currentTenant = TenantExecutionContext.Tenant.Id;
+            var cacheKey = $"ThemeLinks.NameDays.{currentTenant}.{localeId}";
+
+            if (_memoryCache.TryGetValue(cacheKey, out List<(string, string, string)> cached))
+                return cached;
+
+            var fieldValues = _context.ContentValues
+                .Where(cv => cv.Content.ContentTypeId == ContentTypeConstants.ThemeId
+                          && (cv.ContentTypeField.FieldName == "name" || cv.ContentTypeField.FieldName == "themeDays")
+                          && cv.TenantId == currentTenant
+                          && cv.Content.IsActive
+                          && cv.LocaleId == localeId)
+                .Select(cv => new { cv.ContentId, cv.ContentTypeField.FieldName, cv.Value })
+                .ToList();
+
+            var results = fieldValues
+                .GroupBy(x => x.ContentId)
+                .Select(g => ValueTuple.Create(
+                    g.FirstOrDefault(x => x.FieldName == "name")?.Value ?? "",
+                    g.FirstOrDefault(x => x.FieldName == "themeDays")?.Value ?? "",
+                    currentTenant.ToString()))
+                .ToList();
+
+            _memoryCache.Set(cacheKey, results, TimeSpan.FromMinutes(10));
+            return results;
+        }
+
+        private void InvalidateTargetedLinkCaches(int contentTypeId, Guid tenantId, Guid localeId)
+        {
+            if (contentTypeId == ContentTypeConstants.ThemeDayId)
+                _memoryCache.Remove($"ThemeDayLinks.{tenantId}.{localeId}");
+            else if (contentTypeId == ContentTypeConstants.ThemeId)
+                _memoryCache.Remove($"ThemeLinks.NameDays.{tenantId}.{localeId}");
         }
     }
 }

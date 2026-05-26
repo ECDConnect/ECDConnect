@@ -49,7 +49,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
            // };
             List<MessageLog> logs = new List<MessageLog>();
 
-            ApplicationUser user = userManager.FindByIdAsync(userId).Result;
+            // Always use the authenticated caller's ID — ignore the passed userId to prevent IDOR
+            var callerIdString = uId.ToString();
+            ApplicationUser user = userManager.FindByIdAsync(callerIdString).Result;
             //even if there are no logs for the user specifically there might be notifications for the usertype
             if (user != null)
             {
@@ -87,8 +89,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             }
            
-            logs.AddRange(dbRepo.GetAll().Where(x => x.To == userId 
-                                                && x.IsActive == true 
+            logs.AddRange(dbRepo.GetAll().Where(x => x.To == callerIdString
+                                                && x.IsActive == true
                                                 && (x.MessageEndDate >= DateTime.Now.Date || x.MessageEndDate == null))
                                                // && !templatesToExclude.Contains(x.MessageTemplateType))
                                         .ToList());

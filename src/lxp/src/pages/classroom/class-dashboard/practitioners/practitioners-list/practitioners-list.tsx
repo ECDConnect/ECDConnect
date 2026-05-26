@@ -10,19 +10,15 @@ import {
   RoundIcon,
   DialogPosition,
   Dialog,
-  Alert,
+  AlertSeverityType,
 } from '@ecdlink/ui';
 import { getAvatarColor, useDialog } from '@ecdlink/core';
 import { useHistory } from 'react-router-dom';
 import * as styles from './practitioners-list.styles';
 import ROUTES from '@routes/routes';
 import { useSelector } from 'react-redux';
-import {
-  practitionerSelectors,
-  practitionerThunkActions,
-} from '@/store/practitioner';
+import { practitionerSelectors } from '@/store/practitioner';
 import { PractitionerDto } from '@/../../../packages/core/lib';
-import { useAppDispatch } from '@store';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
@@ -31,33 +27,30 @@ import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { JoinOrAddPreschoolModal } from '@/components/join-or-add-preschool-modal/join-or-add-preschool-modal';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { InviteDto } from '@ecdlink/core/src/models/dto/Invite/invite.dto';
-import { InviteService } from '@/services/InviteService';
-import { authSelectors } from '@/store/auth';
 import { userSelectors } from '@/store/user';
 import { InvitedPractitioner } from '@/pages/practitioner/practitioner-programme-information/practitioner-list/invited-practitioner/invited-practitioner';
 import { formatPhonenumberLocal } from '@utils/common/contact-details.utils';
-import { useTenant } from '@/hooks/useTenant';
-import { AlertSeverityType } from '@ecdlink/ui';
+import { invitesSelectors } from '@/store/invites';
+import usePractitionerNotifications from '@/hooks/usePractitionerNotifications';
 
 export const PractitionersList: React.FC = () => {
-  const appDispatch = useAppDispatch();
   const isTrialPeriod = useIsTrialPeriod();
   const history = useHistory();
   const dialog = useDialog();
   const { errorDialog } = useRequestResponseDialog();
   const { isOnline } = useOnlineStatus();
   const user = useSelector(userSelectors.getUser);
-  const [invites, setInvites] = useState<InviteDto[]>([]);
-  const userAuth = useSelector(authSelectors.getAuthUser);
   const [selectedInvite, setSelectedInvite] = useState<InviteDto>();
   const [practitionerInviteModal, setPractitionerInviteModal] = useState(false);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
+  const invites = useSelector(
+    invitesSelectors.getInvitesByPrincipalId(user?.id)
+  );
+
   const practitionersList = practitioners?.filter(
     (item) => item.userId !== practitioner?.userId
   );
-  const tenant = useTenant();
-  const isOpenAccess = tenant?.isOpenAccess;
 
   const { isLoading, isRejected: isGetPractitionerRejected } =
     useThunkFetchCall(
@@ -71,7 +64,10 @@ export const PractitionersList: React.FC = () => {
     }
   }, [errorDialog, isGetPractitionerRejected]);
 
-  const [practitionersMessages, setPractitionersMessages] = useState<any[]>();
+  const practitionersMessages = usePractitionerNotifications({
+    mode: 'principal',
+    now: new Date(),
+  });
 
   const handleClick = (practitionerId: string) => {
     history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
@@ -87,21 +83,6 @@ export const PractitionersList: React.FC = () => {
     },
     [invites]
   );
-
-  const getPractitionerColleagues = async () => {
-    if (userAuth && isOnline) {
-      await appDispatch(
-        practitionerThunkActions.getAllPractitioners({})
-      ).unwrap();
-      if (isOpenAccess) {
-        setInvites(
-          await new InviteService(userAuth?.auth_token).getInvitesByPrincipalId(
-            user?.id!
-          )
-        );
-      }
-    }
-  };
 
   const mapUserListDataItem = (
     practitionerRecord: PractitionerDto
@@ -139,11 +120,6 @@ export const PractitionersList: React.FC = () => {
       onActionClick: () => handleClick(practitioner?.userId!),
     };
   };
-
-  useEffect(() => {
-    getPractitionerColleagues();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const practitionerListData = useMemo<
@@ -183,22 +159,6 @@ export const PractitionersList: React.FC = () => {
     handleInvitedPractitioner,
   ]);
 
-  const classroomsDetailsForPractitioner = async () => {
-    if (isOnline) {
-      const practitionersMessageData = await appDispatch(
-        practitionerThunkActions.getPractitionerDisplayMetrics({})
-      ).unwrap();
-
-      setPractitionersMessages(practitionersMessageData);
-      return practitionersMessageData;
-    }
-  };
-
-  useEffect(() => {
-    classroomsDetailsForPractitioner();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const showTrialPeriodCompleteProfileBlockingDialog = () => {
     dialog({
       blocking: true,
@@ -215,20 +175,10 @@ export const PractitionersList: React.FC = () => {
   };
 
   const handleReassignClass = () => {
-    if (!isOnline) {
-      return dialog({
-        blocking: false,
-        position: DialogPosition.Middle,
-        render: (onClose) => {
-          return <OnlineOnlyModal onSubmit={onClose} />;
-        },
-      });
-    }
-
     history.push('principal/practitioner-reassign-class');
   };
 
-  const offlineDialog = () => {
+  const showOfflineDialog = () => {
     if (!isOnline) {
       return dialog({
         color: 'bg-white',
@@ -273,7 +223,7 @@ export const PractitionersList: React.FC = () => {
           className={'mb-6 w-full'}
           onClick={() => {
             if (!isOnline) {
-              offlineDialog();
+              showOfflineDialog();
             } else if (isTrialPeriod) {
               showTrialPeriodCompleteProfileBlockingDialog();
             } else {
@@ -324,7 +274,9 @@ export const PractitionersList: React.FC = () => {
                 type="filled"
                 color="quatenary"
                 className={'mt-6 mb-6 w-11/12 rounded-2xl'}
-                onClick={handleReassignClass}
+                onClick={() => {
+                  isOnline ? handleReassignClass() : showOfflineDialog();
+                }}
               >
                 {renderIcon(
                   'PencilAltIcon',
@@ -370,7 +322,7 @@ export const PractitionersList: React.FC = () => {
           userId={selectedInvite?.user.id || ''}
           phoneNumber={selectedInvite?.user.phoneNumber || ''}
           dateInvited={selectedInvite?.insertedDate}
-          setInvites={setInvites}
+          // setInvites={setInvites}
         />
       </Dialog>
     </>

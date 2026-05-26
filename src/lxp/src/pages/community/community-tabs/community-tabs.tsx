@@ -1,14 +1,18 @@
 import { BannerWrapper, TabItem, TabList } from '@ecdlink/ui';
-import { useHistory } from 'react-router';
+import { useHistory, useLocation } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import format from 'date-fns/format';
 import ROUTES from '@/routes/routes';
 import { CommunityItem } from './components/community-item/community-item';
 import { CommunityLinks } from './components/community-links/community-links';
+import { CommunityRouteState } from '../community.types';
+import { useAppDispatch } from '@/store';
+import { communityThunkActions } from '@/store/community';
 
 export const COMMUNITY_TABS = {
   CONNECT: 0,
+  RESOURCES: 1,
 };
 
 export const CommunityTabs = ({
@@ -22,8 +26,16 @@ export const CommunityTabs = ({
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
   const date = format(new Date(), 'dd LLLL y');
+  const { state } = useLocation<CommunityRouteState>();
+  const [selectedTabIndex, setSelectedTabIndex] = useState<number>(
+    state?.activeTabIndex !== undefined ? state?.activeTabIndex : 0
+  );
+  const appDispatch = useAppDispatch();
 
-  const [selectedTabIndex, setSelectedTabIndex] = useState<number>(0);
+  // only fetch once
+  useEffect(() => {
+    appDispatch(communityThunkActions.getCommunityProfile({})).unwrap();
+  }, []);
 
   const tabItems: TabItem[] = [
     {
@@ -47,6 +59,15 @@ export const CommunityTabs = ({
     setSelectedTabIndex(tabIndex);
   }
 
+  const goBack = () => {
+    if (state?.isFromAboutPage) {
+      history.push(ROUTES.PRACTITIONER.ABOUT.ROOT);
+      return;
+    }
+
+    history.push(ROUTES.DASHBOARD);
+  };
+
   return (
     <BannerWrapper
       showBackground={false}
@@ -55,7 +76,7 @@ export const CommunityTabs = ({
       title={'Community'}
       subTitle={date}
       color={'primary'}
-      onBack={() => history.push(ROUTES.DASHBOARD)}
+      onBack={() => goBack()}
       displayOffline={!isOnline}
     >
       <div className="h-screen">

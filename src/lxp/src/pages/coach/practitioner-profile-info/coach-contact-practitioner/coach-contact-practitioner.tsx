@@ -10,19 +10,18 @@ import {
 } from '@ecdlink/ui';
 import { useDialog, useSnackbar } from '@ecdlink/core';
 import { useState } from 'react';
-import { PhoneIcon } from '@heroicons/react/solid';
 import { PractitionerProfileRouteState } from './coach-contact-practitioner.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './coach-contact-practitioner.styles';
 import ROUTES from '@routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
 import { useSelector } from 'react-redux';
-import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
 import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
 import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
 import { RemovePractioner } from '../components/remove-practitioner/remove-practitioner';
 import OnlineOnlyModal from '../../../../modals/offline-sync/online-only-modal';
 import { useTenant } from '@/hooks/useTenant';
+import WhatsAppIcon from '@/assets/logos/whatsapp';
 
 export const CoachContactPractitioner: React.FC = () => {
   const history = useHistory();
@@ -100,7 +99,7 @@ export const CoachContactPractitioner: React.FC = () => {
                 <Typography
                   text={`Removed from ${
                     practitionerClassroom?.name || `their preschool`
-                  }.`}
+                  }`}
                   type="h1"
                   color="textDark"
                   className={'m-4'}
@@ -112,7 +111,7 @@ export const CoachContactPractitioner: React.FC = () => {
                     principal?.user?.firstName || `The principal`
                   } has removed ${practitioner?.user?.firstName} from ${
                     practitionerClassroom?.name || `their preschool`
-                  }.`}
+                  }`}
                   type="h2"
                   color="textDark"
                   className={'m-4'}
@@ -141,7 +140,7 @@ export const CoachContactPractitioner: React.FC = () => {
                 type="h5"
                 weight="bold"
                 lineHeight="snug"
-                color="quatenary"
+                color="secondary"
                 text={`${
                   practitioner?.user?.phoneNumber == null
                     ? 'Number not available'
@@ -155,11 +154,7 @@ export const CoachContactPractitioner: React.FC = () => {
                 size={'small'}
                 onClick={whatsapp}
               >
-                <img
-                  src={getLogo(LogoSvgs.whatsapp)}
-                  alt="whatsapp"
-                  className="text-secondary mr-1 h-5 w-5"
-                />
+                <WhatsAppIcon className="text-secondary mr-1 h-5 w-5" />
                 <Typography
                   color={'secondary'}
                   type={'small'}
@@ -197,11 +192,9 @@ export const CoachContactPractitioner: React.FC = () => {
                 type="filled"
                 onClick={() => {
                   if (removePractitioner) {
-                    if (isOnline) {
-                      setRemovePractionerReasonsVisible(true);
-                    } else {
-                      showOnlineOnly();
-                    }
+                    isOnline
+                      ? setRemovePractionerReasonsVisible(true)
+                      : showOnlineOnly();
                   } else {
                     history.goBack();
                   }

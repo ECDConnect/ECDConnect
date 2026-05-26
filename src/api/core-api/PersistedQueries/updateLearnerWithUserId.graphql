@@ -1,0 +1,5 @@
+mutation updateLearnerWithUserId($input: LearnerInputModelInput) {
+  updateLearnerWithUserId(input: $input) {
+    id
+  }
+}

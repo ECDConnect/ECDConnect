@@ -61,7 +61,7 @@ export const SignUp: React.FC = () => {
     defaultValues: initialRegisterValues,
     mode: 'onChange',
   });
-  const { errors } = useFormState({ control });
+  const { errors, isValid } = useFormState({ control });
   const { resetAppStore, resetAuth, resetUser } = useStoreSetup();
   const [preferId, setPreferId] = useState<boolean>(true);
   const [contentConsentTypeEnum, setContentConsentTypeEnum] =
@@ -138,7 +138,10 @@ export const SignUp: React.FC = () => {
           setIsLoading(false);
           return;
         }
-        if (informationVerified.errorCode === 1) {
+        if (
+          informationVerified.errorCode === 1 ||
+          informationVerified.errorCode === 4
+        ) {
           setRequestError(`If you are having trouble, tap "Get help"`);
           setIsLoading(false);
           return;
@@ -480,7 +483,7 @@ export const SignUp: React.FC = () => {
             type="filled"
             color="quatenary"
             isLoading={isLoading}
-            disabled={!isOnline || isLoading}
+            disabled={!isOnline || isLoading || !isValid}
             onClick={handleSubmit(submitForm)}
             icon="ArrowCircleRightIcon"
           >

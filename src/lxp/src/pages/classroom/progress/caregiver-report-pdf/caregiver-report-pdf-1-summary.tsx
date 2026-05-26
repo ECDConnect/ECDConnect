@@ -1,7 +1,6 @@
 import { Card, Divider, ProfileAvatar, Typography } from '@ecdlink/ui';
 import { format } from 'date-fns';
 import lightbulbEmoji from '@/assets/ECD_Connect_lightbulb.png';
-import childrePlayingImg from '@/assets/progress-reports/children-playing.png';
 import greenFaceImg from '@/assets/progress-reports/green-face.png';
 import blueFaceImg from '@/assets/progress-reports/blue-face.png';
 import pinkFaceImg from '@/assets/progress-reports/pink-face.png';
@@ -47,54 +46,56 @@ export const ProgressCaregiverReportSummaryPage: React.FC<
 
   return (
     <div
-      className={'flex flex-col px-4 pb-4 pt-4'}
-      style={{ height: '1100px' }}
+      className={'flex flex-col px-4 pb-4'}
+      style={{ height: '1100px', letterSpacing: '0.02px' }}
     >
-      <div className="mb-4 flex flex-row">
-        <div className="flex flex-col">
+      <div className="flex flex-row">
+        <Typography
+          type="body"
+          color="textMid"
+          text={`Progress report -`}
+          className="mb-2 text-2xl"
+        />
+        <Typography
+          type="body"
+          color="textDark"
+          text={`${childFullName}`}
+          className="mb-2 text-2xl font-bold"
+        />
+      </div>
+      <div className="flex flex-col">
+        <div
+          className={`bg-quatenary mt-2 mb-3 flex flex-shrink-0 flex-row justify-between rounded-full px-3 py-1`}
+          style={{ height: 'fit-content', width: 'fit-content' }}
+        >
           <Typography
-            type="body"
-            color="textDark"
-            text={`Progress report - ${childFullName}`}
-            className="mb-2 text-2xl font-bold"
+            type="small"
+            weight="bold"
+            color="white"
+            text={`${format(reportingPeriodEndDate, 'MMM yyy')} | ${ageString}`}
+            lineHeight={4}
+            className="pb-3 text-center"
           />
-          <div
-            className={`bg-quatenary mt-3 mt-6 flex flex-shrink-0 flex-row justify-between rounded-full px-3 py-1`}
-            style={{ height: 'fit-content', width: 'fit-content' }}
-          >
-            <Typography
-              type="small"
-              weight="bold"
-              color="white"
-              text={`${format(
-                reportingPeriodEndDate,
-                'MMM yyy'
-              )} | ${ageString}`}
-              lineHeight={4}
-              className="pb-3 text-center"
-            />
-          </div>
         </div>
       </div>
       <div className="flex flex-row">
-        <Card className="bg-uiBg w-full rounded-2xl p-6">
+        <Card className="bg-uiBg w-full rounded-2xl p-2">
           <div className="flex items-start gap-4">
-            <div className="flex-shrink-0">
-              {logo && (
+            {logo && (
+              <div className="flex-shrink-0">
                 <img
                   src={logo}
                   alt="Preschool logo"
                   className="h-36 w-36 rounded-full object-cover shadow-md"
                 />
-              )}
-            </div>
+              </div>
+            )}
             <div className="flex flex-col">
               <Typography
-                type="h3"
+                type="body"
                 color="textDark"
-                weight="bold"
                 text={classroomName}
-                className="mb-2"
+                className="mb-2 text-xl font-bold"
               />
               <div className="flex flex-wrap items-center gap-1">
                 <Typography
@@ -139,7 +140,8 @@ export const ProgressCaregiverReportSummaryPage: React.FC<
           </div>
         </Card>
       </div>
-      <Divider dividerType="dashed" className="mb-4" />
+      <Divider dividerType="dashed" className="mb-2 mt-2" />
+
       <Typography
         type="h1"
         color="textDark"
@@ -149,7 +151,7 @@ export const ProgressCaregiverReportSummaryPage: React.FC<
 
       <div style={styles.TertiaryBox}>
         <div className="flex flex-row">
-          <img src={greenFaceImg} className="mr-4 h-14 w-14" />
+          <img src={greenFaceImg} className="mr-4 h-14 w-14" alt="greenFace" />
           <Typography
             type="h3"
             color="textDark"
@@ -162,7 +164,7 @@ export const ProgressCaregiverReportSummaryPage: React.FC<
 
       <div style={styles.QuatenaryBox}>
         <div className="flex flex-row">
-          <img src={blueFaceImg} className="mr-4 h-14 w-14" />
+          <img src={blueFaceImg} className="mr-4 h-14 w-14" alt="blueFace" />
           <Typography
             type="h3"
             color="textDark"
@@ -175,7 +177,7 @@ export const ProgressCaregiverReportSummaryPage: React.FC<
 
       <div style={styles.SecondaryBox}>
         <div className="flex flex-row">
-          <img src={pinkFaceImg} className="mr-4 h-14 w-14" />
+          <img src={pinkFaceImg} className="mr-4 h-14 w-14" alt="pinkFace" />
           <Typography
             type="h3"
             color="textDark"
@@ -192,7 +194,11 @@ export const ProgressCaregiverReportSummaryPage: React.FC<
 
       <div className="mt-auto">
         <Card className="bg-textDark mb-4 mt-auto flex flex-row rounded-2xl p-4">
-          <img src={lightbulbEmoji} className="mr-4 h-14 w-14" />
+          <img
+            src={lightbulbEmoji}
+            className="mr-4 h-14 w-14"
+            alt="lightbulbEmoji"
+          />
           <div className="flex flex-col">
             <Typography
               type="h2"
@@ -208,13 +214,7 @@ export const ProgressCaregiverReportSummaryPage: React.FC<
           <div
             className="mr-4 ml-auto h-14 w-1/2"
             style={{ position: 'relative', overflow: 'visible' }}
-          >
-            <img
-              src={childrePlayingImg}
-              className=""
-              style={{ position: 'absolute', bottom: 0, left: 0 }}
-            />
-          </div>
+          ></div>
         </Card>
         <div className="mb-4 flex flex-row">
           {ageInMonths < 36 && (

@@ -1,0 +1,12 @@
+mutation addPractitionerToPrincipal($firstName: String, $idNumber: String, $lastName: String, $userId: String, $preschoolCode: String) {
+  addPractitionerToPrincipal(
+    firstName: $firstName
+    idNumber: $idNumber
+    lastName: $lastName
+    userId: $userId
+    preschoolCode: $preschoolCode
+  ) {
+    userId
+    isActive
+  }
+}

@@ -14,6 +14,10 @@ export const StatementsActions = {
   GET_STATEMENTS: 'getIncomeStatements',
   UPDATE_INCOME_STATEMENT: 'updateIncomeStatement',
   UPSERT_INCOME_STATEMENTS: 'upsertIncomeStatements',
+  GET_INCOME_STATEMENT_PDF: 'getIncomeStatementPdf',
+  GET_ALL_EXPENSES_TYPES: 'getAllExpensesTypes',
+  GET_ALL_INCOME_TYPES: 'getAllIncomeTypes',
+  GET_ALL_PAY_TYPE: 'getAllPayType',
 };
 
 export const getAllExpensesTypes = createAsyncThunk<
@@ -21,7 +25,7 @@ export const getAllExpensesTypes = createAsyncThunk<
   {},
   ThunkApiType<RootState>
 >(
-  'getAllExpensesTypes',
+  StatementsActions.GET_ALL_EXPENSES_TYPES,
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
@@ -59,7 +63,7 @@ export const getAllIncomeTypes = createAsyncThunk<
   {},
   ThunkApiType<RootState>
 >(
-  'getAllIncomeTypes',
+  StatementsActions.GET_ALL_INCOME_TYPES,
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
@@ -98,7 +102,7 @@ export const getAllPayType = createAsyncThunk<
   {},
   ThunkApiType<RootState>
 >(
-  'getAllPayType',
+  StatementsActions.GET_ALL_PAY_TYPE,
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
@@ -243,19 +247,46 @@ export const upsertIncomeStatements = createAsyncThunk<
     } = getState();
 
     try {
-      let promises: Promise<IncomeStatementDto>[] = [];
-      if (userAuth?.auth_token) {
-        promises = incomeStatements
-          .filter((statement) => !statement.synced)
-          .map(async (statement) => {
-            return await new IncomeStatementsService(
-              userAuth?.auth_token
-            ).updateStatement(statement as IncomeStatementDto);
-          });
-      }
-      return Promise.all(promises);
+      if (!userAuth?.auth_token) return [];
+
+      const promises = incomeStatements
+        .filter((statement) => !statement.synced)
+        .map((statement) =>
+          new IncomeStatementsService(userAuth.auth_token).updateStatement(
+            statement as IncomeStatementDto
+          )
+        );
+      return await Promise.all(promises);
     } catch (err) {
       return rejectWithValue(err);
+    }
+  }
+);
+
+export const getIncomeStatementPdf = createAsyncThunk<
+  string,
+  { statementId: string },
+  ThunkApiType<RootState>
+>(
+  StatementsActions.GET_INCOME_STATEMENT_PDF,
+  async ({ statementId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      if (!userAuth?.auth_token) {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return await new IncomeStatementsService(
+        userAuth?.auth_token
+      ).getIncomeStatementPdf(statementId);
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message ||
+          err?.message ||
+          'Failed to get Income Statement Pdf'
+      );
     }
   }
 );

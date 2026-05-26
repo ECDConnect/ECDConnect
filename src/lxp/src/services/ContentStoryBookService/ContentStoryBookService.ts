@@ -11,36 +11,7 @@ class ContentStoryBookService {
   async getStoryBooks(locale: string): Promise<StoryBookDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query GetAllStoryBook($locale: String) {
-          GetAllStoryBook(locale: $locale) {          
-            id
-            name
-            type
-            author
-            illustrator
-            bookLocation
-            bookLocationLink
-            keywords
-            availableLanguages {
-              id
-              description
-              locale
-            }
-            storyBookParts {
-              id
-              part
-              partText
-              storyBookPartQuestions {
-                id
-                name
-                question
-              }              
-            }
-                   
-          }
-        }
-      `,
+      id: 'GetAllStoryBook',
       variables: {
         locale: locale,
       },

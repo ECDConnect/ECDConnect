@@ -4,6 +4,7 @@ using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -12,6 +13,7 @@ using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -28,59 +30,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         public List<Practitioner> GetAllPrincipal(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+            [Service] ApplicationUserManager userManager,
             IGenericRepositoryFactory repoFactory)
         {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var callerIsAdmin = userManager.IsInRoleAsync(new ApplicationUser { Id = uId }, Roles.ADMINISTRATOR).Result;
+            if (!callerIsAdmin)
+                throw new HotChocolate.Execution.QueryException("You are not authorized to retrieve principal data.");
+
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
-            var uId = contextAccessor.HttpContext.GetUser().Id;
             var principalRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
             List<Practitioner> principals = principalRepo.GetAll().Where(x => x.IsPrincipal == true).ToList();
 
             return principals;
-        }
-
-        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.View)]
-        public List<Principal> GetAllPrincipals(
-            [Service] IHttpContextAccessor contextAccessor,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-            IGenericRepositoryFactory repoFactory)
-        {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var principalRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            List<Practitioner> principals = principalRepo.GetAll().Where(x => x.IsPrincipal == true).ToList();
-
-            List<Principal> list = new List<Principal>();
-            foreach (var principal in principals)
-            {
-                list.Add(MapPractitionerToPrincipal(principal));
-            }
-
-            return list;
-        }
-
-        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.View)]
-        public Practitioner GetPrincipalByUserId(
-            [Service] IHttpContextAccessor contextAccessor,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-            IGenericRepositoryFactory repoFactory,
-            string userId)
-        {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var principalRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            var principal = principalRepo.GetAll().Where(x => x.UserId.ToString().Contains(userId)).OrderBy(x => x.Id).FirstOrDefault();
-            if (principal == null) principal = new Practitioner();
-            return principal;
-        }
-
-        [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.View)]
-        public List<Practitioner> GetAllPractitionersForPrincipal([Service] PersonnelService personnelManager,
-        string userId)
-        {
-            return personnelManager.GetAllPractitionersForPrincipal(userId);
         }
 
         [Permission(PermissionGroups.PRINCIPAL, GraphActionEnum.View)]

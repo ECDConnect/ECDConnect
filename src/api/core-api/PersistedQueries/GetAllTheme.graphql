@@ -1,0 +1,25 @@
+query GetAllTheme($locale: String) {
+  GetAllTheme(locale: $locale) {
+    id
+    name
+    color
+    imageUrl
+    themeLogo
+    themeDays {
+      id
+      day
+      largeGroupActivity {
+        id
+      }
+      smallGroupActivity {
+        id
+      }
+      storyActivity {
+        id
+      }
+      storyBook {
+        id
+      }
+    }
+  }
+}

@@ -1,0 +1,14 @@
+query GetYearPointsView($userId: UUID!) {
+  yearPointsView(userId: $userId) {
+    total
+    monthSummary {
+      month
+      total
+      activityDetail {
+        activity
+        timesScored
+        pointsTotal
+      }
+    }
+  }
+}

@@ -1,0 +1,35 @@
+query GetUsersToConnectWith($provinceIds: [UUID!], $communitySkillIds: [UUID!], $connectionTypes: [String]) {
+  usersToConnectWith(provinceIds: $provinceIds, communitySkillIds: $communitySkillIds, connectionTypes: $connectionTypes) {
+    id
+    userId
+    aboutShort
+    aboutLong
+    shareContactInfo
+    shareEmail
+    sharePhoneNumber
+    shareProfilePhoto
+    shareProvince
+    profileSkills {
+      id
+      name
+      imageName
+      description
+      isActive
+      ordering
+    }
+    provinceId
+    provinceName
+    shareRole
+    insertedDate
+    communityUser {
+      id
+      fullName
+      email
+      phoneNumber
+      whatsAppNumber
+      profilePhoto
+      roleName
+    }
+    connectionAccepted
+  }
+}

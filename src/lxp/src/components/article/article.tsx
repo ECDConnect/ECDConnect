@@ -40,13 +40,14 @@ export const Article = ({
   const [availableLanguages, setAvailableLanguages] = useState([
     language.locale as LanguageCode,
   ]);
-  const consent = useSelector(contentConsentSelectors.getConsent);
+  const [languageOptions, setLanguageOptions] = useState<LanguageDto[]>([]);
+  const consent = useSelector(contentConsentSelectors.getConsentSelector);
   const dialog = useDialog();
   const tenant = useTenant();
 
   useEffect(() => {
     if (consent && visible && !isOpen) {
-      getContent(consent);
+      getContent(consent, language.locale);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [consent, visible, isOpen]);
@@ -57,16 +58,24 @@ export const Article = ({
   }, [isOpen, consentEnumType]);
 
   const changeLanugage = async (language: LanguageDto) => {
-    getOpenContent(language.locale);
+    await getOpenContent(language.locale);
   };
 
   const getOpenContent = async (locale: string) => {
-    const content = await appDispatch(
-      contentConsentThunkActions.getOpenConsent({
-        locale: locale,
-        name: consentEnumType,
-      })
-    ).unwrap();
+    let content = [];
+    if (isOnline) {
+      content = await appDispatch(
+        contentConsentThunkActions.getOpenConsent({
+          locale: locale,
+          name: consentEnumType,
+        })
+      ).unwrap();
+    } else {
+      content =
+        consent?.filter(
+          (x) => x.name === consentEnumType && x.locale === locale
+        ) ?? [];
+    }
 
     if (content && content.length > 0) {
       const consentFilter = content?.[0];
@@ -98,11 +107,11 @@ export const Article = ({
       }
 
       if (consentFilter?.availableLanguages !== undefined) {
+        const langs = consentFilter.availableLanguages ?? [];
+        setLanguageOptions(langs);
         setAvailableLanguages(
-          consentFilter?.availableLanguages
-            ? consentFilter.availableLanguages?.map((item) => {
-                return item?.locale as LanguageCode;
-              })
+          langs.length
+            ? langs.map((item) => item?.locale as LanguageCode)
             : [language.locale as LanguageCode]
         );
       }
@@ -112,8 +121,13 @@ export const Article = ({
     }
   };
 
-  const getContent = async (consentList: ConsentDto[] | undefined) => {
-    const consentFilter = consentList?.find((x) => x.name === consentEnumType);
+  const getContent = async (
+    consentList: ConsentDto[] | undefined,
+    locale: string
+  ) => {
+    const consentFilter = consentList?.find(
+      (x) => x.name === consentEnumType && x.locale === locale
+    );
     var description = consentFilter?.description ?? '';
     setArticleImage(consentFilter?.image ?? '');
 
@@ -142,11 +156,11 @@ export const Article = ({
     }
 
     if (consentFilter?.availableLanguages !== undefined) {
+      const langs = consentFilter.availableLanguages ?? [];
+      setLanguageOptions(langs);
       setAvailableLanguages(
-        consentFilter?.availableLanguages
-          ? consentFilter.availableLanguages?.map((item) => {
-              return item?.locale as LanguageCode;
-            })
+        langs.length
+          ? langs.map((item) => item?.locale as LanguageCode)
           : [language.locale as LanguageCode]
       );
     }
@@ -205,6 +219,7 @@ export const Article = ({
                   currentLocale="en-za"
                   selectLanguage={(data) => changeLanugage(data)}
                   availableLanguages={availableLanguages}
+                  languageOptions={languageOptions}
                   notLogged={true}
                   isConsentScreen={isConsentScreen}
                 />

@@ -1,0 +1,10 @@
+query monthlyAttendanceReport($startMonth: DateTime!, $endMonth: DateTime!) {
+  monthlyAttendanceReport(startMonth: $startMonth, endMonth: $endMonth) {
+    month
+    monthOfYear
+    year
+    percentageAttendance
+    numberOfSessions
+    totalScheduledSessions
+  }
+}

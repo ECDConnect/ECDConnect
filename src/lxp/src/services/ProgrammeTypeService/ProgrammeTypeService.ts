@@ -11,15 +11,7 @@ class ProgrammeTypeService {
   async getProgrammeTypes(): Promise<ProgrammeTypeDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-        query {
-          GetAllProgrammeType {
-            id
-            description
-            enumId
-          }
-        }
-      `,
+      id: 'GetAllProgrammeType',
     });
 
     if (response.status !== 200) {

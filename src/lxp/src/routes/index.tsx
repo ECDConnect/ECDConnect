@@ -113,6 +113,8 @@ import { ObservationsForChildLanding } from '@/pages/classroom/progress/observat
 import { HelpForm } from '@/components/help-form/help-form';
 import { CoachProgressViewReportsSummarySelectClassroomGroupAndAgeGroup } from '@pages/coach/coach-practitioner-classroom/components/view-reports-summary/view-reports-summary-select-class-and-age-group';
 import { CoachProgressViewReportsSummary } from '@pages/coach/coach-practitioner-classroom/components/view-reports-summary/view-reports-summary';
+import { Registration } from '@/pages/business/registration/registration';
+import { RegistrationUpdate } from '@/pages/business/registration/maintain-registration/registration-update';
 
 const PublicRoutes: React.FC = () => {
   const tenant = useTenant();
@@ -240,6 +242,16 @@ const AuthRoutes: React.FC = () => {
       <Route
         path={ROUTES.BUSINESS_MONTH_STATEMENTS_DETAILS}
         component={MonthStatements}
+        exact={true}
+      />
+      <Route
+        path={ROUTES.BUSINESS_REGISTRATION}
+        component={Registration}
+        exact={true}
+      />
+      <Route
+        path={ROUTES.BUSINESS_REGISTRATION_UPDATE}
+        component={RegistrationUpdate}
         exact={true}
       />
       <Route path={ROUTES.TRAINING} component={Training} exact />

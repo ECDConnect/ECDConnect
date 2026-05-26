@@ -5,6 +5,7 @@ using ECDLink.Api.CoreApi.Services;
 using ECDLink.Core.Extensions;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -55,76 +56,82 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         /// This fetches stats around how the practitioner has taken attendance for their classroom groups
         /// </summary>
         /// <param name="report"></param>
-        /// <param name="userId"></param>
         /// <param name="classroomId"></param>
         /// <param name="startMonth"></param>
         /// <param name="endMonth"></param>
         /// <returns></returns>
         public IEnumerable<MonthlyAttendanceReportModel> MonthlyAttendanceReport(
           [Service] MonthlyAttendanceReport report,
-          string userId,
+          [Service] IHttpContextAccessor httpContextAccessor,
           DateTime startMonth,
           DateTime endMonth)
         {
+            var userId = httpContextAccessor.HttpContext.GetUser().Id;
             startMonth = startMonth.GetStartOfMonth();
 
             //if current month, do not project as per business rules and use current date as enddate - if its the 1st of the month and dates match, then add 1 day
-            endMonth = endMonth.Month == DateTime.Now.Month 
+            endMonth = endMonth.Month == DateTime.Now.Month
                 ? DateTime.Now.GetEndOfDay()
                 : endMonth.GetEndOfMonth().GetEndOfDay();
 
 
-            var data = report.GenerateMonthlyAttendanceReport(userId, startMonth, endMonth);
+            var data = report.GenerateMonthlyAttendanceReport(userId.ToString(), startMonth, endMonth);
+
             return data;
         }
 
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public async Task<ChildAttendanceReportModel> ChildAttendanceReport(
+          [Service] IHttpContextAccessor contextAccessor,
+          [Service] HierarchyEngine engine,
           [Service] ChildAttendanceReport report,
           string userId,
           Guid classgroupId,
           DateTime startDate,
           DateTime endDate)
         {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            if (!contextAccessor.HttpContext.IsInRole(new[] { Roles.COACH, Roles.PRINCIPAL, Roles.PRACTITIONER })
+                 || !engine.UserInHierarchy(uId, Guid.Parse(userId), true))
+            {
+                throw new UnauthorizedAccessException("You do not have permission to retrieve this data.");
+            }
             var startMonth = startDate.GetStartOfMonth();
-            //var endMonth = endDate.GetEndOfMonth();
 
-            //if current month, do not project as per business rules and use current date as enddate - if its the 1st of the month and dates match, then add 1 day
-            var endMonth = (endDate.Month == DateTime.Now.Month ? (startMonth.Date == DateTime.Now.Date ? DateTime.Now.AddDays(1) : DateTime.Now) : endDate.GetEndOfMonth());
-
+            DateTime endMonth;
+            if (endDate.Month == DateTime.Now.Month)
+            {
+                endMonth = startMonth.Date == DateTime.Now.Date ? DateTime.Now.AddDays(1) : DateTime.Now;
+            }
+            else
+            {
+                endMonth = endDate.GetEndOfMonth();
+            }
 
             return report.GetChildAttendance(classgroupId, userId, startMonth.Date, endMonth.GetEndOfDay());
         }
 
-        // Not currently used
-        //public async Task<List<ClassroomGroupChildAttendanceReportModel>> ClassroomAttendanceReport(
-        //     [Service] ChildAttendanceReport report,
-        //     string userId,
-        //     Guid classgroupId, // TODO - rename to classroomId
-        //     DateTime startDate,
-        //     DateTime endDate)
-        //{
-        //    var startMonth = startDate.GetStartOfMonth();
-        //    //var endMonth = endDate.GetEndOfMonth();
-        //    //if current month, do not project as per business rules and use current date as enddate - if its the 1st of the month and dates match, then add 1 day
-        //    var endMonth = (endDate.Month == DateTime.Now.Month ? (startMonth.Date == DateTime.Now.Date ? DateTime.Now.AddDays(1) : DateTime.Now) : endDate.GetEndOfMonth());
-
-        //    return report.GetClassroomAttendance(classgroupId, userId, startMonth.Date, endMonth.GetEndOfDay());
-        //}
-
         [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
         public async Task<ClassroomGroupChildAttendanceReportOverviewModel> ClassroomAttendanceOverviewReport(
             [Service] ChildAttendanceReport report,
-            string userId,
+            [Service] IHttpContextAccessor httpContextAccessor,
             DateTime startDate,
             DateTime endDate)
         {
+            var userId = httpContextAccessor.HttpContext.GetUser().Id;
             var startMonth = startDate.GetStartOfMonth();
-            //var endMonth = endDate.GetEndOfMonth();
-            //if current month, do not project as per business rules and use current date as enddate - if its the 1st of the month and dates match, then add 1 day
-            var endMonth = (endDate.Month == DateTime.Now.Month ? (startMonth.Date == DateTime.Now.Date ? DateTime.Now.AddDays(1) : DateTime.Now) : endDate.GetEndOfMonth());
 
-            return report.GetClassroomAttendanceOverView(userId, startMonth.Date, endMonth.GetEndOfDay());
+            DateTime endMonth;
+            if (endDate.Month == DateTime.Now.Month)
+            {
+                endMonth = startMonth.Date == DateTime.Now.Date ? DateTime.Now.AddDays(1) : DateTime.Now;
+            }
+            else
+            {
+                endMonth = endDate.GetEndOfMonth();
+            }
+
+            return report.GetClassroomAttendanceOverView(userId.ToString(), startMonth.Date, endMonth.GetEndOfDay());
         }
     }
 }

@@ -12,7 +12,6 @@ namespace ECDLink.Core.Services.Interfaces
         #region Practitioners
         public List<Practitioner> GetPractitionerPeers(string practitionerId);
         public Practitioner GetPractitionerForChild(string childUserId);        
-        public List<Practitioner> GetAllPractitionersForPrincipal(string userId);
         public string GetSiteNameForPractitioner(string userId);
         public Practitioner SwitchPrincipal(string oldPrincipalUserId, string newPrincipalUserId);
         public Practitioner PromotePractitionerToPrincipal(string userId,bool sendComm = false);
@@ -20,8 +19,8 @@ namespace ECDLink.Core.Services.Interfaces
         public Principal MapPractitionerToPrincipal(Practitioner practitioner);
         public PractitionerTimeline GetPractitionerTimeline(string userId);
         public Task<bool> DeActivatePractitionerAsync(string userId, string leavingComment, string reasonForPractitionerLeavingId, string reasonDetails);
-        public bool UpdatePractitionerBusinessWalkthrough(string userId);
-        void UpdatePractitioneProgressWalkthrough(string userId);
+        public bool UpdatePractitionerBusinessWalkthrough();
+        public bool UpdatePractitioneProgressWalkthrough();
         #endregion
         public string GetUserSignature(string userId);
         public string GetUserSiteAddress(string userId);

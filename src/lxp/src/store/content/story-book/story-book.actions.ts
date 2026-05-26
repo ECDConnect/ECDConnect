@@ -9,38 +9,32 @@ export const StoryBookActions = {
 
 export const getStoryBooks = createAsyncThunk<
   StoryBookDto[],
-  { locale: string },
+  { locale: string; overrideCache?: boolean },
   ThunkApiType<RootState>
 >(
   StoryBookActions.GET_STORY_BOOKS,
-  async ({ locale }, { getState, rejectWithValue }) => {
+  async ({ locale, overrideCache = false }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       storyBookData: { storyBooks: storyBookCache },
     } = getState();
 
-    if (!storyBookCache) {
-      try {
-        let storyBooks: StoryBookDto[] | undefined;
-
-        if (userAuth?.auth_token) {
-          storyBooks = await new ContentStoryBookService(
-            userAuth?.auth_token
-          ).getStoryBooks(locale);
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        if (!storyBooks) {
-          return rejectWithValue('Error getting story books');
-        }
-
-        return storyBooks;
-      } catch (err) {
-        return rejectWithValue(err);
-      }
-    } else {
+    // === CACHE CHECK ===
+    if (!overrideCache && storyBookCache && storyBookCache.length > 0) {
       return storyBookCache;
+    }
+
+    // === FETCH FROM API ===
+    try {
+      if (!userAuth?.auth_token) {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return await new ContentStoryBookService(
+        userAuth?.auth_token
+      ).getStoryBooks(locale);
+    } catch (err) {
+      return rejectWithValue(err);
     }
   }
 );

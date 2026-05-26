@@ -9,8 +9,8 @@ import ROUTES from '@routes/routes';
 import StatementsWrapper from '../money/submit-income-statements/components/walkthrough-statements-wrapper/StatementsWrapper';
 import { useAppContext } from '@/walkthrougContext';
 import { BusinessTabItems } from '../business.types';
-import moneyInIcon from '@/assets/icon/money-in.svg';
-import moneyOutIcon from '@/assets/icon/money-out.svg';
+import iconMoneyIn from '@/assets/svg-components/iconMoneyIn';
+import iconMoneyOut from '@/assets/svg-components/iconMoneyOut';
 
 export const AddAmount: React.FC<ComponentBaseProps> = () => {
   const history = useHistory();
@@ -54,7 +54,7 @@ export const AddAmount: React.FC<ComponentBaseProps> = () => {
               {
                 id: 'createIncome',
                 title: 'Income (money in)',
-                menuIconUrl: moneyInIcon,
+                svgIcon: iconMoneyIn,
                 iconBackgroundColor: 'tertiary',
                 iconColor: 'white',
                 showIcon: true,
@@ -71,7 +71,7 @@ export const AddAmount: React.FC<ComponentBaseProps> = () => {
               },
               {
                 title: 'Expense (money out)',
-                menuIconUrl: moneyOutIcon,
+                svgIcon: iconMoneyOut,
                 iconBackgroundColor: 'secondary',
                 iconColor: 'white',
                 showIcon: true,

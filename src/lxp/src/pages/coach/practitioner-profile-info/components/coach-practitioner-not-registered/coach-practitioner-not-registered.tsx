@@ -13,8 +13,6 @@ import { useDialog } from '@ecdlink/core';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useHistory } from 'react-router';
 import { PractitionerNotRegisterProps } from './coach-practitioner-not-registered.types';
-import { PractitionerService } from '@/services/PractitionerService';
-import { authSelectors } from '@/store/auth';
 import { useSelector } from 'react-redux';
 import ROUTES from '@/routes/routes';
 import { useEffect, useState } from 'react';
@@ -22,15 +20,18 @@ import { HelpForm } from '@/components/help-form/help-form';
 import OnlineOnlyModal from '../../../../../modals/offline-sync/online-only-modal';
 import { useTenant } from '@/hooks/useTenant';
 import { userSelectors } from '@/store/user';
+import { useAppDispatch } from '@/store';
+import { practitionerThunkActions } from '@/store/practitioner';
 
 export const CoachPractitionerNotRegistered: React.FC<
   PractitionerNotRegisterProps
 > = ({ practitioner, classroom }) => {
+  const appDispatch = useAppDispatch();
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const dialog = useDialog();
   const tenant = useTenant();
-  const userAuth = useSelector(authSelectors.getAuthUser);
+  const isOpenAccess = tenant?.isOpenAccess;
   const [showAlert, setShowAlert] = useState(false);
   const [inviteDates, setInviteDates] = useState<Date[]>();
   const [timeSinceLastInvite, setTimeSinceLastInvite] = useState<number>(1000);
@@ -45,9 +46,12 @@ export const CoachPractitionerNotRegistered: React.FC<
 
   const getInviteDetails = async () => {
     setIsLoading(true);
-    const dates = await new PractitionerService(
-      userAuth?.auth_token || ''
-    ).GetAllPractitionerInvites(practitioner?.userId || '');
+
+    const dates = await appDispatch(
+      practitionerThunkActions.getAllPractitionerInvites({
+        userId: practitioner?.userId || '',
+      })
+    ).unwrap();
 
     dates.sort();
 
@@ -70,9 +74,11 @@ export const CoachPractitionerNotRegistered: React.FC<
       if (!inviteDates || !inviteDates.length || timeSinceLastInvite > 60) {
         setShowAlert(true);
         setIsSending(true);
-        await new PractitionerService(
-          userAuth?.auth_token || ''
-        ).SendPractitionerInviteToApplication(practitioner?.userId || '');
+        await appDispatch(
+          practitionerThunkActions.sendPractitionerInviteToApplication({
+            userId: practitioner?.userId || '',
+          })
+        );
         await getInviteDetails();
         setShowAlert(false);
       }
@@ -123,19 +129,23 @@ export const CoachPractitionerNotRegistered: React.FC<
                 )}, this profile will be deleted.`
               : `${practitioner?.user?.firstName} has not registered on ${tenant.tenant?.applicationName}.`
           }
-          list={[
-            `If ${practitioner?.user?.firstName} needs help registering for ${tenant.tenant?.applicationName}, please tap the button.`,
-          ]}
-          button={
-            <Button
-              text="Get help"
-              icon="QuestionMarkCircleIcon"
-              type={'filled'}
-              color={'quatenary'}
-              textColor={'white'}
-              onClick={() => setShowHelp(true)}
-            />
-          }
+          {...(!isOpenAccess && {
+            list: [
+              `If ${practitioner?.user?.firstName} needs help registering for ${tenant.tenant?.applicationName}, please tap the button.`,
+            ],
+          })}
+          {...(!isOpenAccess && {
+            button: (
+              <Button
+                text="Get help"
+                icon="QuestionMarkCircleIcon"
+                type={'filled'}
+                color={'quatenary'}
+                textColor={'white'}
+                onClick={() => setShowHelp(true)}
+              />
+            ),
+          })}
         />
 
         {isLoading && (

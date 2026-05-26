@@ -1,0 +1,22 @@
+query childAttendanceReport($userId: String, $classgroupId: UUID!, $startDate: DateTime!, $endDate: DateTime!) {
+  childAttendanceReport(userId: $userId, classgroupId: $classgroupId, startDate: $startDate, endDate: $endDate) {
+    totalExpectedAttendance
+    totalActualAttendance
+    attendancePercentage
+    classGroupAttendance {
+      classroomGroupId
+      classroomGroupName
+      startDate
+      endDate
+      expectedAttendance
+      attendancePercentage
+      monthlyAttendance {
+        month
+        monthNumber
+        actualAttendance
+        expectedAttendance
+        attendancePercentage
+      }
+    }
+  }
+}

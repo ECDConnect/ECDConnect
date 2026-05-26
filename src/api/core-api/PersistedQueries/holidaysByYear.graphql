@@ -1,0 +1,5 @@
+query holidaysByYear($year: Int!) {
+  holidaysByYear(year: $year) {
+    day
+  }
+}

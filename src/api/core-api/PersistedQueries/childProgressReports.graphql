@@ -1,0 +1,34 @@
+query childProgressReports($count: Int!) {
+  childProgressReports(count: $count) {
+    id
+    categories {
+      achievedLevelId
+      categoryId
+      status
+      supportingTask {
+        taskDescription
+        taskId
+        todoText
+      }
+      tasks {
+        description
+        levelId
+        skillId
+        value
+      }
+    }
+    childId
+    childFirstname
+    childSurname
+    classroomName
+    dateCompleted
+    dateCreated
+    reportingPeriod
+    reportingDate
+    howCanCaregiverHelpChild
+    practitionerPhotoUrl
+    practitionerSurname
+    practitionerFirstname
+    childEnjoys
+  }
+}

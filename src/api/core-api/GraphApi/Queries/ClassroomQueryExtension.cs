@@ -24,13 +24,24 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     [ExtendObjectType(OperationTypeNames.Query)]
     public class ClassroomQueryExtension
     {
+
+        // The reason we make userId here optional is to accommodate handleNoClassroomForInvitedUser,
+        // getPrincipalClassroom
+        // In most cases this userId will be null
         [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
         public ClassroomModel GetClassroomForUser(
             [Service] IClassroomService classroomService,
             [Service] INotificationService notificationService,
-            Guid userId)
+            [Service] IHttpContextAccessor httpContextAccessor,
+            Guid? userId = null)
         {
-            var classroom = classroomService.GetClassroomForUser(userId);
+            if (!userId.HasValue)
+            {
+                var currentUser = httpContextAccessor.HttpContext?.GetUser();
+                userId = currentUser?.Id ?? throw new UnauthorizedAccessException("User is not authenticated.");
+            }
+            
+            var classroom = classroomService.GetClassroomForUser(userId.Value);
 
             if (classroom == null)
             {
@@ -43,9 +54,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 Name = classroom.Name,
                 ClassroomImageUrl = classroom.ClassroomImageUrl,
                 PreschoolCode = classroom.PreschoolCode,
-                NumberOfAssistants = classroom.NumberOfAssistants,
-                NumberOfOtherAssistants = classroom.NumberOfOtherAssistants,
-                NumberPractitioners = classroom.NumberPractitioners,
                 IsDummySchool = classroom.IsDummySchool,
                 SiteAddress = classroom.SiteAddress != null ? new BaseSiteAddressModel(classroom.SiteAddress) : null,
                 Principal = new BasePractitionerModel()
@@ -71,11 +79,56 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
+        public ClassroomGroupModel GetClassroomGroupForClassId(
+            [Service] IClassroomService classroomService,
+            [Service] IHttpContextAccessor httpContextAccessor,
+            Guid classroomGroupId)
+        {
+            var userId = httpContextAccessor.HttpContext.GetUser().Id;
+            
+            var classroomGroup = classroomService.GetClassroomGroupsForUser(userId)?
+                .FirstOrDefault(x => x.Id == classroomGroupId);
+            
+            if (classroomGroup == null)
+            {
+                return null;  // Early return for not found
+            }
+            
+            // Map to model with simplified assignments
+            return new ClassroomGroupModel
+            {
+                Id = classroomGroup.Id,
+                ClassroomId = classroomGroup.ClassroomId,
+                Name = classroomGroup.Name,
+                UserId = classroomGroup.UserId,  
+                Learners = classroomGroup.Learners.Select(y => new BaseLearnerModel
+                {
+                    LearnerId = y.Id,
+                    ChildUserId = y.UserId.Value,
+                    StartedAttendance = y.StartedAttendance,
+                    StoppedAttendance = y.StoppedAttendance,
+                    IsActive = y.IsActive,
+                }).ToList(),
+                ClassProgrammes = classroomGroup.ClassProgrammes.Where(x => x.IsActive).ToList(),
+            };
+        }
+
+
+        // The reason we make userId here optional is to accommodate classroomsDetailsForPractitioner,
+        // In most cases this userId will be null
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
         public List<ClassroomGroupModel> GetClassroomGroupsForUser(
             [Service] IClassroomService classroomService,
-            Guid userId)
+            [Service] IHttpContextAccessor httpContextAccessor,
+            Guid? userId = null)
         {
-            var classroomGroups = classroomService.GetClassroomGroupsForUser(userId);
+            if (!userId.HasValue)
+            {
+                var currentUser = httpContextAccessor.HttpContext?.GetUser();
+                userId = currentUser?.Id ?? throw new UnauthorizedAccessException("User is not authenticated.");
+            }
+
+            var classroomGroups = classroomService.GetClassroomGroupsForUser(userId.Value);
 
             if (classroomGroups == null)
             {

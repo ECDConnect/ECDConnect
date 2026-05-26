@@ -1,6 +1,5 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import ROUTES from '@/routes/routes';
-import { AuthService } from '@/services/AuthService';
 import { useAppDispatch } from '@/store';
 import { authActions, authThunkActions } from '@/store/auth';
 import { settingActions } from '@/store/settings';
@@ -24,7 +23,8 @@ import {
 import { useState } from 'react';
 import { useHistory } from 'react-router';
 import ReactGA from 'react-ga4';
-const { version } = require('../../../../package.json');
+const version: string =
+  process.env.REACT_APP_VERSION ?? require('../../../../package.json').version;
 
 interface VerifyPhoneNumberProps {
   closeAction?: (item: boolean) => void;
@@ -78,8 +78,13 @@ export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
       token: String(userAuthCode),
     };
 
-    const confirmAuthToken = await new AuthService()
-      ?.VerifyAuthCode(Config.authApi, body)
+    const confirmAuthToken = await appDispatch(
+      authThunkActions.verifyAuthCode({
+        baseEndPoint: Config.authApi,
+        body: body,
+      })
+    )
+      .unwrap()
       .catch((error) => {
         setNotification({
           title: ` Failed to verify the auth token!`,
@@ -129,10 +134,12 @@ export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
   };
 
   const resendOAAuthCode = async () => {
-    const resendAuthCode = await new AuthService().SendOAAuthCode(
-      username,
-      phoneNumber!
-    );
+    const resendAuthCode = await appDispatch(
+      authThunkActions.sendOAAuthCode({
+        username: username,
+        phoneNumber: phoneNumber!,
+      })
+    ).unwrap();
   };
 
   const handleGoBack = () => {
