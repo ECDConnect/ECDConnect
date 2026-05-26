@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using ECDLink.PostgresTenancy.Entities;
 using ECDLink.PostgresTenancy.Repository;
 
@@ -13,56 +14,35 @@ namespace ECDLink.PostgresTenancy.Services
             _repository = repository;
         }
 
-
         public JWTUserTokensEntity GetByKey(string key)
         {
-            var entity = _repository.GetByKey(key);
-
-            if (entity == null)
-            {
-                return default;
-            }
-
-            return entity;
+            return _repository.GetByKey(key) ?? default;
         }
 
         public JWTUserTokensEntity GetByToken(string token)
         {
-            var entity = _repository.GetByToken(token);
-
-            if (entity == null)
-            {
-                return default;
-            }
-
-            return entity;
+            return _repository.GetByToken(token) ?? default;
         }
 
         public JWTUserTokensEntity GetById(Guid id)
         {
-            var entity = _repository.GetByUserId(id);
-
-            if (entity == null)
-            {
-                return default;
-            }
-
-            return entity;
+            return _repository.GetByUserId(id) ?? default;
         }
 
+        public IList<JWTUserTokensEntity> GetAllActiveByUserId(Guid id)
+        {
+            return _repository.GetAllActiveByUserId(id);
+        }
 
         public JWTUserTokensEntity InsertToken(JWTUserTokensEntity entity)
         {
-            if (entity == null)
-            {
-                return default;
-            }
+            if (entity == null) return default;
 
             try
             {
                 _repository.Insert(entity);
             }
-            catch(Exception)
+            catch (Exception)
             {
             }
 
@@ -77,9 +57,20 @@ namespace ECDLink.PostgresTenancy.Services
             }
             catch (Exception)
             {
-
             }
             return true;
+        }
+
+        public void UpdateLastSeenByToken(string token)
+        {
+            if (string.IsNullOrWhiteSpace(token)) return;
+            _repository.UpdateLastSeenByToken(token);
+        }
+
+        public bool RevokeToken(string tokenKey)
+        {
+            if (string.IsNullOrWhiteSpace(tokenKey)) return false;
+            return _repository.Revoke(tokenKey);
         }
     }
 }

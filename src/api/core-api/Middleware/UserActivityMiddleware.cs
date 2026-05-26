@@ -1,5 +1,6 @@
 ﻿using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Managers;
+using ECDLink.PostgresTenancy.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -32,13 +33,28 @@ namespace EcdLink.Api.CoreApi.Middleware
 
                 if (user != null)
                 {
-                    if (user.LastSeen.Date != DateTime.UtcNow.Date) 
+                    if (user.LastSeen.Date != DateTime.UtcNow.Date)
                     {
                         dbContext.Database.ExecuteSqlInterpolated($"UPDATE \"AspNetUsers\" SET \"LastSeen\"={DateTime.UtcNow} WHERE \"Id\"={user.Id}");
+                    }
+
+                    var bearerToken = GetBearerToken(context);
+                    if (!string.IsNullOrWhiteSpace(bearerToken))
+                    {
+                        var jwtService = scope.ServiceProvider.GetRequiredService<IJWTService>();
+                        jwtService.UpdateLastSeenByToken(bearerToken);
                     }
                 }
             }
             await _next(context);
+        }
+
+        private static string GetBearerToken(HttpContext context)
+        {
+            var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+            if (authHeader != null && authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                return authHeader.Substring(7).Trim();
+            return null;
         }
     }
 
