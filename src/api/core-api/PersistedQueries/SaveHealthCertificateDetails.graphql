@@ -1,0 +1,4 @@
+mutation SaveHealthCertificateDetails($visitId: UUID!, $certificateName: String!, $certificateRegNr: String!) {
+  saveHealthCertificateDetails(visitId: $visitId, certificateName: $certificateName, certificateRegNr: $certificateRegNr) {
+  }
+}

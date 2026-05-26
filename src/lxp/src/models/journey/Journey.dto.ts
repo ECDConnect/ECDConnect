@@ -54,4 +54,7 @@ export type AssessmentReportDto = {
   preschoolDetail?: string[];
   safetyStandards?: string[];
   classroomDetail?: string[];
+  certificateName?: string;
+  certificateRegNr?: string;
+  visitCompletedDate?: string;
 };

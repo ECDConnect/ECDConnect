@@ -44,7 +44,7 @@ export function Dropdown<T>({
   showSearch,
   labelColor,
   isAdminPortalInput,
-}: DropdownProps<T>) {
+}: Readonly<DropdownProps<T>>) {
   const [selectedItem, setSelectedItem] = useState<DropDownOption<T>>();
   const [touched, setTouched] = useState(false);
   const [search, setSearch] = useState('');

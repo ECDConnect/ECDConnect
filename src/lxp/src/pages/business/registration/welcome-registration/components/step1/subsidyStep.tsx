@@ -86,7 +86,7 @@ export const SubsidyStep: React.FC<SubsidyStepProps> = ({
               className={'mt-3 mb-3 font-semibold'}
               color={'textDark'}
             />
-            <fieldset className="flex flex-col gap-2">
+            <fieldset className="mb-2 flex flex-col gap-2">
               {registrationOptions.map((option) => (
                 <Radio
                   key={option.id}
