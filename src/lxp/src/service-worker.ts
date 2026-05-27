@@ -5,11 +5,7 @@ import { clientsClaim } from 'workbox-core';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { precacheAndRoute, createHandlerBoundToURL } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
-import {
-  CacheFirst,
-  NetworkOnly,
-  StaleWhileRevalidate,
-} from 'workbox-strategies';
+import { CacheFirst, NetworkOnly } from 'workbox-strategies';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { PrecacheEntry } from 'workbox-precaching/_types';
 
@@ -37,8 +33,10 @@ const wb_manifest = [
 precacheAndRoute(wb_manifest);
 
 registerRoute(
-  ({ url }) => url.href.includes('ecdconnect_logo_long.png'),
-  new NetworkOnly()
+  ({ url }) =>
+    url.href.includes('ecdconnect_logo_long.png') ||
+    url.hostname.includes('blob.core.windows.net'),
+  new NetworkOnly() // or new StaleWhileRevalidate() if you want light caching
 );
 
 const fileExtensionRegexp = new RegExp('/[^/?]+\\.[^/]+$');
@@ -61,7 +59,7 @@ registerRoute(
   new CacheFirst({
     cacheName: 'images',
     fetchOptions: {
-      mode: 'no-cors', // ← crucial for cross-origin blobs
+      mode: 'no-cors', // â† crucial for cross-origin blobs
     },
     plugins: [
       new ExpirationPlugin({
@@ -71,6 +69,14 @@ registerRoute(
       new CacheableResponsePlugin({
         statuses: [0, 200],
       }),
+      {
+        cacheWillUpdate: async ({ response }) => {
+          if (response.status === 200 || response.status === 0) {
+            return response;
+          }
+          return null;
+        },
+      },
     ],
   })
 );
@@ -85,7 +91,7 @@ registerRoute(
     // );
     return cache;
   },
-  new StaleWhileRevalidate({
+  new CacheFirst({
     cacheName: 'json-files',
     plugins: [
       new ExpirationPlugin({
@@ -95,6 +101,17 @@ registerRoute(
       new CacheableResponsePlugin({
         statuses: [0, 200],
       }),
+      {
+        cacheWillUpdate: async ({ response }) => {
+          // log(
+          //   `[ServiceWorker] Cache update for ${response.url}, status: ${response.status}, type: ${response.type}`
+          // );
+          if (response.status === 200 || response.status === 0) {
+            return response;
+          }
+          return null;
+        },
+      },
     ],
   })
 );
@@ -120,6 +137,17 @@ registerRoute(
       new CacheableResponsePlugin({
         statuses: [0, 200],
       }),
+      {
+        cacheWillUpdate: async ({ response }) => {
+          // log(
+          //   `[ServiceWorker] Cache update for ${response.url}, status: ${response.status}, type: ${response.type}`
+          // );
+          if (response.status === 200 || response.status === 0) {
+            return response;
+          }
+          return null;
+        },
+      },
     ],
   })
 );
@@ -155,6 +183,16 @@ self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
+});
+
+self.addEventListener('install', (event) => {
+  // Force the new service worker to activate immediately
+  event.waitUntil(self.skipWaiting());
+});
+
+self.addEventListener('activate', (event) => {
+  // Take control of all open clients (tabs / PWA windows) immediately
+  event.waitUntil(self.clients.claim());
 });
 
 log('Installed');
