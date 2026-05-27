@@ -59,7 +59,7 @@ registerRoute(
   new CacheFirst({
     cacheName: 'images',
     fetchOptions: {
-      mode: 'no-cors', // ← crucial for cross-origin blobs
+      mode: 'no-cors', // â† crucial for cross-origin blobs
     },
     plugins: [
       new ExpirationPlugin({
