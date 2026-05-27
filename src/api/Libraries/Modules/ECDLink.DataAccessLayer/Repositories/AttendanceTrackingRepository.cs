@@ -26,7 +26,7 @@ namespace ECDLink.DataAccessLayer.Repositories
                 // Check for existing records
                 foreach (var attendance in attendances)
                 {
-                    var existingRecord = _context.Attendances.FirstOrDefault(x =>
+                    var existingRecord = await _context.Attendances.FirstOrDefaultAsync(x =>
                         x.UserId == attendance.UserId
                         && x.ClassroomProgrammeId == attendance.ClassroomProgrammeId 
                         && x.WeekOfYear == attendance.WeekOfYear);
@@ -36,11 +36,13 @@ namespace ECDLink.DataAccessLayer.Repositories
                         // Update existing record
                         if (existingRecord.Attended != attendance.Attended)
                         {
+                            existingRecord.UpdatedDate = DateTime.Now;
                             existingRecord.Attended = attendance.Attended;
                         }
                     }
                     else
                     {
+                        attendance.InsertedDate = DateTime.Now;
                         // Add new record
                         _context.Attendances.Add(attendance);
                     }
