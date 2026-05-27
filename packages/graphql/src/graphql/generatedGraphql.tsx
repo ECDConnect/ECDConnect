@@ -4928,6 +4928,7 @@ export type Mutation = {
   createUserResourceLikes?: Maybe<UserResourceLikes>;
   createUserTrainingCourse?: Maybe<UserTrainingCourse>;
   createVisit?: Maybe<Visit>;
+  createVisitCertificate?: Maybe<VisitCertificate>;
   createVisitData?: Maybe<VisitData>;
   createVisitDataStatus?: Maybe<VisitDataStatus>;
   createVisitType?: Maybe<VisitType>;
@@ -5055,6 +5056,7 @@ export type Mutation = {
   deleteUserResourceLikes?: Maybe<Scalars['Boolean']>;
   deleteUserTrainingCourse?: Maybe<Scalars['Boolean']>;
   deleteVisit?: Maybe<Scalars['Boolean']>;
+  deleteVisitCertificate?: Maybe<Scalars['Boolean']>;
   deleteVisitData?: Maybe<Scalars['Boolean']>;
   deleteVisitDataStatus?: Maybe<Scalars['Boolean']>;
   deleteVisitType?: Maybe<Scalars['Boolean']>;
@@ -5243,6 +5245,7 @@ export type Mutation = {
   updateUserResourceLikes?: Maybe<UserResourceLikes>;
   updateUserTrainingCourse?: Maybe<UserTrainingCourse>;
   updateVisit?: Maybe<Visit>;
+  updateVisitCertificate?: Maybe<VisitCertificate>;
   updateVisitData?: Maybe<VisitData>;
   updateVisitDataStatus?: Maybe<VisitDataStatus>;
   updateVisitPlannedVisitDate?: Maybe<Visit>;
@@ -5968,6 +5971,10 @@ export type MutationCreateVisitArgs = {
   input?: InputMaybe<VisitInput>;
 };
 
+export type MutationCreateVisitCertificateArgs = {
+  input?: InputMaybe<VisitCertificateInput>;
+};
+
 export type MutationCreateVisitDataArgs = {
   input?: InputMaybe<VisitDataInput>;
 };
@@ -6540,6 +6547,10 @@ export type MutationDeleteUserTrainingCourseArgs = {
 };
 
 export type MutationDeleteVisitArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDeleteVisitCertificateArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
 
@@ -7532,6 +7543,11 @@ export type MutationUpdateUserTrainingCourseArgs = {
 export type MutationUpdateVisitArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<VisitInput>;
+};
+
+export type MutationUpdateVisitCertificateArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  input?: InputMaybe<VisitCertificateInput>;
 };
 
 export type MutationUpdateVisitDataArgs = {
@@ -9642,6 +9658,7 @@ export type Query = {
   GetAllUserResourceLikes?: Maybe<Array<Maybe<UserResourceLikes>>>;
   GetAllUserTrainingCourse?: Maybe<Array<Maybe<UserTrainingCourse>>>;
   GetAllVisit?: Maybe<Array<Maybe<Visit>>>;
+  GetAllVisitCertificate?: Maybe<Array<Maybe<VisitCertificate>>>;
   GetAllVisitData?: Maybe<Array<Maybe<VisitData>>>;
   GetAllVisitDataStatus?: Maybe<Array<Maybe<VisitDataStatus>>>;
   GetAllVisitType?: Maybe<Array<Maybe<VisitType>>>;
@@ -9758,6 +9775,7 @@ export type Query = {
   GetUserResourceLikesById?: Maybe<UserResourceLikes>;
   GetUserTrainingCourseById?: Maybe<UserTrainingCourse>;
   GetVisitById?: Maybe<Visit>;
+  GetVisitCertificateById?: Maybe<VisitCertificate>;
   GetVisitDataById?: Maybe<VisitData>;
   GetVisitDataStatusById?: Maybe<VisitDataStatus>;
   GetVisitTypeById?: Maybe<VisitType>;
@@ -9908,6 +9926,7 @@ export type Query = {
   countUserTrainingCourse?: Maybe<Scalars['Int']>;
   countUsers: Scalars['Int'];
   countVisit?: Maybe<Scalars['Int']>;
+  countVisitCertificate?: Maybe<Scalars['Int']>;
   countVisitData?: Maybe<Scalars['Int']>;
   countVisitDataStatus?: Maybe<Scalars['Int']>;
   countVisitType?: Maybe<Scalars['Int']>;
@@ -10661,6 +10680,12 @@ export type QueryGetAllVisitArgs = {
   where?: InputMaybe<VisitFilterInput>;
 };
 
+export type QueryGetAllVisitCertificateArgs = {
+  order?: InputMaybe<Array<VisitCertificateSortInput>>;
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<VisitCertificateFilterInput>;
+};
+
 export type QueryGetAllVisitDataArgs = {
   order?: InputMaybe<Array<VisitDataSortInput>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
@@ -11273,6 +11298,11 @@ export type QueryGetUserTrainingCourseByIdArgs = {
 export type QueryGetVisitByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<VisitFilterInput>;
+};
+
+export type QueryGetVisitCertificateByIdArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  where?: InputMaybe<VisitCertificateFilterInput>;
 };
 
 export type QueryGetVisitDataByIdArgs = {
@@ -11965,6 +11995,11 @@ export type QueryCountUsersArgs = {
 };
 
 export type QueryCountVisitArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountVisitCertificateArgs = {
   pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ComparableInt32OperationFilterInput>;
 };
@@ -14434,6 +14469,51 @@ export type Visit = {
   visitInProgress: Scalars['Boolean'];
   visitType?: Maybe<VisitType>;
   visitTypeId: Scalars['UUID'];
+};
+
+export type VisitCertificate = {
+  __typename?: 'VisitCertificate';
+  certificateName?: Maybe<Scalars['String']>;
+  id: Scalars['UUID'];
+  insertedDate: Scalars['DateTime'];
+  isActive: Scalars['Boolean'];
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+  visit?: Maybe<Visit>;
+  visitId: Scalars['UUID'];
+};
+
+export type VisitCertificateFilterInput = {
+  and?: InputMaybe<Array<VisitCertificateFilterInput>>;
+  certificateName?: InputMaybe<StringOperationFilterInput>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  or?: InputMaybe<Array<VisitCertificateFilterInput>>;
+  updatedBy?: InputMaybe<StringOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  visit?: InputMaybe<VisitFilterInput>;
+  visitId?: InputMaybe<ComparableGuidOperationFilterInput>;
+};
+
+export type VisitCertificateInput = {
+  CertificateName?: InputMaybe<Scalars['String']>;
+  Id?: InputMaybe<Scalars['UUID']>;
+  IsActive: Scalars['Boolean'];
+  UpdatedBy?: InputMaybe<Scalars['String']>;
+  Visit?: InputMaybe<VisitInput>;
+  VisitId: Scalars['UUID'];
+};
+
+export type VisitCertificateSortInput = {
+  certificateName?: InputMaybe<SortEnumType>;
+  id?: InputMaybe<SortEnumType>;
+  insertedDate?: InputMaybe<SortEnumType>;
+  isActive?: InputMaybe<SortEnumType>;
+  updatedBy?: InputMaybe<SortEnumType>;
+  updatedDate?: InputMaybe<SortEnumType>;
+  visit?: InputMaybe<VisitSortInput>;
+  visitId?: InputMaybe<SortEnumType>;
 };
 
 export type VisitData = {
