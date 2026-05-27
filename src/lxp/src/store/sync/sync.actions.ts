@@ -225,7 +225,12 @@ export const pullRemoteChanges = createAsyncThunk<
   ThunkApiType<RootState>
 >(
   'sync/pullRemoteChanges',
-  async ({ userId, isPrincipal, isCoach }, { dispatch, rejectWithValue }) => {
+  async (
+    { userId, isPrincipal, isCoach },
+    { dispatch, getState, rejectWithValue }
+  ) => {
+    if (!(getState() as RootState).settings.isOnline) return;
+
     try {
       const userSyncStatus = (await retryWithExponentialBackoff(
         () => dispatch(userThunkActions.getUserSyncStatus({})).unwrap(),

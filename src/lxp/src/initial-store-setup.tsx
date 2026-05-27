@@ -1,7 +1,6 @@
 import { endOfMonth, startOfMonth, subMonths } from 'date-fns';
 import React, { useCallback, useEffect, useState } from 'react';
 import Loader from './components/loader/loader';
-import { useOnlineStatus } from './hooks/useOnlineStatus';
 import { useAppDispatch } from './store';
 import { attendanceActions, attendanceThunkActions } from './store/attendance';
 import { authActions } from './store/auth';
@@ -20,7 +19,11 @@ import { storyBookActions } from './store/content/story-book';
 import { documentActions, documentThunkActions } from './store/document';
 import { notesActions, notesThunkActions } from './store/notes';
 import { progressTrackingThunkActions } from './store/progress-tracking';
-import { settingActions, settingThunkActions } from './store/settings';
+import {
+  settingActions,
+  settingSelectors,
+  settingThunkActions,
+} from './store/settings';
 import { staticDataThunkActions } from './store/static-data';
 import { userActions, userThunkActions } from './store/user';
 import { coachActions, coachThunkActions } from './store/coach';
@@ -78,7 +81,7 @@ export const IntialStoreSetupContext =
 
 const InitialStoreSetup: React.FC = ({ children }) => {
   const appDispatch = useAppDispatch();
-  const { isOnline } = useOnlineStatus();
+  const isOnline = useSelector(settingSelectors.getIsOnline);
   const [initLoading, setInitLoading] = useState(false);
   const [staticDataLoading, setStaticDataLoading] = useState(false);
   const userData = useSelector(userSelectors.getUser);
