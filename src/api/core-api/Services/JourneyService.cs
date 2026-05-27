@@ -110,7 +110,7 @@ namespace EcdLink.Api.CoreApi.Services
             .ToList();
 
             var formName = visitData.Select(x => x.VisitName).FirstOrDefault();
-            var certificateName = visitData.Select(x => x.Visit.CertificateName).FirstOrDefault();
+            var certificateName = _dbContext.VisitCertificates.Where(vc => vc.VisitId == visitId).OrderByDescending(vc => vc.InsertedDate).Select(vc => vc.CertificateName).FirstOrDefault();
             var certificateRegNr = visitData.Select(x => x.Visit.CertificateRegNr).FirstOrDefault();
             var visitCompletedDate = visitData.Select(x => x.Visit.ActualVisitDate).FirstOrDefault();
 
