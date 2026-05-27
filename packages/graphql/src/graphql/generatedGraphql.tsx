@@ -652,9 +652,11 @@ export type Attendance = {
   attended: Scalars['Boolean'];
   classroomProgramme?: Maybe<ClassProgramme>;
   classroomProgrammeId: Scalars['UUID'];
+  insertedDate?: Maybe<Scalars['DateTime']>;
   monthOfYear: Scalars['Int'];
   parentRecordId?: Maybe<Scalars['String']>;
   tenantId: Scalars['UUID'];
+  updatedDate?: Maybe<Scalars['DateTime']>;
   user?: Maybe<ApplicationUser>;
   userId?: Maybe<Scalars['UUID']>;
   weekOfYear: Scalars['Int'];
@@ -667,10 +669,12 @@ export type AttendanceFilterInput = {
   attended?: InputMaybe<BooleanOperationFilterInput>;
   classroomProgramme?: InputMaybe<ClassProgrammeFilterInput>;
   classroomProgrammeId?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   monthOfYear?: InputMaybe<ComparableInt32OperationFilterInput>;
   or?: InputMaybe<Array<AttendanceFilterInput>>;
   parentRecordId?: InputMaybe<StringOperationFilterInput>;
   tenantId?: InputMaybe<ComparableGuidOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   user?: InputMaybe<ApplicationUserFilterInput>;
   userId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   weekOfYear?: InputMaybe<ComparableInt32OperationFilterInput>;
