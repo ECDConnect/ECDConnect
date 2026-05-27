@@ -41,3 +41,6 @@ export const getApplicationVersion = (state: RootState): string | undefined =>
 export const getApplicationSettings = (
   state: RootState
 ): SettingTypeDto | undefined => state.settings.settings;
+
+export const getIsOnline = (state: RootState): boolean =>
+  state.settings.isOnline;

@@ -11,4 +11,5 @@ export type SettingsState = {
   settings?: SettingTypeDto;
   loginDate?: string;
   lastCmsDataSync: string;
+  isOnline: boolean;
 };

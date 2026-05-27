@@ -11,6 +11,7 @@ import {
   notificationTagConfig,
 } from '@/constants/notifications';
 import { Colours } from '@ecdlink/ui';
+import { store } from '@/store';
 
 export class BackendNotificationsValidator implements NotificationValidator {
   interval: NotificationIntervals;
@@ -121,7 +122,7 @@ export class BackendNotificationsValidator implements NotificationValidator {
   ): Promise<Notification[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
 
-    if (navigator.onLine) {
+    if (store.getState().settings.isOnline) {
       const response = await apiInstance.post<{
         data: { allNotifications: Notification[] };
         errors?: {};
