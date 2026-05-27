@@ -22,5 +22,5 @@ SELECT
 FROM "Visit" v
 WHERE v."CertificateName" IS NOT NULL;
 
-drop column "CertificateName" from public."Visit";
-drop column "CertificateCreated" from public."Visit";
+ALTER TABLE public."Visit" DROP COLUMN "CertificateCreated";
+ALTER TABLE public."Visit" DROP COLUMN "CertificateName";
