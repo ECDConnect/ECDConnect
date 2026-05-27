@@ -38,23 +38,31 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Portal
         }
         [Permission(PermissionGroups.JOURNEY, GraphActionEnum.Update)]
         public async Task<bool> SaveHealthCertificateDetails(
+            [Service] IHttpContextAccessor contextAccessor,
             AuthenticationDbContext dbContext,
             Guid visitId,
             string certificateName,
             string certificateRegNr)
         {
+            var applicationUserId = contextAccessor.HttpContext.GetUser()?.Id;
             var visit = dbContext.Visits.FirstOrDefault(x => x.Id == visitId);
             if (visit == null)
                 return false;
-
-            visit.CertificateName = certificateName;
-            visit.CertificateRegNr = certificateRegNr;
-            if (visit.CertificateCreated == null)
-            {
-                visit.CertificateCreated = DateTime.Now;
-            }
             
+            // update visit with certificate details
+            visit.CertificateRegNr = certificateRegNr;
             dbContext.Visits.Update(visit);
+            
+            // add new certificate entry
+            dbContext.VisitCertificates.Add(new VisitCertificate
+            {
+                Id = Guid.NewGuid(),
+                VisitId = visitId,
+                CertificateName = certificateName,
+                UpdatedBy = applicationUserId.ToString(),
+                TenantId = TenantExecutionContext.Tenant.Id
+            });
+
             await dbContext.SaveChangesAsync();
 
             return true;
