@@ -31,5 +31,7 @@ namespace ECDLink.DataAccessLayer.Entities.Classroom
         public Guid? UserId { get; set; }
 
         public Guid TenantId { get; set; }
+        public DateTime? InsertedDate { get; set; }
+        public DateTime? UpdatedDate { get; set; }
     }
 }
