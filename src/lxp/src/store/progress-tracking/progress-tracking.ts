@@ -33,6 +33,24 @@ const progressTrackingSlice = createSlice({
       state.practitionerProgressReportSummary =
         initialState?.practitionerProgressReportSummary;
     },
+    remapChildProgressReportId: (
+      state,
+      action: PayloadAction<{ oldId: string; newId: string }>
+    ) => {
+      const { oldId, newId } = action.payload;
+
+      const index = state.childProgressReports.findIndex((x) => x.id === oldId);
+      if (index !== -1) {
+        // Replace the ID while preserving all other data and marking it as needing sync consideration
+        const existing = state.childProgressReports[index];
+        state.childProgressReports[index] = {
+          ...existing,
+          id: newId,
+          // Keep synced as false until the next successful sync round confirms it
+          synced: false,
+        };
+      }
+    },
     setLocale: (
       state,
       action: PayloadAction<{
@@ -551,6 +569,8 @@ const progressTrackingSlice = createSlice({
 
 const { reducer: progressTrackingReducer, actions: progressTrackingActions } =
   progressTrackingSlice;
+
+export const { remapChildProgressReportId } = progressTrackingActions;
 
 const progressTrackingPersistConfig = {
   key: 'progressTracking',
