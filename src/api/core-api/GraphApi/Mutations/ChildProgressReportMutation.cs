@@ -16,13 +16,11 @@ namespace ECDLink.GraphQL.Mutations
     public class ChildProgressReportMutation
     {
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.Create)]
-        public bool CreateOrUpdateChildProgressReport(
+        public Guid CreateOrUpdateChildProgressReport(
             [Service] IChildProgressReportService progressService,
             ChildProgressReportModel input)
         {
-            progressService.CreateOrUpdateReport(input);
-
-            return true;
+            return progressService.CreateOrUpdateReport(input);
         }
 
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.Update)]

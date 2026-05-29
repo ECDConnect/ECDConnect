@@ -185,10 +185,10 @@ class ProgressTrackingService {
 
   async createOrUpdateChildProgressReport(
     input: ChildProgressReportModelInput
-  ): Promise<boolean> {
+  ): Promise<string> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { createOrUpdateChildProgressReport: boolean };
+      data: { createOrUpdateChildProgressReport: string };
       errors?: {};
     }>(``, {
       id: 'createOrUpdateChildProgressReport',
