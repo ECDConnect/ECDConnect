@@ -142,11 +142,11 @@ namespace EcdLink.Api.CoreApi.Services
             _documentRepo = repoFactory.CreateRepository<Document>();
         }
 
-        public void CreateOrUpdateReport(ChildProgressReportModel input)
+        public Guid CreateOrUpdateReport(ChildProgressReportModel input)
         {
             if (input == null)
             {
-                return;
+                return Guid.Empty;
             }
 
             var reportContent = new ProgressData
@@ -164,8 +164,20 @@ namespace EcdLink.Api.CoreApi.Services
                 PrincipalPhoneNumber = input.PrincipalPhoneNumber,
             };
 
-            // Check if report exists
+            // Check if report exists.
+            // First try by the Id the client sent.
+            // If not found, fall back to natural key (Child + Reporting Period).
+            // This prevents duplicate reports when the same user creates a report
+            // from multiple devices concurrently (no session limit).
             var existingReport = _childProgressReportRepo.GetById(input.Id);
+
+            if (existingReport == null && input.ChildId != Guid.Empty && input.ChildProgressReportPeriodId != Guid.Empty)
+            {
+                existingReport = _childProgressReportRepo.GetAll()
+                    .FirstOrDefault(r => r.ChildId == input.ChildId
+                                      && r.ChildProgressReportPeriodId == input.ChildProgressReportPeriodId
+                                      && r.IsActive);
+            }
 
             if (existingReport != null)
             {
@@ -192,6 +204,8 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     _pointsEngineService.CalculateCompleteChildProgressObservations(_contextUserId);
                 }
+
+                return existingReport.Id;
             }
             else
             {
@@ -221,6 +235,8 @@ namespace EcdLink.Api.CoreApi.Services
                         _notificationService.DisableNotification(item.Id.ToString());
                     }
                 }
+
+                return newReport.Id;
             }
         }
 
