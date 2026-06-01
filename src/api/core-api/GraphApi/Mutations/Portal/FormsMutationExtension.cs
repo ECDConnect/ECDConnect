@@ -3,6 +3,7 @@ using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.ContentManagement.Repositories;
 using ECDLink.DataAccessLayer.Context;
+using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -54,11 +55,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Portal
             dbContext.Visits.Update(visit);
             
             // add new certificate entry
-            dbContext.VisitCertificates.Add(new VisitCertificate
+            dbContext.UserCertificate.Add(new UserCertificate
             {
                 Id = Guid.NewGuid(),
                 VisitId = visitId,
                 CertificateName = certificateName,
+                UserId = applicationUserId.Value,
                 UpdatedBy = applicationUserId.ToString(),
                 TenantId = TenantExecutionContext.Tenant.Id
             });
