@@ -4869,7 +4869,7 @@ export type Mutation = {
   createNavigation?: Maybe<Navigation>;
   createNote?: Maybe<Note>;
   createNoteType?: Maybe<NoteType>;
-  createOrUpdateChildProgressReport: Scalars['Boolean'];
+  createOrUpdateChildProgressReport: Scalars['UUID'];
   createPQARating?: Maybe<PqaRating>;
   createPQASectionRating?: Maybe<PqaSectionRating>;
   createPermission?: Maybe<Permission>;
@@ -4919,6 +4919,7 @@ export type Mutation = {
   createTheme?: Maybe<Scalars['String']>;
   createThemeDay?: Maybe<Scalars['String']>;
   createTopic?: Maybe<Scalars['String']>;
+  createUserCertificate?: Maybe<UserCertificate>;
   createUserConsent?: Maybe<UserConsent>;
   createUserGrant?: Maybe<UserGrant>;
   createUserHelp?: Maybe<UserHelp>;
@@ -4928,7 +4929,6 @@ export type Mutation = {
   createUserResourceLikes?: Maybe<UserResourceLikes>;
   createUserTrainingCourse?: Maybe<UserTrainingCourse>;
   createVisit?: Maybe<Visit>;
-  createVisitCertificate?: Maybe<VisitCertificate>;
   createVisitData?: Maybe<VisitData>;
   createVisitDataStatus?: Maybe<VisitDataStatus>;
   createVisitType?: Maybe<VisitType>;
@@ -5047,6 +5047,7 @@ export type Mutation = {
   deleteThemeDay?: Maybe<Scalars['Boolean']>;
   deleteTopic?: Maybe<Scalars['Boolean']>;
   deleteUser: Scalars['Boolean'];
+  deleteUserCertificate?: Maybe<Scalars['Boolean']>;
   deleteUserConsent?: Maybe<Scalars['Boolean']>;
   deleteUserGrant?: Maybe<Scalars['Boolean']>;
   deleteUserHelp?: Maybe<Scalars['Boolean']>;
@@ -5056,7 +5057,6 @@ export type Mutation = {
   deleteUserResourceLikes?: Maybe<Scalars['Boolean']>;
   deleteUserTrainingCourse?: Maybe<Scalars['Boolean']>;
   deleteVisit?: Maybe<Scalars['Boolean']>;
-  deleteVisitCertificate?: Maybe<Scalars['Boolean']>;
   deleteVisitData?: Maybe<Scalars['Boolean']>;
   deleteVisitDataStatus?: Maybe<Scalars['Boolean']>;
   deleteVisitType?: Maybe<Scalars['Boolean']>;
@@ -5235,6 +5235,7 @@ export type Mutation = {
   updateThemeDay?: Maybe<ThemeDay>;
   updateTopic?: Maybe<Topic>;
   updateUser?: Maybe<ApplicationUser>;
+  updateUserCertificate?: Maybe<UserCertificate>;
   updateUserConsent?: Maybe<UserConsent>;
   updateUserContactStatusForStatement?: Maybe<StatementsIncomeStatement>;
   updateUserGrant?: Maybe<UserGrant>;
@@ -5245,7 +5246,6 @@ export type Mutation = {
   updateUserResourceLikes?: Maybe<UserResourceLikes>;
   updateUserTrainingCourse?: Maybe<UserTrainingCourse>;
   updateVisit?: Maybe<Visit>;
-  updateVisitCertificate?: Maybe<VisitCertificate>;
   updateVisitData?: Maybe<VisitData>;
   updateVisitDataStatus?: Maybe<VisitDataStatus>;
   updateVisitPlannedVisitDate?: Maybe<Visit>;
@@ -5935,6 +5935,10 @@ export type MutationCreateTopicArgs = {
   localeId?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationCreateUserCertificateArgs = {
+  input?: InputMaybe<UserCertificateInput>;
+};
+
 export type MutationCreateUserConsentArgs = {
   input?: InputMaybe<UserConsentInput>;
 };
@@ -5969,10 +5973,6 @@ export type MutationCreateUserTrainingCourseArgs = {
 
 export type MutationCreateVisitArgs = {
   input?: InputMaybe<VisitInput>;
-};
-
-export type MutationCreateVisitCertificateArgs = {
-  input?: InputMaybe<VisitCertificateInput>;
 };
 
 export type MutationCreateVisitDataArgs = {
@@ -6514,6 +6514,10 @@ export type MutationDeleteUserArgs = {
   id?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationDeleteUserCertificateArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+};
+
 export type MutationDeleteUserConsentArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
@@ -6547,10 +6551,6 @@ export type MutationDeleteUserTrainingCourseArgs = {
 };
 
 export type MutationDeleteVisitArgs = {
-  id?: InputMaybe<Scalars['UUID']>;
-};
-
-export type MutationDeleteVisitCertificateArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
 
@@ -7496,6 +7496,11 @@ export type MutationUpdateUserArgs = {
   input?: InputMaybe<UserModelInput>;
 };
 
+export type MutationUpdateUserCertificateArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  input?: InputMaybe<UserCertificateInput>;
+};
+
 export type MutationUpdateUserConsentArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<UserConsentInput>;
@@ -7543,11 +7548,6 @@ export type MutationUpdateUserTrainingCourseArgs = {
 export type MutationUpdateVisitArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<VisitInput>;
-};
-
-export type MutationUpdateVisitCertificateArgs = {
-  id?: InputMaybe<Scalars['UUID']>;
-  input?: InputMaybe<VisitCertificateInput>;
 };
 
 export type MutationUpdateVisitDataArgs = {
@@ -9649,6 +9649,7 @@ export type Query = {
   GetAllTheme: Array<Maybe<Theme>>;
   GetAllThemeDay: Array<Maybe<ThemeDay>>;
   GetAllTopic: Array<Maybe<Topic>>;
+  GetAllUserCertificate?: Maybe<Array<Maybe<UserCertificate>>>;
   GetAllUserConsent?: Maybe<Array<Maybe<UserConsent>>>;
   GetAllUserGrant?: Maybe<Array<Maybe<UserGrant>>>;
   GetAllUserHelp?: Maybe<Array<Maybe<UserHelp>>>;
@@ -9658,7 +9659,6 @@ export type Query = {
   GetAllUserResourceLikes?: Maybe<Array<Maybe<UserResourceLikes>>>;
   GetAllUserTrainingCourse?: Maybe<Array<Maybe<UserTrainingCourse>>>;
   GetAllVisit?: Maybe<Array<Maybe<Visit>>>;
-  GetAllVisitCertificate?: Maybe<Array<Maybe<VisitCertificate>>>;
   GetAllVisitData?: Maybe<Array<Maybe<VisitData>>>;
   GetAllVisitDataStatus?: Maybe<Array<Maybe<VisitDataStatus>>>;
   GetAllVisitType?: Maybe<Array<Maybe<VisitType>>>;
@@ -9766,6 +9766,7 @@ export type Query = {
   GetThemeById: Array<Maybe<Theme>>;
   GetThemeDayById: Array<Maybe<ThemeDay>>;
   GetTopicById: Array<Maybe<Topic>>;
+  GetUserCertificateById?: Maybe<UserCertificate>;
   GetUserConsentById?: Maybe<UserConsent>;
   GetUserGrantById?: Maybe<UserGrant>;
   GetUserHelpById?: Maybe<UserHelp>;
@@ -9775,7 +9776,6 @@ export type Query = {
   GetUserResourceLikesById?: Maybe<UserResourceLikes>;
   GetUserTrainingCourseById?: Maybe<UserTrainingCourse>;
   GetVisitById?: Maybe<Visit>;
-  GetVisitCertificateById?: Maybe<VisitCertificate>;
   GetVisitDataById?: Maybe<VisitData>;
   GetVisitDataStatusById?: Maybe<VisitDataStatus>;
   GetVisitTypeById?: Maybe<VisitType>;
@@ -9916,6 +9916,7 @@ export type Query = {
   countSupportRating?: Maybe<Scalars['Int']>;
   countSystemSetting?: Maybe<Scalars['Int']>;
   countTenantSetupInfo?: Maybe<Scalars['Int']>;
+  countUserCertificate?: Maybe<Scalars['Int']>;
   countUserConsent?: Maybe<Scalars['Int']>;
   countUserGrant?: Maybe<Scalars['Int']>;
   countUserHelp?: Maybe<Scalars['Int']>;
@@ -9926,7 +9927,6 @@ export type Query = {
   countUserTrainingCourse?: Maybe<Scalars['Int']>;
   countUsers: Scalars['Int'];
   countVisit?: Maybe<Scalars['Int']>;
-  countVisitCertificate?: Maybe<Scalars['Int']>;
   countVisitData?: Maybe<Scalars['Int']>;
   countVisitDataStatus?: Maybe<Scalars['Int']>;
   countVisitType?: Maybe<Scalars['Int']>;
@@ -10626,6 +10626,12 @@ export type QueryGetAllTopicArgs = {
   localeId?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryGetAllUserCertificateArgs = {
+  order?: InputMaybe<Array<UserCertificateSortInput>>;
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<UserCertificateFilterInput>;
+};
+
 export type QueryGetAllUserConsentArgs = {
   order?: InputMaybe<Array<UserConsentSortInput>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
@@ -10678,12 +10684,6 @@ export type QueryGetAllVisitArgs = {
   order?: InputMaybe<Array<VisitSortInput>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<VisitFilterInput>;
-};
-
-export type QueryGetAllVisitCertificateArgs = {
-  order?: InputMaybe<Array<VisitCertificateSortInput>>;
-  pagingInput?: InputMaybe<PagedQueryInput>;
-  where?: InputMaybe<VisitCertificateFilterInput>;
 };
 
 export type QueryGetAllVisitDataArgs = {
@@ -11255,6 +11255,11 @@ export type QueryGetTopicByIdArgs = {
   localeId?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryGetUserCertificateByIdArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  where?: InputMaybe<UserCertificateFilterInput>;
+};
+
 export type QueryGetUserConsentByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<UserConsentFilterInput>;
@@ -11298,11 +11303,6 @@ export type QueryGetUserTrainingCourseByIdArgs = {
 export type QueryGetVisitByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<VisitFilterInput>;
-};
-
-export type QueryGetVisitCertificateByIdArgs = {
-  id?: InputMaybe<Scalars['UUID']>;
-  where?: InputMaybe<VisitCertificateFilterInput>;
 };
 
 export type QueryGetVisitDataByIdArgs = {
@@ -11949,6 +11949,11 @@ export type QueryCountTenantSetupInfoArgs = {
   where?: InputMaybe<ComparableInt32OperationFilterInput>;
 };
 
+export type QueryCountUserCertificateArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
 export type QueryCountUserConsentArgs = {
   pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ComparableInt32OperationFilterInput>;
@@ -11995,11 +12000,6 @@ export type QueryCountUsersArgs = {
 };
 
 export type QueryCountVisitArgs = {
-  pagingInput?: InputMaybe<PagedQueryInput>;
-  where?: InputMaybe<ComparableInt32OperationFilterInput>;
-};
-
-export type QueryCountVisitCertificateArgs = {
   pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ComparableInt32OperationFilterInput>;
 };
@@ -13947,6 +13947,67 @@ export type UserByToken = {
   userId?: Maybe<Scalars['String']>;
 };
 
+export type UserCertificate = {
+  __typename?: 'UserCertificate';
+  certificateName?: Maybe<Scalars['String']>;
+  id: Scalars['UUID'];
+  insertedDate: Scalars['DateTime'];
+  isActive: Scalars['Boolean'];
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+  user?: Maybe<ApplicationUser>;
+  userId?: Maybe<Scalars['UUID']>;
+  userTrainingCourse?: Maybe<UserTrainingCourse>;
+  userTrainingCourseId?: Maybe<Scalars['UUID']>;
+  visit?: Maybe<Visit>;
+  visitId?: Maybe<Scalars['UUID']>;
+};
+
+export type UserCertificateFilterInput = {
+  and?: InputMaybe<Array<UserCertificateFilterInput>>;
+  certificateName?: InputMaybe<StringOperationFilterInput>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  or?: InputMaybe<Array<UserCertificateFilterInput>>;
+  updatedBy?: InputMaybe<StringOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  user?: InputMaybe<ApplicationUserFilterInput>;
+  userId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  userTrainingCourse?: InputMaybe<UserTrainingCourseFilterInput>;
+  userTrainingCourseId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  visit?: InputMaybe<VisitFilterInput>;
+  visitId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+};
+
+export type UserCertificateInput = {
+  CertificateName?: InputMaybe<Scalars['String']>;
+  Id?: InputMaybe<Scalars['UUID']>;
+  IsActive: Scalars['Boolean'];
+  UpdatedBy?: InputMaybe<Scalars['String']>;
+  User?: InputMaybe<ApplicationUserInput>;
+  UserId?: InputMaybe<Scalars['UUID']>;
+  UserTrainingCourse?: InputMaybe<UserTrainingCourseInput>;
+  UserTrainingCourseId?: InputMaybe<Scalars['UUID']>;
+  Visit?: InputMaybe<VisitInput>;
+  VisitId?: InputMaybe<Scalars['UUID']>;
+};
+
+export type UserCertificateSortInput = {
+  certificateName?: InputMaybe<SortEnumType>;
+  id?: InputMaybe<SortEnumType>;
+  insertedDate?: InputMaybe<SortEnumType>;
+  isActive?: InputMaybe<SortEnumType>;
+  updatedBy?: InputMaybe<SortEnumType>;
+  updatedDate?: InputMaybe<SortEnumType>;
+  user?: InputMaybe<ApplicationUserSortInput>;
+  userId?: InputMaybe<SortEnumType>;
+  userTrainingCourse?: InputMaybe<UserTrainingCourseSortInput>;
+  userTrainingCourseId?: InputMaybe<SortEnumType>;
+  visit?: InputMaybe<VisitSortInput>;
+  visitId?: InputMaybe<SortEnumType>;
+};
+
 export type UserConsent = {
   __typename?: 'UserConsent';
   consentId: Scalars['Int'];
@@ -14469,51 +14530,6 @@ export type Visit = {
   visitInProgress: Scalars['Boolean'];
   visitType?: Maybe<VisitType>;
   visitTypeId: Scalars['UUID'];
-};
-
-export type VisitCertificate = {
-  __typename?: 'VisitCertificate';
-  certificateName?: Maybe<Scalars['String']>;
-  id: Scalars['UUID'];
-  insertedDate: Scalars['DateTime'];
-  isActive: Scalars['Boolean'];
-  updatedBy?: Maybe<Scalars['String']>;
-  updatedDate: Scalars['DateTime'];
-  visit?: Maybe<Visit>;
-  visitId: Scalars['UUID'];
-};
-
-export type VisitCertificateFilterInput = {
-  and?: InputMaybe<Array<VisitCertificateFilterInput>>;
-  certificateName?: InputMaybe<StringOperationFilterInput>;
-  id?: InputMaybe<ComparableGuidOperationFilterInput>;
-  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
-  isActive?: InputMaybe<BooleanOperationFilterInput>;
-  or?: InputMaybe<Array<VisitCertificateFilterInput>>;
-  updatedBy?: InputMaybe<StringOperationFilterInput>;
-  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
-  visit?: InputMaybe<VisitFilterInput>;
-  visitId?: InputMaybe<ComparableGuidOperationFilterInput>;
-};
-
-export type VisitCertificateInput = {
-  CertificateName?: InputMaybe<Scalars['String']>;
-  Id?: InputMaybe<Scalars['UUID']>;
-  IsActive: Scalars['Boolean'];
-  UpdatedBy?: InputMaybe<Scalars['String']>;
-  Visit?: InputMaybe<VisitInput>;
-  VisitId: Scalars['UUID'];
-};
-
-export type VisitCertificateSortInput = {
-  certificateName?: InputMaybe<SortEnumType>;
-  id?: InputMaybe<SortEnumType>;
-  insertedDate?: InputMaybe<SortEnumType>;
-  isActive?: InputMaybe<SortEnumType>;
-  updatedBy?: InputMaybe<SortEnumType>;
-  updatedDate?: InputMaybe<SortEnumType>;
-  visit?: InputMaybe<VisitSortInput>;
-  visitId?: InputMaybe<SortEnumType>;
 };
 
 export type VisitData = {

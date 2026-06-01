@@ -125,7 +125,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<Visit> Visits { get; set; }
         public DbSet<VisitData> VisitData { get; set; }
         public DbSet<VisitDataStatus> VisitDataStatus { get; set; }
-        public DbSet<VisitCertificate> VisitCertificates { get; set; }
+        public DbSet<UserCertificate> UserCertificate { get; set; }
 
         // Calendar
         public DbSet<CalendarEvent> CalendarEvents { get; set; }
