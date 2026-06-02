@@ -5071,6 +5071,7 @@ export type Mutation = {
   importCoaches?: Maybe<UserImportModel>;
   importPractitioners?: Maybe<UserImportModel>;
   markAsReadNotification: Scalars['Boolean'];
+  moveChildToClassroomGroup?: Maybe<Learner>;
   openAccessAddChild: Scalars['Boolean'];
   promotePractitionerToPrincipal?: Maybe<Principal>;
   refreshCaregiverChildToken?: Maybe<InitialChildRegistrationModel>;
@@ -6621,6 +6622,12 @@ export type MutationImportPractitionersArgs = {
 
 export type MutationMarkAsReadNotificationArgs = {
   notificationId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationMoveChildToClassroomGroupArgs = {
+  childUserId: Scalars['UUID'];
+  newClassroomGroupId: Scalars['UUID'];
+  startedAttendance?: InputMaybe<Scalars['DateTime']>;
 };
 
 export type MutationOpenAccessAddChildArgs = {
@@ -14441,6 +14448,7 @@ export type UserSyncStatus = {
   __typename?: 'UserSyncStatus';
   syncChildren: Scalars['Boolean'];
   syncClassroom: Scalars['Boolean'];
+  syncLearners: Scalars['Boolean'];
   syncPermissions: Scalars['Boolean'];
   syncPoints: Scalars['Boolean'];
   syncReportingPeriods: Scalars['Boolean'];
