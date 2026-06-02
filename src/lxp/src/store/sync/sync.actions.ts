@@ -308,6 +308,22 @@ export const pullRemoteChanges = createAsyncThunk<
         }
       }
 
+      // Learners block (child class assignments)
+      if ((userSyncStatus as any).syncLearners) {
+        dispatch(
+          syncActions.setCurrentActionState({
+            title: 'Refreshing learner / class assignment data',
+            step: 2,
+            stepTotal: 5,
+          })
+        );
+        await retryWithExponentialBackoff(() =>
+          dispatch(
+            classroomsThunkActions.getClassroomGroups({ overrideCache: true })
+          ).unwrap()
+        );
+      }
+
       // Other Dynamic Sections
       const otherPromises: Promise<any>[] = [];
       if (userSyncStatus.syncReportingPeriods) {

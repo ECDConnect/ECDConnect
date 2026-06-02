@@ -75,26 +75,39 @@ class ClassroomGroupLearnerService {
     return response.data.data.createLearner;
   }
 
-  async updateLearnerHierarchy(
-    learnerId: string,
-    classroomGroupId: string
-  ): Promise<boolean> {
+  /**
+   * Preferred method for moving a child to a different class.
+   * This calls the new MoveChildToClassroomGroup mutation which:
+   * - Safely ensures only one active learner for the child (prevents duplicates across devices)
+   * - Fully updates the Learner's hierarchy
+   * - Fully updates the Child's hierarchy + UserHierarchyEntity
+   *   so the child is correctly linked to the new practitioner
+   *
+   * All in one server call. The frontend does **not** need to (and should no longer) call
+   * updateLearnerHierarchy afterwards — the backend owns the hierarchy logic for moves.
+   */
+  async moveChildToClassroomGroup(
+    childUserId: string,
+    newClassroomGroupId: string,
+    startedAttendance?: string | Date
+  ): Promise<any> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      id: 'UpdateLearnerHierarchy',
+      id: 'MoveChildToClassroomGroup',
       variables: {
-        learnerId: learnerId,
-        classroomGroupId: classroomGroupId,
+        childUserId,
+        newClassroomGroupId,
+        startedAttendance: startedAttendance ?? new Date().toISOString(),
       },
     });
 
     if (response.status !== 200) {
       throw new Error(
-        'Updating learner hierarchy failed - Server connection error'
+        'Moving child to new class failed - Server connection error'
       );
     }
 
-    return true;
+    return response.data.data.moveChildToClassroomGroup;
   }
 }
 
