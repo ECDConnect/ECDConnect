@@ -108,7 +108,10 @@ export const ViewPublishedForm: React.FC<ViewPublishedFormProps> = ({
         certificateName={timelineReport?.certificateName}
         certificateRegNr={timelineReport?.certificateRegNr}
         visitCompletedDate={timelineReport?.visitCompletedDate}
-        onBack={setShowCertificateCheckForm}
+        onBack={() => {
+          setShowCertificateCheckForm(false);
+          onBack();
+        }}
       />
     );
   }
