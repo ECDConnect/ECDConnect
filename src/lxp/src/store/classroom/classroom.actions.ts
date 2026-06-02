@@ -458,16 +458,22 @@ export const upsertClassroomGroupLearners = createAsyncThunk<
                   userAuth?.auth_token
                 ).updateLearner(x.learnerId, input);
               } else {
+                // Use the atomic move operation. This ensures only one active learner
+                // exists for the child on the server, even in multi-device / offline sync races.
+                // The backend also updates Learner and Child hierarchy fields so the child
+                // is correctly linked to the practitioner of the new classroom group.
                 await new ClassroomGroupLearnerService(
                   userAuth?.auth_token
-                ).createLearner(input);
-                return !!(await new ClassroomGroupLearnerService(
-                  userAuth?.auth_token
-                ).updateLearnerHierarchy(input.UserId, input.ClassroomGroupId));
+                ).moveChildToClassroomGroup(
+                  input.UserId,
+                  input.ClassroomGroupId,
+                  input.StartedAttendance
+                );
+                return true;
               }
             });
 
-          promises.concat(newPromises);
+          promises = promises.concat(newPromises);
         });
       } else {
         return rejectWithValue('No auth');
@@ -537,6 +543,67 @@ export const createLearner = createAsyncThunk<
     return rejectWithValue(err);
   }
 });
+
+/**
+ * Recommended way to move a child to a different class.
+ * Uses the new MoveChildToClassroomGroup backend mutation which safely
+ * handles closing any previous active learner record.
+ */
+export const moveChildToNewClass = createAsyncThunk<
+  {
+    result: any;
+    childUserId: string;
+    oldClassroomGroupId?: string;
+    newClassroomGroupId: string;
+  },
+  {
+    childUserId: string;
+    newClassroomGroupId: string;
+    oldClassroomGroupId?: string;
+    startedAttendance?: string | Date;
+  },
+  ThunkApiType<RootState>
+>(
+  'moveChildToNewClass',
+  async (
+    {
+      childUserId,
+      newClassroomGroupId,
+      oldClassroomGroupId,
+      startedAttendance,
+    },
+    { getState, rejectWithValue }
+  ) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        const result = await new ClassroomGroupLearnerService(
+          userAuth?.auth_token
+        ).moveChildToClassroomGroup(
+          childUserId,
+          newClassroomGroupId,
+          startedAttendance
+        );
+
+        // Hierarchy updates (Learner + Child + UserHierarchy) are now fully handled
+        // inside the backend MoveChildToClassroomGroup mutation. No FE call needed.
+
+        return {
+          result,
+          childUserId,
+          oldClassroomGroupId,
+          newClassroomGroupId,
+        };
+      }
+      return rejectWithValue('no access token, profile check required');
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
 
 export const addChildProgressReportPeriods = createAsyncThunk<
   boolean,
