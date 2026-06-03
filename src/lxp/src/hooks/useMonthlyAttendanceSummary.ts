@@ -100,7 +100,7 @@ function generateMonthlyAttendanceSummary(
         for (const classDay of daysOfClass) {
           const hasLearnerAttendance = allAttendance.some((record) => {
             if (record.classroomProgrammeId !== programme.id) return false;
-            if (!record.attendanceDate || !record.attended) return false;
+            if (!record.attendanceDate) return false;
 
             const isLearnerRecord = learners.some(
               (learner) => learner.childUserId === record.userId
