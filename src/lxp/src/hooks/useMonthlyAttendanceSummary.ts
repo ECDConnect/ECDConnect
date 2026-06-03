@@ -138,8 +138,6 @@ function createReport(
     const [yearStr, monthStr] = monthKey.split('-');
     const totalScheduled = tuples.reduce((sum, t) => sum + t[0], 0);
     const actualAttended = tuples.reduce((sum, t) => sum + t[1], 0);
-    console.log('totalScheduled', totalScheduled);
-    console.log('actualAttended', actualAttended);
 
     const percentage =
       totalScheduled > 0
