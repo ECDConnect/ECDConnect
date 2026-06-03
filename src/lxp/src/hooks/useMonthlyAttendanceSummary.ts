@@ -100,7 +100,7 @@ function generateMonthlyAttendanceSummary(
         for (const classDay of daysOfClass) {
           const hasLearnerAttendance = allAttendance.some((record) => {
             if (record.classroomProgrammeId !== programme.id) return false;
-            if (!record.attendanceDate || !record.attended) return false;
+            if (!record.attendanceDate) return false;
 
             const isLearnerRecord = learners.some(
               (learner) => learner.childUserId === record.userId
@@ -138,6 +138,8 @@ function createReport(
     const [yearStr, monthStr] = monthKey.split('-');
     const totalScheduled = tuples.reduce((sum, t) => sum + t[0], 0);
     const actualAttended = tuples.reduce((sum, t) => sum + t[1], 0);
+    console.log('totalScheduled', totalScheduled);
+    console.log('actualAttended', actualAttended);
 
     const percentage =
       totalScheduled > 0
