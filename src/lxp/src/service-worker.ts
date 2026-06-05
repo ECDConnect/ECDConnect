@@ -179,9 +179,49 @@ self.addEventListener('fetch', (event) => {
 });
 */
 
+const broadcastOnlineStatus = async (isOnline: boolean) => {
+  const allClients = await self.clients.matchAll({
+    type: 'window',
+    includeUncontrolled: true,
+  });
+  allClients.forEach((client) => {
+    client.postMessage({ type: 'SW_ONLINE_STATUS', isOnline });
+  });
+};
+
+self.addEventListener('online', () => {
+  log('online');
+  broadcastOnlineStatus(true);
+});
+
+self.addEventListener('offline', () => {
+  log('offline');
+  broadcastOnlineStatus(false);
+});
+
 self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
+  if (event.data?.type === 'SKIP_WAITING') {
     self.skipWaiting();
+  }
+  if (event.data?.type === 'GET_ONLINE_STATUS' && event.source) {
+    const client = event.source as Client;
+    const probeUrl = (event.data?.pollUrl as string) || '/favicon.ico';
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    // fetch() from within the SW bypasses its own routing — goes to real network
+    fetch(probeUrl, {
+      method: 'HEAD',
+      cache: 'no-store',
+      signal: controller.signal,
+    })
+      .then(() => {
+        clearTimeout(timeoutId);
+        client.postMessage({ type: 'SW_ONLINE_STATUS', isOnline: true });
+      })
+      .catch(() => {
+        clearTimeout(timeoutId);
+        client.postMessage({ type: 'SW_ONLINE_STATUS', isOnline: false });
+      });
   }
 });
 
