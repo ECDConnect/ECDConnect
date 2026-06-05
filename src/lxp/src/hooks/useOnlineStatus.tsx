@@ -29,42 +29,12 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
 }) => {
   const [isOnline, setIsOnline] = useState<boolean>(() => navigator.onLine);
   const wasOnlineRef = useRef<boolean>(navigator.onLine);
+  const lastSuccessfulCheckRef = useRef<number>(Date.now());
   const isCheckingRef = useRef<boolean>(false);
   const intervalIdRef = useRef<number>();
   const controllerRef = useRef<AbortController>();
 
-  // Primary: use SW as source of truth when available — SW probes the real network
   useEffect(() => {
-    if (!('serviceWorker' in navigator)) return;
-
-    const handleSWMessage = (event: MessageEvent) => {
-      if (event.data?.type === 'SW_ONLINE_STATUS') {
-        setIsOnline(event.data.isOnline as boolean);
-      }
-    };
-
-    navigator.serviceWorker.addEventListener('message', handleSWMessage);
-
-    const probe = () =>
-      navigator.serviceWorker.controller?.postMessage({
-        type: 'GET_ONLINE_STATUS',
-        pollUrl,
-      });
-
-    probe();
-    const intervalId = setInterval(probe, interval);
-
-    return () => {
-      navigator.serviceWorker.removeEventListener('message', handleSWMessage);
-      clearInterval(intervalId);
-    };
-  }, [interval, pollUrl]);
-
-  // Fallback: window events for when no SW is controlling the page
-  useEffect(() => {
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller)
-      return;
-
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 
@@ -121,10 +91,19 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
       controllerRef.current = new AbortController();
 
       try {
-        const response = await Promise.race([
+        const timeSinceLastSuccess =
+          Date.now() - lastSuccessfulCheckRef.current;
+        if (timeSinceLastSuccess > safeTimeout * 2) {
+          setIsOnline(false);
+        }
+
+        const response = (await Promise.race([
           fetch(pollUrl, {
-            method: 'HEAD',
-            cache: 'no-store',
+            method: 'GET',
+            headers: {
+              Accept: 'application/json, text/plain, */*',
+              'Cache-Control': 'no-cache',
+            },
             signal: controllerRef.current.signal,
           }),
           new Promise<never>((_, reject) => {
@@ -132,16 +111,19 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
               reject(new Error('Timeout'));
             }, safeTimeout);
           }),
-        ]);
+        ])) as Response; // Type assertion here
 
         if (response.ok) {
+          lastSuccessfulCheckRef.current = Date.now();
           setIsOnline(true);
         } else {
           setIsOnline(false);
         }
       } catch (error) {
-        if (error instanceof Error && error.name !== 'AbortError') {
-          setIsOnline(false);
+        if (error instanceof Error) {
+          if (error.name !== 'AbortError') {
+            setIsOnline(false);
+          }
         }
       } finally {
         isCheckingRef.current = false;
