@@ -18,6 +18,7 @@ using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Reports;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
+using ECDLink.DataAccessLayer.Entities.Community;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
@@ -446,6 +447,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         public List<PortalPractitionerModel> GetAllPortalPractitioners(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
+            AuthenticationDbContext dbContext,
             CancellationToken cancellationToken,
             PagedQueryInput pagingInput = null,
             string search = null,
@@ -458,6 +460,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             var shortenUrlEntityRepo = repoFactory.CreateGenericRepository<ShortenUrlEntity>(userContext: uId);
             var sixMonthsAgo = DateTime.Now.AddMonths(-6).GetStartOfMonth().Date;
+            var tenantId = TenantExecutionContext.Tenant.Id;
 
             if (cancellationToken.IsCancellationRequested)
             {
@@ -476,10 +479,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         || EF.Functions.ILike(h.User.Email, $"%{search}%"));
             }
 
-            // Province search
+            // Province search — match via SiteAddress or CommunityProfile
             if (provinceSearch != null && provinceSearch.Any())
             {
-                practitionerQuery = practitionerQuery.Where(x => provinceSearch.Contains(x.SiteAddress.ProvinceId));
+                var userIdsWithMatchingCommunityProvince = dbContext.CommunityProfile
+                    .Where(cp => provinceSearch.Contains(cp.ProvinceId.Value) && cp.TenantId == tenantId)
+                    .Select(cp => cp.UserId)
+                    .ToList();
+
+                practitionerQuery = practitionerQuery.Where(x =>
+                    provinceSearch.Contains(x.SiteAddress.ProvinceId.Value) ||
+                    userIdsWithMatchingCommunityProvince.Contains(x.UserId));
             }
 
             // Practitioner Type search
