@@ -1,11 +1,6 @@
 import { useQuery } from '@apollo/client';
 import debounce from 'lodash.debounce';
-import {
-  PermissionEnum,
-  RoleSystemNameEnum,
-  usePanel,
-  UserDto,
-} from '@ecdlink/core';
+import { PermissionEnum, usePanel, UserDto } from '@ecdlink/core';
 import { UserList } from '@ecdlink/graphql';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
@@ -97,24 +92,28 @@ export default function ApplicationAdmins() {
     setStatusFilter([]);
   };
 
-  const queryVariables = useMemo(
-    () => ({
+  const queryVariables = useMemo(() => {
+    const filterBy: { fieldName: string; filterType: string; value: string }[] =
+      [{ fieldName: 'ADMINISTRATOR', filterType: 'EQUALS', value: 'true' }];
+
+    if (statusFilter?.length === 1) {
+      filterBy.push({
+        fieldName: 'isActive',
+        filterType: 'EQUALS',
+        value: statusFilter[0].value === Status.ACTIVE ? 'true' : 'false',
+      });
+    }
+
+    return {
       search: '',
       order: [{ insertedDate: 'DESC' }, { fullName: 'DESC' }],
       pagingInput: {
         pageNumber: selectedPage,
         pageSize: selectedPageSize,
-        filterBy: [
-          {
-            fieldName: 'ADMINISTRATOR',
-            filterType: 'EQUALS',
-            value: 'true',
-          },
-        ],
+        filterBy,
       },
-    }),
-    [selectedPage, selectedPageSize]
-  );
+    };
+  }, [selectedPage, selectedPageSize, statusFilter]);
 
   const { data, refetch, loading } = useQuery(UserList, {
     variables: queryVariables,
@@ -129,84 +128,47 @@ export default function ApplicationAdmins() {
   }, [history, location.pathname, queryVariables]);
 
   useEffect(() => {
-    if (data?.users) {
-      const copyItems = data?.users;
-      const modifiedData = copyItems
-        .map((obj: { [x: string]: any; __typename: any; roles: any }) => {
-          const newUserData = {
-            ...obj,
-            displayColumnIdPassportEmail:
-              obj?.email || obj?.userName || obj?.idNumber || '',
-          };
+    if (!data?.users) return;
 
-          const { __typename: _, roles, ...rest } = newUserData;
-          const modifiedRoles = roles.map(
-            (role: { [x: string]: any; __typename: any }) => {
-              const { __typename: __, ...roleRest } = role;
-              return roleRest;
-            }
-          );
-          return { ...rest, roles: modifiedRoles };
-        })
-        ?.slice()
-        ?.sort((a, b) =>
-          a.insertedDate > b.insertedDate
-            ? -1
-            : a.insertedDate < b.insertedDate
-            ? 1
-            : 0
+    const modifiedData = data.users
+      .map((obj: { [x: string]: any; __typename: any; roles: any }) => {
+        const newUserData = {
+          ...obj,
+          displayColumnIdPassportEmail:
+            obj?.email || obj?.userName || obj?.idNumber || '',
+        };
+        const { __typename: _, roles, ...rest } = newUserData;
+        const modifiedRoles = roles.map(
+          (role: { [x: string]: any; __typename: any }) => {
+            const { __typename: __, ...roleRest } = role;
+            return roleRest;
+          }
         );
+        return { ...rest, roles: modifiedRoles };
+      })
+      .slice()
+      .sort((a, b) =>
+        a.insertedDate > b.insertedDate
+          ? -1
+          : a.insertedDate < b.insertedDate
+          ? 1
+          : 0
+      )
+      .map(mapUserTableItem);
 
-      const filteredByDateData = modifiedData
-        ?.filter((d) => {
-          return (
+    if (startDate && endDate) {
+      setTableData(
+        modifiedData.filter(
+          (d) =>
             new Date(d?.insertedDate).getTime() >=
-              new Date(startDate)?.getTime() &&
-            new Date(d?.insertedDate).getTime() <= new Date(endDate)?.getTime()
-          );
-        })
-        .map(mapUserTableItem);
-
-      if (startDate && endDate) {
-        if (statusFilter?.length === 1) {
-          if (statusFilter.some((e) => e.value === Status?.ACTIVE)) {
-            const filterByStatusActive = filteredByDateData
-              ?.filter((item) => item?.isActive)
-              .map(mapUserTableItem);
-            setTableData(filterByStatusActive);
-            return;
-          } else {
-            const filterByStatusInactive = filteredByDateData
-              ?.filter((item) => !item?.isActive)
-              .map(mapUserTableItem);
-            setTableData(filterByStatusInactive);
-            return;
-          }
-        }
-        setTableData(filteredByDateData);
-        return;
-      }
-
-      if (statusFilter) {
-        if (statusFilter?.length === 1) {
-          if (statusFilter.some((e) => e.value === Status?.ACTIVE)) {
-            const filterByStatusActive = modifiedData?.filter(
-              (item) => item?.isActive
-            );
-            setTableData(filterByStatusActive);
-            return;
-          } else {
-            const filterByStatusInactive = modifiedData?.filter(
-              (item) => !item?.isActive
-            );
-            setTableData(filterByStatusInactive);
-            return;
-          }
-        }
-      }
+              new Date(startDate).getTime() &&
+            new Date(d?.insertedDate).getTime() <= new Date(endDate).getTime()
+        )
+      );
+    } else {
       setTableData(modifiedData);
     }
-  }, [data?.users, endDate, startDate, statusFilter]);
+  }, [data?.users, endDate, startDate]);
 
   const displayUserPanel = () => {
     panel({
@@ -219,8 +181,6 @@ export default function ApplicationAdmins() {
             onSubmit();
             if (userCreated) {
               refetch();
-              // TODO: Use actual pagination when table component supports it.
-              // refetchCount();
             }
           }}
         />
