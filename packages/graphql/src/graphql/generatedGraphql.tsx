@@ -13957,6 +13957,7 @@ export type UserByToken = {
 export type UserCertificate = {
   __typename?: 'UserCertificate';
   certificateName?: Maybe<Scalars['String']>;
+  certificateRegNr?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
@@ -13973,6 +13974,7 @@ export type UserCertificate = {
 export type UserCertificateFilterInput = {
   and?: InputMaybe<Array<UserCertificateFilterInput>>;
   certificateName?: InputMaybe<StringOperationFilterInput>;
+  certificateRegNr?: InputMaybe<StringOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
@@ -13989,6 +13991,7 @@ export type UserCertificateFilterInput = {
 
 export type UserCertificateInput = {
   CertificateName?: InputMaybe<Scalars['String']>;
+  CertificateRegNr?: InputMaybe<Scalars['String']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   UpdatedBy?: InputMaybe<Scalars['String']>;
@@ -14002,6 +14005,7 @@ export type UserCertificateInput = {
 
 export type UserCertificateSortInput = {
   certificateName?: InputMaybe<SortEnumType>;
+  certificateRegNr?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
@@ -14507,7 +14511,6 @@ export type Visit = {
   __typename?: 'Visit';
   actualVisitDate?: Maybe<Scalars['DateTime']>;
   attended: Scalars['Boolean'];
-  certificateRegNr?: Maybe<Scalars['String']>;
   coach?: Maybe<Coach>;
   coachId?: Maybe<Scalars['UUID']>;
   comment?: Maybe<Scalars['String']>;
@@ -14671,7 +14674,6 @@ export type VisitFilterInput = {
   actualVisitDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   and?: InputMaybe<Array<VisitFilterInput>>;
   attended?: InputMaybe<BooleanOperationFilterInput>;
-  certificateRegNr?: InputMaybe<StringOperationFilterInput>;
   coach?: InputMaybe<CoachFilterInput>;
   coachId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   comment?: InputMaybe<StringOperationFilterInput>;
@@ -14706,7 +14708,6 @@ export type VisitFilterInput = {
 export type VisitInput = {
   ActualVisitDate?: InputMaybe<Scalars['DateTime']>;
   Attended: Scalars['Boolean'];
-  CertificateRegNr?: InputMaybe<Scalars['String']>;
   Coach?: InputMaybe<CoachInput>;
   CoachId?: InputMaybe<Scalars['UUID']>;
   Comment?: InputMaybe<Scalars['String']>;
@@ -14754,7 +14755,6 @@ export type VisitModelInput = {
 export type VisitSortInput = {
   actualVisitDate?: InputMaybe<SortEnumType>;
   attended?: InputMaybe<SortEnumType>;
-  certificateRegNr?: InputMaybe<SortEnumType>;
   coach?: InputMaybe<CoachSortInput>;
   coachId?: InputMaybe<SortEnumType>;
   comment?: InputMaybe<SortEnumType>;
