@@ -27,6 +27,7 @@ namespace ECDLink.DataAccessLayer.Entities
         public Guid? UserId { get; set; }
 
         public string CertificateName { get; set; }
+        public string CertificateRegNr { get; set; }
     }
 
     public interface UserCertificateJoin<TKey>
