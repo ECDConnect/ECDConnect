@@ -277,7 +277,7 @@ export const CompletePublishedForm: React.FC<CompletePublishedFormProps> = ({
               }));
               setEditingInstanceId(newId);
             }}
-            className="mb-6 w-7/12"
+            className="mb-6"
           />
         </div>
       );
@@ -354,7 +354,7 @@ export const CompletePublishedForm: React.FC<CompletePublishedFormProps> = ({
           <Typography
             className="semi-bold mt-3"
             type="h2"
-            text={`About the ${assessmentFormData?.name} form`}
+            text={`About the ${assessmentFormData?.name}`}
           />
           <Typography
             className="semi-bold"
