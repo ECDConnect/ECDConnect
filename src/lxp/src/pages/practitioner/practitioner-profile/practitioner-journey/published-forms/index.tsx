@@ -95,8 +95,8 @@ export const PublishedFormsList = ({ onBack }: FormProps) => {
             : 'Health and safety check'
         } completed!`,
       });
+      onBack();
     }
-    onBack();
   };
 
   const [completedVisitId, setCompletedVisitId] = useState('');
@@ -160,7 +160,10 @@ export const PublishedFormsList = ({ onBack }: FormProps) => {
     return (
       <PublishedFormCertificate
         completedVisitId={completedVisitId}
-        onBack={setShowCertificateCheckForm}
+        onBack={() => {
+          setShowCertificateCheckForm(false);
+          onBack();
+        }}
       />
     );
   }
