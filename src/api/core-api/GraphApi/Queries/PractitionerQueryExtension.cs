@@ -571,7 +571,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 filteredUsers.AddRange(practitionerModels.Where(x => connectUsageSearch.Contains(x.User.ConnectUsage)).ToList());
             }
 
-            return connectUsageSearch.Any() ? filteredUsers.DistinctBy(x => x.Id).ToList() : practitionerModels;
+            return (connectUsageSearch != null && connectUsageSearch.Any()) ? filteredUsers.DistinctBy(x => x.Id).ToList() : practitionerModels;
         }
 
         [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.Create)]
