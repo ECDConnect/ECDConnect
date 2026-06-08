@@ -39,6 +39,7 @@ import {
   formatAddress,
 } from '@/components/address-map/address-map';
 import { useTenant } from '@/hooks/useTenant';
+import { OfflineAlert } from '@/components/offline-alert';
 
 export type PublishedFormStepProps = {
   stepData: AssessmentPageDto;
@@ -82,6 +83,7 @@ export const PublishedFormStep: React.FC<PublishedFormStepProps> = ({
   });
 
   const { isOnline } = useOnlineStatus();
+
   const dialog = useDialog();
   const appDispatch = useAppDispatch();
   const tenant = useTenant();
@@ -447,7 +449,11 @@ export const PublishedFormStep: React.FC<PublishedFormStepProps> = ({
               {question.answerType === 'text' && (
                 <FormInput
                   textInputType="textarea"
-                  placeholder={question.description || ''}
+                  placeholder={
+                    question.name === 'Notes or next steps'
+                      ? 'e.g. create a list of emergency numbers'
+                      : question.description || ''
+                  }
                   value={question.answer || ''}
                   className="mt-2"
                   onChange={(e) =>
@@ -490,53 +496,62 @@ export const PublishedFormStep: React.FC<PublishedFormStepProps> = ({
               {/* ✏️ Map Input */}
               {question.answerType === 'map' && (
                 <>
-                  {isOnline ? (
-                    <div className="mt-2">
-                      {address.addressLine1 ? (
-                        <>
-                          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-base">
-                            <Typography
-                              type="h4"
-                              color="textDark"
-                              className="semi-bold mt-3 mb-1"
-                              text="Property address:"
-                            />
-                            <Typography
-                              type="body"
-                              color="textMid"
-                              className="mt-3 mb-1"
-                              text={`${address.addressLine1} ${
-                                address.addressLine2
-                              } ${address.province?.description || ''}`}
-                            />
-                          </div>
-
+                  <div className="mt-2">
+                    {address.addressLine1 ? (
+                      <>
+                        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-base">
                           <Typography
                             type="h4"
                             color="textDark"
                             className="semi-bold mt-3 mb-1"
-                            text="Is this address correct?"
+                            text="Property address:"
                           />
+                          <Typography
+                            type="body"
+                            color="textMid"
+                            className="mt-3 mb-1"
+                            text={`${address.addressLine1} ${
+                              address.addressLine2
+                            } ${address.province?.description || ''}`}
+                          />
+                        </div>
 
-                          <div className="mt-2 flex gap-3">
-                            <ButtonGroup<boolean>
-                              notSelectedColor="secondaryAccent2"
-                              textColor="secondary"
-                              color="secondary"
-                              type={ButtonGroupTypes.Button}
-                              options={options}
-                              onOptionSelected={(value) =>
-                                handleConfirmAddress(
-                                  Array.isArray(value) ? value[0] : value
-                                )
-                              }
-                            />
-                          </div>
-                        </>
-                      ) : (
+                        <Typography
+                          type="h4"
+                          color="textDark"
+                          className="semi-bold mt-3 mb-1"
+                          text="Is this address correct?"
+                        />
+
+                        <div className="mt-2 flex gap-3">
+                          <ButtonGroup<boolean>
+                            notSelectedColor="secondaryAccent2"
+                            textColor="secondary"
+                            color="secondary"
+                            type={ButtonGroupTypes.Button}
+                            options={options}
+                            onOptionSelected={(value) =>
+                              isOnline &&
+                              handleConfirmAddress(
+                                Array.isArray(value) ? value[0] : value
+                              )
+                            }
+                          />
+                        </div>
+                        {!isOnline && <OfflineAlert />}
+                        <div className="mt-4 flex flex-col items-center justify-center text-center">
+                          <Alert
+                            className="w-full"
+                            type="info"
+                            title="You must be online to update the address."
+                          />
+                        </div>
+                      </>
+                    ) : isOnline ? (
+                      <>
                         <div onClick={handleShowMap}>
                           <FormInput
-                            placeholder="Tap to add"
+                            placeholder="Tap to add..."
                             type="text"
                             onChange={() => {}}
                             value={formatAddress(address)}
@@ -546,21 +561,28 @@ export const PublishedFormStep: React.FC<PublishedFormStepProps> = ({
                             suffixIconAction={() => setShowMap(true)}
                           />
                         </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="mt-4 flex flex-col items-center justify-center px-10 text-center">
-                      <Alert
-                        className="w-full"
-                        type="info"
-                        title="You must be online to update the address."
-                        list={[
-                          `If you are offline, please select “Yes” above & explain how the principal can update their address through ${appName}: log in, 
+                        <div className="mt-4 flex flex-col items-center justify-center text-center">
+                          <Alert
+                            className="w-full"
+                            type="info"
+                            title="You must be online to update the address."
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <div className="mt-4 flex flex-col items-center justify-center px-10 text-center">
+                        <Alert
+                          className="w-full"
+                          type="info"
+                          title="You must be online to update the address."
+                          list={[
+                            `If you are offline, please select “Yes” above & explain how the principal can update their address through ${appName}: log in, 
                           tap the profile image in the top right of the screen, tap "Preschool" and then add a location.`,
-                        ]}
-                      />
-                    </div>
-                  )}
+                          ]}
+                        />
+                      </div>
+                    )}
+                  </div>
                 </>
               )}
             </fieldset>
