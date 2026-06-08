@@ -95,8 +95,8 @@ export const PublishedFormsList = ({ onBack }: FormProps) => {
             : 'Health and safety check'
         } completed!`,
       });
-      onBack();
     }
+    onBack();
   };
 
   const [completedVisitId, setCompletedVisitId] = useState('');
