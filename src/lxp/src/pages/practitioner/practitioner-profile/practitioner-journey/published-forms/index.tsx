@@ -160,7 +160,10 @@ export const PublishedFormsList = ({ onBack }: FormProps) => {
     return (
       <PublishedFormCertificate
         completedVisitId={completedVisitId}
-        onBack={setShowCertificateCheckForm}
+        onBack={() => {
+          setShowCertificateCheckForm(false);
+          onBack();
+        }}
       />
     );
   }
