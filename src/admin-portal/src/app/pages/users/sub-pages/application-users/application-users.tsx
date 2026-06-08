@@ -3,13 +3,7 @@ import { UserDto } from '@ecdlink/core';
 import debounce from 'lodash.debounce';
 import { UserList } from '@ecdlink/graphql';
 import { SearchDropDownOption, Table } from '@ecdlink/ui';
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Status } from '../application-admins/applications-admins.types';
 import { format } from 'date-fns';
 
@@ -31,7 +25,6 @@ export default function ApplicationUsers() {
   const [tableData, setTableData] = useState<any[]>([]);
   const [searchValue, setSearchValue] = useState('');
 
-  const [filterDateAdded, setFilterDateAdded] = useState(false);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const tableRef = useRef<TableRefMethods>(null);
@@ -41,16 +34,6 @@ export default function ApplicationUsers() {
     setStartDate(start);
     setEndDate(end);
   };
-
-  const handleSetDateFilter = useCallback(() => {
-    setFilterDateAdded(!filterDateAdded);
-  }, [filterDateAdded]);
-
-  useEffect(() => {
-    if (endDate) {
-      handleSetDateFilter();
-    }
-  }, [endDate, handleSetDateFilter]);
 
   const [statusFilter, setStatusFilter] = useState<
     SearchDropDownOption<string>[]
@@ -240,62 +223,60 @@ export default function ApplicationUsers() {
     ) ?? [];
 
   return (
-    <>
-      <div className="bg-adminPortalBg h-full rounded-2xl p-4 ">
-        <div className="rounded-xl bg-white p-12">
-          <Table
-            watchMode
-            ref={tableRef}
-            rows={rows}
-            columns={columns}
-            onClearFilters={clearFilters}
-            noContentText={noContentText}
-            loading={{
-              isLoading: tableData === undefined || isLoading,
-              size: 'medium',
-              spinnerColor: 'adminPortalBg',
-              backgroundColor: 'secondary',
-            }}
-            search={{
-              placeholder: UserSearch.SearchBy,
-              onChange: search,
-            }}
-            filters={[
-              {
-                dateFormat: 'd MMM yyyy',
-                className: 'w-64 h-11 mt-1 border-2 border-transparent',
-                isFullWidth: false,
-                colour: !!startDate ? 'secondary' : 'adminPortalBg',
-                textColour: !!startDate ? 'white' : 'textMid',
-                placeholderText: ColumnNames.Date,
-                type: 'date-picker',
-                showChevronIcon: true,
-                chevronIconColour: !!startDate ? 'white' : 'primary',
-                hideCalendarIcon: true,
-                selected: startDate,
-                onChange,
-                startDate,
-                endDate,
-                selectsRange: true,
-                shouldCloseOnSelect: true,
-              },
-              {
-                type: 'search-dropdown',
-                menuItemClassName: 'w-11/12 left-4',
-                className: 'h-11 mb-2 border-2 border-transparent',
-                color: 'quatenary',
-                bgColor: 'white',
-                options: sortByClientStatusOptions,
-                selectedOptions: statusFilter,
-                onChange: setStatusFilter,
-                placeholder: 'Status',
-                multiple: true,
-                info: { name: 'Status:' },
-              },
-            ]}
-          />
-        </div>
+    <div className="bg-adminPortalBg h-full rounded-2xl p-4 ">
+      <div className="rounded-xl bg-white p-12">
+        <Table
+          watchMode
+          ref={tableRef}
+          rows={rows}
+          columns={columns}
+          onClearFilters={clearFilters}
+          noContentText={noContentText}
+          loading={{
+            isLoading: tableData === undefined || isLoading,
+            size: 'medium',
+            spinnerColor: 'adminPortalBg',
+            backgroundColor: 'secondary',
+          }}
+          search={{
+            placeholder: UserSearch.SearchBy,
+            onChange: search,
+          }}
+          filters={[
+            {
+              dateFormat: 'd MMM yyyy',
+              className: 'w-64 h-11 mt-1 border-2 border-transparent',
+              isFullWidth: false,
+              colour: !!startDate ? 'secondary' : 'adminPortalBg',
+              textColour: !!startDate ? 'white' : 'textMid',
+              placeholderText: ColumnNames.Date,
+              type: 'date-picker',
+              showChevronIcon: true,
+              chevronIconColour: !!startDate ? 'white' : 'primary',
+              hideCalendarIcon: true,
+              selected: startDate,
+              onChange,
+              startDate,
+              endDate,
+              selectsRange: true,
+              shouldCloseOnSelect: true,
+            },
+            {
+              type: 'search-dropdown',
+              menuItemClassName: 'w-11/12 left-4',
+              className: 'h-11 mb-2 border-2 border-transparent',
+              color: 'quatenary',
+              bgColor: 'white',
+              options: sortByClientStatusOptions,
+              selectedOptions: statusFilter,
+              onChange: setStatusFilter,
+              placeholder: 'Status',
+              multiple: true,
+              info: { name: 'Status:' },
+            },
+          ]}
+        />
       </div>
-    </>
+    </div>
   );
 }
