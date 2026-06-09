@@ -134,6 +134,7 @@ export const PublishedFormsList = ({ onBack }: FormProps) => {
                 type: 'outlined',
                 leadingIcon: 'ClockIcon',
                 onClick: () => {
+                  onBack();
                   onSubmit();
                 },
               },
