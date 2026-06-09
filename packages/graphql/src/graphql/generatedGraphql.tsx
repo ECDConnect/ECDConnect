@@ -617,6 +617,7 @@ export type AssessmentQuestion = {
   id?: Maybe<Scalars['String']>;
   minValue: Scalars['Int'];
   name?: Maybe<Scalars['String']>;
+  nameDescription?: Maybe<Scalars['String']>;
 };
 
 export type AssessmentQuestionInput = {
@@ -3645,6 +3646,7 @@ export type FormQuestion = {
   id?: Maybe<Scalars['Int']>;
   minValue?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
+  nameDescription?: Maybe<Scalars['String']>;
   updatedDate?: Maybe<Scalars['String']>;
 };
 
@@ -3654,6 +3656,7 @@ export type FormQuestionInput = {
   formQuestionOptions?: InputMaybe<Scalars['String']>;
   minValue?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
+  nameDescription?: InputMaybe<Scalars['String']>;
   updatedDate?: InputMaybe<Scalars['String']>;
 };
 

@@ -21,6 +21,7 @@ query getJourneyAssessmentFormData($id: Int!) {
       formQuestions {
         id
         name
+        nameDescription
         description
         answerType
         minValue

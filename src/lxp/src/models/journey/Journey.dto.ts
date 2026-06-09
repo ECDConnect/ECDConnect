@@ -30,6 +30,7 @@ export type AssessmentQuestionDto = {
   formQuestionOptions?: AssessmentOptionDto[];
   id: string;
   name: string;
+  nameDescription?: string;
   answer?: string;
   answerId?: string;
   minValue?: number;

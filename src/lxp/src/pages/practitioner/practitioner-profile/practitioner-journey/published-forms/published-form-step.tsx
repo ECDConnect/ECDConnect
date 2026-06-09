@@ -295,9 +295,7 @@ export const PublishedFormStep: React.FC<PublishedFormStepProps> = ({
             <Alert
               className="mb-4"
               type="warning"
-              customIcon={
-                <ExclamationCircleIcon className="white mb-4 h-6 w-6" />
-              }
+              customIcon={<ExclamationCircleIcon className="h-6 w-6" />}
               title={`${classroom?.name} does not meet these health and safety standards.`}
               list={
                 failedQuestions.length > 0
@@ -325,11 +323,9 @@ export const PublishedFormStep: React.FC<PublishedFormStepProps> = ({
                 color="textDark"
               />
             )}
-            {!isSingleCheckbox &&
-              question.description &&
-              question.description !== 'cms' && (
-                <Typography type="h6" text={question.description} />
-              )}
+            {!isSingleCheckbox && question.nameDescription && (
+              <Typography type="h6" text={question.nameDescription} />
+            )}
             <fieldset className="mb-3 flex flex-col gap-2">
               {/* 🟦 Radio Buttons */}
               {question.answerType === 'radioButton' && (
@@ -467,6 +463,7 @@ export const PublishedFormStep: React.FC<PublishedFormStepProps> = ({
                 <div className="flex items-center gap-2">
                   <FormInput
                     type="number"
+                    placeholder={question.description || ''}
                     value={question.answer}
                     className="w-1/2"
                     onChange={(e) => {
@@ -488,8 +485,8 @@ export const PublishedFormStep: React.FC<PublishedFormStepProps> = ({
                         }
                       : {})}
                   />
-                  {question.description === 'cms' && (
-                    <Typography type="body" color="textMid" text="cms" />
+                  {question.name.startsWith('How many cm') && (
+                    <Typography type="body" color="textMid" text="cm" />
                   )}
                 </div>
               )}
