@@ -100,6 +100,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public string Description { get; set; }
         public string AnswerType { get; set; }
 
+        public string NameDescription { get; set; }
         public int MinValue { get; set; } = 0;
         public string FormQuestionOptionsIds { get; set; }
         public List<AssessmentOption> FormQuestionOptions { get; set; }
@@ -113,11 +114,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
             item.TryGetValue("answerType", out var answerType);
             item.TryGetValue("formQuestionOptions", out var formQuestionOptions);
             item.TryGetValue("minValue", out var minValue);
+            item.TryGetValue("nameDescription", out var nameDescription);
             Id = id.ToString();
             Name = name != null ? name.ToString() : "";
             Description = description != null ? description.ToString() : "";
             AnswerType = answerType != null ? answerType.ToString() : "";
             FormQuestionOptionsIds = formQuestionOptions != null ? formQuestionOptions.ToString() : "";
+            NameDescription = nameDescription != null ? nameDescription.ToString() : "";
             MinValue = minValue != null ? Convert.ToInt32(minValue) : 0;
         }
     }

@@ -41,8 +41,9 @@ export const Alert: React.FC<AlertProps> = ({
       )}
     >
       <div className={styles.innerWrapper}>
-        {!leftChip &&
-          (customIcon || <div className={styles.iconWrapper}>{icon}</div>)}
+        {!leftChip && (
+          <div className={styles.iconWrapper}>{customIcon || icon}</div>
+        )}
         {leftChip && (
           <StatusChip
             className="self-center"
