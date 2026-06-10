@@ -33,7 +33,6 @@ import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { IconInformationIndicator } from '@/pages/classroom/programme-planning/components/icon-information-indicator/icon-information-indicator';
 import { useHolidays } from '@/hooks/useHolidays';
 import { useMonthlyAttendanceSummary } from '@/hooks/useMonthlyAttendanceSummary';
-import { normalizeToStartOfDay } from '@/utils/classroom/attendance/track-attendance-utils';
 
 export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   classroom,

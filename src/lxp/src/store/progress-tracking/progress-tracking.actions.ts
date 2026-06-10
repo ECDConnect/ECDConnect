@@ -13,6 +13,7 @@ import { isBefore } from 'date-fns';
 import { ChildProgressReportModelInput, ResourceLink } from '@ecdlink/graphql';
 import { ChildProgressReport } from '@/models/progress/child-progress-report';
 import { ContentService } from '@/services/ContentService';
+import { remapChildProgressReportId } from './progress-tracking';
 
 export const ProgressTrackingActions = {
   GET_PROGRESS_TRACKING_AGE_GROUPS: 'getProgressTrackingAgeGroup',
@@ -208,21 +209,21 @@ export const getResourceLinks = createAsyncThunk<
 );
 
 export const syncChildProgressReports = createAsyncThunk<
-  boolean[],
+  string[],
   // eslint-disable-next-line @typescript-eslint/ban-types
   {},
   ThunkApiType<RootState>
 >(
   ProgressTrackingActions.SYNC_CHILD_PROGRESS_REPORTS,
   // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
+  async ({}, { dispatch, getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       progressTracking: { childProgressReports },
     } = getState();
 
     try {
-      let promises: Promise<boolean>[] = [];
+      let promises: Promise<string>[] = [];
 
       if (userAuth?.auth_token && childProgressReports.some((x) => !x.synced)) {
         promises = childProgressReports
@@ -248,9 +249,23 @@ export const syncChildProgressReports = createAsyncThunk<
               principalPhoneNumber: report.principalPhoneNumber,
             };
 
-            return await new ProgressTrackingService(
+            const serverId = await new ProgressTrackingService(
               userAuth?.auth_token
             ).createOrUpdateChildProgressReport(childProgressReportInput);
+
+            // If the server chose a different canonical ID (e.g. another device
+            // created the report first for this child + period), remap our local
+            // optimistic ID so we don't end up with stale ghost records.
+            if (serverId && serverId !== report.id) {
+              dispatch(
+                remapChildProgressReportId({
+                  oldId: report.id,
+                  newId: serverId,
+                })
+              );
+            }
+
+            return serverId;
           });
       }
       return Promise.all(promises);

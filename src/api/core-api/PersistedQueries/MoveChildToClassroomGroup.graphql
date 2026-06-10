@@ -1,0 +1,18 @@
+mutation MoveChildToClassroomGroup(
+  $childUserId: UUID!
+  $newClassroomGroupId: UUID!
+  $startedAttendance: DateTime
+) {
+  moveChildToClassroomGroup(
+    childUserId: $childUserId
+    newClassroomGroupId: $newClassroomGroupId
+    startedAttendance: $startedAttendance
+  ) {
+    id
+    userId
+    classroomGroupId
+    startedAttendance
+    stoppedAttendance
+    isActive
+  }
+}

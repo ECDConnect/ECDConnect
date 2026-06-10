@@ -27,7 +27,10 @@ import {
   UpdateRegistrationModel,
   updateRegistrationSchema,
 } from './components/update-registration-types';
-import { EcdRegistrationUpdateInputModelInput } from '@ecdlink/graphql';
+import {
+  EcdRegistrationUpdateInputModelInput,
+  SubsidyStatus,
+} from '@ecdlink/graphql';
 
 interface RegistrationUpdateProps extends ComponentBaseProps {}
 
@@ -72,12 +75,33 @@ export const RegistrationUpdate: React.FC<RegistrationUpdateProps> = () => {
     }
   }, [isOnline, openOfflineDialog]);
 
+  const eCaresStoredToUi = (stored?: string): string | undefined => {
+    switch (stored) {
+      case 'Yes':
+        return 'true';
+      case 'No':
+        return 'false';
+      case 'NotSure':
+        return 'unsure';
+      default:
+        return undefined;
+    }
+  };
+
   const onSubmit = async (data: UpdateRegistrationModel) => {
     const registrationDto: EcdRegistrationUpdateInputModelInput = {
       id: practitioner?.ecdRegistration?.id || '',
       hasBronzeCertificate: data.certificates?.includes('Bronze') || false,
       hasSilverCertificate: data.certificates?.includes('Silver') || false,
       hasGoldCertificate: data.certificates?.includes('Gold') || false,
+      eCaresStatus:
+        data.eCaresStatus === 'true'
+          ? SubsidyStatus.Yes
+          : data.eCaresStatus === 'false'
+          ? SubsidyStatus.No
+          : data.eCaresStatus === 'unsure'
+          ? SubsidyStatus.NotSure
+          : undefined,
     };
 
     try {
@@ -174,8 +198,11 @@ export const RegistrationUpdate: React.FC<RegistrationUpdateProps> = () => {
               ? ['Gold']
               : []),
           ]}
-          onSubmit={({ certificatesAdded }) =>
-            onSubmit({ certificates: certificatesAdded })
+          initialECaresStatus={eCaresStoredToUi(
+            practitioner?.ecdRegistration?.eCaresStatus
+          )}
+          onSubmit={({ certificatesAdded, eCaresStatus }) =>
+            onSubmit({ certificates: certificatesAdded, eCaresStatus })
           }
         />
       </Step>

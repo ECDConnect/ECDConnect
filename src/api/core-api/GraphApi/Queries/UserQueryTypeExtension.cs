@@ -213,10 +213,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             if (adminFilter is not null)
             {
+                var isActiveFilter = pagingInput?.FilterBy?
+                    .Where(f => f.FieldName.Equals("isActive", StringComparison.OrdinalIgnoreCase))
+                    .LastOrDefault();
+                bool? isActiveFilterValue = null;
+                if (isActiveFilter is not null && bool.TryParse(isActiveFilter.Value, out bool parsedIsActive))
+                    isActiveFilterValue = parsedIsActive;
+
                 var adminUsers = await userManager.GetUsersInRoleAsync(Roles.ADMINISTRATOR);
-                var adminUserIds = adminUsers
-                    .Where(u => u.TenantId == TenantExecutionContext.Tenant.Id)
-                    .Select(r => r.Id).ToList();
+                var tenantAdminUsers = adminUsers.Where(u => u.TenantId == TenantExecutionContext.Tenant.Id);
+
+                if (isActiveFilterValue.HasValue)
+                    tenantAdminUsers = tenantAdminUsers.Where(u => u.IsActive == isActiveFilterValue.Value);
+
+                var adminUserIds = tenantAdminUsers.Select(r => r.Id).ToList();
 
                 // Get where user.Id is in admin id list. Or not in adminId list if isAdminFilterValue == false
                 return usersQuery.Where(u => isAdminFilterValue ? adminUserIds.Contains(u.Id) : !adminUserIds.Contains(u.Id));
@@ -361,6 +371,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
            AuthenticationDbContext dbContext,
            DateTime lastSync, Guid classroomId)
         {
+            // lastSync arrives as UTC from the frontend. DB timestamps are stored in
+            // server local time (DateTime.Now). Convert to server local time so the
+            // comparison is always in the same timezone, regardless of where the
+            // server is deployed.
+            var lastSyncLocal = lastSync.ToUniversalTime().ToLocalTime();
+
             var userId = contextAccessor.HttpContext.GetUser().Id;
             var practitioner = await dbContext.Practitioners
                 .AsNoTracking()
@@ -373,23 +389,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             FROM ""Child"" c 
             JOIN ""Practitioner"" p ON c.""Hierarchy"" LIKE p.""Hierarchy"" || '%'
             WHERE (p.""UserId"" = {userId}::uuid OR p.""PrincipalHierarchy"" = {userId}::uuid)
-            AND c.""IsActive"" IS TRUE 
-            AND c.""UpdatedBy"" != {userId}::text
-            AND c.""UpdatedDate"" > {lastSync}
+            AND c.""IsActive"" IS TRUE
+            AND c.""UpdatedDate"" > {lastSyncLocal}
             ").CountAsync();
 
             var classroomCount = await dbContext.ClassroomGroups.FromSql($@"
             SELECT cg.""Id""
             FROM ""ClassroomGroup"" cg 
-            WHERE cg.""UserId"" = {userId}::uuid and cg.""UpdatedBy"" != {userId}::text
-            AND cg.""InsertedDate"" > {lastSync}
+            WHERE cg.""UserId"" = {userId}::uuid 
+            AND cg.""InsertedDate"" > {lastSyncLocal}
             ").CountAsync();
 
             var pointsCount = await dbContext.PointsUserSummary.FromSql($@"
             SELECT pus.""Id""
-            FROM ""PointsUserSummary"" pus 
+            FROM ""PointsUserSummary"" pus
             WHERE pus.""UserId"" = {userId}::uuid
-            AND pus.""UpdatedDate"" > {lastSync}
+            AND pus.""UpdatedDate"" > {lastSyncLocal}
             ").CountAsync();
 
             var periodCount = 0;
@@ -397,26 +412,45 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             {
                 periodCount = await dbContext.ChildProgressReportPeriod.FromSql($@"
                 SELECT cprp.""Id""
-                FROM ""ChildProgressReportPeriod"" cprp 
-                WHERE cprp.""ClassroomId"" = {classroomId}::uuid 
-                AND cprp.""InsertedDate"" > {lastSync}
-                ").CountAsync();    
+                FROM ""ChildProgressReportPeriod"" cprp
+                WHERE cprp.""ClassroomId"" = {classroomId}::uuid
+                AND cprp.""InsertedDate"" > {lastSyncLocal}
+                ").CountAsync();
             }
 
             var permissionsCount = await dbContext.UserPermissions.FromSql($@"
             SELECT up.""Id""
-            FROM ""UserPermission"" up 
-            WHERE up.""UserId"" = {userId}::uuid 
-            AND up.""UpdatedDate"" > {lastSync}
+            FROM ""UserPermission"" up
+            WHERE up.""UserId"" = {userId}::uuid
+            AND up.""UpdatedDate"" > {lastSyncLocal}
             ").CountAsync();
+
+            // Check if any Learner records for this user's classrooms were updated by someone else
+            var learnerCount = await dbContext.Learners.FromSql($@"
+            SELECT l.""Id""
+            FROM ""Learner"" l
+            INNER JOIN ""ClassroomGroup"" cg ON l.""ClassroomGroupId"" = cg.""Id""
+            INNER JOIN ""Classroom"" c ON cg.""ClassroomId"" = c.""Id""
+            LEFT JOIN ""Practitioner"" p ON p.""UserId"" = {userId}::uuid
+            WHERE
+                (
+                    cg.""UserId"" = {userId}::uuid
+                    OR (p.""IsPrincipal"" = true AND c.""UserId"" = p.""UserId"")
+                    OR (p.""PrincipalHierarchy"" IS NOT NULL AND c.""Hierarchy"" LIKE p.""PrincipalHierarchy"" || '%')
+                )
+                AND l.""UpdatedDate"" > {lastSyncLocal}
+            ").CountAsync();
+
+            bool syncLearners = learnerCount >= 1;
 
             return new UserSyncStatus
             {
-                SyncChildren = childrenCount >= 1,
-                SyncClassroom = classroomCount >= 1,
+                SyncChildren = childrenCount >= 1 || syncLearners,
+                SyncClassroom = classroomCount >= 1 || syncLearners,   // Learners are part of classroom data
                 SyncReportingPeriods = periodCount >= 1,
                 SyncPoints = pointsCount >= 1,
                 SyncPermissions = permissionsCount >= 1,
+                SyncLearners = syncLearners,
             };
         }
     }
