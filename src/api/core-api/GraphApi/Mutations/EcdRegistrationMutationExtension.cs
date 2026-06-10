@@ -48,6 +48,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 Challenges = parsedChallenge,
                 ChallengesOtherReason = input.ChallengesOtherReason != "" ? input.ChallengesOtherReason : null,
                 ProblemDescription = input.ProblemDescription?.Trim(),
+                ECaresStatus = input.ECaresStatus,
                 UpdatedBy = contextAccessor.HttpContext.GetUser().UserName ?? contextAccessor.HttpContext.GetUser().Id.ToString(),
                 TenantId = tenantId
             };
@@ -102,7 +103,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     ProblemDescription = registration.ProblemDescription,
                     HasBronzeCertificate = registration.HasBronzeCertificate,
                     HasSilverCertificate = registration.HasSilverCertificate,
-                    HasGoldCertificate = registration.HasGoldCertificate
+                    HasGoldCertificate = registration.HasGoldCertificate,
+                    ECaresStatus = registration.ECaresStatus
                 }),
                 ChangeReason =  "Initial registration creation",
                 InsertedDate = DateTime.UtcNow,
@@ -195,6 +197,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 changes["HasGoldCertificate"] = (registration.HasGoldCertificate, input.HasGoldCertificate.Value);
                 registration.HasGoldCertificate = input.HasGoldCertificate.Value;
+            }
+
+            if (input.ECaresStatus.HasValue && input.ECaresStatus.Value != registration.ECaresStatus)
+            {
+                changes["ECaresStatus"] = (registration.ECaresStatus, input.ECaresStatus.Value);
+                registration.ECaresStatus = input.ECaresStatus.Value;
             }
 
             if (changes.Count == 0)

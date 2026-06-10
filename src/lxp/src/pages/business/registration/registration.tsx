@@ -83,6 +83,14 @@ export const Registration: React.FC = () => {
       hasSilverCertificate: data.certificates?.includes('Silver') || false,
       hasGoldCertificate: data.certificates?.includes('Gold') || false,
       problemDescription: data.problem || '',
+      eCaresStatus:
+        data.eCaresStatus === 'true'
+          ? SubsidyStatus.Yes
+          : data.eCaresStatus === 'false'
+          ? SubsidyStatus.No
+          : data.eCaresStatus === 'unsure'
+          ? SubsidyStatus.NotSure
+          : undefined,
     };
 
     try {
