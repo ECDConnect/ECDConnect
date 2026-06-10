@@ -62,13 +62,15 @@ export const PublishedFormsList = ({ onBack }: FormProps) => {
   }, [appDispatch]); // only run once on mount
 
   const formItemlist: StackedListItemType[] = publishedForms
-    ? publishedForms.map((formItem) => ({
-        title: formItem?.name || '',
-        subTitle: `${formItem?.name} created by ${formItem.provider}`,
-        showIcon: false,
-        onActionClick: () => handleFormItemClicked(Number(formItem?.id)),
-        classNames: 'bg-uiBg',
-      }))
+    ? publishedForms
+        .map((formItem) => ({
+          title: formItem?.name || '',
+          subTitle: `${formItem?.name} created by ${formItem.provider}`,
+          showIcon: false,
+          onActionClick: () => handleFormItemClicked(Number(formItem?.id)),
+          classNames: 'bg-uiBg',
+        }))
+        .sort((a, b) => a.title.localeCompare(b.title))
     : [];
 
   // Form Data
@@ -132,6 +134,7 @@ export const PublishedFormsList = ({ onBack }: FormProps) => {
                 type: 'outlined',
                 leadingIcon: 'ClockIcon',
                 onClick: () => {
+                  onBack();
                   onSubmit();
                 },
               },
@@ -160,7 +163,10 @@ export const PublishedFormsList = ({ onBack }: FormProps) => {
     return (
       <PublishedFormCertificate
         completedVisitId={completedVisitId}
-        onBack={setShowCertificateCheckForm}
+        onBack={() => {
+          setShowCertificateCheckForm(false);
+          onBack();
+        }}
       />
     );
   }
@@ -169,7 +175,6 @@ export const PublishedFormsList = ({ onBack }: FormProps) => {
       size="medium"
       renderBorder
       onBack={onBack}
-      onClose={onBack}
       title="Fill in a form"
       displayOffline={!isOnline}
     >

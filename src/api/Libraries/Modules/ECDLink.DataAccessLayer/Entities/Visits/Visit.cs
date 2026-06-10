@@ -47,10 +47,6 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         public virtual PQARating PQARating { get; set; }
         public virtual ICollection<VisitData> VisitData { get; set; }
         public int? FormContentId { get; set; }
-        public string CertificateName { get; set; }
-        public string CertificateRegNr { get; set; }
-        public DateTime? CertificateCreated { get; set; }
-        
     }
 
     public interface VisitJoin<TKey>

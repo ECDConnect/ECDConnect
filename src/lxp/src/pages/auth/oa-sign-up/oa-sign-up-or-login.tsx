@@ -72,8 +72,9 @@ export const OASignUpOrLogin: React.FC = () => {
         await resetAuth();
         await resetUser();
       }
-
-      await appDispatch(staticDataThunkActions.getOpenLanguages({})).unwrap();
+      if (isOnline) {
+        await appDispatch(staticDataThunkActions.getOpenLanguages({})).unwrap();
+      }
     }
     init().catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -161,7 +162,6 @@ export const OASignUpOrLogin: React.FC = () => {
               className={'mt-6 mb-12 w-full'}
               type="outlined"
               color="quatenary"
-              disabled={!isOnline}
               onClick={() => history.push(ROUTES.LOGIN)}
             >
               <Typography

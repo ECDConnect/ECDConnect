@@ -6,5 +6,6 @@ query GetJourneyTimeline($userId: UUID!) {
     iconName
     type
     visitId
+    secondaryText
   }
 }

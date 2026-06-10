@@ -47,6 +47,7 @@ export const WelcomeRegistration: React.FC<WelcomeRegistrationProps> = ({
     problem,
     certificates,
     otherDetail,
+    eCaresStatus,
   } = watch();
 
   const [hasStarted, setHasStarted] = useState(false);
@@ -169,6 +170,7 @@ export const WelcomeRegistration: React.FC<WelcomeRegistrationProps> = ({
           onNext={() => goToStep(RegistrationSteps.challenges)}
           setValue={setValue}
           initialCertificates={certificates ?? []}
+          initialECaresStatus={eCaresStatus}
         />
       </Step>
 
@@ -182,6 +184,7 @@ export const WelcomeRegistration: React.FC<WelcomeRegistrationProps> = ({
               certificates,
               registration,
               otherDetail,
+              eCaresStatus,
             })
           }
           setValue={setValue}

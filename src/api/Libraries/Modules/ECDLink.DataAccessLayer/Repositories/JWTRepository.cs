@@ -49,10 +49,19 @@ namespace ECDLink.PostgresTenancy.Repository
         public virtual JWTUserTokensEntity GetByUserId(Guid id)
         {
             return entities
-                    .Where(e => e.UserId == id)
+                    .Where(e => e.UserId == id && e.RevokedAt == null)
                     .Where(g => g.TenantId == _tenantId)
                     .OrderByDescending(x => x.InsertedDate)
                     .FirstOrDefault();
+        }
+
+        public virtual IList<JWTUserTokensEntity> GetAllActiveByUserId(Guid id)
+        {
+            return entities
+                    .Where(e => e.UserId == id && e.RevokedAt == null)
+                    .Where(g => g.TenantId == _tenantId)
+                    .OrderByDescending(x => x.LastSeenAt)
+                    .ToList();
         }
 
         public virtual JWTUserTokensEntity GetByKey(string key)
@@ -60,7 +69,6 @@ namespace ECDLink.PostgresTenancy.Repository
             return entities
                     .Where(e => string.Equals(e.TokenKey, key))
                     .Where(g => g.TenantId == _tenantId)
-                    .OrderByDescending(x => x.InsertedDate)
                     .FirstOrDefault();
         }
 
@@ -69,7 +77,6 @@ namespace ECDLink.PostgresTenancy.Repository
             return entities
                     .Where(e => string.Equals(e.Token, token))
                     .Where(g => g.TenantId == _tenantId)
-                    .OrderByDescending(x => x.InsertedDate)
                     .FirstOrDefault();
         }
 
@@ -84,25 +91,45 @@ namespace ECDLink.PostgresTenancy.Repository
             return entity;
         }
 
+        public void UpdateLastSeenByToken(string token)
+        {
+            if (string.IsNullOrWhiteSpace(token)) return;
+
+            _context.Database.ExecuteSqlInterpolated(
+                $"UPDATE \"JWTUserTokens\" SET \"LastSeenAt\" = {DateTime.UtcNow} WHERE \"Token\" = {token} AND \"TenantId\" = {_tenantId}");
+        }
+
+        public bool Revoke(string tokenKey)
+        {
+            if (string.IsNullOrWhiteSpace(tokenKey)) return false;
+
+            _context.Database.ExecuteSqlInterpolated(
+                $"UPDATE \"JWTUserTokens\" SET \"RevokedAt\" = {DateTime.UtcNow} WHERE \"TokenKey\" = {tokenKey} AND \"TenantId\" = {_tenantId}");
+
+            return true;
+        }
+
         public void Delete(string key)
         {
             if (key == null) throw new ArgumentNullException("entity");
-            JWTUserTokensEntity entity = entities.Where(x => x.TokenKey.Equals(key)).Where(g => g.TenantId == _tenantId).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
-            entities.Remove(entity);
-            _context.SaveChanges();
-
+            var entity = entities
+                .Where(x => x.TokenKey.Equals(key))
+                .Where(g => g.TenantId == _tenantId)
+                .FirstOrDefault();
+            if (entity != null)
+            {
+                entities.Remove(entity);
+                _context.SaveChanges();
+            }
         }
 
         public bool DeleteAllTokensById(Guid id)
         {
-            //if (id == null) throw new ArgumentNullException("id");
-
-            List<JWTUserTokensEntity> tokens = entities.Where(
-                x => x.UserId == id
-                && x.TenantId == _tenantId)
+            var tokens = entities
+                .Where(x => x.UserId == id && x.TenantId == _tenantId)
                 .AsNoTracking()
                 .ToList();
-            
+
             if (tokens?.Any() ?? false)
             {
                 entities.RemoveRange(tokens);
