@@ -266,7 +266,16 @@ export const PublishedFormStep: React.FC<PublishedFormStepProps> = ({
 
   return (
     <div>
-      <Typography className="mt-3 mb-4" type="h3" text={stepData?.name} />
+      {/* TODO - remove hardcoded step name once backend is updated to send correct name for this step */}
+      {stepData?.name === 'Calculate capacity for each classroom' ? (
+        <Typography
+          className="mt-3 mb-4"
+          type="h3"
+          text={'Calculate classroom capacity'}
+        />
+      ) : (
+        <Typography className="mt-3 mb-4" type="h3" text={stepData?.name} />
+      )}
       {stepData?.description && (
         <Alert type="info" title={stepData.description} className="mb-4" />
       )}

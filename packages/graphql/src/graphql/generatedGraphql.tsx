@@ -4083,6 +4083,7 @@ export type JourneyTimeline = {
   dateValue?: Maybe<Scalars['DateTime']>;
   iconName?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
+  secondaryText?: Maybe<Scalars['String']>;
   type?: Maybe<Scalars['String']>;
   visitId?: Maybe<Scalars['UUID']>;
 };

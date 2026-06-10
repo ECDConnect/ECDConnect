@@ -368,10 +368,10 @@ export const CompletePublishedForm: React.FC<CompletePublishedFormProps> = ({
                     }}
                     className="mt-2 w-11/12"
                     size="normal"
-                    color="errorMain"
+                    color="quatenary"
                     type="outlined"
                     text="Remove classroom"
-                    textColor="errorMain"
+                    textColor="quatenary"
                     icon="TrashIcon"
                   />
                 )}
