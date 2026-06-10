@@ -3219,6 +3219,7 @@ export type EcdRegistration = {
   __typename?: 'EcdRegistration';
   challenges: ChallengeType;
   challengesOtherReason?: Maybe<Scalars['String']>;
+  eCaresStatus?: Maybe<SubsidyStatus>;
   hasBronzeCertificate: Scalars['Boolean'];
   hasGoldCertificate: Scalars['Boolean'];
   hasSilverCertificate: Scalars['Boolean'];
@@ -3242,6 +3243,7 @@ export type EcdRegistrationFilterInput = {
   and?: InputMaybe<Array<EcdRegistrationFilterInput>>;
   challenges?: InputMaybe<ChallengeTypeOperationFilterInput>;
   challengesOtherReason?: InputMaybe<StringOperationFilterInput>;
+  eCaresStatus?: InputMaybe<NullableOfSubsidyStatusOperationFilterInput>;
   hasBronzeCertificate?: InputMaybe<BooleanOperationFilterInput>;
   hasGoldCertificate?: InputMaybe<BooleanOperationFilterInput>;
   hasSilverCertificate?: InputMaybe<BooleanOperationFilterInput>;
@@ -3322,6 +3324,7 @@ export type EcdRegistrationHistorySortInput = {
 export type EcdRegistrationInput = {
   Challenges: ChallengeType;
   ChallengesOtherReason?: InputMaybe<Scalars['String']>;
+  ECaresStatus?: InputMaybe<SubsidyStatus>;
   HasBronzeCertificate: Scalars['Boolean'];
   HasGoldCertificate: Scalars['Boolean'];
   HasSilverCertificate: Scalars['Boolean'];
@@ -3342,6 +3345,7 @@ export type EcdRegistrationInput = {
 export type EcdRegistrationInputModelInput = {
   challenges?: InputMaybe<Scalars['String']>;
   challengesOtherReason?: InputMaybe<Scalars['String']>;
+  eCaresStatus?: InputMaybe<SubsidyStatus>;
   hasBronzeCertificate: Scalars['Boolean'];
   hasGoldCertificate: Scalars['Boolean'];
   hasSilverCertificate: Scalars['Boolean'];
@@ -3354,6 +3358,7 @@ export type EcdRegistrationInputModelInput = {
 export type EcdRegistrationSortInput = {
   challenges?: InputMaybe<SortEnumType>;
   challengesOtherReason?: InputMaybe<SortEnumType>;
+  eCaresStatus?: InputMaybe<SortEnumType>;
   hasBronzeCertificate?: InputMaybe<SortEnumType>;
   hasGoldCertificate?: InputMaybe<SortEnumType>;
   hasSilverCertificate?: InputMaybe<SortEnumType>;
@@ -3375,6 +3380,7 @@ export type EcdRegistrationSortInput = {
 export type EcdRegistrationUpdateInputModelInput = {
   challenges?: InputMaybe<Scalars['String']>;
   challengesOtherReason?: InputMaybe<Scalars['String']>;
+  eCaresStatus?: InputMaybe<SubsidyStatus>;
   hasBronzeCertificate?: InputMaybe<Scalars['Boolean']>;
   hasGoldCertificate?: InputMaybe<Scalars['Boolean']>;
   hasSilverCertificate?: InputMaybe<Scalars['Boolean']>;
@@ -7849,6 +7855,13 @@ export type NullableOfNonSubsidyRegistrationTypeOperationFilterInput = {
   in?: InputMaybe<Array<InputMaybe<NonSubsidyRegistrationType>>>;
   neq?: InputMaybe<NonSubsidyRegistrationType>;
   nin?: InputMaybe<Array<InputMaybe<NonSubsidyRegistrationType>>>;
+};
+
+export type NullableOfSubsidyStatusOperationFilterInput = {
+  eq?: InputMaybe<SubsidyStatus>;
+  in?: InputMaybe<Array<InputMaybe<SubsidyStatus>>>;
+  neq?: InputMaybe<SubsidyStatus>;
+  nin?: InputMaybe<Array<InputMaybe<SubsidyStatus>>>;
 };
 
 export type PqaRating = {

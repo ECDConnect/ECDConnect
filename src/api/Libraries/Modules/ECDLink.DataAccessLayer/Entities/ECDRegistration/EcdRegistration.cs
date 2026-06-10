@@ -40,6 +40,8 @@ public class EcdRegistration<TKey> : EntityBase<TKey>
 
     public string? InitialCertificates { get; set; }
 
+    public SubsidyStatus? ECaresStatus { get; set; }
+
     public virtual ICollection<EcdRegistrationHistory> History { get; set; }
         = new List<EcdRegistrationHistory>();
 }
