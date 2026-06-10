@@ -2,7 +2,7 @@ import { Colours } from '../../models';
 import { renderIcon } from '../../utils';
 import { AlertType, AlertVariant } from './alert.types';
 export const wrapper = `rounded-10 p-4 relative`;
-export const innerWrapper = 'flex flex-row ';
+export const innerWrapper = 'flex flex-row items-start justify-start';
 export const extendedContentWrapper = 'pl-3 mt-2 ';
 export const iconWrapper = 'flex-shrink-0';
 export const contentWrapper = (isOnlyTitle: boolean) =>

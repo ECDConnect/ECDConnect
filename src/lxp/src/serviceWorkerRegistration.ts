@@ -126,7 +126,7 @@ function checkValidServiceWorker(swUrl: string, config: Config) {
         response.status === 404 ||
         (contentType != null && contentType.indexOf('javascript') === -1)
       ) {
-        log('No service worker found, reloading page');
+        log('No servie worker found, reloading page');
         // No service worker found. Probably a different app. Reload the page.
         navigator.serviceWorker.ready.then((registration) => {
           registration.unregister().then(() => {

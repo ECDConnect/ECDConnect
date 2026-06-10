@@ -262,6 +262,10 @@ namespace ECDLink.DataAccessLayer.Context
         entity.Property(e => e.Challenges)
               .HasConversion<string>();
 
+        entity.Property(e => e.ECaresStatus)
+              .HasConversion<string>()
+              .IsRequired(false);
+
     });
 
             builder.Entity<EcdRegistrationHistory>(entity =>

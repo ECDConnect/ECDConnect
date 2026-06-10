@@ -50,16 +50,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Portal
             if (visit == null)
                 return false;
             
-            // update visit with certificate details
-            visit.CertificateRegNr = certificateRegNr;
-            dbContext.Visits.Update(visit);
-            
             // add new certificate entry
             dbContext.UserCertificate.Add(new UserCertificate
             {
                 Id = Guid.NewGuid(),
                 VisitId = visitId,
                 CertificateName = certificateName,
+                CertificateRegNr = certificateRegNr,
                 UserId = applicationUserId.Value,
                 UpdatedBy = applicationUserId.ToString(),
                 TenantId = TenantExecutionContext.Tenant.Id

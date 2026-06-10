@@ -222,7 +222,7 @@ export const CompletePublishedForm: React.FC<CompletePublishedFormProps> = ({
           )}
 
           <div className="mt-6 mb-8 space-y-4">
-            {multiInstances[currentStepData!.id]?.length &&
+            {!!multiInstances[currentStepData!.id]?.length &&
               multiInstances[currentStepData!.id].map((instance, idx) => {
                 const metrics = computeClassroomMetrics(instance.answers || []);
                 return (
@@ -272,12 +272,12 @@ export const CompletePublishedForm: React.FC<CompletePublishedFormProps> = ({
                 ...prev,
                 [currentStepData!.id]: [
                   ...(prev[currentStepData!.id] || []),
-                  { id: newId, answers: {} }, // ← will store question answers here
+                  { id: newId, answers: {}, isSaved: false },
                 ],
               }));
               setEditingInstanceId(newId);
             }}
-            className="mb-6 w-7/12"
+            className="mb-6"
           />
         </div>
       );
@@ -326,7 +326,20 @@ export const CompletePublishedForm: React.FC<CompletePublishedFormProps> = ({
 
               <div className="mt-auto mb-4">
                 <Button
-                  onClick={() => setEditingInstanceId(null)}
+                  onClick={() => {
+                    setMultiInstances((prev) => {
+                      const items = prev[currentStepData!.id] || [];
+                      return {
+                        ...prev,
+                        [currentStepData!.id]: items.map((item) =>
+                          item.id === editingInstanceId
+                            ? { ...item, isSaved: true }
+                            : item
+                        ),
+                      };
+                    });
+                    setEditingInstanceId(null);
+                  }}
                   disabled={
                     !effectiveStepData.formQuestions?.every(
                       (q) => !!q.answer?.trim() || !!q.answerId?.trim()
@@ -336,9 +349,32 @@ export const CompletePublishedForm: React.FC<CompletePublishedFormProps> = ({
                   size="normal"
                   color="quatenary"
                   type="filled"
-                  text="Save"
+                  text="Save classroom"
                   textColor="white"
                 />
+                {currentInstance?.isSaved && (
+                  <Button
+                    onClick={() => {
+                      setMultiInstances((prev) => {
+                        const items = prev[currentStepData!.id] || [];
+                        return {
+                          ...prev,
+                          [currentStepData!.id]: items.filter(
+                            (item) => item.id !== editingInstanceId
+                          ),
+                        };
+                      });
+                      setEditingInstanceId(null);
+                    }}
+                    className="mt-2 w-11/12"
+                    size="normal"
+                    color="quatenary"
+                    type="outlined"
+                    text="Remove classroom"
+                    textColor="quatenary"
+                    icon="TrashIcon"
+                  />
+                )}
               </div>
             </div>
           );
@@ -354,7 +390,7 @@ export const CompletePublishedForm: React.FC<CompletePublishedFormProps> = ({
           <Typography
             className="semi-bold mt-3"
             type="h2"
-            text={`About the ${assessmentFormData?.name} form`}
+            text={`About the ${assessmentFormData?.name}`}
           />
           <Typography
             className="semi-bold"
