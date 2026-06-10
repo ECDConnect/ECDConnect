@@ -12,6 +12,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public DateTime? DateValue { get; set; }
         public string Type { get; set; }
         public Guid? VisitId { get; set; }
+        public string SecondaryText { get; set; }
     }
 
     public class AssessmentForm

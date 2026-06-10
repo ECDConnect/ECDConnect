@@ -98,16 +98,56 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     VisitId = x.Id
                 }));
 
+            var safetyAssessmentIds = safetyAssessments
+                .Where(x => x.ActualVisitDate.HasValue)
+                .Select(x => x.Id)
+                .ToList();
+
+            var safetyVisitData = await dbContext.VisitData
+                .AsNoTracking()
+                .Where(x => safetyAssessmentIds.Contains(x.VisitId) &&
+                            (x.VisitSection == "1" || x.VisitSection == "2" || x.VisitSection == "3"))
+                .Select(x => new { x.VisitId, x.QuestionAnswer })
+                .ToListAsync();
+
+            var visitDataLookup = safetyVisitData
+                .GroupBy(x => x.VisitId)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
             timeline.AddRange(safetyAssessments
                 .Where(x => x.ActualVisitDate.HasValue)
-                .Select(x => new JourneyTimeline
+                .SelectMany(x =>
                 {
-                    Name = "Health and safety check completed",
-                    DateCompleted = x.ActualVisitDate.Value.ToString("dd MMMM yyyy"),
-                    IconName = "CheckIcon",
-                    DateValue = x.ActualVisitDate.Value,
-                    Type = "Health and safety check",
-                    VisitId = x.Id
+                    var questions = visitDataLookup.ContainsKey(x.Id) ? visitDataLookup[x.Id] : null;
+                    var total = questions?.Count ?? 0;
+                    var met = questions?.Count(q => q.QuestionAnswer == "true") ?? 0;
+                    var hasFailures = total > 0 && met < total;
+
+                    var entries = new List<JourneyTimeline>();
+
+                    if (hasFailures)
+                    {
+                        entries.Add(new JourneyTimeline
+                        {
+                            Name = "Health and safety check",
+                            SecondaryText = $"{met}/{total} standards met",
+                            IconName = "ExclamationCircleIcon",
+                            DateValue = x.ActualVisitDate.Value,
+                            Type = "Health and safety check",
+                            VisitId = x.Id
+                        });
+                    }
+                    entries.Add(new JourneyTimeline
+                    {
+                        Name = "Health and safety check",
+                        DateCompleted = x.ActualVisitDate.Value.ToString("dd MMMM yyyy"),
+                        IconName = "CheckIcon",
+                        DateValue = x.ActualVisitDate.Value,
+                        Type = "Health and safety check",
+                        VisitId = x.Id
+                    });
+
+                    return entries;
                 }));
 
 

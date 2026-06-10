@@ -38,9 +38,17 @@ export const journeyTimelineSteps = ({
 
       steps.push({
         title: timelineItem?.name || '',
-        subTitle: timelineItem?.dateCompleted || '',
-        subTitleColor: 'textLight',
+        subTitle:
+          timelineItem?.secondaryText || timelineItem?.dateCompleted || '',
+        subTitleColor:
+          timelineItem?.iconName === 'ExclamationCircleIcon'
+            ? 'alertMain'
+            : 'textLight',
         completedStepIcon: timelineItem?.iconName || '',
+        color:
+          timelineItem?.iconName === 'ExclamationCircleIcon'
+            ? 'alertMain'
+            : undefined,
         type: 'completed',
         extraData: timelineItem?.dateCompleted || '',
         showActionButton: hasViewButton,
