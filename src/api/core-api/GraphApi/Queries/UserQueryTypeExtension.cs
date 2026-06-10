@@ -213,10 +213,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             if (adminFilter is not null)
             {
+                var isActiveFilter = pagingInput?.FilterBy?
+                    .Where(f => f.FieldName.Equals("isActive", StringComparison.OrdinalIgnoreCase))
+                    .LastOrDefault();
+                bool? isActiveFilterValue = null;
+                if (isActiveFilter is not null && bool.TryParse(isActiveFilter.Value, out bool parsedIsActive))
+                    isActiveFilterValue = parsedIsActive;
+
                 var adminUsers = await userManager.GetUsersInRoleAsync(Roles.ADMINISTRATOR);
-                var adminUserIds = adminUsers
-                    .Where(u => u.TenantId == TenantExecutionContext.Tenant.Id)
-                    .Select(r => r.Id).ToList();
+                var tenantAdminUsers = adminUsers.Where(u => u.TenantId == TenantExecutionContext.Tenant.Id);
+
+                if (isActiveFilterValue.HasValue)
+                    tenantAdminUsers = tenantAdminUsers.Where(u => u.IsActive == isActiveFilterValue.Value);
+
+                var adminUserIds = tenantAdminUsers.Select(r => r.Id).ToList();
 
                 // Get where user.Id is in admin id list. Or not in adminId list if isAdminFilterValue == false
                 return usersQuery.Where(u => isAdminFilterValue ? adminUserIds.Contains(u.Id) : !adminUserIds.Contains(u.Id));

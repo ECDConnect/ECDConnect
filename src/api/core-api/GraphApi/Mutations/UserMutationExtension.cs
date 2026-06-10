@@ -517,16 +517,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                 if (updateResult.Succeeded)
                 {
-                    // Remove any roles
+                    // Remove practitioner/coach roles but preserve administrator role so archived admins remain queryable
                     var roles = userManager.GetRolesAsync(user).Result;
                     foreach (var role in roles)
                     {
+                        if (role.Equals(Roles.ADMINISTRATOR, StringComparison.OrdinalIgnoreCase) ||
+                            role.Equals(Roles.SUPER_ADMINISTRATOR, StringComparison.OrdinalIgnoreCase))
+                            continue;
+
                         _logger.LogInformation("Roles: Remove {0} from user {1} by {2} [UserMutationExtension.BulkDeleteUser]", role, user.Id, currentUserId);
-                        var result = userManager.RemoveFromRoleAsync(user, role).Result;
+                        await userManager.RemoveFromRoleAsync(user, role);
                     }
 
                     // Delete Practitioners
-                    dbContext.Database.ExecuteSqlRaw(
+                    await dbContext.Database.ExecuteSqlRawAsync(
                     $@"
                         UPDATE ""Practitioner"" SET ""IsActive""=false WHERE ""UserId""='{user.Id}'::uuid;
                     "
@@ -551,7 +555,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public bool BulkReactivateUsers(
+        public async Task<bool> BulkReactivateUsers(
             [Service] IHttpContextAccessor httpContextAccessor,
             [Service] ILogger<UserMutationExtension> _logger,
             IGenericRepositoryFactory repoFactory,
@@ -559,9 +563,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             List<Guid> userIds)
         {
             if (userIds == null)
-            {
                 throw new ArgumentNullException(nameof(userIds));
-            }
 
             var currentUserId = httpContextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: currentUserId);
@@ -571,37 +573,28 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             foreach (var user in users)
             {
-                // Reactivate user record
                 user.LockoutEnabled = false;
                 user.LockoutEnd = DateTime.UtcNow;
                 user.IsActive = true;
 
-                userManager.UpdateAsync(user);
+                await userManager.UpdateAsync(user);
 
-                // Reset Roles
                 var practitioner = practitionerRepo.GetByUserId(user.Id);
-
                 if (practitioner != null)
                 {
-                    // If principal add to the principal role
                     if (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value)
-                    {
-                        userManager.AddToRoleAsync(user, Roles.PRINCIPAL);
-                    }
+                        await userManager.AddToRoleAsync(user, Roles.PRINCIPAL);
                     else
-                    {
-                        userManager.AddToRoleAsync(user, Roles.PRACTITIONER);
-                    }
+                        await userManager.AddToRoleAsync(user, Roles.PRACTITIONER);
                 }
 
                 var coach = coachRepo.GetByUserId(user.Id);
-
                 if (coach != null)
-                {
-                    userManager.AddToRoleAsync(user, Roles.COACH);
-                }
+                    await userManager.AddToRoleAsync(user, Roles.COACH);
 
-
+                // Users with no practitioner or coach profile are administrators — restore that role.
+                if (practitioner == null && coach == null)
+                    await userManager.AddToRoleAsync(user, Roles.ADMINISTRATOR);
             }
 
             return true;
