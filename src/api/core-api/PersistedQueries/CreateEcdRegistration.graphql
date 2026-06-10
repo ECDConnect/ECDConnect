@@ -9,5 +9,6 @@ mutation CreateEcdRegistration($input: EcdRegistrationInputModelInput) {
     hasSilverCertificate
     hasGoldCertificate
     problemDescription
+    eCaresStatus
   }
 }
