@@ -3,6 +3,7 @@ import axios from 'axios';
 import { RootState, ThunkApiType } from '../types';
 import { api } from '@/services/axios.helper';
 import { Config } from '@ecdlink/core';
+const version = process.env.REACT_APP_VERSION ?? '';
 
 export const upsertQueryErrors = createAsyncThunk<
   boolean,
@@ -22,6 +23,7 @@ export const upsertQueryErrors = createAsyncThunk<
   const errorsPayload = queryErrors.map((error) => ({
     details: JSON.stringify(error),
     eventDate: new Date(error.eventDate).toISOString(),
+    appVersion: version,
   }));
 
   try {
