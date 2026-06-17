@@ -1,5 +1,4 @@
 import { BannerWrapper, Button, Typography, renderIcon } from '@ecdlink/ui';
-import { useTheme } from '@ecdlink/core';
 import { ExclamationCircleIcon } from '@heroicons/react/solid';
 
 const currentVersion: string =
