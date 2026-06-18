@@ -35,8 +35,6 @@ if (process.env.NODE_ENV === 'development') {
   stopReportingRuntimeErrors();
 }
 
-const version = process.env.REACT_APP_VERSION ?? '';
-
 const App: React.FC = () => {
   const tenant = useTenant();
   const { theme } = useTheme();
@@ -332,9 +330,6 @@ const App: React.FC = () => {
         <title>{getTitle()}</title>
       </Helmet>
       {updateRequired ? <UpdateRequired /> : routerContent}
-      <p className="pointer-events-none fixed bottom-1 right-2 z-50 text-xs text-gray-500">
-        version {version}
-      </p>
     </IonApp>
   );
 
