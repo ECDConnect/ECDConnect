@@ -59,6 +59,7 @@ const classroomsSlice = createSlice({
         state.classroom = {
           ...state.classroom,
           siteAddress: action.payload,
+          synced: false,
         };
       }
     },
