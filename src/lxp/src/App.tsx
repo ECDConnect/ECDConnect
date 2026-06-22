@@ -30,6 +30,7 @@ import { useTenant } from './hooks/useTenant';
 import { Helmet } from 'react-helmet';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { FacebookProvider } from 'react-facebook';
+import { settingActions, settingSelectors } from './store/settings';
 
 if (process.env.NODE_ENV === 'development') {
   stopReportingRuntimeErrors();
@@ -46,8 +47,40 @@ const App: React.FC = () => {
   const { updateRequired } = useVersionCheck();
   const [freeMemory, setFreeMemory] = useState(0);
   const [errorMessage, setErrorMessage] = useState(false);
+  const [updateRegistration, setUpdateRegistration] =
+    useState<ServiceWorkerRegistration | null>(null);
+
+  // ---- Service worker update detection ----
+  useEffect(() => {
+    const handleSwUpdate = (event: Event) => {
+      const { registration } = (event as CustomEvent).detail;
+      setUpdateRegistration(registration);
+    };
+    window.addEventListener('sw-update', handleSwUpdate);
+    return () => window.removeEventListener('sw-update', handleSwUpdate);
+  }, []);
 
   const isSslEnabled = window.location.protocol === 'https:';
+  const applicationVersion = useSelector(
+    settingSelectors.getApplicationVersion
+  );
+  const currentBuildVersion: string =
+    process.env.REACT_APP_VERSION ?? require('../package.json').version;
+
+  // Latch at mount time so the UpdateRequired screen stays visible after we
+  // update the stored version (preventing a reload loop when user hits "Update now").
+  const [versionMismatch] = useState(() =>
+    Boolean(applicationVersion && applicationVersion !== currentBuildVersion)
+  );
+
+  // Update the stored version immediately so that after the user reloads via
+  // UpdateRequired the mismatch check starts clean.
+  useEffect(() => {
+    if (versionMismatch) {
+      dispatch(settingActions.setApplicationVersion(currentBuildVersion));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const getTitle = () => {
     const env = process.env.REACT_APP_RUNENVIRONMENT || '';
@@ -329,7 +362,12 @@ const App: React.FC = () => {
       <Helmet>
         <title>{getTitle()}</title>
       </Helmet>
-      {updateRequired ? <UpdateRequired /> : routerContent}
+
+      {updateRequired || updateRegistration || versionMismatch ? (
+        <UpdateRequired />
+      ) : (
+        routerContent
+      )}
     </IonApp>
   );
 
