@@ -369,10 +369,6 @@ const App: React.FC = () => {
     </IonReactRouter>
   );
 
-  console.log('updateRegistration', updateRegistration);
-  console.log('versionMismatch', versionMismatch);
-  console.log('updateRequired', updateRequired);
-
   const appShell = (
     <IonApp className="m-auto max-w-4xl bg-white">
       <Helmet>
