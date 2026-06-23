@@ -57,6 +57,18 @@ const App: React.FC = () => {
       setUpdateRegistration(registration);
     };
     window.addEventListener('sw-update', handleSwUpdate);
+
+    // Safety net: if the SW already installed and is waiting before this
+    // listener was attached (e.g. the sw-update event fired before mount),
+    // pick it up directly from the ready registration.
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.ready.then((registration) => {
+        if (registration.waiting) {
+          setUpdateRegistration(registration);
+        }
+      });
+    }
+
     return () => window.removeEventListener('sw-update', handleSwUpdate);
   }, []);
 
@@ -356,6 +368,10 @@ const App: React.FC = () => {
       </AppErrorHandler>
     </IonReactRouter>
   );
+
+  console.log('updateRegistration', updateRegistration);
+  console.log('versionMismatch', versionMismatch);
+  console.log('updateRequired', updateRequired);
 
   const appShell = (
     <IonApp className="m-auto max-w-4xl bg-white">
