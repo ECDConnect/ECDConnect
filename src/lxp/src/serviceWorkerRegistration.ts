@@ -75,6 +75,14 @@ function registerValidSW(swUrl: string, config: Config) {
     .register(swUrl)
     .then((registration) => {
       log('Registering service worker, registered');
+
+      // If a new SW already installed and is waiting (from a previous page load),
+      // fire onUpdate immediately instead of waiting for onupdatefound to re-fire.
+      if (registration.waiting && navigator.serviceWorker.controller) {
+        log('Found waiting service worker, triggering update immediately');
+        config.onUpdate?.(registration);
+      }
+
       registration.onupdatefound = () => {
         const installingWorker = registration.installing;
         if (installingWorker == null) {
