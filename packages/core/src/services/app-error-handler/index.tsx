@@ -8,6 +8,7 @@ export interface AppErrorHandlerProps {
   detailText?: string;
   buttonText?: string;
   buttonRoute?: string;
+  enabled?: boolean;
 }
 
 export const AppErrorHandler: React.FC<AppErrorHandlerProps> = (props) => {
@@ -96,6 +97,7 @@ export const AppErrorHandler: React.FC<AppErrorHandlerProps> = (props) => {
 
   useEffect(() => {
     //window.addEventListener('error', onError);
+    if (props.enabled === false) return;
     window.addEventListener('graphql-error', onGraphQLError, false);
     window.addEventListener('timeout-error', onServerTimeOut, false);
     return () => {
@@ -104,7 +106,7 @@ export const AppErrorHandler: React.FC<AppErrorHandlerProps> = (props) => {
       //window.removeEventListener('error', onError);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [props.enabled]);
 
   return <>{props.children}</>;
 };
