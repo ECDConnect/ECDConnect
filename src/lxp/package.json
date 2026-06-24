@@ -1,6 +1,6 @@
 {
   "name": "lxp",
-  "version": "1.0.8",
+  "version": "1.0.16",
   "private": true,
   "dependencies": {
     "@ecdlink/core": "^1.0.0",
@@ -10,10 +10,10 @@
     "express": "^4.22.1"
   },
   "scripts": {
-    "start": "craco start",
+    "start": "REACT_APP_VERSION=$npm_package_version craco start",
     "start:mocks": "REACT_APP_RUN_MOCKS='run_msw' craco start",
     "serve:azure": "npm install express compression && node server.js",
-    "build": "craco build",
+    "build": "REACT_APP_VERSION=$npm_package_version craco build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
