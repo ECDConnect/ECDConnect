@@ -14,5 +14,6 @@ namespace ECDLink.DataAccessLayer.Entities
         public Guid? UserId { get; set; }
         public string Details { get; set; } = string.Empty;
         public DateTime EventDate { get; set; }
+        public string AppVersion { get; set; } = string.Empty;
     }
 }
