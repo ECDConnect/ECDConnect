@@ -347,9 +347,11 @@ const App: React.FC = () => {
     };
   }, [dialog]);
 
+  const isProduction = process.env.NODE_ENV === 'production';
+
   const routerContent = (
     <IonReactRouter>
-      <AppErrorHandler>
+      <AppErrorHandler enabled={!isProduction}>
         <IonRouterOutlet>
           {user && user.isTempUser !== true ? (
             <InitialStoreSetup>
