@@ -1,7 +1,20 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useAppDispatch } from '@/store';
 import { saveHealthCertificateDetails } from '@/store/pqa/pqa.actions';
+import {
+  getSmartStartCourseConfig,
+  isEcdConnectCourse,
+  isSupportedCourseCertificate,
+} from '@/utils/certificate/certificate.constants';
+import {
+  formatCertificateDate,
+  generateCertificateId,
+  sanitizeCertificateFileName,
+  urlToBase64,
+} from '@/utils/certificate/certificate.utils';
+import { generateEcdConnectCourseCertificate } from '@/utils/certificate/generateEcdConnectCourseCertificate';
 import { generateHealthSafetyCertificate } from '@/utils/certificate/generateHealthAndSafetyCertificate';
+import { generateSmartStartCourseCertificate } from '@/utils/certificate/generateSmartStartCourseCertificate';
 import { BannerWrapper, Button, FormInput, Typography } from '@ecdlink/ui';
 import { useState } from 'react';
 import signatureFile from '@/assets/certificates/signatureFile.png';
@@ -10,10 +23,12 @@ import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
 
 export type PublishedFormCertificateProps = {
-  completedVisitId: string;
+  completedVisitId?: string;
   certificateName?: string;
   visitCompletedDate?: string;
   certificateRegNr?: string;
+  courseName?: string;
+  courseCompletedDate?: string;
   onBack: (value: boolean) => void;
 };
 
@@ -24,31 +39,39 @@ export const PublishedFormCertificate: React.FC<
   certificateName,
   visitCompletedDate,
   certificateRegNr,
+  courseName,
+  courseCompletedDate,
   onBack,
 }) => {
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const smartStartCourseConfig = courseName
+    ? getSmartStartCourseConfig(courseName)
+    : undefined;
+  const isEcdConnectCourseCertificate = Boolean(
+    courseName && isEcdConnectCourse(courseName)
+  );
+  const isSmartStartCourseCertificate = Boolean(smartStartCourseConfig);
+
+  const [pdfFieldName, setPdfFieldName] = useState(
+    certificateName || `${practitioner?.user?.firstName}`
+  );
 
   const saveAndDownload = async () => {
-    const certificateId =
-      certificateRegNr ||
-      `ECDC-HSC-${new Date().getFullYear()}-${
-        Math.floor(Math.random() * 90000) + 10000
-      }`;
-    const baseDate = new Date(visitCompletedDate || new Date());
-    const visitDateLong = baseDate.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-    });
-    const visitDateShort = baseDate
-      .toLocaleDateString('en-GB', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-      })
-      .replace(/\//g, '-');
+    if (isSmartStartCourseCertificate) {
+      await downloadSmartStartCourseCertificate();
+      return;
+    }
+
+    if (isEcdConnectCourseCertificate) {
+      await downloadEcdConnectCourseCertificate();
+      return;
+    }
+
+    const certificateId = generateCertificateId('HSC', certificateRegNr);
+    const { long: visitDateLong, short: visitDateShort } =
+      formatCertificateDate(visitCompletedDate);
 
     await appDispatch(
       saveHealthCertificateDetails({
@@ -59,53 +82,87 @@ export const PublishedFormCertificate: React.FC<
     )
       .unwrap()
       .then(() => {
-        downloadPDF(certificateId, visitDateLong, visitDateShort);
+        downloadHealthSafetyCertificate(
+          certificateId,
+          visitDateLong,
+          visitDateShort
+        );
       })
       .catch((error) => {
         console.error('Failed to save certificate name:', error);
       });
   };
 
-  const downloadPDF = (
+  const downloadSmartStartCourseCertificate = async () => {
+    const { long: completionDateLong, short: completionDateShort } =
+      formatCertificateDate(courseCompletedDate);
+
+    const pdf = await generateSmartStartCourseCertificate(
+      smartStartCourseConfig!.templateImage,
+      pdfFieldName,
+      practitioner?.user?.idNumber || '',
+      completionDateLong,
+      smartStartCourseConfig!.color,
+      smartStartCourseConfig!.fieldPositions
+    );
+
+    pdf.save(
+      `SmartStart_Course_${sanitizeCertificateFileName(
+        courseName!
+      )}_${sanitizeCertificateFileName(
+        pdfFieldName
+      )}_${completionDateShort}.pdf`
+    );
+    onBack(false);
+  };
+
+  const downloadEcdConnectCourseCertificate = async () => {
+    const certificateId = generateCertificateId('T', certificateRegNr);
+    const { long: completionDateLong, short: completionDateShort } =
+      formatCertificateDate(courseCompletedDate);
+    const logoB64 = await urlToBase64(logoFile);
+    const sigB64 = await urlToBase64(signatureFile);
+
+    const pdf = generateEcdConnectCourseCertificate(
+      logoB64,
+      sigB64,
+      pdfFieldName,
+      courseName!,
+      completionDateLong,
+      certificateId
+    );
+
+    pdf.save(
+      `ECDConnect_Course_${sanitizeCertificateFileName(
+        courseName!
+      )}_${sanitizeCertificateFileName(
+        pdfFieldName
+      )}_${completionDateShort}.pdf`
+    );
+    onBack(false);
+  };
+
+  const downloadHealthSafetyCertificate = async (
     certificateId: string,
     visitDateLong: string,
     visitDateShort: string
   ) => {
-    // Convert a URL to base64
-    async function urlToBase64(url: string): Promise<string> {
-      const response = await fetch(url);
-      const blob = await response.blob();
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-    }
+    const logoB64 = await urlToBase64(logoFile);
+    const sigB64 = await urlToBase64(signatureFile);
 
-    const handleDownload = async () => {
-      const logoB64 = await urlToBase64(logoFile); // your logo File
-      const sigB64 = await urlToBase64(signatureFile); // your signature File
+    const pdf = generateHealthSafetyCertificate(
+      logoB64,
+      sigB64,
+      pdfFieldName,
+      visitDateLong,
+      certificateId
+    );
 
-      const pdf = generateHealthSafetyCertificate(
-        logoB64,
-        sigB64,
-        pdfFieldName,
-        visitDateLong,
-        certificateId
-      );
-
-      pdf.save(
-        `ECDConnect_HealthSafetyCheck_${pdfFieldName}_${visitDateShort}.pdf`
-      );
-    };
-    handleDownload();
+    pdf.save(
+      `ECDConnect_HealthSafetyCheck_${pdfFieldName}_${visitDateShort}.pdf`
+    );
     onBack(false);
   };
-
-  const [pdfFieldName, setPdfFieldName] = useState(
-    certificateName || `${practitioner?.user?.firstName}`
-  );
 
   return (
     <BannerWrapper
@@ -146,7 +203,11 @@ export const PublishedFormCertificate: React.FC<
         <div className="mt-auto">
           <Button
             onClick={saveAndDownload}
-            disabled={pdfFieldName === ''}
+            disabled={
+              pdfFieldName === '' ||
+              (Boolean(courseName) &&
+                !isSupportedCourseCertificate(courseName!))
+            }
             className="mt-auto w-full"
             size="normal"
             color="quatenary"

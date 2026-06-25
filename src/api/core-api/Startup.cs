@@ -11,6 +11,7 @@ using EcdLink.Api.CoreApi.Security.Managers;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using EcdLink.Api.CoreApi.Services;
 using EcdLink.Api.CoreApi.Services.Interfaces;
+using EcdLink.Api.CoreApi.Services.Notifications;
 using ECDLink.Api.CoreApi.Services;
 using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.AzureStorage;
@@ -150,6 +151,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IReassignmentService, ReassignmentService>();
             services.AddTransient<IAutomatedProcessService, AutomatedProcessService>();
             services.AddTransient<IPointsService, PointsEngineService>();
+            services.AddTransient<ITrainingNotificationService, TrainingNotificationService>();
             services.AddTransient<IChildService, ChildService>();
             services.AddTransient<DocumentManager>();
             services.AddTransient<MonthlyAttendanceReport>();
