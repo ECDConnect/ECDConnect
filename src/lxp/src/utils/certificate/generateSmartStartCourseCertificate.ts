@@ -3,7 +3,7 @@ import { hexToRgb, urlToBase64 } from './certificate.utils';
 import { SmartStartFieldPositions } from './smartstart-templates';
 
 const FIELD_MAX_WIDTH = 120;
-const FIELD_FONT_SIZE = 11;
+const FIELD_FONT_SIZE = 14;
 
 const drawCenteredField = (
   doc: jsPDF,
@@ -13,7 +13,7 @@ const drawCenteredField = (
   color: [number, number, number]
 ) => {
   doc.setTextColor(...color);
-  doc.setFont('Helvetica', 'normal');
+  doc.setFont('Quicksand', 'bold');
   doc.setFontSize(FIELD_FONT_SIZE);
 
   const lines = doc.splitTextToSize(text, FIELD_MAX_WIDTH);
