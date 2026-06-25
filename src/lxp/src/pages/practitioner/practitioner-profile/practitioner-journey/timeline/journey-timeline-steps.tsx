@@ -1,18 +1,24 @@
 import { JourneyTimeline } from '@ecdlink/graphql';
 import { StepItem } from '@ecdlink/ui';
+import { parseCourseNameFromTimelineItem } from '@/utils/certificate/certificate.constants';
 
 export interface JourneyTimelineStepsProps {
   timelineItems: JourneyTimeline[];
   isLoading?: boolean;
   onView?: (visitId: string) => void;
+  onCertificate?: (courseName: string, completedDate: string) => void;
   tenantName: string;
   startDate: string;
 }
+
+const isCourseTimelineItem = (type?: string | null) =>
+  type?.toLowerCase() === 'course';
 
 export const journeyTimelineSteps = ({
   timelineItems,
   isLoading = false,
   onView,
+  onCertificate,
   tenantName,
   startDate,
 }: JourneyTimelineStepsProps): StepItem[] => {
@@ -34,7 +40,10 @@ export const journeyTimelineSteps = ({
   if (timelineItems?.length) {
     timelineItems.forEach((timelineItem) => {
       const visitId = timelineItem?.visitId;
+      const isCourse = isCourseTimelineItem(timelineItem?.type);
       const hasViewButton = Boolean(visitId && onView);
+      const hasCertificateButton = isCourse && Boolean(onCertificate);
+      const showActionButton = hasViewButton || hasCertificateButton;
 
       steps.push({
         title: timelineItem?.name || '',
@@ -51,13 +60,19 @@ export const journeyTimelineSteps = ({
             : undefined,
         type: 'completed',
         extraData: timelineItem?.dateCompleted || '',
-        showActionButton: hasViewButton,
-        actionButtonText: 'View',
+        showActionButton,
+        actionButtonText: isCourse ? 'Certificate' : 'View',
         actionButtonTextColor: 'secondary',
         actionButtonIsLoading: isLoading,
         actionButtonColor: 'secondaryAccent2',
-        actionButtonOnClick: hasViewButton
-          ? () => onView?.(visitId!)
+        actionButtonOnClick: showActionButton
+          ? () =>
+              isCourse
+                ? onCertificate?.(
+                    parseCourseNameFromTimelineItem(timelineItem?.name || ''),
+                    timelineItem?.dateCompleted || ''
+                  )
+                : onView?.(visitId!)
           : undefined,
       });
     });
