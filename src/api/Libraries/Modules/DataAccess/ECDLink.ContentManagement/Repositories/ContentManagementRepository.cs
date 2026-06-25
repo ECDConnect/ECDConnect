@@ -1299,10 +1299,14 @@ namespace ECDLink.ContentManagement.Repositories
                           && (cv.TenantId == currentTenant || cv.TenantId == null)
                           && cv.Content.IsActive
                           && cv.LocaleId == localeId)
-                .Select(cv => ValueTuple.Create(
-                    cv.ContentId.ToString(),
-                    cv.ContentTypeField.FieldName,
-                    cv.Value ?? ""))
+                .Select(cv => new
+                {
+                    ThemeDayId = cv.ContentId.ToString(),
+                    FieldName = cv.ContentTypeField.FieldName,
+                    ActivityId = cv.Value ?? ""
+                })
+                .ToList()
+                .Select(x => (x.ThemeDayId, x.FieldName, x.ActivityId))
                 .ToList();
 
             _memoryCache.Set(cacheKey, results, TimeSpan.FromMinutes(10));

@@ -55,6 +55,10 @@ namespace ECDLink.DataAccessLayer.Context
                     .WithMany(e => e.ContentValues)
                     .HasForeignKey(e => e.ContentId)
                     .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.ContentTypeField)
+                    .WithMany()
+                    .HasForeignKey(e => e.ContentTypeFieldId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
         }
     }
