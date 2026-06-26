@@ -22,14 +22,37 @@ namespace ECDLink.ContentManagement.Repositories
 
         public IQueryable<ContentType> GetAll()
         {
-            // Can probably inject Id and fields
             Guid tenantId = TenantExecutionContext.Tenant.Id;
-            return _context.ContentTypes.Where(e => e.IsActive == true && (e.TenantId == null || e.TenantId == tenantId))
-            //   .Include(x => x.Content.Where(f => f.IsActive))
-                // .ThenInclude(x => x.ContentValues.Where(f => f.TenantId == tenantId))
-                //   .ThenInclude(x => x.ContentTypeField)
-              .Include(x => x.Fields.Where(f => f.IsActive))
-                .ThenInclude(x => x.FieldType);
+            return _context.ContentTypes
+                .Where(e => e.IsActive == true && (e.TenantId == null || e.TenantId == tenantId))
+                .Include(x => x.Fields.Where(f => f.IsActive))
+                    .ThenInclude(x => x.FieldType)
+                .AsNoTracking();
+        }
+
+        public IQueryable<ContentType> GetAllWithContent(int[] contentTypeIds = null)
+        {
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
+
+            var query = _context.ContentTypes
+                .Where(ct => ct.IsActive && (ct.TenantId == null || ct.TenantId == tenantId));
+
+            if (contentTypeIds != null && contentTypeIds.Length > 0)
+            {
+                query = query.Where(ct => contentTypeIds.Contains(ct.Id));
+            }
+
+            return query
+                .Include(ct => ct.Content.Where(c => c.IsActive))
+                    .ThenInclude(c => c.ContentValues.Where(cv => cv.TenantId == tenantId || cv.TenantId == null))
+                    .ThenInclude(cv => cv.ContentTypeField)
+                .Include(ct => ct.Content.Where(c => c.IsActive))
+                    .ThenInclude(c => c.ContentValues.Where(cv => cv.TenantId == tenantId || cv.TenantId == null))
+                    .ThenInclude(cv => cv.Status)
+                .Include(ct => ct.Fields.Where(f => f.IsActive))
+                    .ThenInclude(f => f.FieldType)
+                .AsSplitQuery()
+                .AsNoTracking();
         }
 
         public Dictionary<int, List<Language>> GetAllLanguages(IEnumerable<int> contentTypes)
@@ -145,24 +168,7 @@ namespace ECDLink.ContentManagement.Repositories
             {
                 if (string.IsNullOrWhiteSpace(search))
                 {
-                    result = _context.ContentTypes
-                                .Include(ct => ct.Content
-                                    .Where(c => c.IsActive)
-                                    .Where(c => c.ContentValues.Any(cv => cv.TenantId == tenantId))
-                                )
-                                    .ThenInclude(c => c.ContentValues
-                                        .Where(cv => cv.TenantId == tenantId))
-                                    .ThenInclude(cv => cv.ContentTypeField)
-                                .Include(ct => ct.Fields.Where(f => f.IsActive))
-                                    .ThenInclude(f => f.FieldType)
-                                .Where(ct => 
-                                    (ct.TenantId == null || ct.TenantId == tenantId) &&
-                                    ct.IsActive &&
-                                    ct.Content.Any(c => 
-                                        c.ContentValues.Any(cv => cv.TenantId == tenantId))
-                                )
-                                .AsNoTracking()
-                                .AsQueryable();
+                    result = GetAllWithContent();
                 }
                 else
                 {
@@ -174,6 +180,13 @@ namespace ECDLink.ContentManagement.Repositories
                                     .ThenInclude(c => c.ContentValues
                                         .Where(cv => cv.TenantId == tenantId))
                                     .ThenInclude(cv => cv.ContentTypeField)
+                                .Include(ct => ct.Content
+                                    .Where(c => c.IsActive)
+                                    .Where(c => c.ContentValues.Any(cv => cv.TenantId == tenantId))
+                                )
+                                    .ThenInclude(c => c.ContentValues
+                                        .Where(cv => cv.TenantId == tenantId))
+                                    .ThenInclude(cv => cv.Status)
                                 .Include(ct => ct.Fields.Where(f => f.IsActive))
                                     .ThenInclude(f => f.FieldType)
                                 .Where(ct =>
@@ -185,6 +198,7 @@ namespace ECDLink.ContentManagement.Repositories
                                         c.ContentValues.Any(cv => cv.TenantId == tenantId))
                                     
                                 )
+                                .AsSplitQuery()
                                 .AsNoTracking()
                                 .AsQueryable();
                 }
