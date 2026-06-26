@@ -55,7 +55,7 @@ export default function ApplicationAdmins() {
 
   // TODO: add pagination
   const [selectedPage, setSelectedPage] = useState<number>(1);
-  const [selectedPageSize, setSelectedPageSize] = useState<number>(null);
+  const [selectedPageSize, setSelectedPageSize] = useState<number>(100);
   const [types, setTypes] = useState<SearchDropDownOption<string>[]>([]);
 
   const [filterDateAdded, setFilterDateAdded] = useState(false);

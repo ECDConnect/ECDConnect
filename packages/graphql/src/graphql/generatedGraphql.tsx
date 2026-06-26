@@ -12325,7 +12325,6 @@ export type QueryUserSyncStatusArgs = {
 };
 
 export type QueryUsersArgs = {
-  order?: InputMaybe<Array<ApplicationUserSortInput>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
   search?: InputMaybe<Scalars['String']>;
 };
