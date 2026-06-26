@@ -1,4 +1,5 @@
 using ECDLink.DataAccessLayer.Context;
+using ECDLink.EGraphQL.DataLoaders;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -46,6 +47,7 @@ namespace ECDLink.EGraphQL
 
             var builder = services
               .AddGraphQLServer(maxAllowedRequestSize: maxRequestSize)
+              .AddDataLoader<UserRolesGroupedDataLoader>()
               .AddErrorFilter<Diagnostic.ErrorFilter>(services => new Diagnostic.ErrorFilter(services))
               .AddDiagnosticEventListener<Diagnostic.AppServerDiagnosticEventListener>(services => new Diagnostic.AppServerDiagnosticEventListener(services))
               .AddDiagnosticEventListener<Diagnostic.AppExecutionDiagnosticEventListener>(services => new Diagnostic.AppExecutionDiagnosticEventListener(services))

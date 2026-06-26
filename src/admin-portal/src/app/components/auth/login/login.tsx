@@ -16,6 +16,7 @@ import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
+import ROUTES from '../../../routes/app.routes-constants';
 import logo from '../../../../assets/Logo-ECDConnect.svg';
 import { ArrowRightIcon } from '@heroicons/react/solid';
 
@@ -52,7 +53,7 @@ export default function Login() {
 
       if (isAuthenticated) {
         setIsLoading(false);
-        history.push('/dashboard');
+        history.push(ROUTES.USERS.ALL_ROLES);
       } else {
         setIsLoading(false);
         setDisplayError(true);

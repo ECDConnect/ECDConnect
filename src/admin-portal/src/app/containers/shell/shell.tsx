@@ -70,9 +70,12 @@ export default function Shell() {
   const [navigation, setNavigation] = useState<INavigation[]>();
   const [activeNavigation, setActiveNavigation] = useState<INavigation>();
 
-  const { data: navigationData } = useQuery(GetAllNavigation, {
-    fetchPolicy: 'cache-and-network',
-  });
+  const { data: navigationData, loading: navigationLoading } = useQuery(
+    GetAllNavigation,
+    {
+      fetchPolicy: 'cache-and-network',
+    }
+  );
 
   const { data: notificationsData } = useQuery(GetAllNotifications, {
     variables: {
@@ -91,19 +94,35 @@ export default function Shell() {
 
   useEffect(() => {
     setAvatarColor(getAvatarColor());
-    if (activeNavigation === undefined) {
-      history.push(ROUTES.USERS.ALL_ROLES);
-    }
-  }, [activeNavigation, history, location.pathname]);
+  }, []);
 
   useEffect(() => {
-    if (navigation && location && location.pathname) {
-      const current = navigation.find((x) =>
-        location.pathname.includes(x.route)
+    if (navigation && location.pathname) {
+      const current = navigation.find((item) =>
+        location.pathname.includes(item.route)
       );
-      if (current) setActiveNavigation(current);
+      setActiveNavigation(current);
     }
-  }, [navigation, location, activeNavigation]);
+  }, [navigation, location.pathname]);
+
+  useEffect(() => {
+    if (navigationLoading || !navigation?.length) {
+      return;
+    }
+
+    const matchesNavigation = navigation.some((item) =>
+      location.pathname.includes(item.route)
+    );
+
+    const standaloneRoutes = [ROUTES.PROFILE, ROUTES.UPLOAD_USERS];
+    const matchesStandaloneRoute = standaloneRoutes.some((route) =>
+      location.pathname.startsWith(route)
+    );
+
+    if (!matchesNavigation && !matchesStandaloneRoute) {
+      history.push(ROUTES.USERS.ALL_ROLES);
+    }
+  }, [navigation, navigationLoading, location.pathname, history]);
 
   useEffect(() => {
     if (navigationData?.GetAllNavigation) {
