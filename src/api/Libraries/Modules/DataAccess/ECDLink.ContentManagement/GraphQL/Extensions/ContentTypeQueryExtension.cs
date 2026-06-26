@@ -33,11 +33,21 @@ namespace ECDLink.ContentManagement.GraphQL.Extensions
         {
             var tenantId = TenantExecutionContext.Tenant.Id;
             IQueryable<ContentType> request;
-            
-            if (!string.IsNullOrWhiteSpace(search) || searchInContent is not null)
+
+            var loadContent = showOnlyTypesWithIds is { Length: > 0 };
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
                 request = repository.GetAll(search, searchInContent ?? false);
+            }
+            else if (loadContent)
+            {
+                request = repository.GetAllWithContent(showOnlyTypesWithIds);
+            }
             else
+            {
                 request = repository.GetAll();
+            }
 
             if (showOnlyTypesWithName is not null && showOnlyTypesWithName.Length > 0)
                 request = request.Where(x => showOnlyTypesWithName.Contains(x.Name));
@@ -75,10 +85,20 @@ namespace ECDLink.ContentManagement.GraphQL.Extensions
             var tenantId = TenantExecutionContext.Tenant.Id;
             IQueryable<ContentType> request;
 
-            if (!string.IsNullOrWhiteSpace(search) || searchInContent is not null)
+            var loadContent = showOnlyTypesWithIds is { Length: > 0 };
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
                 request = repository.GetAll(search, searchInContent ?? false);
+            }
+            else if (loadContent)
+            {
+                request = repository.GetAllWithContent(showOnlyTypesWithIds);
+            }
             else
+            {
                 request = repository.GetAll();
+            }
 
             request = request.Where(c => c.IsActive == true);
 

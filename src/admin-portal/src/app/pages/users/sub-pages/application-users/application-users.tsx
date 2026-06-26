@@ -7,7 +7,6 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Status } from '../application-admins/applications-admins.types';
 import { format } from 'date-fns';
 
-import { filterByValue } from '../../../../utils/string-utils/string-utils';
 import { TableRefMethods } from '@ecdlink/ui/lib/components/table/types';
 import { columnColor } from '../../../../utils/app-usage/app-usage-utils';
 import { ColumnNames, UserSearch } from './application-user.types';
@@ -39,21 +38,51 @@ export default function ApplicationUsers() {
     SearchDropDownOption<string>[]
   >([sortByClientStatusOptions[0]]);
 
-  const queryVariables = useMemo(
-    () => ({
-      search: '',
+  const queryVariables = useMemo(() => {
+    const filterBy: {
+      fieldName: string;
+      filterType: string;
+      value: string;
+    }[] = [];
+
+    if (statusFilter?.length === 1) {
+      filterBy.push({
+        fieldName: 'isActive',
+        filterType: 'EQUALS',
+        value: statusFilter[0].value === Status?.ACTIVE ? 'true' : 'false',
+      });
+    }
+
+    if (startDate) {
+      filterBy.push({
+        fieldName: 'insertedDate',
+        filterType: 'GREATER_THAN_OR_EQUAL',
+        value: startDate.toISOString(),
+      });
+    }
+
+    if (endDate) {
+      filterBy.push({
+        fieldName: 'insertedDate',
+        filterType: 'LESS_THAN_OR_EQUAL',
+        value: endDate.toISOString(),
+      });
+    }
+
+    return {
+      search: searchValue,
       pagingInput: {
         pageNumber: 1,
-        pageSize: null,
+        pageSize: 100,
+        filterBy,
       },
       order: [
         {
           insertedDate: 'DESC',
         },
       ],
-    }),
-    []
-  );
+    };
+  }, [endDate, searchValue, startDate, statusFilter]);
 
   const { data, loading } = useQuery(UserList, {
     variables: queryVariables,
@@ -90,58 +119,10 @@ export default function ApplicationUsers() {
   };
 
   useEffect(() => {
-    if (data && data.users) {
-      const copyItems = data.users.map((item: UserDto) =>
-        mapUserTableItem(item)
-      );
-      const filteredByDateData = copyItems?.filter((d) => {
-        return (
-          new Date(d?.insertedDate).getTime() >=
-            new Date(startDate)?.getTime() &&
-          new Date(d?.insertedDate).getTime() <= new Date(endDate)?.getTime()
-        );
-      });
-
-      if (startDate && endDate) {
-        if (statusFilter?.length === 1) {
-          if (statusFilter.some((e) => e.value === Status?.ACTIVE)) {
-            const filterByStatusActive = filteredByDateData?.filter(
-              (item) => item?.isActive
-            );
-            setTableData(filterByStatusActive);
-            return;
-          } else {
-            const filterByStatusInactive = filteredByDateData?.filter(
-              (item) => !item?.isActive
-            );
-            setTableData(filterByStatusInactive);
-            return;
-          }
-        }
-        setTableData(filteredByDateData);
-        return;
-      }
-
-      if (statusFilter) {
-        if (statusFilter?.length === 1) {
-          if (statusFilter.some((e) => e.value === Status?.ACTIVE)) {
-            const filterByStatusActive = copyItems?.filter(
-              (item) => item?.isActive
-            );
-            setTableData(filterByStatusActive);
-            return;
-          } else {
-            const filterByStatusInactive = copyItems?.filter(
-              (item) => !item?.isActive
-            );
-            setTableData(filterByStatusInactive);
-            return;
-          }
-        }
-      }
-      setTableData(copyItems);
+    if (data?.users) {
+      setTableData(data.users.map((item: UserDto) => mapUserTableItem(item)));
     }
-  }, [data, endDate, startDate, statusFilter]);
+  }, [data]);
 
   const clearFilters = () => {
     setStatusFilter([]);
@@ -173,54 +154,52 @@ export default function ApplicationUsers() {
   ];
 
   const rows: Irow[] =
-    (!!searchValue ? filterByValue(tableData, searchValue) : tableData)?.map(
-      (item) => ({
-        ...item,
-        key: item?.id,
-        displayColumnIdPassportEmail:
-          item?.userName ?? item?.idNumber ?? item?.email ?? '-',
-        connectUsageComponent: item?.connectUsage
-          ? columnColor(item.connectUsage)
-          : '-',
-        insertedDateFormatted: item?.insertedDate
-          ? format(new Date(item?.insertedDate), 'dd/MM/yyyy')
-          : '-',
-        isActiveComponent: (
-          <p className={item?.isActive ? 'text-successMain' : 'text-errorMain'}>
-            {item?.isActive ? 'Active' : 'Inactive'}
-          </p>
-        ),
-        roleComponent: (
-          <div className="ml-0 flex cursor-pointer items-center">
-            {item?.roles?.map((item: any) => {
-              const chipColor = (role?: string) => {
-                switch (role) {
-                  case 'Administrator':
-                    return 'bg-secondary';
-                  case 'Practitioner':
-                    return 'bg-infoMain';
-                  case 'Principal':
-                    return 'bg-tertiary';
-                  default:
-                    return 'bg-primary';
+    tableData?.map((item) => ({
+      ...item,
+      key: item?.id,
+      displayColumnIdPassportEmail:
+        item?.userName ?? item?.idNumber ?? item?.email ?? '-',
+      connectUsageComponent: item?.connectUsage
+        ? columnColor(item.connectUsage)
+        : '-',
+      insertedDateFormatted: item?.insertedDate
+        ? format(new Date(item?.insertedDate), 'dd/MM/yyyy')
+        : '-',
+      isActiveComponent: (
+        <p className={item?.isActive ? 'text-successMain' : 'text-errorMain'}>
+          {item?.isActive ? 'Active' : 'Inactive'}
+        </p>
+      ),
+      roleComponent: (
+        <div className="ml-0 flex cursor-pointer items-center">
+          {item?.roles?.map((item: any) => {
+            const chipColor = (role?: string) => {
+              switch (role) {
+                case 'Administrator':
+                  return 'bg-secondary';
+                case 'Practitioner':
+                  return 'bg-infoMain';
+                case 'Principal':
+                  return 'bg-tertiary';
+                default:
+                  return 'bg-primary';
+              }
+            };
+            return (
+              <div
+                key={`role_` + item?.id}
+                className={
+                  `${chipColor(item?.tenantName)}` +
+                  ' m-1 rounded-full p-3 py-1 text-xs text-white'
                 }
-              };
-              return (
-                <div
-                  key={`role_` + item?.id}
-                  className={
-                    `${chipColor(item?.tenantName)}` +
-                    ' m-1 rounded-full p-3 py-1 text-xs text-white'
-                  }
-                >
-                  {item?.tenantName}
-                </div>
-              );
-            })}
-          </div>
-        ),
-      })
-    ) ?? [];
+              >
+                {item?.tenantName}
+              </div>
+            );
+          })}
+        </div>
+      ),
+    })) ?? [];
 
   return (
     <div className="bg-adminPortalBg h-full rounded-2xl p-4 ">

@@ -43,7 +43,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var user = userManager.FindByIdAsync(userId).Result;
             if (user != null)
             {
-                var roles = await (new ObjectTypes.ApplicationUserExtension()).GetRolesAsync(user, roleManager, userManager);
+                var roleNames = await userManager.GetRolesAsync(user);
+                var roles = roleManager.Roles.Where(role => roleNames.Contains(role.Name)).ToList();
                 if (roles.Any(x => x.SystemName.Contains(Roles.ADMINISTRATOR.ToUpper())))
                 {
                     return Roles.ADMINISTRATOR;
