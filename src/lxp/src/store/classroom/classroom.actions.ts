@@ -15,6 +15,7 @@ import { ClassroomGroupService } from '@services/ClassroomGroupService';
 import { ClassroomService } from '@services/ClassroomService';
 import { RootState, ThunkApiType } from '../types';
 import {
+  ChildProgressReportPeriodDto,
   ClassroomDto,
   ClassroomDto as SimpleClassroomDto,
 } from '@/models/classroom/classroom.dto';
@@ -238,8 +239,17 @@ export const upsertClassroom = createAsyncThunk<
   }
 );
 
+export type UpsertChildProgressReportPeriodsResult = {
+  // The authoritative set returned by the server (may carry different ids than we
+  // submitted when another device created the periods for this window first).
+  serverPeriods: ChildProgressReportPeriodDto[];
+  // The local periods we submitted, so the reducers can pair local -> server ids
+  // and repoint any reports/periods that lost.
+  submittedPeriods: { id: string; startDate: string; endDate: string }[];
+};
+
 export const upsertChildProgressReportPeriods = createAsyncThunk<
-  boolean,
+  UpsertChildProgressReportPeriodsResult,
   {}, // no payload needed
   { state: RootState }
 >(
@@ -248,6 +258,11 @@ export const upsertChildProgressReportPeriods = createAsyncThunk<
     const state = getState();
     const { userAuth } = state.auth;
     const { classroom } = state.classroomData;
+
+    const empty: UpsertChildProgressReportPeriodsResult = {
+      serverPeriods: [],
+      submittedPeriods: [],
+    };
 
     // Early returns + better guard clauses
     if (!userAuth?.auth_token) {
@@ -259,7 +274,7 @@ export const upsertChildProgressReportPeriods = createAsyncThunk<
     }
 
     if (!classroom.childProgressReportPeriods?.length) {
-      return true; // nothing to sync → consider success
+      return empty; // nothing to sync → consider success
     }
 
     const token = userAuth.auth_token;
@@ -269,22 +284,28 @@ export const upsertChildProgressReportPeriods = createAsyncThunk<
       .filter((period) => period.synced === false)
       .map((period) => ({
         id: period.id,
-        startDate: new Date(period.startDate),
-        endDate: new Date(period.endDate),
+        startDate: period.startDate,
+        endDate: period.endDate,
       }));
 
     // Nothing to update → early success
     if (periodsToSync.length === 0) {
-      return true;
+      return empty;
     }
 
     try {
-      await new ClassroomService(token).addChildProgressReportPeriods(
+      const serverPeriods = await new ClassroomService(
+        token
+      ).addChildProgressReportPeriods(
         classroom.id,
-        periodsToSync
+        periodsToSync.map((period) => ({
+          id: period.id,
+          startDate: new Date(period.startDate),
+          endDate: new Date(period.endDate),
+        }))
       );
 
-      return true;
+      return { serverPeriods, submittedPeriods: periodsToSync };
     } catch (err: any) {
       console.error('Failed to upsert progress report periods:', err);
 
@@ -606,7 +627,7 @@ export const moveChildToNewClass = createAsyncThunk<
 );
 
 export const addChildProgressReportPeriods = createAsyncThunk<
-  boolean,
+  ChildProgressReportPeriodDto[],
   {
     classroomId: string;
     childProgressReportPeriods: {
@@ -628,14 +649,17 @@ export const addChildProgressReportPeriods = createAsyncThunk<
 
     try {
       if (userAuth?.auth_token) {
-        await new ClassroomService(
+        // Returns the authoritative set of periods for the classroom/window. When the
+        // same user created periods on another device first, this is that other
+        // device's set (different ids), which we adopt in the fulfilled reducers.
+        const serverPeriods = await new ClassroomService(
           userAuth?.auth_token
         ).addChildProgressReportPeriods(
           classroomId,
           childProgressReportPeriods
         );
 
-        return true;
+        return serverPeriods;
       }
       return rejectWithValue('no access token, profile check required');
     } catch (err) {

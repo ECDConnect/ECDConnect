@@ -1,3 +1,7 @@
 mutation AddChildProgressReportPeriods($classroomId: UUID!, $childProgressReportPeriods: [ChildProgressReportPeriodModelInput]) {
-  addChildProgressReportPeriods(classroomId: $classroomId, childProgressReportPeriods: $childProgressReportPeriods)
+  addChildProgressReportPeriods(classroomId: $classroomId, childProgressReportPeriods: $childProgressReportPeriods) {
+    id
+    startDate
+    endDate
+  }
 }
