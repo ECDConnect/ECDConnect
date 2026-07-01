@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const http = require('http');
 const compression = require('compression');
+const { startListener } = require('./pgNotifyListener');
 
 const app = express();
 
@@ -65,4 +66,9 @@ console.log("Starting server on port:", port);
 
 server.listen(port, () => {
   console.log(`Server running on port ${port}`);
+  if (process.env.ENABLE_ERROR_NOTIFICATIONS === 'true') {
+    startListener();
+  } else {
+    console.log('pg-notify: disabled (not production)');
+  }
 });
