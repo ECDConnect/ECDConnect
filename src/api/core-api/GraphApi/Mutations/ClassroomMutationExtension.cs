@@ -466,7 +466,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         }
 
         [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Update)]
-        public bool AddChildProgressReportPeriods(
+        public List<ChildProgressReportPeriodModel> AddChildProgressReportPeriods(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] INotificationService notificationService,
@@ -482,18 +482,48 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             var reportPeriodRepo = repoFactory.CreateGenericRepository<ChildProgressReportPeriod>(userContext: uId);
+
+            // The same user, signed in on two devices, can each create a SET of reporting
+            // periods for the same classroom (each device generating its own GUIDs). To keep
+            // period creation idempotent, if the classroom already has active periods that
+            // overlap the submitted window, treat this as a duplicate creation: insert nothing
+            // and return the authoritative (already-created) set so the calling device can
+            // adopt those ids in its local state. A later year's periods use a non-overlapping
+            // window and are still inserted normally.
+            var minStart = childProgressReportPeriods.Min(x => x.StartDate);
+            var maxEnd = childProgressReportPeriods.Max(x => x.EndDate);
+
+            var existing = GetActivePeriodsInWindow(reportPeriodRepo, classroomId, minStart, maxEnd);
+            if (existing.Any())
+            {
+                return existing.Select(ToPeriodModel).ToList();
+            }
+
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             var practitioner = practitionerRepo.GetByUserId(uId);
             var permissions = practitioner.User.UserPermissions;
 
-            reportPeriodRepo.InsertMany(childProgressReportPeriods.Select(x => new ChildProgressReportPeriod
+            try
             {
-                ClassroomId = classroomId,
-                Id = x.Id,
-                StartDate = x.StartDate,
-                EndDate = x.EndDate,
-                UpdatedBy = uId.ToString()
-            }));
+                reportPeriodRepo.InsertMany(childProgressReportPeriods.Select(x => new ChildProgressReportPeriod
+                {
+                    ClassroomId = classroomId,
+                    Id = x.Id,
+                    StartDate = x.StartDate,
+                    EndDate = x.EndDate,
+                    UpdatedBy = uId.ToString()
+                }));
+            }
+            catch (DbUpdateException)
+            {
+                // Lost the race against a concurrent device (partial unique index
+                // UX_ChildProgressReportPeriod_Classroom_StartDate_Active fired). Re-query on a
+                // fresh context and return the winning set so this device adopts those ids.
+                var winner = GetActivePeriodsInWindow(
+                    repoFactory.CreateGenericRepository<ChildProgressReportPeriod>(userContext: uId),
+                    classroomId, minStart, maxEnd);
+                return winner.Select(ToPeriodModel).ToList();
+            }
 
             // create notifications
             if (practitioner.IsPrincipalOrAdmin() || (permissions != null && permissions.Where(x => x.Permission.Name == Constants.PermissionNames.CreateProgressReports).Count() != 0))
@@ -514,7 +544,31 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 }
             }
 
-            return true;
+            return childProgressReportPeriods;
+        }
+
+        private static List<ChildProgressReportPeriod> GetActivePeriodsInWindow(
+            IGenericRepository<ChildProgressReportPeriod, Guid> reportPeriodRepo,
+            Guid classroomId,
+            DateTime minStart,
+            DateTime maxEnd)
+        {
+            return reportPeriodRepo.GetAll()
+                .Where(p => p.ClassroomId == classroomId
+                         && p.IsActive
+                         && p.StartDate <= maxEnd
+                         && p.EndDate >= minStart)
+                .ToList();
+        }
+
+        private static ChildProgressReportPeriodModel ToPeriodModel(ChildProgressReportPeriod period)
+        {
+            return new ChildProgressReportPeriodModel
+            {
+                Id = period.Id,
+                StartDate = period.StartDate,
+                EndDate = period.EndDate,
+            };
         }
 
         [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Update)]
