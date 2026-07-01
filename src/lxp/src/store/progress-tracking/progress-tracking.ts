@@ -12,6 +12,75 @@ import {
 import { ProgressTrackingState } from './progress-tracking.types';
 import { newGuid } from '@/utils/common/uuid.utils';
 import { ProgressSkillValues } from '@/enums/ProgressSkillValues';
+import {
+  addChildProgressReportPeriods,
+  upsertChildProgressReportPeriods,
+} from '../classroom/classroom.actions';
+
+type PeriodPairing = { id: string; startDate: string | Date };
+
+/**
+ * When reporting periods are created/synced, the server returns the authoritative
+ * set. If another device created the periods first, the ids we submitted differ from
+ * the winning ids. Any reports already authored locally against our (now defunct)
+ * period ids must be repointed to the winning ids and re-synced — otherwise they
+ * would sync against a period that does not exist server-side and would escape the
+ * report-level duplicate guard (which keys on childProgressReportPeriodId).
+ *
+ * Mutates the given reports in place (Immer draft); no-op when nothing changed.
+ */
+function remapReportsToServerPeriods<
+  R extends { childProgressReportPeriodId: string; synced?: boolean }
+>(
+  reports: R[],
+  localPeriods: PeriodPairing[],
+  serverPeriods: PeriodPairing[]
+): void {
+  if (!serverPeriods?.length || !localPeriods?.length) {
+    return;
+  }
+
+  const startKey = (d: string | Date) => new Date(d).toISOString().slice(0, 10);
+
+  // Primary pairing: same start date. Fallback: positional pairing once both sets
+  // are ordered by start date (used when start dates differ slightly between devices
+  // but the term sets line up one-to-one).
+  const serverByStart = new Map<string, string>();
+  serverPeriods.forEach((p) => serverByStart.set(startKey(p.startDate), p.id));
+
+  const sortByStart = (list: PeriodPairing[]) =>
+    [...list].sort(
+      (a, b) =>
+        new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+    );
+  const sortedLocal = sortByStart(localPeriods);
+  const sortedServer = sortByStart(serverPeriods);
+  const sameCount = sortedLocal.length === sortedServer.length;
+
+  const idMap = new Map<string, string>();
+  localPeriods.forEach((local) => {
+    let serverId = serverByStart.get(startKey(local.startDate));
+    if (!serverId && sameCount) {
+      const idx = sortedLocal.findIndex((x) => x.id === local.id);
+      serverId = sortedServer[idx]?.id;
+    }
+    if (serverId && serverId !== local.id) {
+      idMap.set(local.id, serverId);
+    }
+  });
+
+  if (idMap.size === 0) {
+    return;
+  }
+
+  reports.forEach((report) => {
+    const newPeriodId = idMap.get(report.childProgressReportPeriodId);
+    if (newPeriodId) {
+      report.childProgressReportPeriodId = newPeriodId;
+      report.synced = false;
+    }
+  });
+}
 
 const initialState: ProgressTrackingState = {
   currentLocale: 'en-za',
@@ -564,6 +633,31 @@ const progressTrackingSlice = createSlice({
         synced: true,
       }));
     });
+    // Online path: periods created interactively. The arg carries the submitted
+    // (local) periods; the payload carries the authoritative server set.
+    builder.addCase(
+      addChildProgressReportPeriods.fulfilled,
+      (state, action) => {
+        remapReportsToServerPeriods(
+          state.childProgressReports,
+          action.meta.arg.childProgressReportPeriods,
+          action.payload
+        );
+      }
+    );
+    // Offline-sync path: the thunk arg is empty, so it returns both the submitted
+    // and the authoritative server periods for the same reconciliation.
+    builder.addCase(
+      upsertChildProgressReportPeriods.fulfilled,
+      (state, action) => {
+        const { serverPeriods, submittedPeriods } = action.payload;
+        remapReportsToServerPeriods(
+          state.childProgressReports,
+          submittedPeriods,
+          serverPeriods
+        );
+      }
+    );
   },
 });
 

@@ -1,7 +1,10 @@
 import { Config } from '@ecdlink/core';
 import { ClassroomInput } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
-import { ClassroomDto } from '@/models/classroom/classroom.dto';
+import {
+  ChildProgressReportPeriodDto,
+  ClassroomDto,
+} from '@/models/classroom/classroom.dto';
 
 class ClassroomService {
   _accessToken: string;
@@ -113,10 +116,12 @@ class ClassroomService {
       startDate: Date;
       endDate: Date;
     }[]
-  ): Promise<boolean> {
+  ): Promise<ChildProgressReportPeriodDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { addChildPregressReportPeriods: boolean };
+      data: {
+        addChildProgressReportPeriods: ChildProgressReportPeriodDto[] | null;
+      };
       errors?: {};
     }>(``, {
       id: 'AddChildProgressReportPeriods',
@@ -132,7 +137,10 @@ class ClassroomService {
       );
     }
 
-    return response.data.data.addChildPregressReportPeriods;
+    // The server is idempotent per classroom + reporting window: if these periods
+    // (or an overlapping set) already exist, it returns the authoritative set that
+    // won, so the caller can adopt those ids instead of its own local ones.
+    return response.data.data.addChildProgressReportPeriods ?? [];
   }
 }
 
