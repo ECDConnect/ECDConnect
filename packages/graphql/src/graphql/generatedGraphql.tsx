@@ -4789,7 +4789,9 @@ export type Mutation = {
   __typename?: 'Mutation';
   acceptRejectCommunityRequests?: Maybe<CommunityProfileModel>;
   addAbsenteeForPractitioner?: Maybe<Absentees>;
-  addChildProgressReportPeriods: Scalars['Boolean'];
+  addChildProgressReportPeriods?: Maybe<
+    Array<Maybe<ChildProgressReportPeriodModel>>
+  >;
   addCoachVisitData: Scalars['Boolean'];
   addCoachVisitInviteForPractitioner?: Maybe<Visit>;
   addFollowUpVisitForPractitioner?: Maybe<Visit>;
@@ -12325,6 +12327,7 @@ export type QueryUserSyncStatusArgs = {
 };
 
 export type QueryUsersArgs = {
+  order?: InputMaybe<Array<ApplicationUserSortInput>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
   search?: InputMaybe<Scalars['String']>;
 };
