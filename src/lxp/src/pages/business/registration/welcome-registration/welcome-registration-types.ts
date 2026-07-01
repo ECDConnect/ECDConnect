@@ -7,6 +7,7 @@ export interface WelcomeMessageModel {
   certificates?: string[];
   registration?: string;
   otherDetail?: string;
+  eCaresStatus?: string;
 }
 
 export const initialWelcomeMessageModel: WelcomeMessageModel = {
@@ -16,6 +17,7 @@ export const initialWelcomeMessageModel: WelcomeMessageModel = {
   certificates: undefined,
   registration: undefined,
   otherDetail: undefined,
+  eCaresStatus: undefined,
 };
 
 export const welcomeMessageSchema = Yup.object().shape({

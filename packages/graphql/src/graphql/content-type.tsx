@@ -1,5 +1,39 @@
 import { gql } from '@apollo/client';
 
+export const contentTypesSummary = gql`
+  query contentTypesSummary(
+    $search: String
+    $isVisiblePortal: Boolean
+    $contentTypeIdFilter: [Int!]
+    $contentTypeNameFilter: [String!]
+  ) {
+    contentTypes(
+      search: $search
+      isVisiblePortal: $isVisiblePortal
+      showOnlyTypesWithIds: $contentTypeIdFilter
+      showOnlyTypesWithName: $contentTypeNameFilter
+    ) {
+      id
+      name
+      description
+      isActive
+      fields {
+        fieldOrder
+        fieldName
+        fieldType {
+          name
+          dataType
+        }
+        dataLinkName
+        displayName
+        displayMainTable
+        displayPage
+        isRequired
+      }
+    }
+  }
+`;
+
 export const contentTypes = gql`
   query (
     $search: String

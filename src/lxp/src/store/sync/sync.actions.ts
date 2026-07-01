@@ -225,7 +225,12 @@ export const pullRemoteChanges = createAsyncThunk<
   ThunkApiType<RootState>
 >(
   'sync/pullRemoteChanges',
-  async ({ userId, isPrincipal, isCoach }, { dispatch, rejectWithValue }) => {
+  async (
+    { userId, isPrincipal, isCoach },
+    { dispatch, getState, rejectWithValue }
+  ) => {
+    if (!(getState() as RootState).settings.isOnline) return;
+
     try {
       const userSyncStatus = (await retryWithExponentialBackoff(
         () => dispatch(userThunkActions.getUserSyncStatus({})).unwrap(),
@@ -301,6 +306,22 @@ export const pullRemoteChanges = createAsyncThunk<
             ),
           ]);
         }
+      }
+
+      // Learners block (child class assignments)
+      if ((userSyncStatus as any).syncLearners) {
+        dispatch(
+          syncActions.setCurrentActionState({
+            title: 'Refreshing learner / class assignment data',
+            step: 2,
+            stepTotal: 5,
+          })
+        );
+        await retryWithExponentialBackoff(() =>
+          dispatch(
+            classroomsThunkActions.getClassroomGroups({ overrideCache: true })
+          ).unwrap()
+        );
       }
 
       // Other Dynamic Sections

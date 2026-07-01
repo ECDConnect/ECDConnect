@@ -15,6 +15,7 @@ interface OnlineStatusProviderProps {
   timeout?: number;
   enablePolling?: boolean;
   onConnectionRestored?: () => void;
+  onConnectionLost?: () => void;
 }
 
 export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
@@ -24,6 +25,7 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
   timeout = 15000,
   enablePolling = false,
   onConnectionRestored,
+  onConnectionLost,
 }) => {
   const [isOnline, setIsOnline] = useState<boolean>(() => navigator.onLine);
   const wasOnlineRef = useRef<boolean>(navigator.onLine);
@@ -47,11 +49,13 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
 
   useEffect(() => {
     if (isOnline && !wasOnlineRef.current) {
-      // We just came back online!
       onConnectionRestored?.();
     }
+    if (!isOnline && wasOnlineRef.current) {
+      onConnectionLost?.();
+    }
     wasOnlineRef.current = isOnline;
-  }, [isOnline, onConnectionRestored]);
+  }, [isOnline, onConnectionRestored, onConnectionLost]);
 
   const cleanup = () => {
     if (intervalIdRef.current) {

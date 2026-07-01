@@ -125,6 +125,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<Visit> Visits { get; set; }
         public DbSet<VisitData> VisitData { get; set; }
         public DbSet<VisitDataStatus> VisitDataStatus { get; set; }
+        public DbSet<UserCertificate> UserCertificate { get; set; }
 
         // Calendar
         public DbSet<CalendarEvent> CalendarEvents { get; set; }
@@ -260,6 +261,10 @@ namespace ECDLink.DataAccessLayer.Context
 
         entity.Property(e => e.Challenges)
               .HasConversion<string>();
+
+        entity.Property(e => e.ECaresStatus)
+              .HasConversion<string>()
+              .IsRequired(false);
 
     });
 

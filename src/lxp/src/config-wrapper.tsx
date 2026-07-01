@@ -9,6 +9,7 @@ import { OnlineStatusProvider } from './hooks/useOnlineStatus';
 import { persistor, store } from './store';
 import { TenantContextProvider, TenantThemeProvider } from './hooks/useTenant';
 import { syncThunkActions } from './store/sync';
+import { settingActions } from './store/settings';
 
 const ConfigWrapper: React.FC = () => {
   const { loading } = useConfig();
@@ -31,7 +32,16 @@ const ConfigWrapper: React.FC = () => {
   if (loader) {
     return <Loader />;
   } else {
-    const pollUrl = new URL(APIs.onlineCheck, Config.authApi).href;
+    let pollUrl = '';
+    try {
+      if (Config.authApi) {
+        pollUrl = new URL(APIs.onlineCheck, Config.authApi).href;
+      }
+    } catch {
+      // Config.authApi may be truthy but not a valid base URL (e.g. when
+      // the config hasn't fully loaded offline). Fall back to no poll URL.
+      pollUrl = '';
+    }
     return (
       <OnlineStatusProvider
         pollUrl={pollUrl}
@@ -39,11 +49,15 @@ const ConfigWrapper: React.FC = () => {
         timeout={10000}
         enablePolling={!isDevelopmentMode}
         onConnectionRestored={() => {
+          store.dispatch(settingActions.setIsOnline(true));
           store.dispatch(
             syncThunkActions.triggerBackgroundSync({
               includeOfflineSyncData: true,
             })
           );
+        }}
+        onConnectionLost={() => {
+          store.dispatch(settingActions.setIsOnline(false));
         }}
       >
         <Provider store={store}>

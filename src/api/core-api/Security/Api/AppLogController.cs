@@ -19,6 +19,7 @@ public class AppLogController : ControllerBase
     {
         public string Details { get; set; }
         public DateTime EventDate { get; set; }
+        public string AppVersion { get; set; }
     }
 
 
@@ -53,7 +54,8 @@ public class AppLogController : ControllerBase
                 UserId = _userId,
                 InsertedDate = DateTime.Now,
                 EventDate = l.EventDate,
-                Details = l.Details
+                Details = l.Details,
+                AppVersion = l.AppVersion
             }).ToList() ?? new List<AppLog>();
 
             _context.AppLog.AddRange(appLogs);

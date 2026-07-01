@@ -11,6 +11,7 @@ export type EcdRegistrationDto = {
   hasGoldCertificate: boolean;
   problemDescription: string;
   creationReason?: string;
+  eCaresStatus?: string;
 };
 
 export type EcdRegistrationHistoryDto = {

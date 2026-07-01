@@ -21,5 +21,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
 
         public string ProblemDescription { get; set; } = string.Empty;
 
+        public SubsidyStatus? ECaresStatus { get; set; }
     }
 }
