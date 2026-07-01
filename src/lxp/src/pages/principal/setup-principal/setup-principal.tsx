@@ -314,6 +314,7 @@ export const SetupPrincipal: React.FC = () => {
       await appDispatch(
         practitionerThunkActions.getPractitionerByUserId({
           userId: user?.id || '',
+          overrideCache: true,
         })
       );
       await appDispatch(

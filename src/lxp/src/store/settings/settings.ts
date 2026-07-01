@@ -15,6 +15,7 @@ const initialState: SettingsState = {
   settings: undefined,
   loginDate: formatISO(new Date()),
   lastCmsDataSync: format(new Date(), 'MM/dd/yyyy hh:mm aa'),
+  isOnline: true,
 };
 
 const settingSlice = createSlice({
@@ -41,6 +42,9 @@ const settingSlice = createSlice({
     },
     setLoginDate: (state) => {
       state.loginDate = formatISO(new Date());
+    },
+    setIsOnline: (state, action: PayloadAction<boolean>) => {
+      state.isOnline = action.payload;
     },
   },
   extraReducers: (builder) => {

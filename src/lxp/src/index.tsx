@@ -17,12 +17,9 @@ if (
 }
 
 const updateHandler = (registration: ServiceWorkerRegistration) => {
-  if (window.confirm('An update is available. Would you like to reload?')) {
-    if (registration.waiting) {
-      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-    }
-    window.location.reload();
-  }
+  window.dispatchEvent(
+    new CustomEvent('sw-update', { detail: { registration } })
+  );
 };
 
 // If you want your app to work offline and load faster, you can change

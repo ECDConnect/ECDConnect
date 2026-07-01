@@ -18,5 +18,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public bool? HasGoldCertificate { get; set; }
 
         public string? ProblemDescription { get; set; }
+        public SubsidyStatus? ECaresStatus { get; set; }
     }
 }

@@ -23,6 +23,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
@@ -38,6 +39,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
 
 
+        private const int DefaultPageSize = 100;
+        private const int MaxPageSize = 500;
+
         // TODO: Move paging code into a "Pagination" service
         // TODO: Builder pattern for query?
         [UseSorting]
@@ -46,6 +50,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] ApplicationUserManager userManager,
             [Service] IGenericRepositoryFactory repoFactory,
             [Service] IHttpContextAccessor httpContextAccessor,
+            [Service] AuthenticationDbContext dbContext,
+            CancellationToken cancellationToken,
             PagedQueryInput pagingInput = null,
             string search = null)
         {
@@ -59,16 +65,31 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 .Where(u => u.TenantId == tenantId && !u.UserName.StartsWith("External_Edit"))
                 .AsNoTracking();
 
+            usersQuery = await UserQueryRoleFilters.ExcludeUsersWithRoleAsync(
+                usersQuery,
+                dbContext,
+                tenantId,
+                Roles.CHILD,
+                cancellationToken);
 
-            usersQuery = await ExcludeChildren(userManager, usersQuery);
-            usersQuery = await GetAllAdminUsersForTenantAndExclude(userManager, userIsAdmin, usersQuery);
+            if (!userIsAdmin)
+            {
+                usersQuery = await UserQueryRoleFilters.ExcludeUsersWithRoleAsync(
+                    usersQuery,
+                    dbContext,
+                    tenantId,
+                    Roles.ADMINISTRATOR,
+                    cancellationToken);
+            }
+
             usersQuery = AddProvinceFilter(repoFactory, pagingInput, usersQuery);
-            usersQuery = await AddAdministratorFilter(userManager, pagingInput, usersQuery);
+            usersQuery = AddAdministratorFilter(dbContext, tenantId, pagingInput, usersQuery);
             usersQuery = PaginationHelper.AddFiltering(pagingInput?.FilterBy, usersQuery);
             usersQuery = AddDefaultUserSearch(search, usersQuery);
 
-            if (pagingInput is not null && pagingInput.PageSize is not null)
-                usersQuery = PaginationHelper.AddPaging(pagingInput.RowOffset, pagingInput.PageSize ?? 1, usersQuery);
+            var pageSize = Math.Min(pagingInput?.PageSize ?? DefaultPageSize, MaxPageSize);
+            var rowOffset = pagingInput?.RowOffset ?? 0;
+            usersQuery = PaginationHelper.AddPaging(rowOffset, pageSize, usersQuery);
 
             return usersQuery;
         }
@@ -84,31 +105,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return usersQuery;
         }
 
-        private static async Task<IQueryable<ApplicationUser>> ExcludeChildren(ApplicationUserManager userManager, IQueryable<ApplicationUser> usersQuery)
-        {
-            var children = await userManager.GetUsersInRoleAsync(Roles.CHILD);
-            var userIds = children
-                .Where(u => u.TenantId == TenantExecutionContext.Tenant.Id)
-                .Select(r => r.Id)
-                .ToList();
-            return usersQuery.Where(u => !userIds.Contains(u.Id));
-        }
-
-        private static async Task<IQueryable<ApplicationUser>> GetAllAdminUsersForTenantAndExclude(ApplicationUserManager userManager, bool userIsAdmin, IQueryable<ApplicationUser> usersQuery)
-        {
-            if (!userIsAdmin)
-            {
-                var adminUsers = await userManager.GetUsersInRoleAsync(Roles.ADMINISTRATOR);
-                var adminUserIds = adminUsers
-                    .Where(u => u.TenantId == TenantExecutionContext.Tenant.Id)
-                    .Select(r => r.Id)
-                    .ToList();
-
-                usersQuery = usersQuery.Where(u => !adminUserIds.Contains(u.Id));
-            }
-
-            return usersQuery;
-        }
 
         [Permission(PermissionGroups.PORTAL, GraphActionEnum.View)]
         // TODO: Move paging code into a "Pagination" service
@@ -117,6 +113,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] ApplicationUserManager userManager,
             [Service] IGenericRepositoryFactory repoFactory,
             [Service] IHttpContextAccessor httpContextAccessor,
+            [Service] AuthenticationDbContext dbContext,
+            CancellationToken cancellationToken,
             PagedQueryInput pagingInput = null,
             string search = null)
         {
@@ -126,18 +124,33 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId.ToString());
             var userIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
 
-            var usersQuery = userManager.Users
-                .Where(u => u.TenantId == tenantId)
+            var usersQuery = dbContext.Users
+                .Where(u => u.TenantId == tenantId && !u.UserName.StartsWith("External_Edit"))
                 .AsNoTracking();
 
-            usersQuery = await GetAllAdminUsersForTenantAndExclude(userManager, userIsAdmin, usersQuery);
+            usersQuery = await UserQueryRoleFilters.ExcludeUsersWithRoleAsync(
+                usersQuery,
+                dbContext,
+                tenantId,
+                Roles.CHILD,
+                cancellationToken);
+
+            if (!userIsAdmin)
+            {
+                usersQuery = await UserQueryRoleFilters.ExcludeUsersWithRoleAsync(
+                    usersQuery,
+                    dbContext,
+                    tenantId,
+                    Roles.ADMINISTRATOR,
+                    cancellationToken);
+            }
 
             usersQuery = AddProvinceFilter(repoFactory, pagingInput, usersQuery);
-            usersQuery = await AddAdministratorFilter(userManager, pagingInput, usersQuery);
+            usersQuery = AddAdministratorFilter(dbContext, tenantId, pagingInput, usersQuery);
             usersQuery = PaginationHelper.AddFiltering(pagingInput?.FilterBy, usersQuery);
             usersQuery = AddDefaultUserSearch(search, usersQuery);
 
-            return usersQuery.Count();
+            return await usersQuery.CountAsync(cancellationToken);
         }
 
         // Can this become generic?
@@ -199,30 +212,37 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         // TODO: add logic to comply with, Admins can see admins, but other users can't see admins
-        private async Task<IQueryable<ApplicationUser>> AddAdministratorFilter(
-            ApplicationUserManager userManager,
+        private static IQueryable<ApplicationUser> AddAdministratorFilter(
+            AuthenticationDbContext dbContext,
+            Guid tenantId,
             ECDLink.Abstractrions.GraphQL.Attributes.PagedQueryInput pagingInput,
             IQueryable<ApplicationUser> usersQuery)
         {
-            // Just get the last "Administrator" filter element, more than one doesn't make sense.
             var adminFilter = pagingInput?.FilterBy?
                 .Where(f => f.FieldName.ToLowerInvariant() == Roles.ADMINISTRATOR.ToLowerInvariant())
                 .LastOrDefault();
             if (!bool.TryParse(adminFilter?.Value, out bool isAdminFilterValue))
                 isAdminFilterValue = false;
 
-            if (adminFilter is not null)
+            if (adminFilter is null)
             {
-                var adminUsers = await userManager.GetUsersInRoleAsync(Roles.ADMINISTRATOR);
-                var adminUserIds = adminUsers
-                    .Where(u => u.TenantId == TenantExecutionContext.Tenant.Id)
-                    .Select(r => r.Id).ToList();
-
-                // Get where user.Id is in admin id list. Or not in adminId list if isAdminFilterValue == false
-                return usersQuery.Where(u => isAdminFilterValue ? adminUserIds.Contains(u.Id) : !adminUserIds.Contains(u.Id));
+                return usersQuery;
             }
 
-            return usersQuery;
+            var isActiveFilter = pagingInput?.FilterBy?
+                .Where(f => f.FieldName.Equals("isActive", StringComparison.OrdinalIgnoreCase))
+                .LastOrDefault();
+            bool? isActiveFilterValue = null;
+            if (isActiveFilter is not null && bool.TryParse(isActiveFilter.Value, out bool parsedIsActive))
+                isActiveFilterValue = parsedIsActive;
+
+            return UserQueryRoleFilters.FilterUsersWithRole(
+                usersQuery,
+                dbContext,
+                tenantId,
+                Roles.ADMINISTRATOR,
+                isAdminFilterValue,
+                isActiveFilterValue);
         }
 
 
@@ -259,7 +279,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 }
             }
 
-            var roles = await (new ObjectTypes.ApplicationUserExtension()).GetRolesAsync(user, roleManager, userManager);
+            var roleNames = await userManager.GetRolesAsync(user);
+            var roles = roleManager.Roles.Where(role => roleNames.Contains(role.Name)).ToList();
             //Coach
             if (roles.Any(x => x.Name.Contains(Roles.COACH)))
             {
@@ -361,6 +382,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
            AuthenticationDbContext dbContext,
            DateTime lastSync, Guid classroomId)
         {
+            // lastSync arrives as UTC from the frontend. DB timestamps are stored in
+            // server local time (DateTime.Now). Convert to server local time so the
+            // comparison is always in the same timezone, regardless of where the
+            // server is deployed.
+            var lastSyncLocal = lastSync.ToUniversalTime().ToLocalTime();
+
             var userId = contextAccessor.HttpContext.GetUser().Id;
             var practitioner = await dbContext.Practitioners
                 .AsNoTracking()
@@ -373,23 +400,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             FROM ""Child"" c 
             JOIN ""Practitioner"" p ON c.""Hierarchy"" LIKE p.""Hierarchy"" || '%'
             WHERE (p.""UserId"" = {userId}::uuid OR p.""PrincipalHierarchy"" = {userId}::uuid)
-            AND c.""IsActive"" IS TRUE 
-            AND c.""UpdatedBy"" != {userId}::text
-            AND c.""UpdatedDate"" > {lastSync}
+            AND c.""IsActive"" IS TRUE
+            AND c.""UpdatedDate"" > {lastSyncLocal}
             ").CountAsync();
 
             var classroomCount = await dbContext.ClassroomGroups.FromSql($@"
             SELECT cg.""Id""
             FROM ""ClassroomGroup"" cg 
-            WHERE cg.""UserId"" = {userId}::uuid and cg.""UpdatedBy"" != {userId}::text
-            AND cg.""InsertedDate"" > {lastSync}
+            WHERE cg.""UserId"" = {userId}::uuid 
+            AND cg.""InsertedDate"" > {lastSyncLocal}
             ").CountAsync();
 
             var pointsCount = await dbContext.PointsUserSummary.FromSql($@"
             SELECT pus.""Id""
-            FROM ""PointsUserSummary"" pus 
+            FROM ""PointsUserSummary"" pus
             WHERE pus.""UserId"" = {userId}::uuid
-            AND pus.""UpdatedDate"" > {lastSync}
+            AND pus.""UpdatedDate"" > {lastSyncLocal}
             ").CountAsync();
 
             var periodCount = 0;
@@ -397,26 +423,45 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             {
                 periodCount = await dbContext.ChildProgressReportPeriod.FromSql($@"
                 SELECT cprp.""Id""
-                FROM ""ChildProgressReportPeriod"" cprp 
-                WHERE cprp.""ClassroomId"" = {classroomId}::uuid 
-                AND cprp.""InsertedDate"" > {lastSync}
-                ").CountAsync();    
+                FROM ""ChildProgressReportPeriod"" cprp
+                WHERE cprp.""ClassroomId"" = {classroomId}::uuid
+                AND cprp.""InsertedDate"" > {lastSyncLocal}
+                ").CountAsync();
             }
 
             var permissionsCount = await dbContext.UserPermissions.FromSql($@"
             SELECT up.""Id""
-            FROM ""UserPermission"" up 
-            WHERE up.""UserId"" = {userId}::uuid 
-            AND up.""UpdatedDate"" > {lastSync}
+            FROM ""UserPermission"" up
+            WHERE up.""UserId"" = {userId}::uuid
+            AND up.""UpdatedDate"" > {lastSyncLocal}
             ").CountAsync();
+
+            // Check if any Learner records for this user's classrooms were updated by someone else
+            var learnerCount = await dbContext.Learners.FromSql($@"
+            SELECT l.""Id""
+            FROM ""Learner"" l
+            INNER JOIN ""ClassroomGroup"" cg ON l.""ClassroomGroupId"" = cg.""Id""
+            INNER JOIN ""Classroom"" c ON cg.""ClassroomId"" = c.""Id""
+            LEFT JOIN ""Practitioner"" p ON p.""UserId"" = {userId}::uuid
+            WHERE
+                (
+                    cg.""UserId"" = {userId}::uuid
+                    OR (p.""IsPrincipal"" = true AND c.""UserId"" = p.""UserId"")
+                    OR (p.""PrincipalHierarchy"" IS NOT NULL AND c.""Hierarchy"" LIKE p.""PrincipalHierarchy"" || '%')
+                )
+                AND l.""UpdatedDate"" > {lastSyncLocal}
+            ").CountAsync();
+
+            bool syncLearners = learnerCount >= 1;
 
             return new UserSyncStatus
             {
-                SyncChildren = childrenCount >= 1,
-                SyncClassroom = classroomCount >= 1,
+                SyncChildren = childrenCount >= 1 || syncLearners,
+                SyncClassroom = classroomCount >= 1 || syncLearners,   // Learners are part of classroom data
                 SyncReportingPeriods = periodCount >= 1,
                 SyncPoints = pointsCount >= 1,
                 SyncPermissions = permissionsCount >= 1,
+                SyncLearners = syncLearners,
             };
         }
     }

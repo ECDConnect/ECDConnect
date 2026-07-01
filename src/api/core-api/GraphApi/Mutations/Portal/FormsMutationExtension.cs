@@ -3,6 +3,7 @@ using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.ContentManagement.Repositories;
 using ECDLink.DataAccessLayer.Context;
+using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -38,23 +39,29 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Portal
         }
         [Permission(PermissionGroups.JOURNEY, GraphActionEnum.Update)]
         public async Task<bool> SaveHealthCertificateDetails(
+            [Service] IHttpContextAccessor contextAccessor,
             AuthenticationDbContext dbContext,
             Guid visitId,
             string certificateName,
             string certificateRegNr)
         {
+            var applicationUserId = contextAccessor.HttpContext.GetUser()?.Id;
             var visit = dbContext.Visits.FirstOrDefault(x => x.Id == visitId);
             if (visit == null)
                 return false;
-
-            visit.CertificateName = certificateName;
-            visit.CertificateRegNr = certificateRegNr;
-            if (visit.CertificateCreated == null)
-            {
-                visit.CertificateCreated = DateTime.Now;
-            }
             
-            dbContext.Visits.Update(visit);
+            // add new certificate entry
+            dbContext.UserCertificate.Add(new UserCertificate
+            {
+                Id = Guid.NewGuid(),
+                VisitId = visitId,
+                CertificateName = certificateName,
+                CertificateRegNr = certificateRegNr,
+                UserId = applicationUserId.Value,
+                UpdatedBy = applicationUserId.ToString(),
+                TenantId = TenantExecutionContext.Tenant.Id
+            });
+
             await dbContext.SaveChangesAsync();
 
             return true;

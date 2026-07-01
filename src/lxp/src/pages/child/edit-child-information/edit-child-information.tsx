@@ -494,10 +494,14 @@ export const EditChildInformation: React.FC = () => {
   };
 
   const saveEditClassroomGroup = async () => {
-    if (!!child) {
-      // They should always be in a classroom group though
-      if (!!currentChildClassroomGroup) {
-        // Deactivate old learner record
+    if (!child) return;
+
+    removeNotifications();
+
+    if (!isOnline) {
+      // Offline: update local Redux state immediately so the UI reflects the
+      // change straight away. upsertClassroomGroupLearners will sync when online.
+      if (currentChildClassroomGroup?.id) {
         appDispatch(
           classroomsActions.deactivateLearner({
             childUserId: child.userId!,
@@ -505,19 +509,24 @@ export const EditChildInformation: React.FC = () => {
           })
         );
       }
-
-      removeNotifications();
-
       appDispatch(
         classroomsActions.createLearner({
           childUserId: child.userId!,
           newClassroomGroupId: classroomGroupId,
         })
       );
-
-      await appDispatch(
-        classroomsThunkActions.upsertClassroomGroupLearners({})
-      ).unwrap();
+    } else {
+      try {
+        await appDispatch(
+          classroomsThunkActions.moveChildToNewClass({
+            childUserId: child.userId!,
+            newClassroomGroupId: classroomGroupId,
+            oldClassroomGroupId: currentChildClassroomGroup?.id,
+          })
+        ).unwrap();
+      } catch (err) {
+        console.error('[saveEditClassroomGroup] move failed:', err);
+      }
     }
 
     setEditClassVisible(false);

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import debounce from 'lodash.debounce';
 import { useQuery } from '@apollo/client/react/hooks/useQuery';
@@ -6,6 +6,7 @@ import {
   GetAllLanguage,
   contentDefinitions,
   contentTypes,
+  contentTypesSummary,
 } from '@ecdlink/graphql';
 import { ContentTypeDto, usePrevious } from '@ecdlink/core';
 import {
@@ -54,16 +55,25 @@ export function ContentManagement() {
   });
 
   const [
-    getContentTypes,
-    { data: dataTypes, refetch, loading: isLoadingSelectedRow },
-  ] = useLazyQuery(contentTypes, {
-    variables: {
-      search: '',
-      searchInContent: null,
-      isVisiblePortal: true,
-    },
+    getContentTypesSummary,
+    { data: summaryData, refetch: refetchSummary, loading: isLoadingSummary },
+  ] = useLazyQuery(contentTypesSummary, {
     fetchPolicy: 'cache-first',
   });
+
+  const [
+    getContentTypeDetails,
+    { data: typeDetailsData, loading: isLoadingTypeDetails },
+  ] = useLazyQuery(contentTypes, {
+    fetchPolicy: 'cache-first',
+  });
+
+  const isLoadingSelectedRow = isLoadingSummary || isLoadingTypeDetails;
+
+  const contentTypesQueryData = useMemo(
+    () => ({ contentTypes: allContentTypes }),
+    [allContentTypes]
+  );
 
   const [
     getContentDefinitions,
@@ -78,24 +88,51 @@ export function ContentManagement() {
     }
   }, []);
 
+  const loadContentTypeDetails = useCallback(
+    (
+      typeId: number,
+      fetchPolicy: 'cache-first' | 'network-only' = 'cache-first'
+    ) => {
+      getContentTypeDetails({
+        variables: {
+          isVisiblePortal: true,
+          contentTypeIdFilter: [typeId],
+        },
+        fetchPolicy,
+      });
+    },
+    [getContentTypeDetails]
+  );
+
   useEffect(() => {
-    if (dataTypes && dataTypes.contentTypes) {
-      setAllContentTypes(dataTypes.contentTypes);
+    if (summaryData?.contentTypes) {
+      setAllContentTypes(summaryData.contentTypes);
     }
 
-    if (dataTypes && dataTypes.contentTypes && !selectedType) {
-      const defaultType = dataTypes.contentTypes?.find(
+    if (summaryData?.contentTypes && !selectedType && !tenant.isWhiteLabel) {
+      const defaultType = summaryData.contentTypes.find(
         (item) => item?.name === 'Consent'
       );
-      setSelectedType(defaultType);
-    } else if (dataTypes && dataTypes.contentTypes && selectedType) {
-      const currentSelectedContent = dataTypes.contentTypes.find(
-        (x) => x.id === selectedType.id
-      );
-      setSelectedType(currentSelectedContent);
+      if (defaultType) {
+        setSelectedType(defaultType);
+        loadContentTypeDetails(defaultType.id);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dataTypes]);
+  }, [summaryData]);
+
+  useEffect(() => {
+    const loadedType = typeDetailsData?.contentTypes?.[0];
+    if (!loadedType || !selectedType || loadedType.id !== selectedType.id) {
+      return;
+    }
+
+    setSelectedType((currentType) =>
+      currentType
+        ? { ...currentType, content: loadedType.content }
+        : currentType
+    );
+  }, [typeDetailsData, selectedType?.id]);
 
   const getWLNavigationItems = () => {
     return [
@@ -176,31 +213,27 @@ export function ContentManagement() {
   ) => {
     setSelectedType(item);
     subItem && setSelectedSubType(subItem);
+    loadContentTypeDetails(Number(item.id));
   };
 
   const getContentValues = (contentManagementView?: ContentManagementView) => {
-    if (!dataTypes) {
-      refetch();
+    if (selectedType) {
+      loadContentTypeDetails(Number(selectedType.id), 'network-only');
     }
-
-    const currentType = dataTypes.contentTypes.find(
-      (x: ContentTypeDto) => x.id === selectedType?.id
-    );
-    setSelectedType(currentType);
     setSelectedContent(contentManagementView);
   };
 
   const refreshParent = () => {
-    refetch();
-    // refrechDefinitions();
+    refetchSummary();
+    if (selectedType) {
+      loadContentTypeDetails(Number(selectedType.id), 'network-only');
+    }
   };
 
   useEffect(() => {
-    if (!dataTypes) {
-      getContentTypes({
+    if (!summaryData) {
+      getContentTypesSummary({
         variables: {
-          search: searchValue,
-          searchInContent: true,
           isVisiblePortal: true,
         },
       });
@@ -222,7 +255,7 @@ export function ContentManagement() {
           titleIconClassName: 'bg-secondary text-white',
           onActionClick: () => {
             setSpecialType('');
-            const selectedTypeObject = dataTypes?.contentTypes.find(
+            const selectedTypeObject = allContentTypes?.find(
               (type: ContentTypeDto) => type.name === 'ProgressTrackingLevel'
             );
             showGroupContentTypes(selectedTypeObject);
@@ -236,7 +269,7 @@ export function ContentManagement() {
           titleIconClassName: 'bg-secondary text-white',
           onActionClick: () => {
             setSpecialType('');
-            const selectedTypeObject = dataTypes?.contentTypes.find(
+            const selectedTypeObject = allContentTypes?.find(
               (type: ContentTypeDto) => type.name === 'ProgressTrackingCategory'
             );
             showGroupContentTypes(selectedTypeObject);
@@ -250,7 +283,7 @@ export function ContentManagement() {
           titleIconClassName: 'bg-secondary text-white',
           onActionClick: () => {
             setSpecialType('');
-            const selectedTypeObject = dataTypes?.contentTypes.find(
+            const selectedTypeObject = allContentTypes?.find(
               (type: ContentTypeDto) => type.name === 'ProgressTrackingSkill'
             );
             showGroupContentTypes(selectedTypeObject);
@@ -269,7 +302,7 @@ export function ContentManagement() {
           titleIconClassName: 'bg-secondary text-white',
           onActionClick: () => {
             setSpecialType('');
-            const selectedTypeObject = dataTypes?.contentTypes.find(
+            const selectedTypeObject = allContentTypes?.find(
               (type: ContentTypeDto) =>
                 type.name === ContentTypes.CLASSROOMBUSINESSRESOURCE
             );
@@ -288,7 +321,7 @@ export function ContentManagement() {
           titleIconClassName: 'bg-secondary text-white',
           onActionClick: () => {
             setSpecialType('');
-            const selectedTypeObject = dataTypes?.contentTypes.find(
+            const selectedTypeObject = allContentTypes?.find(
               (type: ContentTypeDto) =>
                 type.name === ContentTypes.CLASSROOMBUSINESSRESOURCE
             );
@@ -307,7 +340,7 @@ export function ContentManagement() {
           titleIconClassName: 'bg-secondary text-white',
           onActionClick: () => {
             setSpecialType('');
-            const selectedTypeObject = dataTypes?.contentTypes.find(
+            const selectedTypeObject = allContentTypes?.find(
               (type: ContentTypeDto) => type.name === ContentTypes.CONNECT_ITEM
             );
             setChoosedSectionTitleSectionTitle(ResourcesTitles.CommunityLinks);
@@ -323,7 +356,7 @@ export function ContentManagement() {
           titleIconClassName: 'bg-secondary text-white',
           onActionClick: () => {
             setSpecialType('');
-            const selectedTypeObject = dataTypes?.contentTypes.find(
+            const selectedTypeObject = allContentTypes?.find(
               (type: ContentTypeDto) => type.name === ContentTypes.RESOURCE_LINK
             );
             setChoosedSectionTitleSectionTitle(
@@ -346,7 +379,7 @@ export function ContentManagement() {
           titleIconClassName: 'bg-secondary text-white',
           onActionClick: () => {
             setSpecialType('');
-            const selectedTypeObject = dataTypes?.contentTypes.find(
+            const selectedTypeObject = allContentTypes?.find(
               (type: ContentTypeDto) => type.name === ContentTypes.THEME
             );
             setChoosedSectionTitleSectionTitle('');
@@ -363,7 +396,7 @@ export function ContentManagement() {
 
           onActionClick: () => {
             setSpecialType('');
-            const selectedTypeObject = dataTypes?.contentTypes.find(
+            const selectedTypeObject = allContentTypes?.find(
               (type: ContentTypeDto) => type.name === ContentTypes.ACTIVITY
             );
             setChoosedSectionTitleSectionTitle(
@@ -381,7 +414,7 @@ export function ContentManagement() {
 
           onActionClick: () => {
             setSpecialType('');
-            const selectedTypeObject = dataTypes?.contentTypes.find(
+            const selectedTypeObject = allContentTypes?.find(
               (type: ContentTypeDto) => type.name === 'StoryBook'
             );
             setChoosedSectionTitleSectionTitle(ActivitiesTitles.Storybooks);
@@ -414,7 +447,7 @@ export function ContentManagement() {
 
           onActionClick: () => {
             setSpecialType('');
-            const selectedTypeObject = dataTypes?.contentTypes.find(
+            const selectedTypeObject = allContentTypes?.find(
               (type: ContentTypeDto) => type.name === 'Activity'
             );
             setChoosedSectionTitleSectionTitle(
@@ -427,7 +460,7 @@ export function ContentManagement() {
       ]);
     }
     return setSubTabs([]);
-  }, [dataTypes?.contentTypes, specialType]);
+  }, [allContentTypes, specialType]);
 
   useEffect(() => {
     if (allContentTypes && allContentTypes.length !== 0) {
@@ -468,7 +501,7 @@ export function ContentManagement() {
 
   return (
     <div className="">
-      {dataTypes && !isLoadingSelectedRow ? (
+      {allContentTypes && !isLoadingSelectedRow ? (
         <>
           {!selectedContent && (
             <div className="flex w-full  flex-row gap-4 overflow-auto whitespace-nowrap rounded-md bg-white">
@@ -476,7 +509,7 @@ export function ContentManagement() {
                 <button
                   key={item.name}
                   onClick={() => {
-                    const selectedTypeObject = dataTypes?.contentTypes.find(
+                    const selectedTypeObject = allContentTypes?.find(
                       (type: ContentTypeDto) =>
                         type.name === item.name || type.name === item.href
                     );
@@ -569,7 +602,7 @@ export function ContentManagement() {
                         searchValue={searchValue}
                         choosedSectionTitle={choosedSectionTitle}
                         setSelectedType={setSelectedType}
-                        dataTypes={dataTypes}
+                        dataTypes={contentTypesQueryData}
                       ></ContentList>
                     )}
 
@@ -604,7 +637,7 @@ export function ContentManagement() {
                         onSearch={search}
                         choosedSectionTitle={choosedSectionTitle}
                         setSelectedType={setSelectedType}
-                        dataTypes={dataTypes}
+                        dataTypes={contentTypesQueryData}
                       />
                     )}
                   {selectedType?.name === ContentTypes.ACTIVITY &&
@@ -620,7 +653,7 @@ export function ContentManagement() {
                         onSearch={search}
                         choosedSectionTitle={choosedSectionTitle}
                         setSelectedType={setSelectedType}
-                        dataTypes={dataTypes}
+                        dataTypes={contentTypesQueryData}
                       />
                     )}
                   {selectedType?.name === ContentTypes.STORY_BOOK &&
@@ -636,7 +669,7 @@ export function ContentManagement() {
                         onSearch={search}
                         choosedSectionTitle={choosedSectionTitle}
                         setSelectedType={setSelectedType}
-                        dataTypes={dataTypes}
+                        dataTypes={contentTypesQueryData}
                       />
                     )}
                   {selectedType?.name === ContentTypes.THEME &&
@@ -652,7 +685,7 @@ export function ContentManagement() {
                         onSearch={search}
                         choosedSectionTitle={choosedSectionTitle}
                         setSelectedType={setSelectedType}
-                        dataTypes={dataTypes}
+                        dataTypes={contentTypesQueryData}
                       />
                     )}
                   {selectedType?.name === ContentTypes.RESOURCE_LINK &&
@@ -693,7 +726,7 @@ export function ContentManagement() {
                       onSearch={search}
                       choosedSectionTitle={choosedSectionTitle}
                       setSelectedType={setSelectedType}
-                      dataTypes={dataTypes}
+                      dataTypes={contentTypesQueryData}
                     />
                   )}
                   {!!subTabs?.length && !!specialType && (

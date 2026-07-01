@@ -12,6 +12,7 @@ import {
   addChildProgressReportPeriods,
   getClassroomGroupForClassId,
   upsertChildProgressReportPeriods,
+  moveChildToNewClass,
 } from './classroom.actions';
 import { ClassroomState } from './classroom.types';
 import { ClassroomDto as SimpleClassroomDto } from '@/models/classroom/classroom.dto';
@@ -58,6 +59,7 @@ const classroomsSlice = createSlice({
         state.classroom = {
           ...state.classroom,
           siteAddress: action.payload,
+          synced: false,
         };
       }
     },
@@ -124,24 +126,42 @@ const classroomsSlice = createSlice({
         newClassroomGroupId: string;
       }>
     ) => {
+      const { childUserId, newClassroomGroupId } = action.payload;
+
       state.classroomGroupData.classroomGroups =
-        state.classroomGroupData.classroomGroups.map((classroomGroup) =>
-          classroomGroup.id === action.payload.newClassroomGroupId
-            ? {
-                ...classroomGroup,
-                learners: classroomGroup.learners.concat({
-                  learnerId: '',
-                  childUserId: action.payload.childUserId,
-                  startedAttendance: formatISO(new Date()),
-                  isActive: true,
-                  stoppedAttendance: null,
-                  synced: false,
-                  classroomGroupId: classroomGroup.id,
-                  userId: action.payload.childUserId,
-                }),
-              }
-            : classroomGroup
-        );
+        state.classroomGroupData.classroomGroups.map((classroomGroup) => {
+          if (classroomGroup.id !== newClassroomGroupId) return classroomGroup;
+
+          // Best-effort local guard: if this child already has an active learner
+          // in this class in local state, don't create a duplicate.
+          const alreadyHasActiveInThisClass = classroomGroup.learners.some(
+            (l) =>
+              l.childUserId === childUserId &&
+              l.isActive &&
+              !l.stoppedAttendance
+          );
+
+          if (alreadyHasActiveInThisClass) {
+            return classroomGroup;
+          }
+
+          return {
+            ...classroomGroup,
+            learners: [
+              ...classroomGroup.learners,
+              {
+                learnerId: '',
+                childUserId,
+                startedAttendance: formatISO(new Date()),
+                isActive: true,
+                stoppedAttendance: null,
+                synced: false,
+                classroomGroupId: classroomGroup.id,
+                userId: childUserId,
+              },
+            ],
+          };
+        });
     },
     createClassroom: (state, action: PayloadAction<SimpleClassroomDto>) => {
       state.classroom = {
@@ -331,6 +351,79 @@ const classroomsSlice = createSlice({
         ),
       };
     });
+
+    // Keep Redux learner state in sync after using the atomic MoveChildToClassroomGroup
+    builder.addCase(moveChildToNewClass.fulfilled, (state, action) => {
+      const { childUserId, oldClassroomGroupId, newClassroomGroupId, result } =
+        action.payload;
+
+      if (!childUserId || !newClassroomGroupId) return;
+
+      const nowIso = new Date().toUTCString();
+      const serverLearner = result; // the returned Learner from backend
+
+      state.classroomGroupData = {
+        ...state.classroomGroupData,
+        classroomGroups: state.classroomGroupData.classroomGroups.map(
+          (group) => {
+            // Close the learner in the old classroom group (if we know which one)
+            if (oldClassroomGroupId && group.id === oldClassroomGroupId) {
+              return {
+                ...group,
+                learners: group.learners.map((learner) =>
+                  learner.childUserId === childUserId
+                    ? {
+                        ...learner,
+                        isActive: false,
+                        stoppedAttendance: nowIso,
+                        synced: true,
+                      }
+                    : learner
+                ),
+              };
+            }
+
+            // Add or update the learner in the new classroom group
+            if (group.id === newClassroomGroupId) {
+              const existingIndex = group.learners.findIndex(
+                (l) => l.childUserId === childUserId
+              );
+
+              const newLearnerEntry = {
+                learnerId: serverLearner?.id || '',
+                childUserId,
+                startedAttendance:
+                  serverLearner?.startedAttendance || new Date().toISOString(),
+                stoppedAttendance: serverLearner?.stoppedAttendance || null,
+                isActive: serverLearner?.isActive ?? true,
+                synced: true,
+                classroomGroupId: newClassroomGroupId,
+                userId: childUserId,
+              };
+
+              if (existingIndex >= 0) {
+                // Update existing entry
+                const updatedLearners = [...group.learners];
+                updatedLearners[existingIndex] = {
+                  ...updatedLearners[existingIndex],
+                  ...newLearnerEntry,
+                };
+                return { ...group, learners: updatedLearners };
+              } else {
+                // Add new entry
+                return {
+                  ...group,
+                  learners: [...group.learners, newLearnerEntry],
+                };
+              }
+            }
+
+            return group;
+          }
+        ),
+      };
+    });
+
     builder.addCase(
       upsertClassroomGroupProgrammes.fulfilled,
       (state, action) => {
