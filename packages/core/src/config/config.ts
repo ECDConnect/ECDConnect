@@ -5,6 +5,9 @@ export type ConfigType = {
   facebookAppId: string | undefined;
   googleClientId: string | undefined;
   configUrl: string | undefined;
+  // Testing aid: when true, non-production environments may surface the OA sign-up
+  // auth code in the UI. Absent/false in production so the extra request is never made.
+  exposeAuthCodesForTesting?: boolean;
 };
 
 export const Config: ConfigType = {
@@ -14,6 +17,7 @@ export const Config: ConfigType = {
   facebookAppId: '',
   googleClientId: '',
   configUrl: '',
+  exposeAuthCodesForTesting: false,
 };
 
 export const toolbarOptions = [

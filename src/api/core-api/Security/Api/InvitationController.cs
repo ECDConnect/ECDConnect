@@ -22,12 +22,16 @@ using ECDLink.Security.Managers;
 using ECDLink.UrlShortner.Managers;
 using HotChocolate;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace ECDLink.Security.Api
@@ -50,6 +54,8 @@ namespace ECDLink.Security.Api
         private IGenericRepositoryFactory _repoFactory;
         private Guid? _applicationUserId;
         private IGenericRepository<MessageLog, Guid> _messageRepo;
+        private readonly IWebHostEnvironment _environment;
+        private readonly IConfiguration _configuration;
 
         public InvitationController(
           ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
@@ -64,8 +70,12 @@ namespace ECDLink.Security.Api
           PersonnelService personnelService,
           IHttpContextAccessor contextAccessor,
           IGenericRepositoryFactory repoFactory,
-          HierarchyEngine hierarchyEngine)
+          HierarchyEngine hierarchyEngine,
+          IWebHostEnvironment environment,
+          IConfiguration configuration)
         {
+            _environment = environment;
+            _configuration = configuration;
             _invitationManager = invitationManager;
             _securityCodeManager = securityCodeManager;
             _passwordManager = passwordManager;
@@ -407,6 +417,55 @@ namespace ECDLink.Security.Api
             }
 
             return Ok(false);
+        }
+
+        /// <summary>
+        /// Testing aid: returns the latest OA sign-up auth code (OTP) sent to a phone number so
+        /// testers using throwaway numbers can complete verification without receiving the SMS.
+        /// Keyed on the phone number because during sign-up the user is not yet persisted and has
+        /// no username; the auth code is only logged against the recipient number.
+        /// Hard-blocked in Production regardless of configuration, and otherwise only responds
+        /// when "Security:ExposeAuthCodesForTesting" is explicitly enabled for the environment.
+        /// This must never be enabled in Production.
+        /// </summary>
+        [Route("get-latest-auth-code")]
+        [AllowAnonymous]
+        [HttpPost]
+        public IActionResult GetLatestAuthCode([FromBody] VerifySignupCellphoneNumberModel model)
+        {
+            if (_environment.IsProduction() ||
+                !_configuration.GetValue<bool>("Security:ExposeAuthCodesForTesting"))
+            {
+                return NotFound();
+            }
+
+            if (string.IsNullOrWhiteSpace(model?.Cellphone))
+            {
+                return NotFound();
+            }
+
+            var normalizedPhone = UserHelper.NormalizePhoneNumber(model.Cellphone);
+
+            var latestMessage = _messageRepo.GetAll()
+                .Where(x => x.IsActive
+                            && x.To == normalizedPhone
+                            && x.MessageTemplateType == TemplateTypeConstants.OAWLAuthCode)
+                .OrderByDescending(x => x.InsertedDate)
+                .FirstOrDefault();
+
+            if (latestMessage == null)
+            {
+                return NotFound();
+            }
+
+            // The rendered SMS body contains the 6-digit code (the {OTPCode} replacement).
+            var codeMatch = Regex.Match(latestMessage.Message ?? string.Empty, @"\d{6}");
+            if (!codeMatch.Success)
+            {
+                return NotFound();
+            }
+
+            return Ok(codeMatch.Value);
         }
 
         [Route("update-username-password")]

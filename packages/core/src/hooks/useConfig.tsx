@@ -38,6 +38,7 @@ function ConfigProvider({
           Config.facebookAppId = data.facebookAppId;
           Config.googleClientId = data.googleClientId;
           Config.configUrl = data.configUrl;
+          Config.exposeAuthCodesForTesting = data.exposeAuthCodesForTesting;
         }
 
         setLoading(false);
@@ -57,6 +58,7 @@ function ConfigProvider({
       Config.facebookAppId = config.facebookAppId;
       Config.googleClientId = config.googleClientId;
       Config.configUrl = config.configUrl;
+      Config.exposeAuthCodesForTesting = config.exposeAuthCodesForTesting;
     } else {
       getData();
     }

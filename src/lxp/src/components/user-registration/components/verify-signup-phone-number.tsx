@@ -1,5 +1,10 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { NOTIFICATION, useNotifications, useTheme } from '@ecdlink/core';
+import {
+  Config,
+  NOTIFICATION,
+  useNotifications,
+  useTheme,
+} from '@ecdlink/core';
 import {
   Alert,
   BannerWrapper,
@@ -8,7 +13,9 @@ import {
   Typography,
   renderIcon,
 } from '@ecdlink/ui';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useAppDispatch } from '@/store';
+import { authThunkActions } from '@/store/auth';
 import {
   generateSignupCellPhoneNumberToken,
   verifySignupCellPhoneNumberToken,
@@ -26,11 +33,34 @@ export const VerifySignupPhoneNumberAuthCode: React.FC<
   const { isOnline } = useOnlineStatus();
   const { theme } = useTheme();
   const { setNotification } = useNotifications();
+  const appDispatch = useAppDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [userAuthCode, setUserAuthCode] = useState('');
   const userAuthCodeLength = userAuthCode?.length;
   const [errorMessage, setErrorMessage] = useState('');
   const [token, setToken] = useState<string>(verifyToken);
+  // Testing aid: populated only in non-production environments where the backend
+  // has exposed auth codes for testing. Lets testers using throwaway numbers that
+  // don't receive the SMS still complete verification.
+  const [devAuthCode, setDevAuthCode] = useState<string>();
+
+  const fetchDevAuthCode = useCallback(async () => {
+    // Gated by a runtime settings flag so the request is never made in
+    // production (where it is disabled), avoiding unnecessary traffic.
+    if (!Config.exposeAuthCodesForTesting) return;
+    try {
+      const code = await appDispatch(
+        authThunkActions.getLatestAuthCode({ phoneNumber })
+      ).unwrap();
+      setDevAuthCode(code || undefined);
+    } catch {
+      setDevAuthCode(undefined);
+    }
+  }, [appDispatch, phoneNumber]);
+
+  useEffect(() => {
+    fetchDevAuthCode();
+  }, [fetchDevAuthCode]);
 
   const handleConfirmAuthCode = async () => {
     setIsLoading(true);
@@ -59,6 +89,7 @@ export const VerifySignupPhoneNumberAuthCode: React.FC<
     const token = await generateSignupCellPhoneNumberToken(phoneNumber);
     if (token) {
       setToken(token);
+      fetchDevAuthCode();
     } else {
       setErrorMessage('Unable to send a new code.');
     }
@@ -85,6 +116,14 @@ export const VerifySignupPhoneNumberAuthCode: React.FC<
           message={`We've sent an SMS with a 6 digit code to ${phoneNumber}.`}
           type="info"
         />
+        {devAuthCode && (
+          <Alert
+            className="mt-2 mb-2 rounded-md"
+            title={`Testing only — code: ${devAuthCode}`}
+            message="This code is shown for testing environments only and is never available in production."
+            type="warning"
+          />
+        )}
         <FormInput
           label="Enter your 6 digit code"
           placeholder="------"

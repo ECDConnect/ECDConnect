@@ -19,6 +19,7 @@ export const AuthActions = {
   SEND_NEW_INVITATION: 'sendNewInvitation',
   VERIFY_PRINCIPAL_TOKEN: 'verifyPrincipalToken',
   CHECK_USERNAME_PHONE_NUMBER: 'checkUsernamePhoneNumber',
+  GET_LATEST_AUTH_CODE: 'getLatestAuthCode',
 };
 
 export const login = createAsyncThunk<
@@ -106,6 +107,28 @@ export const sendOAAuthCode = createAsyncThunk<
         err?.response?.data?.message ||
           err?.message ||
           'Failed to Send OA Auth Code'
+      );
+    }
+  }
+);
+
+// Testing aid: resolves to the latest OA sign-up auth code when the backend has
+// exposure enabled (non-production only), otherwise undefined. Never gated on an
+// auth token because it is used during sign-up before login.
+export const getLatestAuthCode = createAsyncThunk<
+  string | undefined,
+  { phoneNumber: string },
+  ThunkApiType<RootState>
+>(
+  AuthActions.GET_LATEST_AUTH_CODE,
+  async ({ phoneNumber }, { rejectWithValue }) => {
+    try {
+      return await new AuthService().GetLatestAuthCode(phoneNumber);
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message ||
+          err?.message ||
+          'Failed to get latest auth code'
       );
     }
   }
