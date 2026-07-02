@@ -839,7 +839,9 @@ namespace ECDLink.Security.Api
 
             await _notificationManager.SendOAWLAuthenticationCodeAsync(user, token);
 
-            return new OkObjectResult(token);
+            // The auth code is delivered via SMS only; it must never be returned in the
+            // response body (flagged during penetration testing). Return a success flag.
+            return Ok(true);
         }
 
         #endregion

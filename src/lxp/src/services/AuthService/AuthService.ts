@@ -318,6 +318,26 @@ class AuthService {
     return dataResponse?.data;
   }
 
+  // Testing aid: only returns a code in non-production environments where the
+  // backend has "Security:ExposeAuthCodesForTesting" enabled; otherwise the
+  // endpoint responds 404 and this resolves to undefined. Keyed on phone number
+  // because during sign-up the user is not yet created and has no username.
+  async GetLatestAuthCode(phoneNumber: string): Promise<string | undefined> {
+    const response = await api(Config.authApi)
+      .post(
+        APIs.getLatestAuthCode,
+        JSON.stringify({ Cellphone: phoneNumber }),
+        {
+          headers: headers,
+        }
+      )
+      .catch(handlerError);
+
+    const dataResponse = getDataResponse<string>(response);
+    if (dataResponse.dataError) return undefined;
+    return dataResponse?.data;
+  }
+
   async VerifySignupCellPhoneNumber(body: VerifySignupCellPhoneNumberModel) {
     const response = await api(Config.authApi).post(
       APIs.verifySignupCellPhoneNumber,

@@ -113,6 +113,9 @@ export const Messages: React.FC = () => {
       notification.message?.cta?.includes(
         notificationTagConfig?.SeeClasses?.cta ?? ''
       ) ||
+      notification.message?.cta?.includes(
+        notificationTagConfig?.CourseCompleted?.cta ?? ''
+      ) ||
       (notification.message?.cta?.includes(
         notificationTagConfig?.SeePractitioners?.cta ?? ''
       ) &&
