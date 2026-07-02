@@ -31,6 +31,10 @@ export const pushAnalytics = createAsyncThunk<
           ReactGA.event({
             action: eventTrackingItem.action,
             category: eventTrackingItem.category,
+            label: eventTrackingItem.label,
+            value: eventTrackingItem.value
+              ? Number(eventTrackingItem.value)
+              : undefined,
           });
         }
       }
