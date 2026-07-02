@@ -2,7 +2,7 @@ const { Client } = require('pg');
 const axios = require('axios');
 
 const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL;
-const CHANNEL = 'errors_ecdconnect';
+const CHANNEL = process.env.SLACK_CHANNEL || 'errors_ecdconnect';
 
 let client;
 let reconnectDelay = 1000; // starts at 1s, backs off up to 30s
