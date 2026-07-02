@@ -41,6 +41,8 @@ ReactDOM.render(
       facebookAppId: process.env.REACT_APP_FACEBOOK_APP_ID || '',
       googleClientId: process.env.REACT_APP_GOOGLE_CLIENT_ID || '',
       configUrl: process.env.REACT_APP_REMOTE_CONFIG_URL || '',
+      exposeAuthCodesForTesting:
+        process.env.REACT_APP_EXPOSE_AUTH_CODES === 'true',
     }}
   >
     <ConfigWrapper />

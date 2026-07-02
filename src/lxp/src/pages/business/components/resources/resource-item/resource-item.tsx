@@ -19,6 +19,7 @@ import { staticDataSelectors } from '@/store/static-data';
 import { LanguageCode } from '@/i18n/types';
 import { useAppDispatch } from '@/store';
 import { resourcesThunkActions } from '@/store/resources';
+import { analyticsActions } from '@/store/analytics';
 
 interface ResourceItemProps {
   resourceId: number;
@@ -248,7 +249,16 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
         />
         <div>{renderResourceDataType}</div>
         <Button
-          onClick={() => window.open(resourceItem?.link, '_blank')}
+          onClick={() => {
+            appDispatch(
+              analyticsActions.createEventTracking({
+                category: 'Resources',
+                action: 'See resource click',
+                label: String(resourceId),
+              })
+            );
+            window.open(resourceItem?.link, '_blank');
+          }}
           className="mt-2 w-full rounded-2xl"
           size="normal"
           color="quatenary"
