@@ -5,5 +5,5 @@
   "configUrl": "https://ecdconnectstoragedev.blob.core.windows.net/config/remote-config.json",
   "facebookAppId": "",
   "googleClientId": "",
-  "exposeAuthCodesForTesting": false
+  "exposeAuthCodesForTesting": true
 }
