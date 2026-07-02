@@ -66,7 +66,7 @@ console.log("Starting server on port:", port);
 
 server.listen(port, () => {
   console.log(`Server running on port ${port}`);
-  if (process.env.ENABLE_ERROR_NOTIFICATIONS === 'true') {
+  if (process.env.NODE_ENV === "production") {
     startListener();
   } else {
     console.log('pg-notify: disabled (not production)');
