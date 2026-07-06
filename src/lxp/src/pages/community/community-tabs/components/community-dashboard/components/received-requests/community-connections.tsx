@@ -5,11 +5,13 @@ import { communitySelectors, communityThunkActions } from '@/store/community';
 import {
   CommunityProfileDto,
   getAvatarColor,
+  useDialog,
   useSnackbar,
 } from '@ecdlink/core';
 import {
   BannerWrapper,
   Button,
+  DialogPosition,
   Divider,
   EmptyPage,
   LoadingSpinner,
@@ -22,7 +24,11 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
 import ROUTES from '@/routes/routes';
-import { AcceptRejectCommunityRequestsInputModelInput } from '@ecdlink/graphql';
+import {
+  AcceptRejectCommunityRequestsInputModelInput,
+  CommunityProfileInputModelInput,
+} from '@ecdlink/graphql';
+import { CommunicationDialog } from '@/pages/community/components/communication-dialog';
 
 interface ReceivedRequestsProps {
   onClose?: (item: boolean) => void;
@@ -40,6 +46,7 @@ export const CommunityConnections: React.FC<ReceivedRequestsProps> = ({
   const { isOnline } = useOnlineStatus();
   const { showMessage } = useSnackbar();
   const dispatch = useAppDispatch();
+  const dialog = useDialog();
   const history = useHistory();
   const { state } = useLocation<CommunityProfileRouteState>();
   const isRequest = state?.isRequest;
@@ -98,7 +105,7 @@ export const CommunityConnections: React.FC<ReceivedRequestsProps> = ({
     }
   }, [handleConnectionsQuery, usersData]);
 
-  const handleAcceptAllConnections = useCallback(async () => {
+  const acceptAllConnections = useCallback(async () => {
     setAcceptOrRejectIsLoading(true);
     const acceptedInput: AcceptRejectCommunityRequestsInputModelInput = {
       userId: communityProfile?.userId,
@@ -128,6 +135,60 @@ export const CommunityConnections: React.FC<ReceivedRequestsProps> = ({
     receivedRequestsUserIds,
     showMessage,
   ]);
+
+  const handleShareCommunicationPreferences = useCallback(
+    async (shareEmail: boolean, sharePhoneNumber: boolean) => {
+      const saveCommunityProfileInput: CommunityProfileInputModelInput = {
+        userId: communityProfile?.userId!,
+        aboutShort: communityProfile?.aboutShort,
+        aboutLong: communityProfile?.aboutLong,
+        shareContactInfo: communityProfile?.shareContactInfo,
+        shareProfilePhoto: communityProfile?.shareProfilePhoto,
+        shareProvince: communityProfile?.shareProvince,
+        provinceId: communityProfile?.provinceId,
+        sharePhoneNumber,
+        shareEmail,
+        communitySkillIds: communityProfile?.profileSkills?.map(
+          (item) => item?.id
+        ),
+        shareRole: communityProfile?.shareRole,
+      };
+
+      await dispatch(
+        communityThunkActions.saveCommunityProfile({
+          input: saveCommunityProfileInput,
+        })
+      );
+
+      acceptAllConnections();
+    },
+    [communityProfile, dispatch, acceptAllConnections]
+  );
+
+  const handleOpenCommunicationDialog = useCallback(() => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (_onSubmit, onCancel) => (
+        <CommunicationDialog
+          onClose={onCancel}
+          onSelect={(shareEmail, sharePhoneNumber) =>
+            handleShareCommunicationPreferences(shareEmail, sharePhoneNumber)
+          }
+        />
+      ),
+    });
+  }, [dialog, handleShareCommunicationPreferences]);
+
+  const handleAcceptAllConnections = useCallback(() => {
+    if (
+      communityProfile?.shareEmail !== true &&
+      communityProfile?.sharePhoneNumber !== true
+    ) {
+      handleOpenCommunicationDialog();
+    } else {
+      acceptAllConnections();
+    }
+  }, [communityProfile, handleOpenCommunicationDialog, acceptAllConnections]);
 
   const handleUsersList = useCallback(() => {
     const communityUsersList: UserAlertListDataItem[] = [];
