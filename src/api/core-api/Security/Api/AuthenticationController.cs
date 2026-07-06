@@ -454,6 +454,7 @@ namespace ECDLink.Security.Api
         {
             bool isGoogleAccount = !string.IsNullOrEmpty(verifyModel.GoogleToken);
             bool isFacebookAccount = !string.IsNullOrEmpty(verifyModel.FacebookToken);
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
 
             // if both are empty, return error
             if (!string.IsNullOrEmpty(verifyModel.Username) && !string.IsNullOrEmpty(verifyModel.PhoneNumber))
@@ -498,7 +499,8 @@ namespace ECDLink.Security.Api
                     .Select(x => new
                     {
                         x.Id,
-                        x.RegisterType
+                        x.RegisterType,
+                        x.TenantId
                     })
                     .FirstOrDefaultAsync();
 
@@ -508,15 +510,8 @@ namespace ECDLink.Security.Api
                     {
                         if (!string.IsNullOrEmpty(verifyModel.UserId))
                         {
-                            var user = await _dbContext.Users
-                                .Where(user => user.Id.ToString() == verifyModel.UserId)
-                                .Select(x => new
-                                {
-                                    x.Id,
-                                    x.IdNumber
-                                })
-                                .FirstOrDefaultAsync();
-                            if (user.IdNumber != verifyModel.Username)
+                            Guid verifyUserId = Guid.Parse(verifyModel.UserId);
+                            if (verifyUserId != userByUsername.Id && tenantId != userByUsername.TenantId)
                             {
                                 return Ok(new FailedVerificationModel
                                 {
@@ -524,11 +519,14 @@ namespace ECDLink.Security.Api
                                     Error = "Invalid Username"
                                 });
                             }
-                            return Ok(new
+                            else if (!isGoogleAccount && !isFacebookAccount)
                             {
-                                StatusCode = 1,
-                                Message = "Ok"
-                            });
+                                return Ok(new
+                                {
+                                    StatusCode = 1,
+                                    Message = "Ok"
+                                });
+                            }
                         }
                     }
                     if (isGoogleAccount && userByUsername.RegisterType == RegisterTypeConstants.GOOGLE)

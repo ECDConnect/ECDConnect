@@ -10,10 +10,10 @@
     "express": "^4.22.1"
   },
   "scripts": {
-    "start": "cross-env-shell REACT_APP_VERSION=$npm_package_version craco start",
-    "start:mocks": "cross-env-shell REACT_APP_RUN_MOCKS='run_msw' craco start",
+    "start": "cross-env-shell REACT_APP_VERSION=$npm_package_version && craco start",
+    "start:mocks": "cross-env-shell REACT_APP_RUN_MOCKS='run_msw' && craco start",
     "serve:azure": "npm install express compression && node server.js",
-    "build": "cross-env-shell REACT_APP_VERSION=$npm_package_version craco build",
+    "build": "cross-env-shell REACT_APP_VERSION=$npm_package_version && craco build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
