@@ -1,5 +1,5 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { useDialog, useSnackbar, useTheme } from '@ecdlink/core';
+import { useDialog, useSnackbar } from '@ecdlink/core';
 import {
   ActionModal,
   Alert,
@@ -22,9 +22,13 @@ import { useAppDispatch } from '@/store';
 import { communitySelectors, communityThunkActions } from '@/store/community';
 import { useState } from 'react';
 import { ConnectionContactDetails } from './connection-contact-details/connection-contact-details';
-import { AcceptRejectCommunityRequestsInputModelInput } from '@ecdlink/graphql';
+import {
+  AcceptRejectCommunityRequestsInputModelInput,
+  CommunityProfileInputModelInput,
+} from '@ecdlink/graphql';
 import TransparentLayer from '../../../assets/TransparentLayer.png';
 import { communityUserGreetingName } from '@/utils/user/user-name-greeting.utils';
+import { CommunicationDialog } from '../components/communication-dialog';
 
 export const ConnectionProfile = () => {
   const { isOnline } = useOnlineStatus();
@@ -107,58 +111,127 @@ export const ConnectionProfile = () => {
     });
   };
 
-  const handleAcceptOrRejectConnectionRequest = async (accept: boolean) => {
+  const acceptConnectionRequest = async () => {
     setAcceptOrRejectIsLoading(true);
-    if (accept) {
-      const acceptedInput: AcceptRejectCommunityRequestsInputModelInput = {
-        userId: loggedUserCommunityProfile?.userId,
-        userIdsToAccept: [communityProfile?.userId],
-      };
+    const acceptedInput: AcceptRejectCommunityRequestsInputModelInput = {
+      userId: loggedUserCommunityProfile?.userId,
+      userIdsToAccept: [communityProfile?.userId],
+    };
 
-      await dispatch(
-        communityThunkActions.acceptOrRejectCommunityRequests({
-          input: acceptedInput,
-        })
-      );
+    await dispatch(
+      communityThunkActions.acceptOrRejectCommunityRequests({
+        input: acceptedInput,
+      })
+    );
+    await dispatch(
+      communityThunkActions.getCommunityProfile({
+        overrideCache: true,
+      })
+    ).then(() => {
+      setAcceptOrRejectIsLoading(false);
+      setConnectionAccepted(true);
+      showMessage({
+        message: 'Connection accepted',
+        type: 'success',
+        duration: 3000,
+      });
+    });
+  };
+
+  const rejectConnectionRequest = async () => {
+    setAcceptOrRejectIsLoading(true);
+    const rejectedInput: AcceptRejectCommunityRequestsInputModelInput = {
+      userId: loggedUserCommunityProfile?.userId,
+      userIdsToReject: [communityProfile?.userId],
+    };
+
+    const rejectResponse = await dispatch(
+      communityThunkActions.acceptOrRejectCommunityRequests({
+        input: rejectedInput,
+      })
+    );
+
+    if (rejectResponse) {
       await dispatch(
         communityThunkActions.getCommunityProfile({
           overrideCache: true,
         })
       ).then(() => {
         setAcceptOrRejectIsLoading(false);
-        setConnectionAccepted(true);
         showMessage({
-          message: 'Connection accepted',
+          message: 'Connection ignored!',
           type: 'success',
           duration: 3000,
         });
       });
+    }
+  };
+
+  const handleShareCommunicationPreferences = async (
+    shareEmail: boolean,
+    sharePhoneNumber: boolean,
+    onSaved: () => void
+  ) => {
+    const saveCommunityProfileInput: CommunityProfileInputModelInput = {
+      userId: loggedUserCommunityProfile?.userId!,
+      aboutShort: loggedUserCommunityProfile?.aboutShort,
+      aboutLong: loggedUserCommunityProfile?.aboutLong,
+      shareContactInfo: loggedUserCommunityProfile?.shareContactInfo,
+      shareProfilePhoto: loggedUserCommunityProfile?.shareProfilePhoto,
+      shareProvince: loggedUserCommunityProfile?.shareProvince,
+      provinceId: loggedUserCommunityProfile?.provinceId,
+      sharePhoneNumber,
+      shareEmail,
+      communitySkillIds: loggedUserCommunityProfile?.profileSkills?.map(
+        (item) => item?.id
+      ),
+      shareRole: loggedUserCommunityProfile?.shareRole,
+    };
+
+    await dispatch(
+      communityThunkActions.saveCommunityProfile({
+        input: saveCommunityProfileInput,
+      })
+    );
+
+    onSaved();
+  };
+
+  const handleOpenCommunicationDialog = (onConfirm: () => void) => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit, onClose) => (
+        <CommunicationDialog
+          onClose={onClose}
+          onSelect={(shareEmail, sharePhoneNumber) =>
+            handleShareCommunicationPreferences(
+              shareEmail,
+              sharePhoneNumber,
+              onConfirm
+            )
+          }
+        />
+      ),
+    });
+  };
+
+  const hasSharedContactPreference =
+    loggedUserCommunityProfile?.shareEmail === true ||
+    loggedUserCommunityProfile?.sharePhoneNumber === true;
+
+  const handleConnectClick = () => {
+    if (hasSharedContactPreference) {
+      saveNewConnection();
     } else {
-      const rejectedInput: AcceptRejectCommunityRequestsInputModelInput = {
-        userId: loggedUserCommunityProfile?.userId,
-        userIdsToReject: [communityProfile?.userId],
-      };
+      handleOpenCommunicationDialog(saveNewConnection);
+    }
+  };
 
-      const rejectResponse = await dispatch(
-        communityThunkActions.acceptOrRejectCommunityRequests({
-          input: rejectedInput,
-        })
-      );
-
-      if (rejectResponse) {
-        await dispatch(
-          communityThunkActions.getCommunityProfile({
-            overrideCache: true,
-          })
-        ).then(() => {
-          setAcceptOrRejectIsLoading(false);
-          showMessage({
-            message: 'Connection ignored!',
-            type: 'success',
-            duration: 3000,
-          });
-        });
-      }
+  const handleAcceptConnectionRequestClick = () => {
+    if (hasSharedContactPreference) {
+      acceptConnectionRequest();
+    } else {
+      handleOpenCommunicationDialog(acceptConnectionRequest);
     }
   };
 
@@ -299,7 +372,7 @@ export const ConnectionProfile = () => {
               text={`Connect with ${communityProfile?.communityUser?.fullName}`}
               icon="ShareIcon"
               iconPosition="start"
-              onClick={() => saveNewConnection()}
+              onClick={() => handleConnectClick()}
             />
           </div>
         );
@@ -417,9 +490,7 @@ export const ConnectionProfile = () => {
                         type={'filled'}
                         color={'quatenary'}
                         textColor={'white'}
-                        onClick={() =>
-                          handleAcceptOrRejectConnectionRequest(true)
-                        }
+                        onClick={() => handleAcceptConnectionRequestClick()}
                         size="small"
                         icon="PlusIcon"
                         className="rounded-xl"
@@ -429,9 +500,7 @@ export const ConnectionProfile = () => {
                         type={'outlined'}
                         color={'secondary'}
                         textColor={'secondary'}
-                        onClick={() =>
-                          handleAcceptOrRejectConnectionRequest(false)
-                        }
+                        onClick={() => rejectConnectionRequest()}
                         size="small"
                         icon="XIcon"
                         className="rounded-xl"
