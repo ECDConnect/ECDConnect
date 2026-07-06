@@ -114,7 +114,7 @@ export const PractitionerHelp: React.FC = () => {
         subTitleStyle,
         customIcon: (
           <div className="bg-quatenary mr-2 rounded-full p-3">
-            <WhatsAppIcon className="h-8 w-8 text-white" />
+            <WhatsAppIcon className="h-8 w-8" fill="white" />
           </div>
         ),
         showIcon: true,
