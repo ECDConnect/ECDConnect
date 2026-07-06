@@ -238,8 +238,6 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
       (!isWithinReportPeriod && percentageObservationsCompleted === 100)
     : percentageObservationsCompleted === 100;
 
-  const showProgressTabReportPeriodsCompleted = isAfterLastReport;
-
   return (
     <>
       {/* Report period set, all reports completed && current period undefined */}
