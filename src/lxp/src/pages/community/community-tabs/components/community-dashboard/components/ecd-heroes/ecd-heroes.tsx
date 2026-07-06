@@ -29,11 +29,15 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { ReactComponent as JoinCommunity } from '@/assets/joinCommunity.svg';
-import { CommunityConnectInputModelInput } from '@ecdlink/graphql';
+import {
+  CommunityConnectInputModelInput,
+  CommunityProfileInputModelInput,
+} from '@ecdlink/graphql';
 import { ReactComponent as Robot } from '@/assets/iconRobot.svg';
 import { useHistory, useLocation } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { practitionerThunkActions } from '@/store/practitioner';
+import { CommunicationDialog } from '@/pages/community/components/communication-dialog';
 
 interface ECDHeroesProps {
   onClose?: (item: boolean) => void;
@@ -338,6 +342,51 @@ export const ECDHeroes: React.FC<ECDHeroesProps> = ({ onClose }) => {
     });
   };
 
+  const handleShareCommunicationPreferences = async (
+    shareEmail: boolean,
+    sharePhoneNumber: boolean
+  ) => {
+    const saveCommunityProfileInput: CommunityProfileInputModelInput = {
+      userId: communityProfile?.userId!,
+      aboutShort: communityProfile?.aboutShort,
+      aboutLong: communityProfile?.aboutLong,
+      shareContactInfo: communityProfile?.shareContactInfo,
+      shareProfilePhoto: communityProfile?.shareProfilePhoto,
+      shareProvince: communityProfile?.shareProvince,
+      provinceId: communityProfile?.provinceId,
+      sharePhoneNumber,
+      shareEmail,
+      communitySkillIds: communityProfile?.profileSkills?.map(
+        (item) => item?.id
+      ),
+      shareRole: communityProfile?.shareRole,
+    };
+
+    await dispatch(
+      communityThunkActions.saveCommunityProfile({
+        input: saveCommunityProfileInput,
+      })
+    );
+
+    saveNewConnections();
+  };
+
+  const handleOpenCommunicationDialog = useCallback(() => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onClose) => (
+        <CommunicationDialog
+          onClose={onClose}
+          onSelect={(shareEmail, sharePhoneNumber) =>
+            handleShareCommunicationPreferences(shareEmail, sharePhoneNumber)
+          }
+        />
+      ),
+    });
+  }, [dialog, communityProfile]);
+
+  console.log('communityProfile', communityProfile);
+
   const handleOpenSaveConnectionsModal = useCallback(() => {
     return dialog({
       blocking: false,
@@ -361,8 +410,15 @@ export const ECDHeroes: React.FC<ECDHeroesProps> = ({ onClose }) => {
                 type: 'filled',
                 leadingIcon: 'CheckCircleIcon',
                 onClick: () => {
-                  saveNewConnections();
                   onClose();
+                  if (
+                    communityProfile?.shareEmail !== true &&
+                    communityProfile?.sharePhoneNumber !== true
+                  ) {
+                    handleOpenCommunicationDialog();
+                  } else {
+                    saveNewConnections();
+                  }
                 },
               },
               {
@@ -378,7 +434,12 @@ export const ECDHeroes: React.FC<ECDHeroesProps> = ({ onClose }) => {
         );
       },
     });
-  }, [dialog, addedConnections]);
+  }, [
+    dialog,
+    addedConnections,
+    communityProfile,
+    handleOpenCommunicationDialog,
+  ]);
 
   const renderUsersList = useMemo(() => {
     if (isLoading) {
