@@ -22,6 +22,7 @@ export const APIs = {
   sendOAWLAuthCode: 'api/invitation/send-oa-wl-auth-code',
   verifyOAWLAuthCode: 'api/invitation/verify-oa-wl-auth-code',
   verifyOAWLAuthCodeStatus: 'api/invitation/verify-oa-wl-auth-code-status',
+  getLatestAuthCode: 'api/invitation/get-latest-auth-code',
   verifyOAPrincipalInvitation: 'api/invitation/verify-oa-principal-invitation',
   verifyPrincipalToken: 'api/invitation/verify-principal-token',
   addTenantSetupInfo: 'api/setup/add-tenant-setup-info',
