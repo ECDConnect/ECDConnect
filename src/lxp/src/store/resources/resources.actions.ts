@@ -10,6 +10,7 @@ export const RescourcesActions = {
   GET_RESOURCE_LIKED_STATUS_FOR_USER: 'getResourceLikedStatusForUser',
   GET_RESOURCE_BY_LANGUAGE: 'getResourceByLanguage',
   UPDATE_RESOURCE_LIKES: 'updateResourceLikes',
+  REPORT_RESOURCE_PROBLEM: 'reportResourceProblem',
 };
 
 export const getResources = createAsyncThunk<
@@ -197,6 +198,39 @@ export const updateResourceLikes = createAsyncThunk<
       return response;
     } catch (err: any) {
       return rejectWithValue(err?.message || 'Failed to fetch resource');
+    }
+  }
+);
+
+export const reportResourceProblem = createAsyncThunk<
+  boolean,
+  {
+    contentId: number;
+    problemType: string;
+    additionalDetails?: string;
+    dataFreeAtReport: string;
+    linkAtReport: string;
+  },
+  ThunkApiType<RootState>
+>(
+  RescourcesActions.REPORT_RESOURCE_PROBLEM,
+  async (input, { getState, rejectWithValue }) => {
+    const state = getState();
+
+    if (!state.auth.userAuth?.auth_token) {
+      return rejectWithValue('No access token');
+    }
+
+    try {
+      const response = await new ResourcesService(
+        state.auth.userAuth.auth_token
+      ).reportResourceProblem(input);
+
+      return response;
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.message || 'Failed to report resource problem'
+      );
     }
   }
 );

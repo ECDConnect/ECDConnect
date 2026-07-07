@@ -1,0 +1,3 @@
+mutation ReportResourceProblem($input: ResourceProblemReportInputModelInput!) {
+  reportResourceProblem(input: $input)
+}
