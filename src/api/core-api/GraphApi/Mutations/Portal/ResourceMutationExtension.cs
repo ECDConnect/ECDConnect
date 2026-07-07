@@ -227,5 +227,32 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 ;
         }
 
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.Update)]
+        public bool ReportResourceProblem(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            ResourceProblemReportInputModel input)
+        {
+            if (input == null || input.ContentId == 0 || string.IsNullOrWhiteSpace(input.ProblemType))
+            {
+                return false;
+            }
+
+            var userId = contextAccessor.HttpContext.GetUser().Id;
+            var resourceProblemReportRepo = repoFactory.CreateRepository<UserResourceProblemReport>();
+
+            resourceProblemReportRepo.Insert(new UserResourceProblemReport()
+            {
+                UserId = userId,
+                ContentId = input.ContentId,
+                ProblemType = input.ProblemType,
+                AdditionalDetails = input.AdditionalDetails,
+                DataFreeAtReport = input.DataFreeAtReport,
+                LinkAtReport = input.LinkAtReport,
+            });
+
+            return true;
+        }
+
     }
 }

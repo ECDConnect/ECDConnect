@@ -20,6 +20,9 @@ import { LanguageCode } from '@/i18n/types';
 import { useAppDispatch } from '@/store';
 import { resourcesThunkActions } from '@/store/resources';
 import { analyticsActions } from '@/store/analytics';
+import { ResourceProblemReportSection } from '@/components/resources/resource-problem-report-section';
+import { ReportResourceProblemDialog } from '@/components/resources/report-resource-problem-dialog';
+import { ResourceProblemReportSnackbar } from '@/components/resources/resource-problem-report-snackbar';
 
 interface ResourceItemProps {
   resourceId: number;
@@ -40,6 +43,11 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
   const [isLiked, setIsLiked] = useState(false);
   const [resourceItem, setResourceItem] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showReportProblem, setShowReportProblem] = useState(false);
+  const [problemReportSnackbar, setProblemReportSnackbar] = useState<{
+    message: string;
+    type: 'success' | 'error';
+  } | null>(null);
 
   const handleGetResourceByLanguage = useCallback(async () => {
     try {
@@ -167,6 +175,21 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
     }
   }, [resourceItem?.dataFree]);
 
+  const handleReportProblemSuccess = useCallback(() => {
+    setShowReportProblem(false);
+    setProblemReportSnackbar({
+      message: 'Problem reported',
+      type: 'success',
+    });
+  }, []);
+
+  const handleReportProblemError = useCallback(() => {
+    setProblemReportSnackbar({
+      message: 'Failed to report problem. Please try again.',
+      type: 'error',
+    });
+  }, []);
+
   const handleShare = useCallback(async () => {
     if (navigator?.share) {
       try {
@@ -181,6 +204,19 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
       alert('Web Share API not supported in this browser.');
     }
   }, [resourceItem?.link]);
+
+  if (showReportProblem) {
+    return (
+      <ReportResourceProblemDialog
+        contentId={resourceId}
+        dataFree={resourceItem?.dataFree}
+        link={resourceItem?.link}
+        onClose={() => setShowReportProblem(false)}
+        onSaveSuccess={handleReportProblemSuccess}
+        onSaveError={handleReportProblemError}
+      />
+    );
+  }
 
   return (
     <div>
@@ -245,7 +281,7 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
           type="help"
           text={resourceItem?.shortDescription}
           color="textMid"
-          className="my-4"
+          className="mt-4"
         />
         <div>{renderResourceDataType}</div>
         <Button
@@ -299,6 +335,9 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
             handleUpdateResourceLike(e?.checked);
           }}
         />
+        <ResourceProblemReportSection
+          onReportClick={() => setShowReportProblem(true)}
+        />
         <Divider dividerType="dashed" className="my-4" />
         <Button
           onClick={handleShare}
@@ -311,6 +350,13 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
           text={'Share resource'}
         />
       </div>
+      {problemReportSnackbar && (
+        <ResourceProblemReportSnackbar
+          message={problemReportSnackbar.message}
+          type={problemReportSnackbar.type}
+          onDismiss={() => setProblemReportSnackbar(null)}
+        />
+      )}
     </div>
   );
 };
