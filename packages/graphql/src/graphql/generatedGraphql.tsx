@@ -4789,7 +4789,9 @@ export type Mutation = {
   __typename?: 'Mutation';
   acceptRejectCommunityRequests?: Maybe<CommunityProfileModel>;
   addAbsenteeForPractitioner?: Maybe<Absentees>;
-  addChildProgressReportPeriods: Scalars['Boolean'];
+  addChildProgressReportPeriods?: Maybe<
+    Array<Maybe<ChildProgressReportPeriodModel>>
+  >;
   addCoachVisitData: Scalars['Boolean'];
   addCoachVisitInviteForPractitioner?: Maybe<Visit>;
   addFollowUpVisitForPractitioner?: Maybe<Visit>;

@@ -15,5 +15,12 @@ namespace ECDLink.DataAccessLayer.Entities
         public string Details { get; set; } = string.Empty;
         public DateTime EventDate { get; set; }
         public string AppVersion { get; set; } = string.Empty;
+        public string Type { get; set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
+        public string? Payload { get; set; }
+        public string? ClientUrl { get; set; }
+        public bool? IsOnline { get; set; }
+        public string? RequestPayload { get; set; }
+        public string? UserAgent { get; set; }
     }
 }
