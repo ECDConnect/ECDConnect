@@ -92,37 +92,38 @@ export const AddressMap: React.FC<AddressMapProps> = ({
             )
           : null;
 
-        const updatedAddress: SiteAddressDto = {
-          ...address,
-          addressLine1: `${
-            getAddressComponent(mapData, 'street_number')?.short_name || ''
-          } ${getAddressComponent(mapData, 'route')?.short_name || ''}`,
-          addressLine2:
-            getAddressComponent(mapData, 'sublocality')?.short_name || '',
-          addressLine3:
-            getAddressComponent(mapData, 'locality')?.short_name || '',
-          municipality:
-            getAddressComponent(mapData, 'administrative_area_level_2')
-              ?.short_name || '',
-          provinceId: matchedProvince ? matchedProvince.id : null,
-          province: !matchedProvince
-            ? null
-            : {
-                id: matchedProvince.id || '',
-                enumId: matchedProvince.id || '',
-                description: matchedProvince.description || '',
-              },
-          postalCode:
-            getAddressComponent(mapData, 'postal_code')?.short_name || '',
-          latitude: latitude.toString(),
-          longitude: longitude.toString(),
-        };
-
-        setAddress(updatedAddress);
-        setFormattedAddress(formatAddress(updatedAddress));
+        setAddress((prevAddress) => {
+          const updatedAddress: SiteAddressDto = {
+            ...prevAddress,
+            addressLine1: `${
+              getAddressComponent(mapData, 'street_number')?.short_name || ''
+            } ${getAddressComponent(mapData, 'route')?.short_name || ''}`,
+            addressLine2:
+              getAddressComponent(mapData, 'sublocality')?.short_name || '',
+            addressLine3:
+              getAddressComponent(mapData, 'locality')?.short_name || '',
+            municipality:
+              getAddressComponent(mapData, 'administrative_area_level_2')
+                ?.short_name || '',
+            provinceId: matchedProvince ? matchedProvince.id : null,
+            province: !matchedProvince
+              ? null
+              : {
+                  id: matchedProvince.id || '',
+                  enumId: matchedProvince.id || '',
+                  description: matchedProvince.description || '',
+                },
+            postalCode:
+              getAddressComponent(mapData, 'postal_code')?.short_name || '',
+            latitude: latitude.toString(),
+            longitude: longitude.toString(),
+          };
+          setFormattedAddress(formatAddress(updatedAddress));
+          return updatedAddress;
+        });
       }
     },
-    [address, provinces]
+    [provinces]
   );
 
   // Get current location when the component mounts
