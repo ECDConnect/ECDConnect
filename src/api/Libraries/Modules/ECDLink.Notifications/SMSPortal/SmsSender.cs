@@ -24,6 +24,7 @@ namespace ECDLink.Notifications.SMSPortal
         private readonly ISystemSetting<SMSPortalOptions> _smsOptions;
         private readonly ShortUrlManager _shortUrlManager;
         private readonly MessageLogManager _messageLogManager;
+        private readonly AppLogManager _appLogManager;
 
         private HttpClient GetSmsClient
         {
@@ -50,13 +51,15 @@ namespace ECDLink.Notifications.SMSPortal
             TemplateProcessor templateProcessor, 
             ILogger<SmsSenderBase> logger,
             ShortUrlManager shortUrlManager,
-            MessageLogManager messageLogManager
+            MessageLogManager messageLogManager,
+            AppLogManager appLogManager
             )
             :base(messageFactory, templateProcessor, new SMSPortalMessage(), logger)
         {
             _smsOptions = optionsAccessor;
             _shortUrlManager = shortUrlManager;
             _messageLogManager = messageLogManager;
+            _appLogManager = appLogManager;
         }
 
         override public async Task SendMessageAsync(CancellationToken cancellationToken = default)
@@ -116,6 +119,13 @@ namespace ECDLink.Notifications.SMSPortal
                 }
 
                 _logger.LogError("{0}: {1}", requestContentAsString, responseContentAsString);
+
+                await _appLogManager.LogErrorAsync(
+                    "sms",
+                    $"Failed to send SMS: {responseContentAsString}",
+                    _model.Id,
+                    payload: responseContentAsString,
+                    requestPayload: requestContentAsString);
             }
             await _shortUrlManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, notificationResult, messageLogId);
             await _messageLogManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, notificationResult, ((int)response.StatusCode).ToString(), responseContentAsString, messageLogId);

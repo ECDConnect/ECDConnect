@@ -30,6 +30,7 @@ namespace ECDLink.Notifications
             services.AddTransient<IMessageLogger<BulkSmsMessage>, SmsMessageLogger>();
             services.AddTransient<IMessageLogger<IEmailMessage>, EmailMessageLogger>();
             services.AddTransient<MessageLogManager>();
+            services.AddTransient<AppLogManager>();
         }
 
         public static void AddNotificationConfiguration(IApplicationBuilder app)
