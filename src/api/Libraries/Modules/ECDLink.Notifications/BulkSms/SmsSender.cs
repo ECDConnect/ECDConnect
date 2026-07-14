@@ -6,6 +6,8 @@ using ECDLink.Notifications.MessageLogs;
 using ECDLink.Notifications.Sms;
 using ECDLink.Notifications.Templates;
 using ECDLink.Security.Api.Constants;
+using ECDLink.Tenancy.Context;
+using ECDLink.Tenancy.Enums;
 using ECDLink.UrlShortner.Managers;
 using ECDLink.UrlShortner.Model;
 using Microsoft.Extensions.Logging;
@@ -136,12 +138,15 @@ namespace ECDLink.Notifications.BulkSms
 
                 _logger.LogError("{0}: {1}", requestContentAsString, responseContentAsString);
 
-                await _appLogManager.LogErrorAsync(
-                    "sms",
-                    $"Failed to send SMS: {resultModel.Title ?? responseContentAsString}",
-                    _model.Id,
-                    payload: responseContentAsString,
-                    requestPayload: requestContentAsString);
+                if (TenantExecutionContext.Tenant.TenantType == TenantType.OpenAccess)
+                {
+                    await _appLogManager.LogErrorAsync(
+                        "sms",
+                        $"Failed to send SMS: {resultModel.Title ?? responseContentAsString}",
+                        _model.Id,
+                        payload: responseContentAsString,
+                        requestPayload: requestContentAsString);
+                }
             }
             await _shortUrlManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, notificationResult, messageLogId);
             await _messageLogManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, notificationResult, ((int)response.StatusCode).ToString(), responseContentAsString, messageLogId);
