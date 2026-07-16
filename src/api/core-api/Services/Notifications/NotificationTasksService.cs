@@ -43,7 +43,7 @@ namespace EcdLink.Api.CoreApi.Services
             _contextAccessor = contextAccessor;
             _repositoryFactory = repositoryFactory;
             _hierarchyEngine = hierarchyEngine;
-            _applicationUserId = (_contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId().Value);
+            _applicationUserId = _hierarchyEngine.ResolveSystemUserId(_contextAccessor.HttpContext?.GetUser()?.Id) ?? Guid.Empty;
 
             _practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
             _coachRepo = _repositoryFactory.CreateGenericRepository<Coach>(userContext: _applicationUserId);

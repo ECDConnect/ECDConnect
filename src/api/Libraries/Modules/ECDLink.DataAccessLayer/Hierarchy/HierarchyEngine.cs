@@ -346,6 +346,27 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             return value.Count == 0 ? null : value[0];
         }
 
+        /// <summary>
+        /// Resolves the acting user for request or background work: HTTP user if present, else tenant admin.
+        /// Returns null when neither is available (e.g. archived/misconfigured tenant with no admin).
+        /// Prefer this over <see cref="GetAdminUserId"/>.Value which throws when no admin exists.
+        /// </summary>
+        public Guid? ResolveSystemUserId(Guid? httpUserId)
+        {
+            if (httpUserId.HasValue && httpUserId.Value != Guid.Empty)
+            {
+                return httpUserId.Value;
+            }
+
+            var adminUserId = GetAdminUserId();
+            if (adminUserId.HasValue && adminUserId.Value != Guid.Empty)
+            {
+                return adminUserId;
+            }
+
+            return null;
+        }
+
         public Guid? GetSuperAdminUserId()
         {
             var userHierarchyRepo = _repoFactory.CreateRepository<UserHierarchyEntity>();

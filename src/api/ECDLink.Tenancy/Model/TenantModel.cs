@@ -27,6 +27,7 @@ namespace ECDLink.Tenancy.Model
             BlobStorageAddress = model.BlobStorageAddress;
             OrganisationHelpPhoneNumber = model.OrganisationHelpPhoneNumber;
             OrganisationHelpWhatsAppNumber = model.OrganisationHelpWhatsAppNumber;
+            IsActive = model.IsActive;
         }
 
         public Guid Id { get; set; }
@@ -45,6 +46,7 @@ namespace ECDLink.Tenancy.Model
         public string BlobStorageAddress { get; set; }
         public string OrganisationHelpPhoneNumber { get; set; }
         public string OrganisationHelpWhatsAppNumber { get; set; }
+        public bool IsActive { get; set; } = true;
     }
 
     public class TenantModelAPI

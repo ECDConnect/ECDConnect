@@ -25,5 +25,6 @@ namespace ECDLink.PostgresTenancy.Entities
         public string BlobStorageAddress { get; set; }
         public string OrganisationHelpPhoneNumber { get; set; }
         public string OrganisationHelpWhatsAppNumber { get; set; }
+        public bool IsActive { get; set; } = true;
     }
 }

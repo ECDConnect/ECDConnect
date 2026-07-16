@@ -27,6 +27,7 @@ namespace ECDLink.Tenancy.Model
         public string BlobStorageAddress { get; set; }
         public string OrganisationHelpPhoneNumber { get; set; }
         public string OrganisationHelpWhatsAppNumber { get; set; }
+        public bool IsActive { get; set; } = true;
 
         public bool IsHost { get { return this.TestSiteAddress == "localhost:5001";  } }
 

@@ -160,7 +160,8 @@ namespace ECDLink.PostgresTenancy.Services
                 OrganisationHelpPhoneNumber = tenantEntity.OrganisationHelpPhoneNumber,
                 OrganisationHelpWhatsAppNumber = tenantEntity.OrganisationHelpWhatsAppNumber,
                 DefaultSystemSettings = tenantEntity.DefaultSystemSettings,
-                BlobStorageAddress = tenantEntity.BlobStorageAddress
+                BlobStorageAddress = tenantEntity.BlobStorageAddress,
+                IsActive = tenantEntity.IsActive
             };
         }
     }
