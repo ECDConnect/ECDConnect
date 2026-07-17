@@ -200,7 +200,7 @@ namespace ECDLink.DataAccessLayer.Context
             });
             builder.Entity<Attendance>(x =>
             {
-                x.HasKey(e => new { e.ClassroomProgrammeId, e.UserId, e.WeekOfYear });
+                x.HasKey(e => new { e.ClassroomProgrammeId, e.UserId, e.WeekOfYear, e.Year });
             });
             builder.Entity<AuditLog>(x =>
             {
