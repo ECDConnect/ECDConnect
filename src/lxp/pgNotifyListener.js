@@ -27,6 +27,9 @@ function startListener() {
   client.on('notification', async msg => {
     try {
       const payload = JSON.parse(msg.payload);
+      if (payload.type === '') {
+        return;
+      }
       await sendToSlack(payload);
     } catch (err) {
       console.error('pg-notify: failed to handle notification', err);
@@ -53,7 +56,7 @@ function scheduleReconnect() {
 }
 
 async function sendToSlack(payload) {
-  const emoji = payload.severity === 'HIGH' ? '🔴' : '🟠';
+  const emoji = payload.severity === 'HIGH' && payload.message !== '' && payload.message !== 'Not Authorised' ? '🔴' : '🟠';
   const onlineStatus = payload.is_online === true ? '🟢 Online' 
     : payload.is_online === false ? '🔌 Offline' 
     : null;
