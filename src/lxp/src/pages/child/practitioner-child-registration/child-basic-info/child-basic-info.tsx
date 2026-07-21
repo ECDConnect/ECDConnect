@@ -345,7 +345,7 @@ export const ChildBasicInfo: React.FC<
       );
 
       const whatsapp = () => {
-        const textMessage = `${practitioner?.user?.firstName} practitioner has invited you to register you child at their care centre. Tap this link to register ${firstName} for ${selectedClassroom?.name}: ${childDetails.caregiverRegistrationUrl}`;
+        const textMessage = `${practitioner?.user?.firstName} practitioner has invited you to register your child at their care centre. Tap this link to register ${firstName} for ${selectedClassroom?.name}: ${childDetails.caregiverRegistrationUrl}`;
         const whatsAppLink = `whatsapp://send?text=${textMessage}`;
         window.open(whatsAppLink);
       };

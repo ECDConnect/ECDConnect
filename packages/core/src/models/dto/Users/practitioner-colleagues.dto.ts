@@ -5,4 +5,5 @@ export interface PractitionerColleagues {
   contactNumber: string;
   classroomNames: string;
   profilePhoto: string;
+  userId: string;
 }
