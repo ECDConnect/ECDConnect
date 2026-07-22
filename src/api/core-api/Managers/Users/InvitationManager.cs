@@ -3,6 +3,7 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using static EcdLink.Api.CoreApi.Constants;
@@ -22,6 +23,48 @@ namespace EcdLink.Api.CoreApi.Managers.Users
         { 
             Guid? _applicationUserId = contextAccessor.HttpContext.GetUser()?.Id;
             _inviteRepo = repoFactory.CreateGenericRepository<Invite>(userContext: _applicationUserId);
+        }
+
+        /// <summary>
+        /// Active pending invite for a not-yet-registered user (OA phone invite path).
+        /// </summary>
+        public Invite GetPendingUserInviteByPhone(string phoneNumber)
+        {
+            if (string.IsNullOrWhiteSpace(phoneNumber))
+            {
+                return null;
+            }
+
+            return _inviteRepo.GetAll()
+                .Include(x => x.User)
+                .Where(x =>
+                    x.IsActive
+                    && x.Status == InviteStatus.Pending
+                    && !x.IsAccepted.HasValue
+                    && x.User != null
+                    && x.User.PhoneNumber == phoneNumber)
+                .OrderByDescending(x => x.InsertedDate)
+                .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Active pending invite linking a practitioner to a principal (both are Practitioner entity ids).
+        /// </summary>
+        public Invite GetPendingPractitionerInvite(Guid practitionerId, Guid principalId)
+        {
+            if (practitionerId == Guid.Empty || principalId == Guid.Empty)
+            {
+                return null;
+            }
+
+            return _inviteRepo.GetAll()
+                .Where(x =>
+                    x.IsActive
+                    && x.Status == InviteStatus.Pending
+                    && x.PractitionerId == practitionerId
+                    && x.PrincipalId == principalId)
+                .OrderByDescending(x => x.InsertedDate)
+                .FirstOrDefault();
         }
 
         public Invite CreateUserInvitation(Guid userId, Guid principalId)
@@ -47,6 +90,9 @@ namespace EcdLink.Api.CoreApi.Managers.Users
             return newInvite;
         }
 
+        /// <summary>
+        /// Creates a pending practitioner invite, or returns the existing pending one (idempotent).
+        /// </summary>
         public Invite CreatePractitionerInvitation(Guid userId, Guid practitionerId, Guid principalId)
         {
              if (userId == Guid.Empty)
@@ -60,6 +106,12 @@ namespace EcdLink.Api.CoreApi.Managers.Users
             if (principalId == Guid.Empty)
             {
                 throw new ArgumentNullException("principalId", PrincipalIDNull);
+            }
+
+            var existing = GetPendingPractitionerInvite(practitionerId, principalId);
+            if (existing != null)
+            {
+                return existing;
             }
 
             var newInvite = new Invite

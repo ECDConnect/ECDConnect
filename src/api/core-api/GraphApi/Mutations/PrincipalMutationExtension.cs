@@ -67,6 +67,40 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     Practitioner practitioner = practitionerRepo.GetByUserId(practitionerUser.Id);
                     if (practitioner != null && principalUser.UserId != practitioner.UserId)
                     {
+                        // Refuse reassignment when already linked to a different principal
+                        // (pending invite or accepted — PrincipalHierarchy is set at invite time).
+                        if (practitioner.PrincipalHierarchy.HasValue
+                            && practitioner.PrincipalHierarchy != principalUser.UserId)
+                        {
+                            throw new QueryException(
+                                "This practitioner is already linked to a different programme.");
+                        }
+
+                        // Idempotent: already invited/linked to this principal — update nicknames only,
+                        // do not create another invite, re-award points, or resend notifications.
+                        if (practitioner.PrincipalHierarchy == principalUser.UserId)
+                        {
+                            var existingUser = userManager.FindByIdAsync(practitioner.UserId.ToString()).Result;
+                            if (existingUser != null)
+                            {
+                                existingUser.NickFirstName = firstName;
+                                existingUser.NickSurname = lastName;
+                                existingUser.NickFullName = firstName + " " + lastName;
+                                userManager.UpdateAsync(existingUser);
+                            }
+
+                            // Ensure a single pending invite exists (no-op if already present)
+                            if (!practitioner.DateAccepted.HasValue && uId != practitionerUser.Id)
+                            {
+                                inviteManager.CreatePractitionerInvitation(
+                                    practitioner.UserId ?? practitionerUser.Id,
+                                    practitioner.Id,
+                                    principalUser.Id);
+                            }
+
+                            return practitioner;
+                        }
+
                         practitioner.DateLinked = DateTime.Now;
                         practitioner.PrincipalHierarchy = principalUser.UserId;
                         practitioner.IsPrincipal = false;
