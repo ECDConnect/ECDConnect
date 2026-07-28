@@ -22,6 +22,8 @@ using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
+using ECDLink.DataAccessLayer.Repositories.Generic.Base;
+using ECDLink.DataAccessLayer.Helpers;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
@@ -495,12 +497,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             string search = null,
             List<Guid?> provinceSearch = null,
             List<string> connectUsageSearch = null,
-            List<string> practitionerTypeSearch = null
+            List<string> practitionerTypeSearch = null,
+            List<string> statusSearch = null,
+            DateTime? insertedDateFrom = null,
+            DateTime? insertedDateTo = null
             )
         {
             var uId = contextAccessor.HttpContext.GetUser()?.Id;
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
-            var shortenUrlEntityRepo = repoFactory.CreateGenericRepository<ShortenUrlEntity>(userContext: uId);
             var sixMonthsAgo = DateTime.Now.AddMonths(-6).GetStartOfMonth().Date;
             var tenantId = TenantExecutionContext.Tenant.Id;
 
@@ -509,7 +513,88 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 return null;
             }
 
-            var practitionerQuery = practitionerRepo.GetAll(pagingInput).Where(x => !x.User.UserName.StartsWith("External_"));
+            var practitionerQuery = BuildPractitionerFilterQuery(
+                practitionerRepo, dbContext, tenantId, search, provinceSearch,
+                practitionerTypeSearch, statusSearch, insertedDateFrom, insertedDateTo);
+
+            var pageSize = pagingInput?.PageSize;
+            var pageNumber = pagingInput?.PageNumber ?? 0;
+            var hasConnectUsageFilter = connectUsageSearch != null && connectUsageSearch.Any();
+
+            // No in-memory-only filter active: order and page at the database level so we
+            // only ever materialize/fetch the rows for the requested page.
+            if (!hasConnectUsageFilter)
+            {
+                practitionerQuery = practitionerQuery.OrderByDescending(x => x.InsertedDate);
+                if (pageSize is not null)
+                {
+                    practitionerQuery = PaginationHelper.AddPaging(pageNumber * pageSize.Value, pageSize.Value, practitionerQuery);
+                }
+
+                return BuildPractitionerModels(practitionerQuery, repoFactory, uId);
+            }
+
+            // connectUsage is a computed value (based on invitations/last-seen), not a DB column,
+            // so it can only be filtered in memory once the candidate rows have been materialized.
+            var allMatching = BuildPractitionerModels(practitionerQuery, repoFactory, uId);
+            var filteredUsers = ApplyConnectUsageFilter(allMatching, connectUsageSearch, sixMonthsAgo)
+                .OrderByDescending(x => x.InsertedDate)
+                .ToList();
+
+            if (pageSize is not null)
+            {
+                filteredUsers = filteredUsers.Skip(pageNumber * pageSize.Value).Take(pageSize.Value).ToList();
+            }
+
+            return filteredUsers;
+        }
+
+        [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.View)]
+        public int GetAllPortalPractitionersCount(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            AuthenticationDbContext dbContext,
+            CancellationToken cancellationToken,
+            string search = null,
+            List<Guid?> provinceSearch = null,
+            List<string> connectUsageSearch = null,
+            List<string> practitionerTypeSearch = null,
+            List<string> statusSearch = null,
+            DateTime? insertedDateFrom = null,
+            DateTime? insertedDateTo = null
+            )
+        {
+            var uId = contextAccessor.HttpContext.GetUser()?.Id;
+            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+            var sixMonthsAgo = DateTime.Now.AddMonths(-6).GetStartOfMonth().Date;
+            var tenantId = TenantExecutionContext.Tenant.Id;
+
+            var practitionerQuery = BuildPractitionerFilterQuery(
+                practitionerRepo, dbContext, tenantId, search, provinceSearch,
+                practitionerTypeSearch, statusSearch, insertedDateFrom, insertedDateTo);
+
+            if (connectUsageSearch != null && connectUsageSearch.Any())
+            {
+                var allMatching = BuildPractitionerModels(practitionerQuery, repoFactory, uId);
+                return ApplyConnectUsageFilter(allMatching, connectUsageSearch, sixMonthsAgo).Count;
+            }
+
+            return practitionerQuery.Count();
+        }
+
+        private static IQueryable<Practitioner> BuildPractitionerFilterQuery(
+            IGenericRepository<Practitioner, Guid> practitionerRepo,
+            AuthenticationDbContext dbContext,
+            Guid tenantId,
+            string search,
+            List<Guid?> provinceSearch,
+            List<string> practitionerTypeSearch,
+            List<string> statusSearch,
+            DateTime? insertedDateFrom,
+            DateTime? insertedDateTo)
+        {
+            var practitionerQuery = practitionerRepo.GetAll().Where(x => !x.User.UserName.StartsWith("External_"));
+
             // General search term
             if (!string.IsNullOrWhiteSpace(search))
             {
@@ -550,6 +635,33 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 }
             }
 
+            // Status search — mirrors the frontend's "exactly one selected = filter, otherwise show all" behaviour
+            if (statusSearch != null && statusSearch.Count == 1)
+            {
+                var wantActive = statusSearch[0] == "Active";
+                practitionerQuery = practitionerQuery.Where(x => x.User.IsActive == wantActive);
+            }
+
+            // Date added range — matches on the User's InsertedDate, same field the table displays/sorts by
+            if (insertedDateFrom.HasValue && insertedDateTo.HasValue)
+            {
+                var from = insertedDateFrom.Value.Date;
+                var to = insertedDateTo.Value.Date;
+                practitionerQuery = practitionerQuery.Where(x =>
+                    x.User.InsertedDate.HasValue &&
+                    x.User.InsertedDate.Value.Date >= from &&
+                    x.User.InsertedDate.Value.Date <= to);
+            }
+
+            return practitionerQuery;
+        }
+
+        private static List<PortalPractitionerModel> BuildPractitionerModels(
+            IQueryable<Practitioner> practitionerQuery,
+            IGenericRepositoryFactory repoFactory,
+            Guid? uId)
+        {
+            var shortenUrlEntityRepo = repoFactory.CreateGenericRepository<ShortenUrlEntity>(userContext: uId);
             var userIds = practitionerQuery.Select(x => x.UserId.Value).ToList();
             var invitations = shortenUrlEntityRepo.GetAll()
                 .Where(x =>
@@ -564,7 +676,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var invitationDates = invitations.ToDictionary(x => x.Key, x => x.First().InsertedDate);
             var invitationNotifications = invitations.ToDictionary(x => x.Key, x => x.First().NotificationResult);
 
-            var practitionerModels = practitionerQuery
+            return practitionerQuery
                .Select(item => new PortalPractitionerModel
                {
                    Id = item.Id,
@@ -578,7 +690,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                                                           invitationNotifications.ContainsKey(item.UserId) ? invitationNotifications[item.UserId] : null)
                })
                .ToList();
+        }
 
+        private static List<PortalPractitionerModel> ApplyConnectUsageFilter(
+            List<PortalPractitionerModel> practitionerModels,
+            List<string> connectUsageSearch,
+            DateTime sixMonthsAgo)
+        {
             List<PortalPractitionerModel> filteredUsers = new List<PortalPractitionerModel>();
             if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.usage_invitation_active))
             {
@@ -623,7 +741,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 filteredUsers.AddRange(practitionerModels.Where(x => connectUsageSearch.Contains(x.User.ConnectUsage)).ToList());
             }
 
-            return (connectUsageSearch != null && connectUsageSearch.Any()) ? filteredUsers.DistinctBy(x => x.Id).ToList() : practitionerModels;
+            return filteredUsers.DistinctBy(x => x.Id).ToList();
         }
 
         [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.Create)]
