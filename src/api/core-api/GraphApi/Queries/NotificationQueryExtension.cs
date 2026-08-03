@@ -228,13 +228,25 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             {
                 messageRecords = (status == "scheduled" ? messageRecords.Where(x => x.MessageDate >= DateTime.Now).ToList() : messageRecords.Where(x => x.MessageDate <= DateTime.Now).OrderByDescending(x => x.MessageDate).Distinct().ToList());
             } 
-            if (startDate != null) 
+            // Compare on calendar date only so the full start/end days are inclusive
+            // (client may send a time component such as "now" for today).
+            if (startDate != null)
             {
-                messageRecords = messageRecords.Where(x => x.MessageDate >= startDate.Value).OrderByDescending(x => x.MessageDate).Distinct().ToList();
-            } 
+                var startOfDay = startDate.Value.Date;
+                messageRecords = messageRecords
+                    .Where(x => x.MessageDate.HasValue && x.MessageDate.Value.Date >= startOfDay)
+                    .OrderByDescending(x => x.MessageDate)
+                    .Distinct()
+                    .ToList();
+            }
             if (endDate != null)
             {
-                messageRecords = messageRecords.Where(x => x.MessageDate <= endDate.Value).OrderByDescending(x => x.MessageDate).Distinct().ToList();
+                var endOfDay = endDate.Value.Date;
+                messageRecords = messageRecords
+                    .Where(x => x.MessageDate.HasValue && x.MessageDate.Value.Date <= endOfDay)
+                    .OrderByDescending(x => x.MessageDate)
+                    .Distinct()
+                    .ToList();
             }
             var filteredMessages = messageRecords.Select(x => new { x.Message, x.Subject, x.ToGroups, x.MessageDate, x.Status }).OrderByDescending(x => x.MessageDate).Distinct().ToList();
             
