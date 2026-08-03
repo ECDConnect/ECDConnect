@@ -53,7 +53,7 @@ namespace ECDLink.Core.Services
             _attendanceRepo = attendanceRepo;
             _userManager = userManager;
             _services = services;
-            _applicationUserId = contextAccessor.HttpContext != null && contextAccessor.HttpContext.GetUser() != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();
+            _applicationUserId = hierarchyEngine.ResolveSystemUserId(contextAccessor.HttpContext?.GetUser()?.Id);
 
             _absenteeRepo = _repositoryFactory.CreateGenericRepository<Absentees>(userContext: _applicationUserId);
             _reassignmentsRepo = _repositoryFactory.CreateGenericRepository<ClassReassignmentHistory>(userContext: _applicationUserId);
@@ -67,6 +67,35 @@ namespace ECDLink.Core.Services
                 if (__personnelService == null) __personnelService = (IPersonnelService)_services.GetServices<IPersonnelService>();
                 return __personnelService;
             }
+        }
+
+        /// <summary>
+        /// Resolves LoggedBy for ClassReassignmentHistory so we never write Guid.Empty
+        /// (which violates FK_ClassReassignmentHistory_AspNetUsers_LoggedBy).
+        /// Preference: provided loggedByUser → current/app user → tenant admin.
+        /// Returns null only when no valid user id is available.
+        /// </summary>
+        private Guid? ResolveLoggedByUserId(string loggedByUser)
+        {
+            if (!string.IsNullOrWhiteSpace(loggedByUser)
+                && Guid.TryParse(loggedByUser, out var parsedLoggedBy)
+                && parsedLoggedBy != Guid.Empty)
+            {
+                return parsedLoggedBy;
+            }
+
+            if (_applicationUserId.HasValue && _applicationUserId.Value != Guid.Empty)
+            {
+                return _applicationUserId;
+            }
+
+            var adminUserId = _hierarchyEngine.GetAdminUserId();
+            if (adminUserId.HasValue && adminUserId.Value != Guid.Empty)
+            {
+                return adminUserId;
+            }
+
+            return null;
         }
 
         public bool ReassignAbsentees()
@@ -214,7 +243,7 @@ namespace ECDLink.Core.Services
                     {
                         UserId = Guid.Parse(fromUserId),
                         Reason = reason,
-                        LoggedBy = Guid.Parse(loggedByUser),
+                        LoggedBy = ResolveLoggedByUserId(loggedByUser),
                         ReassignedToUser = Guid.Parse(toUserId),
                         AssignedToDate = startDate
                     };
@@ -677,7 +706,7 @@ namespace ECDLink.Core.Services
                                         {
                                             UserId = historyItem.ReassignedToUser.Value,
                                             Reason = "Reassignment back from history item " + historyItem.Id,
-                                            LoggedBy = _applicationUserId,
+                                            LoggedBy = ResolveLoggedByUserId(_applicationUserId.ToStringOrNull()),
                                             ReassignedToDate = DateTime.Now,
                                             ReassignedToUser = historyItem.UserId.Value,
                                             ReassignedBackToUserId = null,

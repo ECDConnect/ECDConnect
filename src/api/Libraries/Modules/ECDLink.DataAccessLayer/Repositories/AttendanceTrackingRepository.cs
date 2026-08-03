@@ -21,42 +21,108 @@ namespace ECDLink.DataAccessLayer.Repositories
 
         public async Task<bool> TrackAttendance(IEnumerable<Attendance> attendances)
         {
+            var list = attendances?.ToList() ?? new List<Attendance>();
+            if (!list.Any())
+            {
+                return true;
+            }
+
             try
             {
-                // Check for existing records
-                foreach (var attendance in attendances)
-                {
-                    var existingRecord = await _context.Attendances.FirstOrDefaultAsync(x =>
-                        x.UserId == attendance.UserId
-                        && x.ClassroomProgrammeId == attendance.ClassroomProgrammeId 
-                        && x.WeekOfYear == attendance.WeekOfYear);
-
-                    if (existingRecord != null)
-                    {
-                        // Update existing record
-                        if (existingRecord.Attended != attendance.Attended)
-                        {
-                            existingRecord.UpdatedDate = DateTime.Now;
-                            existingRecord.Attended = attendance.Attended;
-                        }
-                    }
-                    else
-                    {
-                        attendance.InsertedDate = DateTime.Now;
-                        // Add new record
-                        _context.Attendances.Add(attendance);
-                    }
-                }
-
+                await UpsertAttendancesAsync(list);
                 await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (DbUpdateException)
+            {
+                // Concurrent inserts can race on PK_Attendance; clear tracked changes and retry as upsert.
+                DetachTrackedAttendanceChanges();
+
+                try
+                {
+                    await UpsertAttendancesAsync(list);
+                    await _context.SaveChangesAsync();
+                    return true;
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
             }
             catch (Exception)
             {
-                // Log error
                 return false;
             }
+        }
 
-            return true;
+        private async Task UpsertAttendancesAsync(IEnumerable<Attendance> attendances)
+        {
+            foreach (var attendance in attendances)
+            {
+                var existingRecord = await FindExistingAttendanceAsync(attendance);
+
+                if (existingRecord != null)
+                {
+                    if (existingRecord.Attended != attendance.Attended)
+                    {
+                        existingRecord.UpdatedDate = DateTime.Now;
+                        existingRecord.Attended = attendance.Attended;
+                    }
+
+                    // Keep latest day captured within the week when re-syncing offline days.
+                    if (attendance.AttendanceDate > existingRecord.AttendanceDate)
+                    {
+                        existingRecord.AttendanceDate = attendance.AttendanceDate;
+                        existingRecord.MonthOfYear = attendance.MonthOfYear;
+                        existingRecord.UpdatedDate = DateTime.Now;
+                    }
+                }
+                else
+                {
+                    attendance.InsertedDate = DateTime.Now;
+                    _context.Attendances.Add(attendance);
+                }
+            }
+        }
+
+        private async Task<Attendance> FindExistingAttendanceAsync(Attendance attendance)
+        {
+            // Prefer already-tracked entities (including Added in this unit of work) so a single
+            // batch with multiple days in the same week does not stage duplicate PK inserts.
+            var localMatch = _context.Attendances.Local.FirstOrDefault(x =>
+                IsSameAttendanceKey(x, attendance));
+
+            if (localMatch != null)
+            {
+                return localMatch;
+            }
+
+            return await _context.Attendances.FirstOrDefaultAsync(x =>
+                x.UserId == attendance.UserId
+                && x.ClassroomProgrammeId == attendance.ClassroomProgrammeId
+                && x.WeekOfYear == attendance.WeekOfYear
+                && x.Year == attendance.Year);
+        }
+
+        private static bool IsSameAttendanceKey(Attendance left, Attendance right)
+        {
+            return left.UserId == right.UserId
+                && left.ClassroomProgrammeId == right.ClassroomProgrammeId
+                && left.WeekOfYear == right.WeekOfYear
+                && left.Year == right.Year;
+        }
+
+        private void DetachTrackedAttendanceChanges()
+        {
+            foreach (var entry in _context.ChangeTracker.Entries<Attendance>().ToList())
+            {
+                if (entry.State == EntityState.Added
+                    || entry.State == EntityState.Modified
+                    || entry.State == EntityState.Deleted)
+                {
+                    entry.State = EntityState.Detached;
+                }
+            }
         }
 
         public IQueryable<Attendance> GetAllAttendances(List<Guid> classroomGroupIds)

@@ -154,6 +154,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<CommunityProfileConnection> CommunityProfileConnections { get; set; }
 
         public DbSet<UserResourceLikes> UserResourceLikes { get; set; }
+        public DbSet<UserResourceProblemReport> UserResourceProblemReports { get; set; }
 
         public DbSet<Holiday> Holidays { get; set; }
         public DbSet<Invite> Invite { get; set; }
@@ -199,7 +200,7 @@ namespace ECDLink.DataAccessLayer.Context
             });
             builder.Entity<Attendance>(x =>
             {
-                x.HasKey(e => new { e.ClassroomProgrammeId, e.UserId, e.WeekOfYear });
+                x.HasKey(e => new { e.ClassroomProgrammeId, e.UserId, e.WeekOfYear, e.Year });
             });
             builder.Entity<AuditLog>(x =>
             {
