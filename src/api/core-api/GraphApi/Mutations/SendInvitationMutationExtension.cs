@@ -7,7 +7,9 @@ using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Helpers;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Managers;
+using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
@@ -21,6 +23,7 @@ using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 
@@ -135,6 +138,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 [Service] ApplicationUserManager userManager,
                 [Service] InvitationManager inviteManager,
                 [Service] IHttpContextAccessor httpContext,
+                IGenericRepositoryFactory repoFactory,
                  string practitionerPhoneNumber,
                  string preSchoolNameCode,
                  string preSchoolName,
@@ -160,20 +164,39 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 throw new ArgumentException("Principal with id not available in application");
             }
 
-            var userId = httpContext.HttpContext.GetUser().Id;
+            var callerUserId = httpContext.HttpContext.GetUser().Id;
+            var principalPractRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: callerUserId);
+            var principalPractitioner = principalPractRepo.GetByUserId(principalUserId);
+            if (principalPractitioner == null)
+            {
+                throw new ArgumentException("Principal practitioner record not available in application");
+            }
+
+            var normalizedPhone = UserHelper.NormalizePhoneNumber(practitionerPhoneNumber);
+
+            // Block duplicate OA invites for the same phone number
+            var existingPhoneInvite = inviteManager.GetPendingUserInviteByPhone(normalizedPhone);
+            if (existingPhoneInvite != null)
+            {
+                throw new QueryException(
+                    "An invitation has already been sent to this phone number.");
+            }
+
+            var userId = callerUserId;
             var tenantId = TenantExecutionContext.Tenant.Id;
             var user = new ApplicationUser
             {
                 UserName = $"External_Edit_{Guid.NewGuid()}",
                 IsActive = true,
                 TenantId = tenantId,
-                PhoneNumber = UserHelper.NormalizePhoneNumber(practitionerPhoneNumber),
+                PhoneNumber = normalizedPhone,
                 ContactPreference = MessageTypeConstants.SMS,
                 IdNumber = idOrPassport
             };
 
             await userManager.CreateAsync(user);
-            inviteManager.CreateUserInvitation(user.Id, principal.Id);
+            // PrincipalId on Invite references Practitioner.Id (not ApplicationUser.Id)
+            inviteManager.CreateUserInvitation(user.Id, principalPractitioner.Id);
             
             var tokenWrapper = new PrincipalPractitionerTokenWrapperModel
             {

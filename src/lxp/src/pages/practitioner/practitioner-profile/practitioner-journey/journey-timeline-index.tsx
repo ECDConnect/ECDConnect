@@ -11,6 +11,7 @@ import { getUser } from '@/store/user/user.selectors';
 import {
   Alert,
   Button,
+  Dialog,
   DialogPosition,
   LoadingSpinner,
   Steps,
@@ -21,6 +22,7 @@ import { RoleSystemNameEnum, useDialog } from '@ecdlink/core';
 import { useHistory, useLocation } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
+import { PublishedFormCertificate } from './published-forms/published-form-certificate';
 import { journeyTimelineSteps } from './timeline/journey-timeline-steps';
 import { PractitionerProfileRouteState } from '../practitioner-profile.types';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
@@ -40,6 +42,10 @@ export const JourneyTimeline = ({
 }: PractitionerJourneyProps) => {
   const [visitId, setVisitId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showCertificateDialog, setShowCertificateDialog] = useState(false);
+  const [selectedCourseName, setSelectedCourseName] = useState('');
+  const [selectedCourseCompletedDate, setSelectedCourseCompletedDate] =
+    useState('');
 
   const { isOnline } = useOnlineStatus();
   const dialog = useDialog();
@@ -108,6 +114,16 @@ export const JourneyTimeline = ({
     fetchReport();
   }, [visitId, userId, isOnline, appDispatch, timelineReport]);
 
+  const onCertificate = (courseName: string, completedDate: string) => {
+    if (!isOnline) {
+      showOnlineOnly();
+      return;
+    }
+    setSelectedCourseName(courseName);
+    setSelectedCourseCompletedDate(completedDate);
+    setShowCertificateDialog(true);
+  };
+
   // Handle view button click
   const onView = (newVisitId: string) => {
     if (!isOnline) {
@@ -163,42 +179,57 @@ export const JourneyTimeline = ({
     );
 
   return (
-    <div className="p-4">
-      {isLoading ? (
-        <LoadingSpinner
-          size="medium"
-          spinnerColor="primary"
-          backgroundColor="uiLight"
-          className="pt-4"
+    <>
+      <Dialog
+        visible={showCertificateDialog}
+        position={DialogPosition.Full}
+        className="w-full"
+        stretch
+      >
+        <PublishedFormCertificate
+          courseName={selectedCourseName}
+          courseCompletedDate={selectedCourseCompletedDate}
+          onBack={setShowCertificateDialog}
         />
-      ) : (
-        <>
-          {renderAlert()}
-          <Button
-            className="mb-4 w-full"
-            color="quatenary"
-            type="outlined"
-            textColor="quatenary"
-            icon="ClipboardListIcon"
-            text="Fill in a form"
-            onClick={() =>
-              isOnline ? onIsDisplayFormChange(true) : showOnlineOnly()
-            }
+      </Dialog>
+      <div className="p-4">
+        {isLoading ? (
+          <LoadingSpinner
+            size="medium"
+            spinnerColor="primary"
+            backgroundColor="uiLight"
+            className="pt-4"
           />
-          <Steps
-            items={journeyTimelineSteps({
-              timelineItems: timelineItems ?? [],
-              isLoading: isLoading,
-              onView: onView,
-              tenantName: tenantName,
-              startDate:
-                format(new Date(practitioner?.startDate!), 'dd MMMM yyyy') ??
-                '',
-            })}
-            typeColor={{ completed: 'successMain' }}
-          />
-        </>
-      )}
-    </div>
+        ) : (
+          <>
+            {renderAlert()}
+            <Button
+              className="mb-4 w-full"
+              color="quatenary"
+              type="outlined"
+              textColor="quatenary"
+              icon="ClipboardListIcon"
+              text="Fill in a form"
+              onClick={() =>
+                isOnline ? onIsDisplayFormChange(true) : showOnlineOnly()
+              }
+            />
+            <Steps
+              items={journeyTimelineSteps({
+                timelineItems: timelineItems ?? [],
+                isLoading: isLoading,
+                onView: onView,
+                onCertificate: onCertificate,
+                tenantName: tenantName,
+                startDate:
+                  format(new Date(practitioner?.startDate!), 'dd MMMM yyyy') ??
+                  '',
+              })}
+              typeColor={{ completed: 'successMain' }}
+            />
+          </>
+        )}
+      </div>
+    </>
   );
 };

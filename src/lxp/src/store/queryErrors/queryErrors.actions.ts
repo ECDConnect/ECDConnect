@@ -21,8 +21,19 @@ export const upsertQueryErrors = createAsyncThunk<
   }
 
   const errorsPayload = queryErrors.map((error) => ({
-    details: JSON.stringify(error),
+    id: error.id,
+    type: error.type,
+    message: error.message,
     eventDate: new Date(error.eventDate).toISOString(),
+    payload: error.payload ? JSON.stringify(error.payload) : null,
+    clientUrl: error.clientUrl,
+    isOnline: error.isOnline,
+    requestPayload: error.requestPayload
+      ? typeof error.requestPayload === 'string'
+        ? error.requestPayload
+        : JSON.stringify(error.requestPayload)
+      : null,
+    userAgent: error.userAgent,
     appVersion: version,
   }));
 
