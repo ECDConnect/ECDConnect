@@ -20,7 +20,7 @@ export default function MessageList() {
   const [tableData, setTableData] = useState<any[]>([]);
   const [authenticatedUser, setAuthenticatedUser] = useState<AuthUser>();
   const [searchValue, setSearchValue] = useState('');
-  const [roleData] = useState<MessageRoleDto[]>([]);
+  const [roleData] = useState<MessageRoleDto[]>(ssRoles);
   const [showFilter, setShowFilter] = useState(false);
   const [statusFilter, setStatusFilter] = useState('');
   const [selectedRoles, setSelectedRoles] = useState<MessageRoleDto[]>(ssRoles);
