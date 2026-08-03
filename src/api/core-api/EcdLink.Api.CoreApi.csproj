@@ -81,9 +81,6 @@
     <Folder Include="_Storage\config\" />
   </ItemGroup>
   
-  <ItemGroup>
-    <None Include="ECDLink.FileStorage.csproj" />
-  </ItemGroup>
   <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
   
 </Project>
