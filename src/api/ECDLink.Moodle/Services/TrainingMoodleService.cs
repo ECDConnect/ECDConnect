@@ -30,6 +30,7 @@ namespace EcdLink.Moodle.Services
         private readonly ApplicationUserManager _userManager;
         private readonly ILogger<TrainingMoodleService> _logger;
         private readonly IPointsService _pointsService;
+        private readonly ITrainingNotificationService _trainingNotificationService;
 
         public TrainingMoodleService(IConfiguration configuration, 
             AuthenticationDbContext dbContext,
@@ -37,7 +38,8 @@ namespace EcdLink.Moodle.Services
             HierarchyEngine hierarchyEngine, 
             ApplicationUserManager userManager, 
             ILogger<TrainingMoodleService> logger,
-            [Service] IPointsService pointsService)
+            [Service] IPointsService pointsService,
+            [Service] ITrainingNotificationService trainingNotificationService)
         {
             _configuration = configuration;
             _dbContext = dbContext;
@@ -46,6 +48,7 @@ namespace EcdLink.Moodle.Services
             _userManager = userManager;
             _logger = logger;
             _pointsService = pointsService;
+            _trainingNotificationService = trainingNotificationService;
 
             string moodleConfigVar = TenantExecutionContext.Tenant.MoodleConfig;
             if (!string.IsNullOrEmpty(moodleConfigVar))
@@ -467,6 +470,7 @@ ORDER BY ""username"", ""course"";
                 {
                     _dbContext.UserTrainingCourses.AddRange(batch);
                     await _dbContext.SaveChangesAsync();
+                    await SendCourseCompletedNotificationsAsync(batch);
                     batch.Clear();
                 }
             }
@@ -476,9 +480,33 @@ ORDER BY ""username"", ""course"";
             {
                 _dbContext.UserTrainingCourses.AddRange(batch);
                 await _dbContext.SaveChangesAsync();
+                await SendCourseCompletedNotificationsAsync(batch);
             }
 
             return rows;
+        }
+
+        private async Task SendCourseCompletedNotificationsAsync(
+            List<UserTrainingCourse> completedCourses)
+        {
+            foreach (var completedCourse in completedCourses)
+            {
+                try
+                {
+                    await _trainingNotificationService.SendCourseCompletedNotificationAsync(
+                        completedCourse.UserId,
+                        completedCourse.CourseName,
+                        completedCourse.CompletedDate);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(
+                        ex,
+                        "Failed to send course completed notification for user {UserId} and course {CourseName}.",
+                        completedCourse.UserId,
+                        completedCourse.CourseName);
+                }
+            }
         }
 
         private async Task<Guid?> GetUserIdAsync(string username, ConcurrentDictionary<string, Guid?> userMap)

@@ -204,11 +204,16 @@ export const trackAttendanceSync = createAsyncThunk<
       attendanceData: { attendanceTracked },
     } = getState();
     try {
-      let promises: Promise<TrackAttendanceModelInput>[] = [];
+      // Process sequentially so same programme/user/week/year rows from different days
+      // do not race on PK_Attendance (parallel Promise.all caused duplicate-key errors).
+      const results: TrackAttendanceModelInput[] = [];
 
       if (userAuth && attendanceTracked) {
-        promises = attendanceTracked.map(async (x) => {
-          if (x?.synced) return Promise.resolve(x);
+        for (const x of attendanceTracked) {
+          if (x?.synced) {
+            results.push(x);
+            continue;
+          }
 
           const trackAttendanceModelInput: TrackAttendanceModelInput = {
             classroomProgrammeId: x.classroomProgrammeId,
@@ -216,8 +221,6 @@ export const trackAttendanceSync = createAsyncThunk<
             attendees: [],
             attendanceDate: x.attendanceDate,
           };
-
-          trackAttendanceModelInput.attendees = [];
 
           x.attendees?.forEach((z) => {
             const trackAttendanceAttendeeModelInput: TrackAttendanceAttendeeModelInput =
@@ -234,10 +237,11 @@ export const trackAttendanceSync = createAsyncThunk<
             trackAttendanceModelInput,
           ]);
 
-          return trackAttendanceModelInput;
-        });
+          results.push(trackAttendanceModelInput);
+        }
       }
-      return Promise.all(promises);
+
+      return results;
     } catch (err) {
       return rejectWithValue(err);
     }

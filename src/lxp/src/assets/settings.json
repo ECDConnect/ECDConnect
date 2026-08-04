@@ -4,5 +4,6 @@
   "themeUrl": "https://ecdconnectstoragedev.blob.core.windows.net/theme/ecdconnect.json",
   "configUrl": "https://ecdconnectstoragedev.blob.core.windows.net/config/remote-config.json",
   "facebookAppId": "",
-  "googleClientId": ""
+  "googleClientId": "",
+  "exposeAuthCodesForTesting": false
 }

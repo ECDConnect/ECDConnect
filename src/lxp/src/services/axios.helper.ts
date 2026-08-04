@@ -172,9 +172,14 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
             for (let err of response.data.errors) {
               store.dispatch(
                 queryErrorsActions.addError({
-                  ...err,
-                  timestamp: Date.now(),
+                  type: 'graphql',
+                  message: err.message ?? JSON.stringify(err),
                   eventDate: Date.now(),
+                  payload: err,
+                  clientUrl: window.location.href,
+                  isOnline: navigator.onLine,
+                  requestPayload: response.config.data,
+                  userAgent: navigator.userAgent,
                 })
               );
             }

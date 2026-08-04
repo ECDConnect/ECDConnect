@@ -5,7 +5,7 @@ import { clientsClaim } from 'workbox-core';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { precacheAndRoute, createHandlerBoundToURL } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
-import { CacheFirst, NetworkOnly } from 'workbox-strategies';
+import { CacheFirst, NetworkOnly, NetworkFirst } from 'workbox-strategies';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { PrecacheEntry } from 'workbox-precaching/_types';
 
@@ -32,10 +32,28 @@ const wb_manifest = [
 ];
 precacheAndRoute(wb_manifest);
 
+// Theme (and any other blob) JSON: online -> fresh from network (auto-cached),
+// offline -> served from the 'json-files' cache. Registered BEFORE the
+// NetworkOnly / images routes so it wins the match for blob .json requests.
 registerRoute(
   ({ url }) =>
-    url.href.includes('ecdconnect_logo_long.png') ||
-    url.hostname.includes('blob.core.windows.net'),
+    url.hostname.includes('blob.core.windows.net') &&
+    url.pathname.endsWith('.json'),
+  new NetworkFirst({
+    cacheName: 'json-files',
+    plugins: [
+      new CacheableResponsePlugin({
+        statuses: [0, 200],
+      }),
+    ],
+  })
+);
+
+// NetworkOnly only for this specific asset. Blob assets are intentionally NOT
+// matched here so they fall through to the caching routes below (images /
+// json-files) and remain available offline.
+registerRoute(
+  ({ url }) => url.href.includes('ecdconnect_logo_long.png'),
   new NetworkOnly() // or new StaleWhileRevalidate() if you want light caching
 );
 

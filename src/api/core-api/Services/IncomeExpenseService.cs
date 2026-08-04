@@ -66,7 +66,7 @@ namespace ECDLink.Core.Services
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
             _hierarchyEngine = hierarchyEngine;
-            _applicationUserId = (_contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId().Value);
+            _applicationUserId = _hierarchyEngine.ResolveSystemUserId(_contextAccessor.HttpContext?.GetUser()?.Id) ?? Guid.Empty;
 
             _statementsExpenseTypeRepo = _repoFactory.CreateGenericRepository<StatementsExpenseType>(userContext: _applicationUserId);
             _statementsExpensesRepo = _repoFactory.CreateGenericRepository<StatementsExpenses>(userContext: _applicationUserId);

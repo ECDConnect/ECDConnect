@@ -20,6 +20,14 @@ public class AppLogController : ControllerBase
         public string Details { get; set; }
         public DateTime EventDate { get; set; }
         public string AppVersion { get; set; }
+        public string Type { get; set; }
+        public string Message { get; set; }
+        public string? Payload { get; set; }
+        public string ClientUrl { get; set; }
+        public bool? IsOnline { get; set; }
+        public string? RequestPayload { get; set; }
+        public string UserAgent { get; set; }
+        
     }
 
 
@@ -54,8 +62,14 @@ public class AppLogController : ControllerBase
                 UserId = _userId,
                 InsertedDate = DateTime.Now,
                 EventDate = l.EventDate,
-                Details = l.Details,
-                AppVersion = l.AppVersion
+                AppVersion = l.AppVersion ?? string.Empty,
+                Type = l.Type ?? string.Empty,
+                Message = l.Message ?? string.Empty,
+                Payload = l.Payload,
+                ClientUrl = l.ClientUrl,
+                IsOnline = l.IsOnline,
+                RequestPayload = l.RequestPayload,
+                UserAgent = l.UserAgent,
             }).ToList() ?? new List<AppLog>();
 
             _context.AppLog.AddRange(appLogs);
@@ -66,7 +80,7 @@ public class AppLogController : ControllerBase
         catch (Exception ex)
         {
             logger.LogError(ex, "Error saving app log " + ex.Message);
-            return StatusCode(500, ex.InnerException.Message);
+            return StatusCode(500, ex.InnerException?.Message ?? ex.Message);
 
         }
     }

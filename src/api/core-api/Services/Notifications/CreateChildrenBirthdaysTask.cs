@@ -36,7 +36,7 @@ namespace EcdLink.Api.CoreApi.Services.Notifications.Portal
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
             _hierarchyEngine = hierarchyEngine;
-            _applicationUserId = (_contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId().Value);
+            _applicationUserId = _hierarchyEngine.ResolveSystemUserId(_contextAccessor.HttpContext?.GetUser()?.Id) ?? Guid.Empty;
 
             _practitionerRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
             _calendarEventRepo = _repoFactory.CreateGenericRepository<CalendarEvent>(userContext: _applicationUserId);

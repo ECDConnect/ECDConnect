@@ -4,5 +4,6 @@
   "themeUrl": "https://localhost:5001/storage/theme/ecdconnect.json",
   "configUrl": "https://localhost:5001/storage/config/remote-config.json",
   "facebookAppId": "",
-  "googleClientId": ""
+  "googleClientId": "",
+  "exposeAuthCodesForTesting": false
 }
