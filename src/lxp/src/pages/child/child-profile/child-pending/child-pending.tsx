@@ -135,7 +135,7 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
     const linkCopied = await copyToClip(caregiverChildregUrl);
 
     const whatsapp = () => {
-      const textMessage = `${practitioner?.user?.firstName} practitioner has invited you to register you child at their care centre. Tap this link to register ${childUser?.firstName} for ${classroom?.name}: ${caregiverChildregUrl}`;
+      const textMessage = `${practitioner?.user?.firstName} practitioner has invited you to register your child at their care centre. Tap this link to register ${childUser?.firstName} for ${classroom?.name}: ${caregiverChildregUrl}`;
       const whatsAppLink = `whatsapp://send?text=${textMessage}`;
       window.open(whatsAppLink);
     };

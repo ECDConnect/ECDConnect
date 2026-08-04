@@ -461,15 +461,23 @@ const classroomsSlice = createSlice({
       addChildProgressReportPeriods.fulfilled,
       (state, action) => {
         if (state.classroom) {
+          // Prefer the authoritative set the server returned (it may carry different
+          // ids when another device created the periods first). Fall back to the
+          // submitted set only if the server returned nothing.
+          const serverPeriods = action.payload;
+          const periods =
+            serverPeriods && serverPeriods.length
+              ? serverPeriods
+              : action.meta.arg.childProgressReportPeriods;
+
           state.classroom = {
             ...state.classroom,
-            childProgressReportPeriods:
-              action.meta.arg.childProgressReportPeriods.map((x) => ({
-                id: x.id,
-                startDate: x.startDate.toString(),
-                endDate: x.endDate.toString(),
-                synced: true,
-              })),
+            childProgressReportPeriods: periods.map((x) => ({
+              id: x.id,
+              startDate: x.startDate.toString(),
+              endDate: x.endDate.toString(),
+              synced: true,
+            })),
           };
         }
       }
@@ -478,14 +486,51 @@ const classroomsSlice = createSlice({
       upsertChildProgressReportPeriods.fulfilled,
       (state, action) => {
         if (state.classroom) {
-          state.classroom = {
-            ...state.classroom,
-            childProgressReportPeriods:
-              state.classroom.childProgressReportPeriods!.map((period) => ({
+          const { serverPeriods, submittedPeriods } = action.payload;
+          const existing = state.classroom.childProgressReportPeriods ?? [];
+
+          if (serverPeriods && serverPeriods.length) {
+            // Drop the periods we just tried to sync (their ids may have lost to
+            // another device's ids) and re-add the authoritative server set, keeping
+            // any other periods untouched. Keyed by id so server entries win.
+            const submittedIds = new Set(submittedPeriods.map((p) => p.id));
+            const byId = new Map<
+              string,
+              {
+                id: string;
+                startDate: string;
+                endDate: string;
+                synced: boolean;
+              }
+            >();
+
+            existing
+              .filter((p) => !submittedIds.has(p.id))
+              .forEach((p) => byId.set(p.id, { ...p, synced: true }));
+
+            serverPeriods.forEach((p) =>
+              byId.set(p.id, {
+                id: p.id,
+                startDate: p.startDate.toString(),
+                endDate: p.endDate.toString(),
+                synced: true,
+              })
+            );
+
+            state.classroom = {
+              ...state.classroom,
+              childProgressReportPeriods: Array.from(byId.values()),
+            };
+          } else {
+            // Nothing came back to reconcile; keep prior behaviour.
+            state.classroom = {
+              ...state.classroom,
+              childProgressReportPeriods: existing.map((period) => ({
                 ...period,
                 synced: true,
               })),
-          };
+            };
+          }
         }
         setFulfilledThunkActionStatus(state, action);
       }

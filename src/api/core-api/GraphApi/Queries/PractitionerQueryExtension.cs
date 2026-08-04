@@ -138,7 +138,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var principal = dbRepo.GetByUserId(uId.Value);
             if (principal != null)
             {
-                var practitionerUser = dbContext.Users.Where(user => (user.UserName == idNumber || user.IdNumber == idNumber) && user.TenantId == TenantExecutionContext.Tenant.Id).FirstOrDefault();
+                // Only match users that have a Practitioner row (exclude children/caregivers/etc.)
+                var practitionerUser = FindPractitionerUserByIdNumber(dbContext, idNumber);
 
                 if (practitionerUser != null)
                 {
@@ -152,58 +153,74 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         practitioner.User = currentUser;
                         var hasPreschool = false;
 
-                        if (practitioner.PrincipalHierarchy == null)
+                        // Already linked / invited under a principal hierarchy
+                        if (practitioner.PrincipalHierarchy.HasValue)
                         {
+                            var isSamePrincipal =
+                                practitioner.PrincipalHierarchy == principal.UserId;
 
-                            if (TenantExecutionContext.Tenant.TenantType == ECDLink.Tenancy.Enums.TenantType.WhiteLabel)
+                            if (isSamePrincipal)
                             {
-                                hasPreschool = classroom != null;
-                            }
-                            else
-                            {
-                                var belongToOtherSchool = dbContext.ClassroomGroups.Where(x => x.UserId == practitionerUser.Id && x.IsActive == true)
-                                                                        .Include(x => x.Classroom).Where(x => x.Classroom.UserId != practitionerUser.Id)
-                                                                        .Select(x => x.Classroom)
-                                                                        .Count() != 0;
-                                if (practitioner.StartDate != null)
+                                var alreadyAccepted = practitioner.DateAccepted.HasValue;
+                                return new PractitionerUserAndNote()
                                 {
-                                    var startDate = practitioner.StartDate.Value.Date;
-                                    var endDate = DateTime.Today;
-                                    var trailPeriodDays = (endDate - startDate).TotalDays;
-                                    var isTrialPeriod = trailPeriodDays < 31;
-                                    var isDummySchool = classroom?.PreschoolCode == null;
-                                    hasPreschool = classroom == null ? false : !isDummySchool || belongToOtherSchool || !isTrialPeriod;
-                                }
-                                else
-                                {
-                                    return new PractitionerUserAndNote()
-                                    {
-                                        AppUser = null,
-                                        Note = "Not on " + TenantExecutionContext.Tenant.ApplicationName + " app",
-                                        IsRegistered = false,
-                                        BelongsToPreschool = false
-                                    };
-                                }
-
+                                    AppUser = practitioner.User,
+                                    // Frontend treats any note as "cannot add"
+                                    Note = alreadyAccepted
+                                        ? "This practitioner is already part of your programme"
+                                        : "This practitioner has already been invited to your programme",
+                                    IsRegistered = practitioner.IsRegistered,
+                                    BelongsToPreschool = true
+                                };
                             }
 
-                            return new PractitionerUserAndNote()
-                            {
-                                AppUser = practitioner.User,
-                                IsRegistered = practitioner.IsRegistered,
-                                BelongsToPreschool = hasPreschool,
-                                Note = hasPreschool ? "This practitioner is linked to a different programme" : null
-                            };
-                        }
-                        else
-                        {
                             return new PractitionerUserAndNote()
                             {
                                 AppUser = practitioner.User,
                                 Note = "This practitioner is linked to a different programme",
-                                IsRegistered = classroom != null
+                                IsRegistered = classroom != null,
+                                BelongsToPreschool = true
                             };
                         }
+
+                        if (TenantExecutionContext.Tenant.TenantType == ECDLink.Tenancy.Enums.TenantType.WhiteLabel)
+                        {
+                            hasPreschool = classroom != null;
+                        }
+                        else
+                        {
+                            var belongToOtherSchool = dbContext.ClassroomGroups.Where(x => x.UserId == practitionerUser.Id && x.IsActive == true)
+                                                                    .Include(x => x.Classroom).Where(x => x.Classroom.UserId != practitionerUser.Id)
+                                                                    .Select(x => x.Classroom)
+                                                                    .Count() != 0;
+                            if (practitioner.StartDate != null)
+                            {
+                                var startDate = practitioner.StartDate.Value.Date;
+                                var endDate = DateTime.Today;
+                                var trailPeriodDays = (endDate - startDate).TotalDays;
+                                var isTrialPeriod = trailPeriodDays < 31;
+                                var isDummySchool = classroom?.PreschoolCode == null;
+                                hasPreschool = classroom == null ? false : !isDummySchool || belongToOtherSchool || !isTrialPeriod;
+                            }
+                            else
+                            {
+                                return new PractitionerUserAndNote()
+                                {
+                                    AppUser = null,
+                                    Note = "Not on " + TenantExecutionContext.Tenant.ApplicationName + " app",
+                                    IsRegistered = false,
+                                    BelongsToPreschool = false
+                                };
+                            }
+                        }
+
+                        return new PractitionerUserAndNote()
+                        {
+                            AppUser = practitioner.User,
+                            IsRegistered = practitioner.IsRegistered,
+                            BelongsToPreschool = hasPreschool,
+                            Note = hasPreschool ? "This practitioner is linked to a different programme" : null
+                        };
                     }
                     else
                     {
@@ -228,7 +245,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             string idNumber)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var practitionerUser = dbContext.Users.Where(user => (user.UserName == idNumber || user.IdNumber == idNumber) && user.TenantId == TenantExecutionContext.Tenant.Id).FirstOrDefault();
+            // Only users that exist in Practitioner (not children / other user types)
+            var practitionerUser = FindPractitionerUserByIdNumber(dbContext, idNumber);
 
             if (practitionerUser != null)
             {
@@ -236,10 +254,36 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 var practitioner = practiRepo.GetByUserId(practitionerUser.Id);
                 if (practitioner != null)
                 {
-                    return practitioner.User;
+                    return practitioner.User ?? practitionerUser;
                 }
             }
             return default;
+        }
+
+        /// <summary>
+        /// Resolves an AspNet user by ID/passport only when they have an active Practitioner row.
+        /// Avoids matching children, caregivers, or OA external invite shells by IdNumber alone.
+        /// </summary>
+        private static ApplicationUser FindPractitionerUserByIdNumber(
+            AuthenticationDbContext dbContext,
+            string idNumber)
+        {
+            if (string.IsNullOrWhiteSpace(idNumber))
+            {
+                return null;
+            }
+
+            var tenantId = TenantExecutionContext.Tenant.Id;
+
+            return (
+                from u in dbContext.Users.AsNoTracking()
+                join p in dbContext.Practitioners.AsNoTracking() on u.Id equals p.UserId
+                where u.TenantId == tenantId
+                    && (u.UserName == idNumber || u.IdNumber == idNumber)
+                    && p.IsActive
+                orderby u.IsActive descending, u.InsertedDate descending
+                select u
+            ).FirstOrDefault();
         }
 
         [Permission(PermissionGroups.PRACTITIONER, GraphActionEnum.Create)]

@@ -20,7 +20,7 @@ import {
   Typography,
   renderIcon,
 } from '@ecdlink/ui';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 import ReactGA from 'react-ga4';
 const version: string =
@@ -59,6 +59,29 @@ export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
   const [userAuthCode, setUserAuthCode] = useState('');
   const userAuthCodeLength = userAuthCode?.length;
   const [errorMessage, setErrorMessage] = useState('');
+  // Testing aid: populated only in non-production environments where the backend
+  // has exposed auth codes for testing. Lets testers using throwaway numbers that
+  // don't receive the SMS still complete verification.
+  const [devAuthCode, setDevAuthCode] = useState<string>();
+
+  const fetchDevAuthCode = useCallback(async () => {
+    // Gated by a runtime settings flag so the request is never made in
+    // production (where it is disabled), avoiding unnecessary traffic.
+    if (!Config.exposeAuthCodesForTesting) return;
+    if (!phoneNumber) return;
+    try {
+      const code = await appDispatch(
+        authThunkActions.getLatestAuthCode({ phoneNumber })
+      ).unwrap();
+      setDevAuthCode(code || undefined);
+    } catch {
+      setDevAuthCode(undefined);
+    }
+  }, [appDispatch, phoneNumber]);
+
+  useEffect(() => {
+    fetchDevAuthCode();
+  }, [fetchDevAuthCode]);
 
   const login = async () => {
     appDispatch(settingActions.setApplicationVersion(version));
@@ -140,6 +163,7 @@ export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
         phoneNumber: phoneNumber!,
       })
     ).unwrap();
+    fetchDevAuthCode();
   };
 
   const handleGoBack = () => {
@@ -170,6 +194,14 @@ export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
           message={`We've sent an SMS with a 6 digit code to ${phoneNumber}.`}
           type="info"
         />
+        {devAuthCode && (
+          <Alert
+            className="mt-2 mb-2 rounded-md"
+            title={`Testing only — code: ${devAuthCode}`}
+            message="This code is shown for testing environments only and is never available in production."
+            type="warning"
+          />
+        )}
         <FormInput
           label="Enter your 6 digit code"
           placeholder="------"
