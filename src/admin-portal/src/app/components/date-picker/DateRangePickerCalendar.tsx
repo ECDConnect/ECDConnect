@@ -23,7 +23,7 @@ const DateRangePickerCalendar = ({ selectedRange, onDateChange }) => {
       <DateRangePicker
         color="#1DBADF"
         rangeColors={['#1DBADF']}
-        ranges={[calendarRange]}
+        ranges={calendarRange}
         onChange={handleSelect}
         months={2}
         direction="horizontal"
