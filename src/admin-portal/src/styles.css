@@ -1,10 +1,15 @@
+/* Must come before every other rule. CSS ignores a misplaced @import, and the
+   Tailwind CLI (postcss-import) drops it silently rather than warning. This
+   previously sat after the @tailwind directives and only worked because CRA's
+   css-loader hoisted it; compiling Tailwind ahead of webpack removed that. */
+@import url('https://fonts.googleapis.com/css?family=Quicksand:400,700&display=swap');
+
 /* You can add global styles to this file, and also import other style files */
 @tailwind base;
 /* Simple reusable components provided by tailwind */
 @tailwind components;
 /* utility classes generated based on our tailwind.config.js */
 @tailwind utilities;
-@import url('https://fonts.googleapis.com/css?family=Quicksand:400,700&display=swap');
 
 div.darkBackground {
   background-color: #27385a;
@@ -35,7 +40,10 @@ body,
   position: fixed;
   overflow: hidden;
   width: 100%;
-  font-family: 'Quicksand', 'sans-serif' !important;
+  /* sans-serif must be unquoted: quoted it names a font family literally called
+     "sans-serif" rather than the generic keyword, so the fallback never applies
+     and the browser drops to its default (serif). */
+  font-family: 'Quicksand', sans-serif !important;
 }
 
 .dashboard-container {

@@ -77,8 +77,9 @@ export const PrePqaVisits = ({
                 </span>
                 <Typography
                   type="body"
+                  weight={'bold'}
                   color="textDark"
-                  className="w-6/12 font-bold"
+                  className="w-6/12"
                   text={title}
                 />
                 {!!visit && attendedRule && (
