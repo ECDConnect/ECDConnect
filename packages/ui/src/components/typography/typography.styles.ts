@@ -18,6 +18,7 @@ export const dropText = 'text-textDark font-body';
 const skinnyWeight = 'font-normal';
 const normalWeight = 'font-semibold';
 const boldWeight = 'font-bold';
+const mediumWeight = 'font-medium';
 
 const getWeightStyles = (weight?: string) => {
   switch (weight) {
@@ -27,6 +28,11 @@ const getWeightStyles = (weight?: string) => {
       return boldWeight;
     case 'normal':
       return normalWeight;
+    // Added so callers can request font-medium via the prop instead of putting
+    // `font-medium` in className, which would compete with the weight this
+    // component already emits. No existing caller passes 'medium'.
+    case 'medium':
+      return mediumWeight;
     default:
       return skinnyWeight;
   }

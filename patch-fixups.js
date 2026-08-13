@@ -6,6 +6,13 @@ const process = require('process');
 const nodeVersion = process.version.replace('v', '').split('.').slice(0, 2).join('.');
 
 function copyFixups(sourceDir = 'node_modules.fixup', targetDir = 'node_modules') {
+    // This runs as a postinstall hook, so it must never fail the install. A
+    // missing fixup directory just means there is nothing to patch.
+    if (!fs.existsSync(sourceDir)) {
+        console.log(`No ${sourceDir} directory found, skipping fixups.`);
+        return;
+    }
+
     // Find the most appropriate version directory
     const versions = fs.readdirSync(sourceDir)
         .filter(dir => fs.statSync(path.join(sourceDir, dir)).isDirectory())

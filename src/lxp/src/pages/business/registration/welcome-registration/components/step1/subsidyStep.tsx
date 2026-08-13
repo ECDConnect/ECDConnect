@@ -57,13 +57,13 @@ export const SubsidyStep: React.FC<SubsidyStepProps> = ({
       <Typography
         type={'h1'}
         text={`Registration information`}
-        className={'text-sm font-bold'}
+        className={'font-bold'}
         color={'textDark'}
       />
       <Typography
         type={'h4'}
         text={`Are you receiving a subsidy from the DBE?`}
-        className={'mt-3 mb-3 font-semibold'}
+        className={'mb-3 mt-3 font-semibold'}
         color={'textDark'}
       />
       <ButtonGroup<string>
@@ -83,7 +83,7 @@ export const SubsidyStep: React.FC<SubsidyStepProps> = ({
             <Typography
               type={'h4'}
               text={`Are you registered with the DBE?`}
-              className={'mt-3 mb-3 font-semibold'}
+              className={'mb-3 mt-3 font-semibold'}
               color={'textDark'}
             />
             <fieldset className="mb-2 flex flex-col gap-2">

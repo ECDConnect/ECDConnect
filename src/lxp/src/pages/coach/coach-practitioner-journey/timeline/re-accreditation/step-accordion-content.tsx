@@ -148,8 +148,9 @@ export const ReAccreditationVisits = ({
             {renderIcon(item)}
             <Typography
               type="body"
+              weight={'bold'}
               color="textDark"
-              className="w-6/12 font-bold"
+              className="w-6/12"
               text={item?.visitType?.description || ''}
             />
             {((item?.id === currentVisit?.id && !item?.attended) ||

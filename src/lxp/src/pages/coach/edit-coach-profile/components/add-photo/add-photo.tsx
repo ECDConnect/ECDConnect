@@ -95,11 +95,11 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit }) => {
             : 'Add a photo of yourself so your practitioners will recognise you.'
         }
         type="body"
+        weight={'medium'}
         color="textDark"
-        className="font-medium"
       />
 
-      <div className={'inline-flex w-full justify-center pt-16 pb-12'}>
+      <div className={'inline-flex w-full justify-center pb-12 pt-16'}>
         <ProfileAvatar
           dataUrl={userProfilePicture?.file ?? ''}
           size={'header'}

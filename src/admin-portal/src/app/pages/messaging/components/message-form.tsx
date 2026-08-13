@@ -110,19 +110,19 @@ const MessageForm: React.FC<MessageFormProps> = ({
   return (
     <form key={formKey}>
       <div className="space-y-8 divide-y divide-gray-200">
-        <div className="grid gap-y-6 gap-x-4 ">
+        <div className="grid gap-x-4 gap-y-6 ">
           <div className="sm:col-span-3">
             <Typography
               type={'body'}
               color="textMid"
               weight="bold"
               text={`Which users would you like to send this message to?`}
-              className={'mt-4 ml-4'}
+              className={'ml-4 mt-4'}
             />
 
             {roleData &&
               roleData.map((item: MessageRoleDto) => (
-                <div key={item.id} className="mt-1 ml-4 mr-4 flex items-center">
+                <div key={item.id} className="ml-4 mr-4 mt-1 flex items-center">
                   <div
                     className="bg-uiBg relative flex w-full items-center rounded p-1"
                     onClick={(e) => onRoleSelectionChange(item)}
@@ -139,8 +139,9 @@ const MessageForm: React.FC<MessageFormProps> = ({
                     <Typography
                       text={item.label}
                       type="body"
+                      weight={'medium'}
                       color={'textMid'}
-                      className="ml-2 p-1 text-sm font-medium text-gray-900"
+                      className="ml-2 p-1 text-gray-900"
                     />
                   </div>
                 </div>
@@ -213,7 +214,7 @@ const MessageForm: React.FC<MessageFormProps> = ({
                   wrapperClassName="text-left"
                   name="messageDate"
                   disabled={isView}
-                  className="text-textMid bg-uiBg mt-2 mr-4"
+                  className="text-textMid bg-uiBg mr-4 mt-2"
                   selected={messageDate ? new Date(messageDate) : undefined}
                   onChange={(date: Date) => {
                     setMessageDate(date);
@@ -250,7 +251,7 @@ const MessageForm: React.FC<MessageFormProps> = ({
               </div>
             </div>
           </div>
-          <div className="mr-4 ml-4 sm:col-span-3">
+          <div className="ml-4 mr-4 sm:col-span-3">
             <Typography
               type={'body'}
               color="textMid"
@@ -279,7 +280,7 @@ const MessageForm: React.FC<MessageFormProps> = ({
               }}
             ></FormInput>
           </div>
-          <div className="mr-4 ml-4 sm:col-span-3">
+          <div className="ml-4 mr-4 sm:col-span-3">
             <Typography
               type={'body'}
               color="textMid"
