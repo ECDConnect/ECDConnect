@@ -74,8 +74,7 @@ export const AddressMap: React.FC<AddressMapProps> = ({
   const reverseGeocode = useCallback(
     async (latitude: number, longitude: number) => {
       const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${
-        process.env.REACT_APP_MAP_API_KEY ||
-        'AIzaSyAmTVxElyncQJh2hJ1ATFS0K_cB6d3VoSk'
+        process.env.REACT_APP_MAP_API_KEY || ''
       }`;
       const response = await fetch(geocodeUrl);
       const data = await response.json();

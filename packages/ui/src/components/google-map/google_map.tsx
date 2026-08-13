@@ -67,9 +67,7 @@ const CustomGoogleMapComponent: FC<CustomGoogleMapComponentProps> = (props) => {
     let newMap: GoogleMap = await GoogleMap.create({
       id: 'google-map',
       element: mapRef.current as HTMLElement,
-      apiKey:
-        process.env.REACT_APP_MAP_API_KEY ||
-        'AIzaSyAmTVxElyncQJh2hJ1ATFS0K_cB6d3VoSk',
+      apiKey: process.env.REACT_APP_MAP_API_KEY || '',
       config: {
         center: {
           lat: latitude,
