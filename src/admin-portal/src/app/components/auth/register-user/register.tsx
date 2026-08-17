@@ -112,7 +112,7 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
         <div className="flex flex-shrink-0 items-center justify-center">
           <Typography
             className="font-h1 textLight mt-6 text-2xl"
-            type="h2"
+            type="h1"
             text={`Register for ${tenant?.tenant?.applicationName}`}
           ></Typography>
         </div>
@@ -166,7 +166,7 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
               </div>
               {displayError && (
                 <Alert
-                  className={'mt-5 mb-3'}
+                  className={'mb-3 mt-5'}
                   title={'Oh no! There is 1 problem above. Please fix them:'}
                   titleColor="errorMain"
                   message="Your email address was not recognised. Please use the email address from your invitation. If you need assistance, contact your administrator."

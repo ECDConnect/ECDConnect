@@ -30,7 +30,7 @@ namespace ECDLink.Notifications.MessageLogs
                 {
                     Id = id,
                     MessageTemplateType = messageTemplateType,
-                    MessageProtocol = MessageTypeConstants.SMS,
+                    MessageProtocol = MessageTypeConstants.EMAIL,
                     From = "System",
                     To = message.To,
                     Subject = null,
@@ -61,7 +61,7 @@ namespace ECDLink.Notifications.MessageLogs
                 {
                     Id = id,
                     MessageTemplateType = messageTemplateType,
-                    MessageProtocol = MessageTypeConstants.SMS,
+                    MessageProtocol = MessageTypeConstants.EMAIL,
                     From = "System",
                     To = message.To,
                     Subject = null,

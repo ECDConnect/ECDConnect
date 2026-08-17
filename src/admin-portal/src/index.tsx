@@ -2,7 +2,9 @@ import { ConfigProvider, SnackbarProvider } from '@ecdlink/core';
 import ReactDOM from 'react-dom';
 import ConfigWrapper from './app/config-wrapper';
 import './app/i18n';
-import './styles.css';
+// Compiled from ./styles.css by the Tailwind CLI — see the `tailwind:*` scripts
+// in package.json. Edit styles.css, never the generated file.
+import './styles.generated.css';
 import { TenantContextProvider } from './app/hooks/useTenant';
 
 ReactDOM.render(

@@ -155,6 +155,9 @@ export const GetAllPortalPractitioners = gql`
     $provinceSearch: [UUID!]
     $connectUsageSearch: [String]
     $practitionerTypeSearch: [String]
+    $statusSearch: [String]
+    $insertedDateFrom: DateTime
+    $insertedDateTo: DateTime
     $pagingInput: PagedQueryInput
     $order: [PortalPractitionerModelSortInput!]
   ) {
@@ -163,6 +166,9 @@ export const GetAllPortalPractitioners = gql`
       provinceSearch: $provinceSearch
       connectUsageSearch: $connectUsageSearch
       practitionerTypeSearch: $practitionerTypeSearch
+      statusSearch: $statusSearch
+      insertedDateFrom: $insertedDateFrom
+      insertedDateTo: $insertedDateTo
       pagingInput: $pagingInput
       order: $order
     ) {
@@ -186,6 +192,28 @@ export const GetAllPortalPractitioners = gql`
         connectUsageColor
       }
     }
+  }
+`;
+
+export const GetAllPortalPractitionersCount = gql`
+  query GetAllPortalPractitionersCount(
+    $search: String
+    $provinceSearch: [UUID!]
+    $connectUsageSearch: [String]
+    $practitionerTypeSearch: [String]
+    $statusSearch: [String]
+    $insertedDateFrom: DateTime
+    $insertedDateTo: DateTime
+  ) {
+    allPortalPractitionersCount(
+      search: $search
+      provinceSearch: $provinceSearch
+      connectUsageSearch: $connectUsageSearch
+      practitionerTypeSearch: $practitionerTypeSearch
+      statusSearch: $statusSearch
+      insertedDateFrom: $insertedDateFrom
+      insertedDateTo: $insertedDateTo
+    )
   }
 `;
 
