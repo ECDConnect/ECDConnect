@@ -1,5 +1,5 @@
 import { Button, DialogPosition, FormInput, Typography } from '@ecdlink/ui';
-import { FormEvent, useCallback, useEffect, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { ConnectItem, LinksSharedProps } from './links-shared.types';
 import { gql, useMutation, useQuery } from '@apollo/client';
 import { LanguageId } from '../../../../constants/language';
@@ -7,6 +7,11 @@ import ContentLoader from '../../../../components/content-loader/content-loader'
 import { useDialog } from '@ecdlink/core';
 import AlertModal from '../../../../components/dialog-alert/dialog-alert';
 import { isValidUrl } from '../../../../utils/url-utils/url-utils';
+import { GetResourceLinkHealthChecks } from '@ecdlink/graphql';
+import {
+  LinkHealthStatusChip,
+  ResourceLinkHealthCheckDto,
+} from '../link-health-status';
 
 export const LinksShared = ({
   contentType,
@@ -50,6 +55,29 @@ export const LinksShared = ({
   });
 
   const [createContent, { loading }] = useMutation(createMutation);
+
+  const { data: healthData } = useQuery(GetResourceLinkHealthChecks, {
+    fetchPolicy: 'network-only',
+    errorPolicy: 'all',
+    variables: {
+      contentType: 'ConnectItem',
+      sectionType: 'community',
+    },
+  });
+
+  const healthByContentId = useMemo(() => {
+    const map = new Map<number, ResourceLinkHealthCheckDto>();
+    (
+      healthData?.resourceLinkHealthChecks as
+        | ResourceLinkHealthCheckDto[]
+        | undefined
+    )?.forEach((item) => {
+      if (item?.contentId != null) {
+        map.set(item.contentId, item);
+      }
+    });
+    return map;
+  }, [healthData]);
 
   const connectQuantitiy = 10;
   const setInitialState = useCallback(() => {
@@ -213,7 +241,7 @@ export const LinksShared = ({
       {new Array(connectQuantitiy).fill(0).map((_, linkIndex) => (
         <div
           key={linkIndex}
-          className="flex w-full flex-row gap-4 overflow-auto whitespace-nowrap rounded-md bg-white"
+          className="flex w-full flex-row items-start gap-4 overflow-auto rounded-md bg-white"
         >
           <FormInput
             name={`buttonText_` + linkIndex}
@@ -234,20 +262,41 @@ export const LinksShared = ({
               },
             })}
           />
-          <FormInput
-            name={`linkText_` + linkIndex}
-            label={linkIndex === 0 ? `Link *` : `Link`}
-            placeholder="Add link..."
-            value={connectItems[linkIndex]?.link}
-            className="w-full"
-            onChange={onChangeLink(linkIndex)}
-            {...(onCheckLinkError(isSubmitButtonClicked, linkIndex, 'link') && {
-              error: {
-                type: 'required',
-                message: errorLinkMessage(linkIndex),
-              },
-            })}
-          />
+          <div className="flex w-full flex-col">
+            <FormInput
+              name={`linkText_` + linkIndex}
+              label={linkIndex === 0 ? `Link *` : `Link`}
+              placeholder="Add link..."
+              value={connectItems[linkIndex]?.link}
+              className="w-full"
+              onChange={onChangeLink(linkIndex)}
+              {...(onCheckLinkError(
+                isSubmitButtonClicked,
+                linkIndex,
+                'link'
+              ) && {
+                error: {
+                  type: 'required',
+                  message: errorLinkMessage(linkIndex),
+                },
+              })}
+            />
+            {connectItems[linkIndex]?.contentId > 0 &&
+            connectItems[linkIndex]?.link ? (
+              <div className="pt-2">
+                <LinkHealthStatusChip
+                  status={
+                    healthByContentId.get(connectItems[linkIndex].contentId)
+                      ?.status
+                  }
+                  lastError={
+                    healthByContentId.get(connectItems[linkIndex].contentId)
+                      ?.lastError
+                  }
+                />
+              </div>
+            ) : null}
+          </div>
         </div>
       ))}
       <Button
