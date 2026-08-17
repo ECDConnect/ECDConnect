@@ -23,11 +23,11 @@ function ThemeProvider({
   children,
   themeEndPoint,
   overRideCache,
-}: {
+}: Readonly<{
   children: ReactNode;
   themeEndPoint: string;
   overRideCache: boolean;
-}): JSX.Element {
+}>): JSX.Element {
   const [data, setData] = useState({} as any);
   const [theme, setTheme] = useState<ThemeModel>();
 

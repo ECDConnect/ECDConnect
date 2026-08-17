@@ -163,10 +163,7 @@ export const PublishedFormsList = ({ onBack }: FormProps) => {
     return (
       <PublishedFormCertificate
         completedVisitId={completedVisitId}
-        onBack={() => {
-          setShowCertificateCheckForm(false);
-          onBack();
-        }}
+        onBack={setShowCertificateCheckForm}
       />
     );
   }
@@ -189,7 +186,7 @@ export const PublishedFormsList = ({ onBack }: FormProps) => {
         ) : publishedForms?.length > 0 ? (
           <>
             <Typography
-              className="mt-3 mb-4"
+              className="mb-4 mt-3"
               color="textDark"
               type={'h3'}
               text="Which form would you like to fill?"
@@ -203,7 +200,7 @@ export const PublishedFormsList = ({ onBack }: FormProps) => {
         ) : (
           <>
             <Typography
-              className="mt-3 mb-4"
+              className="mb-4 mt-3"
               color="textDark"
               type={'h3'}
               text="No forms available yet"

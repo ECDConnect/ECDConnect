@@ -133,7 +133,7 @@ export const Step2: React.FC<Step1Props> = ({
           <Typography
             type={'h4'}
             text={`Would you like to share your profile photo with other ${appName} users?`}
-            className={'text-sm font-normal'}
+            className={'font-normal'}
             color={'textDark'}
           />
           <ButtonGroup<boolean>
@@ -149,7 +149,7 @@ export const Step2: React.FC<Step1Props> = ({
           <Typography
             type={'h4'}
             text={`Would you like to share your province with other ${appName} users?`}
-            className={'text-sm font-normal'}
+            className={'font-normal'}
             color={'textDark'}
           />
           <ButtonGroup<boolean>

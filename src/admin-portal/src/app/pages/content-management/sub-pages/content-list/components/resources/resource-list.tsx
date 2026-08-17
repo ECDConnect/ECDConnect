@@ -28,7 +28,15 @@ import { ContentTypes } from '../../../../../../constants/content-management';
 import { BulkActionStatus } from '../../../../../../components/ui-table/type';
 import { TableRefMethods } from '@ecdlink/ui/lib/components/table/types';
 import debounce from 'lodash.debounce';
-import { DeleteMultipleResources, GetResources } from '@ecdlink/graphql';
+import {
+  DeleteMultipleResources,
+  GetResourceLinkHealthChecks,
+  GetResources,
+} from '@ecdlink/graphql';
+import {
+  LinkHealthStatusChip,
+  ResourceLinkHealthCheckDto,
+} from '../../../../components/link-health-status';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
 import {
   businessResourceOptions,
@@ -249,6 +257,34 @@ export default function ResourceList({
     variables: queryVariables,
   });
 
+  const healthSectionType =
+    choosedSectionTitle === ResourcesTitles.ClassroomResources
+      ? 'classroom'
+      : 'business';
+
+  const { data: healthData } = useQuery(GetResourceLinkHealthChecks, {
+    fetchPolicy: 'network-only',
+    errorPolicy: 'all',
+    variables: {
+      contentType: 'ClassroomBusinessResource',
+      sectionType: healthSectionType,
+    },
+  });
+
+  const healthByContentId = useMemo(() => {
+    const map = new Map<number, ResourceLinkHealthCheckDto>();
+    (
+      healthData?.resourceLinkHealthChecks as
+        | ResourceLinkHealthCheckDto[]
+        | undefined
+    )?.forEach((item) => {
+      if (item?.contentId != null) {
+        map.set(item.contentId, item);
+      }
+    });
+    return map;
+  }, [healthData]);
+
   useEffect(() => {
     if (resourceData && resourceData.resources) {
       const copyItems = resourceData.resources.map((item: any) => ({
@@ -442,7 +478,7 @@ export default function ResourceList({
               key={`role_` + item?.id}
               className={
                 `${getChipColor(item?.resourceType)}` +
-                ' m-1 rounded-full py-1 px-3 text-xs text-white'
+                ' m-1 rounded-full px-3 py-1 text-xs text-white'
               }
             >
               {item?.resourceType}
@@ -460,6 +496,12 @@ export default function ResourceList({
               : renderIcon('XCircleIcon', 'error h-6 w-6')}
           </p>
         ),
+        linkStatusComponent: (
+          <LinkHealthStatusChip
+            status={healthByContentId.get(item?.id)?.status}
+            lastError={healthByContentId.get(item?.id)?.lastError}
+          />
+        ),
       })
     ) ?? [];
 
@@ -475,6 +517,10 @@ export default function ResourceList({
     {
       field: 'dataFreeComponent',
       use: 'Data free?',
+    },
+    {
+      field: 'linkStatusComponent',
+      use: 'Link status',
     },
     {
       field: 'numberLikes',
