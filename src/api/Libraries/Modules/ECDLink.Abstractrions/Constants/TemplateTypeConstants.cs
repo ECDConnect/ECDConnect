@@ -26,6 +26,7 @@ namespace ECDLink.Abstractrions.Constants
         public const string NotifyAdminOnCoachFeedback = "notify-admin-on-coach-feedback";
 
         public const string NotifyAdminOnPractitionerRemoved = "notify-admin-on-practitioner-removed";
+        public const string NotifyAdminBrokenResourceLinks = "notify-admin-broken-resource-links";
 
         // sheet
         // https://docs.google.com/spreadsheets/d/1X7dypn21NyxGwYHjnqbDebhmTPokV4x3LY_KjNdPi5g/edit?gid=1532194419#gid=1532194419
