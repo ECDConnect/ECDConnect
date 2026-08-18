@@ -11,6 +11,7 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Execution;
 using HotChocolate.Types;
+using HotChocolate.Types.Descriptors;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -47,6 +48,8 @@ namespace ECDLink.EGraphQL
 
             var builder = services
               .AddGraphQLServer(maxAllowedRequestSize: maxRequestSize)
+              // Keeps v12 field casing across Hot Chocolate majors - see LegacyNamingConventions.
+              .AddConvention<INamingConventions, LegacyNamingConventions>()
               .AddDataLoader<UserRolesGroupedDataLoader>()
               .AddErrorFilter<Diagnostic.ErrorFilter>(services => new Diagnostic.ErrorFilter(services))
               .AddDiagnosticEventListener<Diagnostic.AppServerDiagnosticEventListener>(services => new Diagnostic.AppServerDiagnosticEventListener(services))
