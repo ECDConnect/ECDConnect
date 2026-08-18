@@ -80,9 +80,6 @@
     <Folder Include="Middleware\" />
   </ItemGroup>
   
-  <ItemGroup>
-    <None Include="ECDLink.FileStorage.csproj" />
-  </ItemGroup>
   <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
   
 </Project>
