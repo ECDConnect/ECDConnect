@@ -48,10 +48,25 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 .OrderByDescending(x => x.CompletedDate)
                 .Select(x => new
                 {
+                    x.Id,
                     x.CourseName,
                     x.CompletedDate
                 })
                 .ToListAsync();
+
+            var courseIds = courses.Select(x => x.Id).ToList();
+
+            // the name a course certificate was last downloaded with, so it can be pre-filled
+            var courseCertificateNames = (await dbContext.UserCertificate
+                .AsNoTracking()
+                .Where(x => x.UserTrainingCourseId != null &&
+                            courseIds.Contains(x.UserTrainingCourseId.Value))
+                .Select(x => new { x.UserTrainingCourseId, x.CertificateName, x.InsertedDate })
+                .ToListAsync())
+                .GroupBy(x => x.UserTrainingCourseId.Value)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.OrderByDescending(x => x.InsertedDate).First().CertificateName);
 
             timeline.AddRange(courses.Select(x => new JourneyTimeline
             {
@@ -59,7 +74,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 DateCompleted = x.CompletedDate.ToString("dd MMMM yyyy"),
                 IconName = "AcademicCapIcon",
                 DateValue = x.CompletedDate,
-                Type = "Course"
+                Type = "Course",
+                UserTrainingCourseId = x.Id,
+                CertificateName = courseCertificateNames.TryGetValue(x.Id, out var certificateName)
+                    ? certificateName
+                    : null
             }));
 
             var selfAssessments = await dbContext.Visits

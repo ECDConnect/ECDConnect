@@ -296,31 +296,37 @@ class PQAService {
     return response.data.data.submitJourneyAssessmentFormData;
   }
 
-  async saveHealthCertificateDetails(
-    visitId: string,
+  /**
+   * Records the certificate details and returns the certificate number on record, which is the
+   * number the certificate was first issued with rather than the one supplied here.
+   */
+  async saveCertificateDetails(
     certificateName: string,
-    certificateRegNr: string
-  ): Promise<boolean> {
+    certificateRegNr: string,
+    visitId?: string,
+    userTrainingCourseId?: string
+  ): Promise<string | null> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { saveHealthCertificateDetails: boolean };
+      data: { saveCertificateDetails: string | null };
       errors?: {};
     }>(``, {
-      id: 'SaveHealthCertificateDetails',
+      id: 'SaveCertificateDetails',
       variables: {
-        visitId,
         certificateName,
         certificateRegNr,
+        visitId: visitId ?? null,
+        userTrainingCourseId: userTrainingCourseId ?? null,
       },
     });
 
     if (response.status !== 200 || response.data.errors) {
       throw new Error(
-        'Save Health Certificate Details failed - Server connection error'
+        'Save Certificate Details failed - Server connection error'
       );
     }
 
-    return response.data.data.saveHealthCertificateDetails;
+    return response.data.data.saveCertificateDetails;
   }
 
   async updateVisitPlannedVisitDate(
