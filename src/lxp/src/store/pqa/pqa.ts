@@ -16,7 +16,7 @@ import {
   getJourneyAssessmentFormData,
   getJourneyAssessmentReport,
   submitJourneyAssessmentFormData,
-  saveHealthCertificateDetails,
+  saveCertificateDetails,
 } from './pqa.actions';
 import { PQAFormType, PQAState } from './pqa.types';
 import {
@@ -235,12 +235,19 @@ const pqaSlice = createSlice({
       addReAccreditationFollowUpVisitForPractitioner
     );
     setThunkActionStatus(builder, addSelfAssessmentForPractitioner);
-    setThunkActionStatus(builder, saveHealthCertificateDetails);
-    builder.addCase(saveHealthCertificateDetails.fulfilled, (state, action) => {
+    setThunkActionStatus(builder, saveCertificateDetails);
+    builder.addCase(saveCertificateDetails.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
-      const { visitId, certificateName, certificateRegNr } = action.meta.arg;
+      const { visitId, certificateName } = action.meta.arg;
+      // the number on record wins over the one we proposed, so a certificate keeps
+      // the number it was first issued with
+      const certificateRegNr = action.payload;
 
-      if (Array.isArray(state.journeyAssessmentReport)) {
+      if (
+        visitId &&
+        certificateRegNr &&
+        Array.isArray(state.journeyAssessmentReport)
+      ) {
         state.journeyAssessmentReport = state.journeyAssessmentReport.map(
           (item) => {
             if (item.visitId === visitId) {

@@ -1,4 +1,4 @@
+# Superseded by SaveCertificateDetails - kept so already-deployed app versions keep working.
 mutation SaveHealthCertificateDetails($visitId: UUID!, $certificateName: String!, $certificateRegNr: String!) {
-  saveHealthCertificateDetails(visitId: $visitId, certificateName: $certificateName, certificateRegNr: $certificateRegNr) {
-  }
+  saveHealthCertificateDetails: saveCertificateDetails(visitId: $visitId, certificateName: $certificateName, certificateRegNr: $certificateRegNr)
 }

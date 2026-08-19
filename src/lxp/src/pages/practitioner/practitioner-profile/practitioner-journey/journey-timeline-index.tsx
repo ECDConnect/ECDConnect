@@ -23,7 +23,10 @@ import { useHistory, useLocation } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
 import { PublishedFormCertificate } from './published-forms/published-form-certificate';
-import { journeyTimelineSteps } from './timeline/journey-timeline-steps';
+import {
+  JourneyCourseCertificate,
+  journeyTimelineSteps,
+} from './timeline/journey-timeline-steps';
 import { PractitionerProfileRouteState } from '../practitioner-profile.types';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
@@ -43,9 +46,8 @@ export const JourneyTimeline = ({
   const [visitId, setVisitId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showCertificateDialog, setShowCertificateDialog] = useState(false);
-  const [selectedCourseName, setSelectedCourseName] = useState('');
-  const [selectedCourseCompletedDate, setSelectedCourseCompletedDate] =
-    useState('');
+  const [selectedCourseCertificate, setSelectedCourseCertificate] =
+    useState<JourneyCourseCertificate>();
 
   const { isOnline } = useOnlineStatus();
   const dialog = useDialog();
@@ -114,13 +116,12 @@ export const JourneyTimeline = ({
     fetchReport();
   }, [visitId, userId, isOnline, appDispatch, timelineReport]);
 
-  const onCertificate = (courseName: string, completedDate: string) => {
+  const onCertificate = (certificate: JourneyCourseCertificate) => {
     if (!isOnline) {
       showOnlineOnly();
       return;
     }
-    setSelectedCourseName(courseName);
-    setSelectedCourseCompletedDate(completedDate);
+    setSelectedCourseCertificate(certificate);
     setShowCertificateDialog(true);
   };
 
@@ -187,8 +188,10 @@ export const JourneyTimeline = ({
         stretch
       >
         <PublishedFormCertificate
-          courseName={selectedCourseName}
-          courseCompletedDate={selectedCourseCompletedDate}
+          courseName={selectedCourseCertificate?.courseName}
+          courseCompletedDate={selectedCourseCertificate?.completedDate}
+          userTrainingCourseId={selectedCourseCertificate?.userTrainingCourseId}
+          certificateName={selectedCourseCertificate?.certificateName}
           onBack={setShowCertificateDialog}
         />
       </Dialog>
