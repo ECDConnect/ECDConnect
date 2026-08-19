@@ -6,6 +6,8 @@ query GetJourneyTimeline($userId: UUID!) {
     iconName
     type
     visitId
+    userTrainingCourseId
+    certificateName
     secondaryText
   }
 }

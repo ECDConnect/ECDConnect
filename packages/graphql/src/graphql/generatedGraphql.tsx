@@ -4083,12 +4083,14 @@ export type InviteSortInput = {
 
 export type JourneyTimeline = {
   __typename?: 'JourneyTimeline';
+  certificateName?: Maybe<Scalars['String']>;
   dateCompleted?: Maybe<Scalars['String']>;
   dateValue?: Maybe<Scalars['DateTime']>;
   iconName?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
   secondaryText?: Maybe<Scalars['String']>;
   type?: Maybe<Scalars['String']>;
+  userTrainingCourseId?: Maybe<Scalars['UUID']>;
   visitId?: Maybe<Scalars['UUID']>;
 };
 
@@ -5100,13 +5102,13 @@ export type Mutation = {
   restartVisit?: Maybe<BasicVisitModel>;
   revertTenantSettingsToDefault?: Maybe<TenantInternalModel>;
   saveBulkMessagesForAdmin: Scalars['Boolean'];
+  saveCertificateDetails?: Maybe<Scalars['String']>;
   saveCoachContact: Scalars['Boolean'];
   saveCoachFeedback?: Maybe<CoachFeedback>;
   saveCommunityProfile?: Maybe<CommunityProfileModel>;
   saveCommunityProfileConnections?: Maybe<
     Array<Maybe<CommunityProfileConnection>>
   >;
-  saveHealthCertificateDetails: Scalars['Boolean'];
   sendBulkInviteToPortal?: Maybe<BulkInvitationResult>;
   sendCoachInviteToApplication: Scalars['Boolean'];
   sendInviteToApplication: Scalars['Boolean'];
@@ -6739,6 +6741,13 @@ export type MutationSaveBulkMessagesForAdminArgs = {
   input?: InputMaybe<MessageLogModelInput>;
 };
 
+export type MutationSaveCertificateDetailsArgs = {
+  certificateName?: InputMaybe<Scalars['String']>;
+  certificateRegNr?: InputMaybe<Scalars['String']>;
+  userTrainingCourseId?: InputMaybe<Scalars['UUID']>;
+  visitId?: InputMaybe<Scalars['UUID']>;
+};
+
 export type MutationSaveCoachContactArgs = {
   actionItemType: Scalars['Int'];
   period: Scalars['DateTime'];
@@ -6755,12 +6764,6 @@ export type MutationSaveCommunityProfileArgs = {
 
 export type MutationSaveCommunityProfileConnectionsArgs = {
   input?: InputMaybe<Array<InputMaybe<CommunityConnectInputModelInput>>>;
-};
-
-export type MutationSaveHealthCertificateDetailsArgs = {
-  certificateName?: InputMaybe<Scalars['String']>;
-  certificateRegNr?: InputMaybe<Scalars['String']>;
-  visitId: Scalars['UUID'];
 };
 
 export type MutationSendBulkInviteToPortalArgs = {

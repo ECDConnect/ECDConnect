@@ -1,6 +1,6 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useAppDispatch } from '@/store';
-import { saveHealthCertificateDetails } from '@/store/pqa/pqa.actions';
+import { saveCertificateDetails } from '@/store/pqa/pqa.actions';
 import {
   getSmartStartCourseConfig,
   isEcdConnectCourse,
@@ -15,6 +15,7 @@ import {
 import { generateEcdConnectCourseCertificate } from '@/utils/certificate/generateEcdConnectCourseCertificate';
 import { generateHealthSafetyCertificate } from '@/utils/certificate/generateHealthAndSafetyCertificate';
 import { generateSmartStartCourseCertificate } from '@/utils/certificate/generateSmartStartCourseCertificate';
+import { NOTIFICATION, useNotifications } from '@ecdlink/core';
 import { BannerWrapper, Button, FormInput, Typography } from '@ecdlink/ui';
 import { useState } from 'react';
 import signatureFile from '@/assets/certificates/signatureFile.png';
@@ -29,6 +30,7 @@ export type PublishedFormCertificateProps = {
   certificateRegNr?: string;
   courseName?: string;
   courseCompletedDate?: string;
+  userTrainingCourseId?: string;
   onBack: (value: boolean) => void;
 };
 
@@ -41,10 +43,12 @@ export const PublishedFormCertificate: React.FC<
   certificateRegNr,
   courseName,
   courseCompletedDate,
+  userTrainingCourseId,
   onBack,
 }) => {
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
+  const { setNotification } = useNotifications();
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const smartStartCourseConfig = courseName
     ? getSmartStartCourseConfig(courseName)
@@ -58,6 +62,35 @@ export const PublishedFormCertificate: React.FC<
     certificateName || `${practitioner?.user?.firstName}`
   );
 
+  // Every certificate is recorded against either the visit it was issued for or the
+  // completed course. `proposedCertificateId` is only used the first time a certificate
+  // is issued - the number that comes back is the one on record, so re-downloading
+  // never produces a second certificate number.
+  const saveCertificate = async (proposedCertificateId: string) => {
+    try {
+      const certificateId = await appDispatch(
+        saveCertificateDetails({
+          certificateName: pdfFieldName,
+          certificateRegNr: proposedCertificateId,
+          visitId: completedVisitId,
+          userTrainingCourseId,
+        })
+      ).unwrap();
+
+      if (!certificateId) throw new Error('Certificate details were not saved');
+
+      return certificateId;
+    } catch (error) {
+      console.error('Failed to save certificate details:', error);
+      setNotification({
+        title: 'Certificate details could not be saved. Please try again.',
+        variant: NOTIFICATION.ERROR,
+      });
+
+      return undefined;
+    }
+  };
+
   const saveAndDownload = async () => {
     if (isSmartStartCourseCertificate) {
       await downloadSmartStartCourseCertificate();
@@ -69,33 +102,17 @@ export const PublishedFormCertificate: React.FC<
       return;
     }
 
-    const certificateId = generateCertificateId('HSC', certificateRegNr);
-    const { long: visitDateLong, short: visitDateShort } =
-      formatCertificateDate(visitCompletedDate);
-
-    await appDispatch(
-      saveHealthCertificateDetails({
-        visitId: completedVisitId!,
-        certificateName: pdfFieldName,
-        certificateRegNr: certificateId,
-      })
-    )
-      .unwrap()
-      .then(() => {
-        downloadHealthSafetyCertificate(
-          certificateId,
-          visitDateLong,
-          visitDateShort
-        );
-      })
-      .catch((error) => {
-        console.error('Failed to save certificate name:', error);
-      });
+    await downloadHealthSafetyCertificate();
   };
 
   const downloadSmartStartCourseCertificate = async () => {
     const { long: completionDateLong, short: completionDateShort } =
       formatCertificateDate(courseCompletedDate);
+
+    // the number is recorded but does not appear on the SmartStart templates, which
+    // carry the practitioner's ID number instead
+    if (!(await saveCertificate(generateCertificateId('T', certificateRegNr))))
+      return;
 
     const pdf = await generateSmartStartCourseCertificate(
       smartStartCourseConfig!.templateImage,
@@ -117,9 +134,14 @@ export const PublishedFormCertificate: React.FC<
   };
 
   const downloadEcdConnectCourseCertificate = async () => {
-    const certificateId = generateCertificateId('T', certificateRegNr);
     const { long: completionDateLong, short: completionDateShort } =
       formatCertificateDate(courseCompletedDate);
+
+    const certificateId = await saveCertificate(
+      generateCertificateId('T', certificateRegNr)
+    );
+    if (!certificateId) return;
+
     const logoB64 = await urlToBase64(logoFile);
     const sigB64 = await urlToBase64(signatureFile);
 
@@ -142,11 +164,15 @@ export const PublishedFormCertificate: React.FC<
     onBack(false);
   };
 
-  const downloadHealthSafetyCertificate = async (
-    certificateId: string,
-    visitDateLong: string,
-    visitDateShort: string
-  ) => {
+  const downloadHealthSafetyCertificate = async () => {
+    const { long: visitDateLong, short: visitDateShort } =
+      formatCertificateDate(visitCompletedDate);
+
+    const certificateId = await saveCertificate(
+      generateCertificateId('HSC', certificateRegNr)
+    );
+    if (!certificateId) return;
+
     const logoB64 = await urlToBase64(logoFile);
     const sigB64 = await urlToBase64(signatureFile);
 
