@@ -155,11 +155,10 @@ export const getIncomeStatements = createAsyncThunk<
     let oneDayAgo = new Date();
     oneDayAgo.setDate(oneDayAgo.getDate() - 1);
 
-    const statementsInRange = cache.filter(
-      (x) =>
-        new Date(x.year, x.month, 20) > startDate &&
-        (!endDate || new Date(x.year, x.month, 20) < endDate)
-    );
+    const statementsInRange = cache.filter((x) => {
+      const statementDate = new Date(x.year, x.month - 1, 20);
+      return statementDate > startDate && (!endDate || statementDate < endDate);
+    });
 
     const anyStale = statementsInRange.some(
       (x) => !x.dateRefreshed || new Date(x.dateRefreshed) < oneDayAgo

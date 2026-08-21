@@ -90,8 +90,12 @@ class IncomeStatementsService {
     });
 
     if (response.status !== 200 || !!response.data.errors) {
+      const graphQlMessage = (
+        response.data.errors as { message?: string }[]
+      )?.[0]?.message;
       throw new Error(
-        'Update income statement Failed - Server connection error'
+        graphQlMessage ||
+          'Update income statement Failed - Server connection error'
       );
     }
 
@@ -164,9 +168,10 @@ class IncomeStatementsService {
     });
 
     if (response.status !== 200 || !!response.data.errors) {
-      throw new Error(
-        'Get income statement pdf Failed - Server connection error'
-      );
+      const graphQlMessage = (
+        response.data.errors as { message?: string }[]
+      )?.[0]?.message;
+      throw new Error(graphQlMessage || 'Unable to download statement.');
     }
 
     return response.data.data.incomeStatementPdf;

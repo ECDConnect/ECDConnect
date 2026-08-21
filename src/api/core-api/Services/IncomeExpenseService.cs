@@ -178,12 +178,18 @@ namespace ECDLink.Core.Services
 
         public StatementsIncomeStatement UpdateStatement(IncomeStatementModel input)
         {
+            input.IncomeItems ??= new List<IncomeItemModel>();
+            input.ExpenseItems ??= new List<ExpenseItemModel>();
+
             var exisitingStatement = GetStatement(input.Id);
 
             if (exisitingStatement == null)
             {
                 throw new ArgumentException("Statement not found");
             }
+
+            exisitingStatement.IncomeItems ??= new List<StatementsIncome>();
+            exisitingStatement.ExpenseItems ??= new List<StatementsExpenses>();
 
             // set downloaded field
             if (input.Downloaded != exisitingStatement.Downloaded)
@@ -359,16 +365,23 @@ namespace ECDLink.Core.Services
                 _notificationService.ExpireNotificationsTypesForUser(exisitingStatement.UserId.ToString(), TemplateTypeConstants.Statements60DaysNotification);
                 _notificationService.ExpireNotificationsTypesForUser(exisitingStatement.UserId.ToString(), TemplateTypeConstants.Statements30DaysNotification);
             }
-            return exisitingStatement;
+
+            // Reload so newly inserted items are included in the returned model
+            return GetStatement(exisitingStatement.Id) ?? exisitingStatement;
         }
 
         #region PDF STUFF
 
         public string CreateIncomeStatementPDFDocument(string userId, StatementsIncomeStatement statement)
         {
+            if (statement == null)
+            {
+                throw new ArgumentNullException(nameof(statement));
+            }
+
             // Filter only active items
-            statement.IncomeItems = statement.IncomeItems.Where(i => i.IsActive).ToList();
-            statement.ExpenseItems = statement.ExpenseItems.Where(e => e.IsActive).ToList();
+            statement.IncomeItems = (statement.IncomeItems ?? Enumerable.Empty<StatementsIncome>()).Where(i => i.IsActive).ToList();
+            statement.ExpenseItems = (statement.ExpenseItems ?? Enumerable.Empty<StatementsExpenses>()).Where(e => e.IsActive).ToList();
 
             // update statement Download field
             if (statement?.Downloaded == false)

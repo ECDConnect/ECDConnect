@@ -23,8 +23,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Statements
             Month = statement.Month;
             Year = statement.Year;
             Downloaded = statement.Downloaded;
-            IncomeItems = statement.IncomeItems.Select(x => new IncomeItemModel(x)).Where(x => x.IsActive).ToList();
-            ExpenseItems = statement.ExpenseItems.Select(x => new ExpenseItemModel(x)).Where(x => x.IsActive).ToList();
+            IncomeItems = (statement.IncomeItems ?? Enumerable.Empty<StatementsIncome>())
+                .Select(x => new IncomeItemModel(x)).Where(x => x.IsActive).ToList();
+            ExpenseItems = (statement.ExpenseItems ?? Enumerable.Empty<StatementsExpenses>())
+                .Select(x => new ExpenseItemModel(x)).Where(x => x.IsActive).ToList();
             ContactedByCoach = statement.ContactedByCoach;
         }
     }
