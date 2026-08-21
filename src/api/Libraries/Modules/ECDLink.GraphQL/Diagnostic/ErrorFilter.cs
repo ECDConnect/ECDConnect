@@ -14,7 +14,8 @@ namespace ECDLink.EGraphQL.Diagnostic
         private static readonly string[] _passthroughCodes = new[]
         {
             "AUTH_NOT_AUTHORIZED",
-            "AUTH_NOT_AUTHENTICATED"
+            "AUTH_NOT_AUTHENTICATED",
+            "USER_ERROR"
         };
 
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -41,10 +42,17 @@ namespace ECDLink.EGraphQL.Diagnostic
                 }
             }
 
+            // Expected client-facing validation (e.g. duplicate monthly statement)
+            if (error.Exception is System.ComponentModel.DataAnnotations.ValidationException
+                && error.Code == null)
+            {
+                error = error.WithCode("USER_ERROR");
+            }
+
             if (_isDevelopment)
                 return error;
 
-            // Auth errors must pass through so clients can handle 401/403 correctly
+            // Auth and user-facing errors must pass through so clients can display them
             if (error.Code != null && System.Array.Exists(_passthroughCodes, c => c == error.Code))
                 return error;
 
