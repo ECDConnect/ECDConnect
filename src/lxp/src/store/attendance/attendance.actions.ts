@@ -14,6 +14,7 @@ import { RootState, ThunkApiType } from '../types';
 import { MonthlyAttendanceReportQueryParams } from './attendance.types';
 import { RetrieveFromCache } from '@/models/sync/retrieve-from-cache';
 import { OverrideCache } from '@/models/sync/override-cache';
+import { isUuid } from '@/utils/classroom/attendance/track-attendance-utils';
 
 export const AttendanceActions = {
   GET_ATTENDANCE: 'getAttendance',
@@ -215,9 +216,17 @@ export const trackAttendanceSync = createAsyncThunk<
             continue;
           }
 
+          const programmeOwnerId = isUuid(x.programmeOwnerId)
+            ? x.programmeOwnerId
+            : userAuth.id;
+
+          if (!isUuid(programmeOwnerId) || !x.classroomProgrammeId) {
+            return rejectWithValue('Unable to save attendance.');
+          }
+
           const trackAttendanceModelInput: TrackAttendanceModelInput = {
             classroomProgrammeId: x.classroomProgrammeId,
-            programmeOwnerId: x.programmeOwnerId,
+            programmeOwnerId,
             attendees: [],
             attendanceDate: x.attendanceDate,
           };

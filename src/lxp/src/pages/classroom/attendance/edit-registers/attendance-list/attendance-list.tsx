@@ -16,11 +16,13 @@ import {
   getPlaygroup,
   mapTrackAttendance,
   normalizeToStartOfDay,
+  resolveProgrammeOwnerId,
 } from '@/utils/classroom/attendance/track-attendance-utils';
 import { AttendanceState } from '../../components/attendance-list/attendance-list.types';
 import { ChildAttendance } from '@/store/attendance/attendance.types';
 import { useAppDispatch } from '@/store';
 import { userSelectors } from '@/store/user';
+import { authSelectors } from '@/store/auth';
 import { analyticsActions } from '@/store/analytics';
 import { attendanceActions, attendanceThunkActions } from '@/store/attendance';
 import { format } from 'date-fns';
@@ -56,6 +58,7 @@ export const EditRegistersAttendanceList = ({
     classroomsSelectors.getClassroomGroupById(classroomGroupId)
   );
   const user = useSelector(userSelectors.getUser);
+  const userAuth = useSelector(authSelectors.getAuthUser);
 
   const classProgrammes = classroomGroup!.classProgrammes?.filter(
     (x) => x?.isActive
@@ -111,11 +114,24 @@ export const EditRegistersAttendanceList = ({
         const attendanceDateIso =
           normalizeToStartOfDay(attendanceDate).toISOString();
 
+        const programmeOwnerId = resolveProgrammeOwnerId(
+          user?.id,
+          userAuth?.id,
+          classroomGroup?.userId
+        );
+
+        if (!programmeOwnerId || !currentProgramme.id) {
+          showMessage({
+            message: 'Unable to save attendance. Please try again.',
+          });
+          return;
+        }
+
         const trackAttendanceInput = mapTrackAttendance(
-          user?.id || '',
+          programmeOwnerId,
           allAttendedChildren,
           attendanceDateIso,
-          currentProgramme.id ?? ''
+          currentProgramme.id
         );
 
         await appDispatch(
@@ -126,7 +142,9 @@ export const EditRegistersAttendanceList = ({
         );
         // reset data in redux
         await appDispatch(
-          attendanceActions.resetClassAttendanceForUser({ userId: user?.id! })
+          attendanceActions.resetClassAttendanceForUser({
+            userId: programmeOwnerId,
+          })
         );
         await appDispatch(
           attendanceActions.resetClassroomAttendanceOverviewReport()
