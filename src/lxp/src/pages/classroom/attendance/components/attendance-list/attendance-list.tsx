@@ -18,6 +18,7 @@ import { attendanceActions, attendanceThunkActions } from '@store/attendance';
 import { ChildAttendance } from '@store/attendance/attendance.types';
 import { classroomsSelectors } from '@store/classroom';
 import { userSelectors } from '@store/user';
+import { authSelectors } from '@/store/auth';
 import {
   classroomGroupHasAttendanceOnDate,
   getAttendanceStatusCheck,
@@ -25,6 +26,7 @@ import {
   mapTrackAttendance,
   mergeClassProgrammesWithSameClassroomGroupId,
   normalizeToStartOfDay,
+  resolveProgrammeOwnerId,
 } from '@utils/classroom/attendance/track-attendance-utils';
 import ClassProgrammeAttendanceList from '../class-programme-attendance-list/class-programme-attendance-list';
 import * as styles from './attendance-list.styles';
@@ -69,6 +71,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     classroomsSelectors.getClassroomGroupLearnersForAttendance
   );
   const user = useSelector(userSelectors.getUser);
+  const userAuth = useSelector(authSelectors.getAuthUser);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
 
   const classProgrammes = classroomGroups
@@ -255,11 +258,24 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
         const attendanceDateIso =
           normalizeToStartOfDay(attendanceDate).toISOString();
 
+        const programmeOwnerId = resolveProgrammeOwnerId(
+          user?.id,
+          userAuth?.id,
+          currentGroup.userId
+        );
+
+        if (!programmeOwnerId || !currentProgramme.id) {
+          showMessage({
+            message: 'Unable to save attendance. Please try again.',
+          });
+          return;
+        }
+
         const trackAttendanceInput = mapTrackAttendance(
-          user?.id || '',
+          programmeOwnerId,
           allAttendedChildren,
           attendanceDateIso,
-          currentProgramme.id ?? ''
+          currentProgramme.id
         );
 
         await appDispatch(
@@ -270,7 +286,9 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
         );
         // reset data in redux
         await appDispatch(
-          attendanceActions.resetClassAttendanceForUser({ userId: user?.id! })
+          attendanceActions.resetClassAttendanceForUser({
+            userId: programmeOwnerId,
+          })
         );
         await appDispatch(
           attendanceActions.resetClassroomAttendanceOverviewReport()
@@ -310,7 +328,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
           <SearchDropDown<any>
             displayMenuOverlay
             menuItemClassName={styles.dropdownStyles}
-            className={'mr-1 ml-2'}
+            className={'ml-2 mr-1'}
             options={searchDropDownOptions}
             onChange={(value) => onFilterItemsChanges(value)}
             placeholder={'Class'}
@@ -399,7 +417,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
         <Button
           id="gtm-add-attendance"
           onClick={handleFormSubmit}
-          className="mx-4 mt-auto mb-4 w-11/12"
+          className="mx-4 mb-4 mt-auto w-11/12"
           size="small"
           color="quatenary"
           type="filled"

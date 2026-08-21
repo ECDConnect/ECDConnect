@@ -3,14 +3,16 @@ using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
+using Fluid.Ast;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using System;
-using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
@@ -30,6 +32,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public IncomeStatementModel UpdateIncomeStatement(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] IIncomeExpenseService incomeExpenseService,
+            [Service] HierarchyEngine hierarchyEngine,
             IncomeStatementModel input)
         {
             var userId = contextAccessor.HttpContext.GetUser().Id;
@@ -39,37 +42,67 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 throw new ArgumentNullException("input");
             }
 
-            var exisitingStatement = incomeExpenseService.GetStatement(input.Id);
+            input.IncomeItems ??= new List<IncomeItemModel>();
+            input.ExpenseItems ??= new List<ExpenseItemModel>();
 
-            if (exisitingStatement != null)
+            var existingStatement = incomeExpenseService.GetStatement(input.Id);
+
+            if (existingStatement == null)
             {
-                // Check if it's downloaded
+                // Client may have a local-only id for a month that already exists on the server
+                // (offline create, another device, or a stale cache). Merge into that statement.
+                var existingForMonth = incomeExpenseService.GetStatements(
+                        userId,
+                        new DateTime(input.Year, input.Month, 1),
+                        new DateTime(input.Year, input.Month, DateTime.DaysInMonth(input.Year, input.Month)))
+                    .Where(x => x.IsActive)
+                    .OrderBy(x => x.InsertedDate)
+                    .FirstOrDefault();
+
+                if (existingForMonth != null)
+                {
+                    input.Id = existingForMonth.Id;
+                    existingStatement = existingForMonth;
+                }
+            }
+
+            if (existingStatement != null) 
+            {
+                if (existingStatement.UserId != userId || !hierarchyEngine.UserInHierarchy(userId, existingStatement.UserId.Value, true))
+                {
+                    throw new UnauthorizedAccessException("You do not have permission to update this statement.");
+                }
+
                 var updatedStatement = incomeExpenseService.UpdateStatement(input);
                 return new IncomeStatementModel(updatedStatement);
             }
 
-            var statementsForMonth = incomeExpenseService.GetStatements(
-                userId,
-                new DateTime(input.Year, input.Month, 1),
-                new DateTime(input.Year, input.Month, DateTime.DaysInMonth(input.Year, input.Month)));
-
-            // User already has a statement for the month, but it does not match the input id
-            if (statementsForMonth.Any())
-            {
-                throw new ValidationException("User has already submitted a statement for this month");
-            }
-
             var newStatement = incomeExpenseService.CreateStatement(userId, input);
-
-            //var statement = incomeExpenseService.SubmitMonthlyStatement(input.Month, input.Year, input.UserId, input.IncomeItemIds, input.ExpenseItemIds);
             return new IncomeStatementModel(newStatement);
         }
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Update)]
         public StatementsIncomeStatement UpdateUserContactStatusForStatement(
             [Service] IIncomeExpenseService incomeExpenseService,
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] HierarchyEngine hierarchyEngine,
             Guid statementId)
         {
+            var userId = contextAccessor.HttpContext.GetUser().Id;
+            var statement = incomeExpenseService.GetStatement(statementId);
+
+            if (statement == null)
+            {
+                return null;
+            }
+
+            // Coaches/principals mark contact on a practitioner's statement; owner can too
+            if (!statement.UserId.HasValue
+                || !hierarchyEngine.UserInHierarchy(userId, statement.UserId.Value, true))
+            {
+                throw new UnauthorizedAccessException("You do not have permission to update this statement.");
+            }
+
             return incomeExpenseService.UpdateUserContactStatusForStatement(statementId);
         }
     }
