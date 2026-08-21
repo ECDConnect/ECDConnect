@@ -48,7 +48,12 @@ class UserService {
   async updateUserConsents(
     id: string,
     input: UserConsentInput
-  ): Promise<boolean> {
+  ): Promise<{
+    id: string;
+    userId: string;
+    consentId: number;
+    consentType?: string | null;
+  }> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       id: 'updateUserConsent',
@@ -58,11 +63,11 @@ class UserService {
       },
     });
 
-    if (response.status !== 200) {
+    if (response.status !== 200 || !!response.data.errors) {
       throw new Error('Updating UserConsent failed - Server connection error');
     }
 
-    return true;
+    return response.data.data.updateUserConsent;
   }
 
   async resetUserPassword(

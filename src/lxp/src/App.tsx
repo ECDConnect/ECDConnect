@@ -347,6 +347,44 @@ const App: React.FC = () => {
     };
   }, [dialog]);
 
+  useEffect(() => {
+    const handleGraphQlUserError = (e: Event) => {
+      const message =
+        (e as CustomEvent<{ message?: string }>).detail?.message ||
+        'Something went wrong. Please try again.';
+
+      dialog({
+        blocking: false,
+        position: DialogPosition.Middle,
+        color: 'bg-white',
+        render: (onClose) => (
+          <ActionModal
+            iconColor="alertMain"
+            iconBorderColor="errorBg"
+            title={message}
+            detailText="Please try again, or go back and open the statement from the list."
+            icon={'ExclamationCircleIcon'}
+            actionButtons={[
+              {
+                colour: 'quatenary',
+                text: 'OK',
+                textColour: 'white',
+                type: 'filled',
+                leadingIcon: 'CheckCircleIcon',
+                onClick: onClose,
+              },
+            ]}
+          />
+        ),
+      });
+    };
+
+    window.addEventListener('graphql-user-error', handleGraphQlUserError);
+    return () => {
+      window.removeEventListener('graphql-user-error', handleGraphQlUserError);
+    };
+  }, [dialog]);
+
   const isProduction = process.env.NODE_ENV === 'production';
 
   const routerContent = (
