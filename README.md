@@ -126,7 +126,7 @@ Configuration of the backend for Moodle is discussed [below](#moodle-optional).
 
 If further assistance for setup of Moodle is required consider contacting a Moodle partner, e.g. [Limina Education Services](https://limina.co.za)
 
-Training courses have been developed for the ECD Connect Open Access offering.  Email open@ecdconnect.org.za to find out more.
+Training courses have been developed for the ECD Connect Open Access offering.  Email help@ecdconnect.org.za to find out more.
 
 ## Facebook SSO
 Facebook SSO can be enabled by configuring the Facebook App Id in the settings.json files in src\lxp and in the appsettings.json files in src\api.
