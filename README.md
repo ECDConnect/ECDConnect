@@ -10,6 +10,9 @@ It can be used by independent, stand alone early childhood education practitione
 
 The platform is built as a Progressive Web Application with offline first capabilities. The technology leverages the strengths of React and .NET. It can be hosted in the cloud or on-prem.
 
+## Contact
+Email: [help@ecdconnect.co.za](mailto:help@ecdconnect.co.za)
+
 ## Core Tech Stack Summary
 
 -   **Frontend PWA**: React, Redux, TypeScript
