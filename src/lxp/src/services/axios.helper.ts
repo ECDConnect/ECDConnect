@@ -24,9 +24,23 @@ const logGraphQL = (
   // logFunc(`GRAPHQL: ${statusText}[${status}] `, { query, result });
 };
 
+const USER_FACING_GRAPHQL_ERROR_CODE = 'USER_ERROR';
+
+const getGraphQlErrorCode = (err: any): string | undefined =>
+  err?.extensions?.code ?? err?.code;
+
+const isUserFacingGraphQlError = (err: any): boolean =>
+  getGraphQlErrorCode(err) === USER_FACING_GRAPHQL_ERROR_CODE;
+
 const alertGraphQL = () => {
   if (!!disableGraphqlErrorAlert) return;
   window.dispatchEvent(new CustomEvent('graphql-error', {}));
+};
+
+const alertGraphQlUserError = (message: string) => {
+  window.dispatchEvent(
+    new CustomEvent('graphql-user-error', { detail: { message } })
+  );
 };
 
 const alertTimeout = () => {
@@ -154,44 +168,66 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
             response.data
           );
         } else {
-          response.original_status = response.status;
-          response.original_statusText = response.statusText;
-
-          response.status = 500;
-          response.statusText =
-            'Internal Server Error' +
-            (response.data.errors?.length && response.data.errors[0]?.message
-              ? `: ${response.data.errors[0].message}`
-              : '');
-
-          const user = store?.getState()?.auth?.userAuth;
-          if (
-            process.env.REACT_APP_SUPPRESS_ERROR_LOGGING === undefined ||
-            process.env.REACT_APP_SUPPRESS_ERROR_LOGGING === '1'
-          ) {
-            for (let err of response.data.errors) {
-              store.dispatch(
-                queryErrorsActions.addError({
-                  type: 'graphql',
-                  message: err.message ?? JSON.stringify(err),
-                  eventDate: Date.now(),
-                  payload: err,
-                  clientUrl: window.location.href,
-                  isOnline: navigator.onLine,
-                  requestPayload: response.config.data,
-                  userAgent: navigator.userAgent,
-                })
-              );
-            }
-            await store.dispatch(upsertQueryErrors(user?.id || ''));
-          }
-          logGraphQL(
-            console.error,
-            response.statusText,
-            response.status,
-            response.config.data,
-            response.data
+          const graphQlErrors = response.data.errors ?? [];
+          const unexpectedErrors = graphQlErrors.filter(
+            (err: any) => !isUserFacingGraphQlError(err)
           );
+          const userFacingErrors = graphQlErrors.filter(
+            isUserFacingGraphQlError
+          );
+
+          if (userFacingErrors.length && unexpectedErrors.length === 0) {
+            alertGraphQlUserError(
+              userFacingErrors[0]?.message ||
+                'Something went wrong. Please try again.'
+            );
+            logGraphQL(
+              console.warn,
+              response.statusText,
+              response.status,
+              response.config.data,
+              response.data
+            );
+          } else {
+            response.original_status = response.status;
+            response.original_statusText = response.statusText;
+
+            response.status = 500;
+            response.statusText =
+              'Internal Server Error' +
+              (graphQlErrors.length && graphQlErrors[0]?.message
+                ? `: ${graphQlErrors[0].message}`
+                : '');
+
+            const user = store?.getState()?.auth?.userAuth;
+            if (
+              process.env.REACT_APP_SUPPRESS_ERROR_LOGGING === undefined ||
+              process.env.REACT_APP_SUPPRESS_ERROR_LOGGING === '1'
+            ) {
+              for (let err of unexpectedErrors) {
+                store.dispatch(
+                  queryErrorsActions.addError({
+                    type: 'graphql',
+                    message: err.message ?? JSON.stringify(err),
+                    eventDate: Date.now(),
+                    payload: err,
+                    clientUrl: window.location.href,
+                    isOnline: navigator.onLine,
+                    requestPayload: response.config.data,
+                    userAgent: navigator.userAgent,
+                  })
+                );
+              }
+              await store.dispatch(upsertQueryErrors(user?.id || ''));
+            }
+            logGraphQL(
+              console.error,
+              response.statusText,
+              response.status,
+              response.config.data,
+              response.data
+            );
+          }
         }
 
         if (response.status >= 400) {

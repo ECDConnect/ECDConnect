@@ -1,5 +1,6 @@
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Events;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories;
@@ -26,6 +27,7 @@ namespace ECDLink.EGraphQL
             services.AddScoped(typeof(AuditLogRepository));
 
             services.AddScoped(typeof(GenericRepository<>));
+            services.AddScoped<GenericRepository<UserConsent>, UserConsentRepository>();
             services.AddScoped(typeof(GenericUserTypeRepository<>));
             services.AddScoped(typeof(ScopedGenericRepository<>));
             services.AddScoped<AttendanceTrackingRepository>();

@@ -11,6 +11,26 @@ import {
 import { StatementsState } from './statements.types';
 import { newGuid } from '@/utils/common/uuid.utils';
 
+const statementMonthKey = (year: number, month: number) => `${year}-${month}`;
+
+/** Backend month is 1-12; Date() months are 0-11. Day 20 avoids timezone month-shift. */
+const statementSortDate = (year: number, month: number) =>
+  new Date(year, month - 1, 20);
+
+const findStatementForMonth = (
+  statements: StatementsState['incomeStatements'],
+  year: number,
+  month: number
+) => {
+  const matches = statements.filter(
+    (x) => x.year === year && x.month === month
+  );
+  if (!matches.length) {
+    return undefined;
+  }
+  return matches.find((x) => x.synced) ?? matches[0];
+};
+
 const initialState: StatementsState = {
   balanceMessageDismissed: false,
   downloadsMessageDismissed: false,
@@ -82,12 +102,17 @@ const statementsSlice = createSlice({
       const receivedMonth = dateReceived.getMonth() + 1;
       const receivedYear = dateReceived.getFullYear();
 
-      // Get by statement Id or the month/year of the income item
-      let updatedStatement = !!statementId
+      let updatedStatement = statementId
         ? state.incomeStatements.find((x) => x.id === statementId)
-        : state.incomeStatements.find(
-            (x) => x.month === receivedMonth && x.year === receivedYear
-          );
+        : undefined;
+
+      if (!updatedStatement) {
+        updatedStatement = findStatementForMonth(
+          state.incomeStatements,
+          receivedYear,
+          receivedMonth
+        );
+      }
 
       if (!!updatedStatement?.downloaded) {
         return;
@@ -130,8 +155,10 @@ const statementsSlice = createSlice({
       const paidMonth = datePaid.getMonth() + 1;
       const paidYear = datePaid.getFullYear();
 
-      const updatedStatement = state.incomeStatements.find(
-        (x) => x.month === paidMonth && x.year === paidYear
+      const updatedStatement = findStatementForMonth(
+        state.incomeStatements,
+        paidYear,
+        paidMonth
       );
 
       if (!!updatedStatement?.downloaded) {
@@ -207,26 +234,86 @@ const statementsSlice = createSlice({
       state.payTypes = action.payload;
     });
     builder.addCase(upsertIncomeStatements.fulfilled, (state, action) => {
-      state.incomeStatements = state.incomeStatements.map((statement) => ({
-        ...statement,
-        synced: true,
-      }));
+      const returned = action.payload ?? [];
+      if (!returned.length) {
+        state.incomeStatements = state.incomeStatements.map((statement) => ({
+          ...statement,
+          synced: true,
+        }));
+        return;
+      }
+
+      const returnedByMonth = new Map<string, (typeof returned)[number]>();
+      returned.forEach((item) => {
+        returnedByMonth.set(statementMonthKey(item.year, item.month), item);
+      });
+      const uniqueReturned = Array.from(returnedByMonth.values());
+      const returnedMonthKeys = new Set(returnedByMonth.keys());
+
+      const mergeItemsById = <T extends { id: string }>(
+        serverItems: T[] | undefined,
+        localItems: T[] | undefined
+      ) => {
+        const items = new Map<string, T>();
+        [...(serverItems ?? []), ...(localItems ?? [])].forEach((item) => {
+          if (item?.id) {
+            items.set(item.id, item);
+          }
+        });
+        return Array.from(items.values());
+      };
+
+      state.incomeStatements = [
+        ...state.incomeStatements.filter(
+          (s) => !returnedMonthKeys.has(statementMonthKey(s.year, s.month))
+        ),
+        ...uniqueReturned.map((item) => {
+          const locals = state.incomeStatements.filter(
+            (s) =>
+              statementMonthKey(s.year, s.month) ===
+              statementMonthKey(item.year, item.month)
+          );
+          return {
+            ...item,
+            incomeItems: mergeItemsById(
+              item.incomeItems,
+              locals.flatMap((s) => s.incomeItems ?? [])
+            ),
+            expenseItems: mergeItemsById(
+              item.expenseItems,
+              locals.flatMap((s) => s.expenseItems ?? [])
+            ),
+            synced: true,
+            dateRefreshed: new Date().toString(),
+          };
+        }),
+      ];
     });
     builder.addCase(getIncomeStatements.fulfilled, (state, action) => {
-      if (action.payload?.length) {
-        state.incomeStatements = [
-          ...state.incomeStatements.filter(
-            (x) =>
-              new Date(x.year, x.month, 20) < action.meta.arg.startDate ||
-              (!!action.meta.arg.endDate &&
-                new Date(x.year, x.month, 20) > action.meta.arg.endDate)
-          ),
-          ...action.payload.map((item) => ({
-            ...item,
-            dateRefreshed: new Date().toString(),
-          })),
-        ];
+      if (!action.payload?.length) {
+        return;
       }
+
+      const { startDate, endDate } = action.meta.arg;
+      const fetched = action.payload.map((item) => ({
+        ...item,
+        synced: true,
+        dateRefreshed: new Date().toString(),
+      }));
+      const fetchedMonthKeys = new Set(
+        fetched.map((s) => statementMonthKey(s.year, s.month))
+      );
+
+      state.incomeStatements = [
+        ...state.incomeStatements.filter((x) => {
+          if (fetchedMonthKeys.has(statementMonthKey(x.year, x.month))) {
+            return false;
+          }
+          const date = statementSortDate(x.year, x.month);
+          return date < startDate || (!!endDate && date > endDate);
+        }),
+        ...fetched,
+      ];
     });
   },
 });

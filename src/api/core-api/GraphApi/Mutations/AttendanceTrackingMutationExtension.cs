@@ -37,14 +37,33 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 return false;
             }
 
+            var callerUserId = contextAccessor.HttpContext.GetUser()?.Id ?? Guid.Empty;
+
             foreach (var attendanceElement in attendance)
             {
+                if (!Guid.TryParse(attendanceElement.ProgrammeOwnerId, out var programmeOwnerId)
+                    || programmeOwnerId == Guid.Empty)
+                {
+                    programmeOwnerId = callerUserId;
+                }
+
+                if (programmeOwnerId == Guid.Empty)
+                {
+                    throw new GraphQLException(
+                        ErrorBuilder.New()
+                            .SetMessage("Unable to save attendance.")
+                            .SetCode("USER_ERROR")
+                            .Build());
+                }
+
+                var programmeOwnerIdValue = programmeOwnerId.ToString();
+
                 // Add Parent Record
                 dbEntities.Add(new Attendance
                 {
                     ClassroomProgrammeId = attendanceElement.ClassroomProgrammeId,
-                    ParentRecordId = attendanceElement.ProgrammeOwnerId,
-                    UserId = Guid.Parse(attendanceElement.ProgrammeOwnerId),
+                    ParentRecordId = programmeOwnerIdValue,
+                    UserId = programmeOwnerId,
                     WeekOfYear = attendanceElement.AttendanceDate.GetWeekOfYear(),
                     MonthOfYear = attendanceElement.AttendanceDate.Month,
                     Year = attendanceElement.AttendanceDate.Year,
@@ -55,11 +74,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                 foreach (var attendee in attendanceElement.Attendees)
                 {
+                    if (!Guid.TryParse(attendee.UserId, out var attendeeUserId)
+                        || attendeeUserId == Guid.Empty)
+                    {
+                        throw new GraphQLException(
+                            ErrorBuilder.New()
+                                .SetMessage("Unable to save attendance.")
+                                .SetCode("USER_ERROR")
+                                .Build());
+                    }
+
                     dbEntities.Add(new Attendance
                     {
                         ClassroomProgrammeId = attendanceElement.ClassroomProgrammeId,
-                        ParentRecordId = attendanceElement.ProgrammeOwnerId,
-                        UserId = Guid.Parse(attendee.UserId),
+                        ParentRecordId = programmeOwnerIdValue,
+                        UserId = attendeeUserId,
                         WeekOfYear = attendanceElement.AttendanceDate.GetWeekOfYear(),
                         MonthOfYear = attendanceElement.AttendanceDate.Month,
                         Year = attendanceElement.AttendanceDate.Year,

@@ -108,7 +108,12 @@ export const upsertUserConsents = createAsyncThunk<
 
     const unsyncedConsent = userConsent?.filter((consent) => !consent.synced);
 
-    let promises: Promise<boolean>[] = [];
+    let promises: Promise<{
+      id: string;
+      userId: string;
+      consentId: number;
+      consentType?: string | null;
+    }>[] = [];
 
     if (userAuth?.auth_token && !!unsyncedConsent?.length) {
       promises = unsyncedConsent.map(async (x) => {
