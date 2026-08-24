@@ -324,7 +324,7 @@ const ProgrammeTiming: React.FC = () => {
             <img
               src={selectedTheme.themeLogo}
               alt="Theme logo"
-              className="w-38 flex-shrink-0 object-contain"
+              className="w-36 flex-shrink-0 object-contain"
             />
           )}
         </div>
