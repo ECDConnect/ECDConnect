@@ -88,7 +88,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             usersQuery = AddDefaultUserSearch(search, usersQuery);
 
             var pageSize = Math.Min(pagingInput?.PageSize ?? DefaultPageSize, MaxPageSize);
-            var rowOffset = pagingInput?.RowOffset ?? 0;
+            // PagedQueryInput.RowOffset does not multiply by page size (it just returns the
+            // zero-indexed page number), so compute the real row offset ourselves here.
+            var rowOffset = (pagingInput?.PageNumber ?? 0) * pageSize;
             usersQuery = PaginationHelper.AddPaging(rowOffset, pageSize, usersQuery);
 
             return usersQuery;

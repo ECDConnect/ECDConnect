@@ -4,7 +4,9 @@ import ReactDOM from 'react-dom';
 import ConfigWrapper from './config-wrapper';
 import reportWebVitals from './reportWebVitals';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
-import './styles.css';
+// Compiled from ./styles.css by the Tailwind CLI — see the `tailwind:*` scripts
+// in package.json. Edit styles.css, never the generated file.
+import './styles.generated.css';
 import './i18n';
 import pwa from './utils/pwa';
 

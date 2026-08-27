@@ -204,7 +204,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
         <Typography
           type={'h2'}
           text={'Create a username'}
-          className={'text-sm font-normal'}
+          className={'font-normal'}
           color={'textDark'}
         />
         <FormInput

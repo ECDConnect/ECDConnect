@@ -260,5 +260,44 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
             return result;
 
         }
+
+        [Permission(PermissionGroups.GENERAL, GraphActionEnum.View)]
+        public IEnumerable<ResourceLinkHealthCheckModel> GetResourceLinkHealthChecks(
+            IGenericRepositoryFactory repoFactory,
+            string contentType = null,
+            string sectionType = null)
+        {
+            var healthRepo = repoFactory.CreateGenericRepository<ResourceLinkHealthCheck>();
+            var query = healthRepo.GetAll().Where(x => x.IsActive);
+
+            if (!string.IsNullOrWhiteSpace(contentType))
+            {
+                query = query.Where(x => x.ContentType == contentType);
+            }
+
+            if (!string.IsNullOrWhiteSpace(sectionType))
+            {
+                query = query.Where(x => x.SectionType == sectionType);
+            }
+
+            return query
+                .OrderBy(x => x.SectionType)
+                .ThenBy(x => x.Title)
+                .Select(x => new ResourceLinkHealthCheckModel
+                {
+                    ContentId = x.ContentId,
+                    ContentType = x.ContentType,
+                    SectionType = x.SectionType,
+                    Title = x.Title,
+                    Url = x.Url,
+                    Status = x.Status,
+                    LastCheckStatus = x.LastCheckStatus,
+                    LastStatusCode = x.LastStatusCode,
+                    LastError = x.LastError,
+                    ConsecutiveFailureCount = x.ConsecutiveFailureCount,
+                    LastCheckedDate = x.LastCheckedDate
+                })
+                .ToList();
+        }
     }
 }

@@ -652,7 +652,10 @@ export const OaLogin: React.FC = () => {
                 </FacebookLogin>
               </div>
             )}
-            <Divider title="OR" />
+            {(!!Config.googleClientId ||
+              (!!Config.facebookAppId && isSslEnabled)) && (
+              <Divider title="OR" />
+            )}
           </div>
         )}
         <form>
@@ -669,7 +672,7 @@ export const OaLogin: React.FC = () => {
             />
             <PasswordInput<OaLoginModel>
               label={'Password'}
-              className={'mt-1 mb-2'}
+              className={'mb-2 mt-1'}
               nameProp={'password'}
               sufficIconColor={'uiMidDark'}
               value={loginFormGetValues().password}
@@ -678,7 +681,7 @@ export const OaLogin: React.FC = () => {
             />
             <div>
               <Button
-                className={'mt-1 mb-3'}
+                className={'mb-3 mt-1'}
                 type="outlined"
                 color="secondary"
                 background={'transparent'}
@@ -696,7 +699,7 @@ export const OaLogin: React.FC = () => {
             <Divider></Divider>
             {!!displayError && (
               <Alert
-                className={'mt-5 mb-3'}
+                className={'mb-3 mt-5'}
                 title={displayError}
                 type={'error'}
                 button={
@@ -722,14 +725,14 @@ export const OaLogin: React.FC = () => {
           </div>
           {!isOnline && (
             <Alert
-              className={'mt-5 mb-3'}
+              className={'mb-3 mt-5'}
               title="Your internet connection is unstable."
               type={'warning'}
             />
           )}
           <Button
             id="gtm-login"
-            className={'mt-3 mb-8 w-full'}
+            className={'mb-8 mt-3 w-full'}
             type="filled"
             isLoading={isLoading}
             color="quatenary"

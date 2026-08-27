@@ -161,7 +161,7 @@ export const UserRegistration: React.FC<UserRegistrationProps> = ({}) => {
         <Typography
           type={'h2'}
           text={'How would you like to sign up?'}
-          className={'text-sm font-normal'}
+          className={'font-normal'}
           color={'textDark'}
         />
         {isOnline &&
@@ -210,7 +210,7 @@ export const UserRegistration: React.FC<UserRegistrationProps> = ({}) => {
                 <Typography
                   type={'help'}
                   text={messageError}
-                  className={'mt-1 mb-6 text-sm font-normal'}
+                  className={'mb-6 mt-1 text-sm font-normal'}
                   color={'errorMain'}
                 />
               )}
