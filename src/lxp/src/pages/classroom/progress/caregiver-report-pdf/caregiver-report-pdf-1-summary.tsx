@@ -51,21 +51,21 @@ export const ProgressCaregiverReportSummaryPage: React.FC<
     >
       <div className="flex flex-row">
         <Typography
-          type="body"
+          type="h1"
           color="textMid"
           text={`Progress report -`}
           className="mb-2 text-2xl"
         />
         <Typography
-          type="body"
+          type="h1"
           color="textDark"
           text={`${childFullName}`}
-          className="mb-2 text-2xl font-bold"
+          className="mb-2 text-2xl"
         />
       </div>
       <div className="flex flex-col">
         <div
-          className={`bg-quatenary mt-2 mb-3 flex flex-shrink-0 flex-row justify-between rounded-full px-3 py-1`}
+          className={`bg-quatenary mb-3 mt-2 flex flex-shrink-0 flex-row justify-between rounded-full px-3 py-1`}
           style={{ height: 'fit-content', width: 'fit-content' }}
         >
           <Typography
@@ -93,9 +93,10 @@ export const ProgressCaregiverReportSummaryPage: React.FC<
             <div className="flex flex-col">
               <Typography
                 type="body"
+                weight={'bold'}
                 color="textDark"
                 text={classroomName}
-                className="mb-2 text-xl font-bold"
+                className="mb-2 text-xl"
               />
               <div className="flex flex-wrap items-center gap-1">
                 <Typography
@@ -212,7 +213,7 @@ export const ProgressCaregiverReportSummaryPage: React.FC<
             />
           </div>
           <div
-            className="mr-4 ml-auto h-14 w-1/2"
+            className="ml-auto mr-4 h-14 w-1/2"
             style={{ position: 'relative', overflow: 'visible' }}
           ></div>
         </Card>

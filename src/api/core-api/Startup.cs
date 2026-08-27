@@ -19,6 +19,7 @@ using ECDLink.ContentManagement;
 using ECDLink.Core;
 using ECDLink.Core.Services;
 using ECDLink.Core.Services.Interfaces;
+using ECDLink.Core.Services.ResourceLinkHealth;
 using ECDLink.DataAccessLayer.Diagnostics;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Development;
@@ -158,6 +159,15 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<ChildAttendanceReport>();
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<INotificationTasksService, NotificationTasksService>();
+            services.AddHttpClient(ResourceLinkHealthCheckService.HttpClientName, client =>
+            {
+                client.Timeout = TimeSpan.FromSeconds(ResourceLinkHealthConstants.RequestTimeoutSeconds);
+                client.DefaultRequestHeaders.TryAddWithoutValidation(
+                    "User-Agent",
+                    "Mozilla/5.0 (compatible; ECDConnectLinkChecker/1.0)");
+                client.DefaultRequestHeaders.Accept.ParseAdd("*/*");
+            });
+            services.AddTransient<IResourceLinkHealthCheckService, ResourceLinkHealthCheckService>();
             services.AddTransient<IClassroomService, ClassroomService>();
             services.AddTransient<ICommunityService, CommunityService>();
             services.AddTransient<IJourneyService, JourneyService>();

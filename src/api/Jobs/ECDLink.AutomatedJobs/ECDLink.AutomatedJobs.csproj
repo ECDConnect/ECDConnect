@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\ECDLink.PostgresTenancy\ECDLink.PostgresTenancy.csproj" />
+    <ProjectReference Include="..\..\Libraries\Modules\ECDLink.Core\ECDLink.Core.csproj" />
     <ProjectReference Include="..\..\Libraries\Modules\ECDLink.DataAccessLayer\ECDLink.DataAccessLayer.csproj" />
   </ItemGroup>
 

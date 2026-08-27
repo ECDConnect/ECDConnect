@@ -83,12 +83,18 @@ export const GetAllPortalCoaches = gql`
   query GetAllPortalCoaches(
     $search: String
     $connectUsageSearch: [String]
+    $statusSearch: [String]
+    $insertedDateFrom: DateTime
+    $insertedDateTo: DateTime
     $pagingInput: PagedQueryInput
     $order: [PortalCoachModelSortInput!]
   ) {
     allPortalCoaches(
       search: $search
       connectUsageSearch: $connectUsageSearch
+      statusSearch: $statusSearch
+      insertedDateFrom: $insertedDateFrom
+      insertedDateTo: $insertedDateTo
       pagingInput: $pagingInput
       order: $order
     ) {
@@ -111,6 +117,24 @@ export const GetAllPortalCoaches = gql`
         connectUsageColor
       }
     }
+  }
+`;
+
+export const GetAllPortalCoachesCount = gql`
+  query GetAllPortalCoachesCount(
+    $search: String
+    $connectUsageSearch: [String]
+    $statusSearch: [String]
+    $insertedDateFrom: DateTime
+    $insertedDateTo: DateTime
+  ) {
+    allPortalCoachesCount(
+      search: $search
+      connectUsageSearch: $connectUsageSearch
+      statusSearch: $statusSearch
+      insertedDateFrom: $insertedDateFrom
+      insertedDateTo: $insertedDateTo
+    )
   }
 `;
 

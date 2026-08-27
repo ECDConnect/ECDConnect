@@ -47,16 +47,11 @@ export const ChallengesStep: React.FC<ChallengesStepProps> = ({
 
   return (
     <div className="flex h-full w-full flex-col bg-white p-4">
-      <Typography
-        type={'h1'}
-        text={`Challenges`}
-        className={'text-sm'}
-        color={'textDark'}
-      />
+      <Typography type={'h1'} text={`Challenges`} color={'textDark'} />
       <Typography
         type={'h3'}
         text={`What is the biggest challenge you face with DBE registration right now?`}
-        className={'mt-3 text-sm font-normal'}
+        className={'mt-3 font-normal'}
         color={'textMid'}
       />
       <fieldset className="flex flex-col gap-2">
@@ -77,7 +72,7 @@ export const ChallengesStep: React.FC<ChallengesStepProps> = ({
           <Typography
             type={'h3'}
             text={`Please give more detail`}
-            className={'text-sm font-normal'}
+            className={'font-normal'}
             color={'textMid'}
           />
           <FormInput
@@ -96,7 +91,7 @@ export const ChallengesStep: React.FC<ChallengesStepProps> = ({
         <Typography
           type={'h3'}
           text={`What is the biggest issue you are facing when it comes to funding for your ECD programme?`}
-          className={'text-sm font-normal'}
+          className={'font-normal'}
           color={'textMid'}
         />
         <FormInput

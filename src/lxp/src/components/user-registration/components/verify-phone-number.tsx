@@ -186,17 +186,17 @@ export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
         <Typography
           type={'h2'}
           text={'Enter your 6 digit code'}
-          className={'text-sm font-normal'}
+          className={'font-normal'}
           color={'textDark'}
         />
         <Alert
-          className="mt-2 mb-2 rounded-md"
+          className="mb-2 mt-2 rounded-md"
           message={`We've sent an SMS with a 6 digit code to ${phoneNumber}.`}
           type="info"
         />
         {devAuthCode && (
           <Alert
-            className="mt-2 mb-2 rounded-md"
+            className="mb-2 mt-2 rounded-md"
             title={`Testing only — code: ${devAuthCode}`}
             message="This code is shown for testing environments only and is never available in production."
             type="warning"

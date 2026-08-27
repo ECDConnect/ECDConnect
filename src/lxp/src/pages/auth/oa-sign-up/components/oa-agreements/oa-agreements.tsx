@@ -155,7 +155,7 @@ export const OAAgreements: React.FC<OAAgreementsProps> = ({ closeAction }) => {
         <Typography
           type={'h2'}
           text={'Sign up'}
-          className={'pb-4 text-sm font-normal'}
+          className={'pb-4 font-normal'}
           color={'textDark'}
         />
         <FormInput
@@ -193,7 +193,7 @@ export const OAAgreements: React.FC<OAAgreementsProps> = ({ closeAction }) => {
         <Typography
           type={'h4'}
           text={'Accept the agreements to continue'}
-          className={'text-sm font-normal'}
+          className={'font-normal'}
           color={'textDark'}
         />
         <div className="mt-2 flex flex-col gap-2">
@@ -284,7 +284,7 @@ export const OAAgreements: React.FC<OAAgreementsProps> = ({ closeAction }) => {
             text={
               'Are you open to being contacted by partners who offer more specialised support?'
             }
-            className={'text-sm font-normal'}
+            className={'font-normal'}
             color={'textDark'}
           />
           <Typography
@@ -309,7 +309,7 @@ export const OAAgreements: React.FC<OAAgreementsProps> = ({ closeAction }) => {
         </div>
         {permissionsErrorMessage && (
           <Alert
-            className={'mt-5 mb-3'}
+            className={'mb-3 mt-5'}
             title={permissionsErrorMessage}
             type={'error'}
           />
