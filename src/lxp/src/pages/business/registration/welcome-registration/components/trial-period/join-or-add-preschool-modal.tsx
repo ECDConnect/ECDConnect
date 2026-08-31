@@ -9,10 +9,18 @@ import { BusinessTabItems } from '@/pages/business/business.types';
 
 interface JoinOrAddPreschoolModalProps {
   onSubmit: () => void;
+  detailText?: string;
+  setupIcon?: string;
+  cancelIcon?: string;
 }
 export const JoinOrAddPreschoolModal: React.FC<
   JoinOrAddPreschoolModalProps
-> = ({ onSubmit }) => {
+> = ({
+  onSubmit,
+  detailText = `To use this section, please share some details about yourself and your preschool.`,
+  setupIcon = 'ArrowCircleRightIcon',
+  cancelIcon = 'XIcon',
+}) => {
   const { isOnline } = useOnlineStatus();
   const dialog = useDialog();
   const history = useHistory();
@@ -43,14 +51,14 @@ export const JoinOrAddPreschoolModal: React.FC<
       iconBorderColor="errorBg"
       iconColor="errorMain"
       title={'Set up your preschool!'}
-      detailText={`To use this section, please share some details about yourself and your preschool.`}
+      detailText={detailText}
       actionButtons={[
         {
           colour: 'quatenary',
           text: 'Set up your preschool',
           textColour: 'white',
           type: 'filled',
-          leadingIcon: 'ArrowCircleRightIcon',
+          leadingIcon: setupIcon,
           onClick: async () => {
             onSubmit();
             handleOnlineCallback(() =>
@@ -63,7 +71,7 @@ export const JoinOrAddPreschoolModal: React.FC<
           text: 'Do this later',
           textColour: 'quatenary',
           type: 'outlined',
-          leadingIcon: 'XIcon',
+          leadingIcon: cancelIcon,
           onClick: async () => {
             onSubmit();
             handleOnlineCallback(() =>
