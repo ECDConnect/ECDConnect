@@ -471,6 +471,8 @@ export const ChildProfile: React.FC = () => {
           detailText={`To use this part, please share some details about yourself and your preschool.`}
           setupIcon="HomeIcon"
           cancelIcon="ClockIcon"
+          // Return to the dashboard instead of navigating to the business view.
+          onCancel={() => history.push(ROUTES.DASHBOARD)}
         />
       ),
     });

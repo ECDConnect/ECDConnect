@@ -12,6 +12,9 @@ interface JoinOrAddPreschoolModalProps {
   detailText?: string;
   setupIcon?: string;
   cancelIcon?: string;
+  // When provided, this is called instead of navigating to the business view
+  // when the user chooses to set up their preschool later.
+  onCancel?: () => void;
 }
 export const JoinOrAddPreschoolModal: React.FC<
   JoinOrAddPreschoolModalProps
@@ -20,6 +23,7 @@ export const JoinOrAddPreschoolModal: React.FC<
   detailText = `To use this section, please share some details about yourself and your preschool.`,
   setupIcon = 'ArrowCircleRightIcon',
   cancelIcon = 'XIcon',
+  onCancel,
 }) => {
   const { isOnline } = useOnlineStatus();
   const dialog = useDialog();
@@ -74,6 +78,10 @@ export const JoinOrAddPreschoolModal: React.FC<
           leadingIcon: cancelIcon,
           onClick: async () => {
             onSubmit();
+            if (onCancel) {
+              onCancel();
+              return;
+            }
             handleOnlineCallback(() =>
               history.push(ROUTES.BUSINESS, {
                 activeTabIndex: BusinessTabItems.MONEY,
