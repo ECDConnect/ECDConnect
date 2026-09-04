@@ -23,16 +23,20 @@ export const formatAddress = (address: SiteAddressDto) => {
   return parts.join(', ');
 };
 
-// Extract address components from the geocoding response
+// Search every geocode result; results[0] is not always street-level.
 const getAddressComponent = (
   result: GoogleMapGeoCodeResponse,
   type: GoogleMapGeoCodeAddressComponentType
 ) => {
-  const address_components = result.results[0].address_components;
-  const component = address_components.find((item) =>
-    item.types.includes(type)
-  );
-  return component;
+  for (const geocodeResult of result.results) {
+    const component = geocodeResult.address_components.find((item) =>
+      item.types.includes(type)
+    );
+    if (component) {
+      return component;
+    }
+  }
+  return undefined;
 };
 
 interface AddressMapProps {
@@ -93,11 +97,15 @@ export const AddressMap: React.FC<AddressMapProps> = ({
           : null;
 
         setAddress((prevAddress) => {
+          const streetNumber =
+            getAddressComponent(mapData, 'street_number')?.short_name || '';
+          const route = getAddressComponent(mapData, 'route')?.short_name || '';
           const updatedAddress: SiteAddressDto = {
             ...prevAddress,
-            addressLine1: `${
-              getAddressComponent(mapData, 'street_number')?.short_name || ''
-            } ${getAddressComponent(mapData, 'route')?.short_name || ''}`,
+            addressLine1:
+              `${streetNumber} ${route}`.trim() ||
+              mapData.results[0]?.formatted_address ||
+              '',
             addressLine2:
               getAddressComponent(mapData, 'sublocality')?.short_name || '',
             addressLine3:
@@ -159,8 +167,12 @@ export const AddressMap: React.FC<AddressMapProps> = ({
   }, [onClose]);
 
   // Handle map data change when the pin is moved
-  const onChangeMapData = (mapData?: GoogleMapGeoCodeResponse) => {
-    if (mapData && mapData.results.length > 0 && mapData.status === 'OK') {
+  const onChangeMapData = useCallback(
+    (mapData?: GoogleMapGeoCodeResponse) => {
+      if (!mapData || mapData.status !== 'OK' || !mapData.results?.length) {
+        return;
+      }
+
       const province = getAddressComponent(
         mapData,
         'administrative_area_level_1'
@@ -170,40 +182,48 @@ export const AddressMap: React.FC<AddressMapProps> = ({
             (p) => p.description.toLowerCase() === province.toLowerCase()
           )
         : null;
+      const streetNumber =
+        getAddressComponent(mapData, 'street_number')?.short_name || '';
+      const route = getAddressComponent(mapData, 'route')?.short_name || '';
 
-      const updatedAddress: SiteAddressDto = {
-        ...address,
-        addressLine1: `${
-          getAddressComponent(mapData, 'street_number')?.short_name || ''
-        } ${getAddressComponent(mapData, 'route')?.short_name || ''}`,
-        addressLine2:
-          getAddressComponent(mapData, 'sublocality')?.short_name || '',
-        addressLine3:
-          getAddressComponent(mapData, 'locality')?.short_name || '',
-        municipality:
-          getAddressComponent(mapData, 'administrative_area_level_2')
-            ?.short_name || '',
-        provinceId: matchedProvince ? matchedProvince.id : null,
-        province: !matchedProvince
-          ? null
-          : {
-              id: matchedProvince.id || '',
-              enumId: matchedProvince.id || '',
-              description: matchedProvince.description || '',
-            },
-        postalCode:
-          getAddressComponent(mapData, 'postal_code')?.short_name || '',
-        latitude: mapData.results[0].geometry.location.lat.toString(),
-        longitude: mapData.results[0].geometry.location.lng.toString(),
-      };
+      setAddress((prevAddress) => {
+        const updatedAddress: SiteAddressDto = {
+          ...prevAddress,
+          addressLine1:
+            `${streetNumber} ${route}`.trim() ||
+            mapData.results[0]?.formatted_address ||
+            '',
+          addressLine2:
+            getAddressComponent(mapData, 'sublocality')?.short_name || '',
+          addressLine3:
+            getAddressComponent(mapData, 'locality')?.short_name || '',
+          municipality:
+            getAddressComponent(mapData, 'administrative_area_level_2')
+              ?.short_name || '',
+          provinceId: matchedProvince ? matchedProvince.id : null,
+          province: !matchedProvince
+            ? null
+            : {
+                id: matchedProvince.id || '',
+                enumId: matchedProvince.id || '',
+                description: matchedProvince.description || '',
+              },
+          postalCode:
+            getAddressComponent(mapData, 'postal_code')?.short_name || '',
+          latitude: mapData.results[0].geometry.location.lat.toString(),
+          longitude: mapData.results[0].geometry.location.lng.toString(),
+        };
 
-      // Only update the state if the address has changed
-      if (JSON.stringify(address) !== JSON.stringify(updatedAddress)) {
-        setAddress(updatedAddress);
-        setFormattedAddress(formatAddress(updatedAddress));
-      }
-    }
-  };
+        if (JSON.stringify(prevAddress) !== JSON.stringify(updatedAddress)) {
+          setFormattedAddress(formatAddress(updatedAddress));
+          return updatedAddress;
+        }
+
+        return prevAddress;
+      });
+    },
+    [provinces]
+  );
 
   return (
     <div>
@@ -215,7 +235,7 @@ export const AddressMap: React.FC<AddressMapProps> = ({
         latitude={!address.latitude ? undefined : parseFloat(address.latitude)}
         onChangeMapData={onChangeMapData}
       />
-      <div className="min-h-64 absolute bottom-0 w-full flex-1 rounded-t-2xl bg-white px-5">
+      <div className="absolute bottom-0 min-h-64 w-full flex-1 rounded-t-2xl bg-white px-5">
         <Typography
           type="h2"
           color={'textDark'}
