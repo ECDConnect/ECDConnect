@@ -14,6 +14,9 @@ import { ComponentBaseProps } from '../../models/ComponentBaseProps';
 
 const DEFAULT_LONGITUDE = 26.058415;
 const DEFAULT_LATITUDE = -29.1199066;
+const MAP_API_KEY =
+  process.env.REACT_APP_MAP_API_KEY ||
+  'AIzaSyAmTVxElyncQJh2hJ1ATFS0K_cB6d3VoSk';
 
 export type CustomGoogleMapComponentProps = ComponentBaseProps & {
   children?: ReactNode;
@@ -25,6 +28,8 @@ export type CustomGoogleMapComponentProps = ComponentBaseProps & {
 
 const CustomGoogleMapComponent: FC<CustomGoogleMapComponentProps> = (props) => {
   const mapRef = useRef();
+  const onChangeMapDataRef = useRef(props.onChangeMapData);
+  onChangeMapDataRef.current = props.onChangeMapData;
   const [map, setMap] = useState<GoogleMap | null>(null);
   const [inititialCoordsSet, setInitialCoordsSet] = useState<boolean>(false);
   const [longitude, setLongitude] = useState<number>(
@@ -41,22 +46,30 @@ const CustomGoogleMapComponent: FC<CustomGoogleMapComponentProps> = (props) => {
     GoogleMapGeoCodeResponse | undefined
   >();
 
-  const getCoordData = useCallback((lat: number, lng: number) => {
-    fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=
-        ${lat},${lng}&key=${process.env.REACT_APP_MAP_API_KEY}`)
+  const getCoordData = useCallback((lat?: number, lng?: number) => {
+    if (
+      lat === undefined ||
+      lng === undefined ||
+      Number.isNaN(lat) ||
+      Number.isNaN(lng)
+    ) {
+      return;
+    }
+
+    const params = new URLSearchParams({
+      latlng: `${lat},${lng}`,
+      key: MAP_API_KEY,
+    });
+
+    fetch(`https://maps.googleapis.com/maps/api/geocode/json?${params}`)
       .then((response) => response.json())
       .then((data: GoogleMapGeoCodeResponse) => {
-        if (data.results.length) {
-          const valid = data.results.find((result) =>
-            result.address_components.find((address) =>
-              address.types.find(
-                (type) =>
-                  type.includes('street_number') || type.includes('route')
-              )
-            )
-          );
-          if (!!valid) setMapData(data);
+        if (data.status === 'OK' && data.results?.length) {
+          setMapData(data);
         }
+      })
+      .catch((error) => {
+        console.warn('Failed to reverse geocode map pin:', error);
       });
   }, []);
 
@@ -67,9 +80,7 @@ const CustomGoogleMapComponent: FC<CustomGoogleMapComponentProps> = (props) => {
     let newMap: GoogleMap = await GoogleMap.create({
       id: 'google-map',
       element: mapRef.current as HTMLElement,
-      apiKey:
-        process.env.REACT_APP_MAP_API_KEY ||
-        'AIzaSyAmTVxElyncQJh2hJ1ATFS0K_cB6d3VoSk',
+      apiKey: MAP_API_KEY,
       config: {
         center: {
           lat: latitude,
@@ -84,7 +95,6 @@ const CustomGoogleMapComponent: FC<CustomGoogleMapComponentProps> = (props) => {
     await newMap.setOnMarkerDragEndListener((event) => {
       setLongitude(event?.longitude);
       setLatitude(event?.latitude);
-      console.log('setOnMarkerDragEndListener');
       getCoordData(event?.latitude, event?.longitude);
     });
 
@@ -95,13 +105,13 @@ const CustomGoogleMapComponent: FC<CustomGoogleMapComponentProps> = (props) => {
       },
       draggable: true,
     });
+
+    getCoordData(latitude, longitude);
   };
 
   useEffect(() => {
-    if (props.onChangeMapData) {
-      props.onChangeMapData(mapData);
-    }
-  }, [mapData, props.onChangeMapData]);
+    onChangeMapDataRef.current?.(mapData);
+  }, [mapData]);
 
   useLayoutEffect(() => {
     if (longitude === DEFAULT_LONGITUDE && latitude === DEFAULT_LATITUDE) {
