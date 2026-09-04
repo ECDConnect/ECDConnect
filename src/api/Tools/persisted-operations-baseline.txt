@@ -40,7 +40,7 @@ GetResourcesLinks.graphql
 getSettings.graphql
 
 # ---------------------------------------------------------------------------------------
-# Genuinely broken (19). These fail against the real v12 schema too, so they cannot be
+# Genuinely broken (18). These fail against the real v12 schema too, so they cannot be
 # served today - they reference fields the schema does not have, or will not parse at all.
 # Nothing to do with the upgrade; found while building the validator. Each is either dead
 # and should be deleted, or a bug and should be fixed.
@@ -48,7 +48,6 @@ getSettings.graphql
 
 # Will not parse
 GetCommunitySkills.graphql
-SaveHealthCertificateDetails.graphql
 queryChangesToSync.graphql
 
 # Reference fields that do not exist in the schema

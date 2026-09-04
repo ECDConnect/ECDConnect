@@ -104,32 +104,68 @@ namespace ECDLink.SchemaSnapshot
             .Count(l => l.StartsWith("type ") || l.StartsWith("input ") || l.StartsWith("enum ")
                      || l.StartsWith("interface ") || l.StartsWith("union ") || l.StartsWith("scalar "));
 
+        /// <summary>
+        /// Reports differences as removed and added lines rather than by position: a single
+        /// inserted field shifts every following line, so a positional comparison reports the
+        /// whole file as changed and buries the actual change. Counts are compared as multisets,
+        /// so a line appearing twice as often shows up. A rename appears as a matching pair, one
+        /// on each side - which is exactly what a naming-convention regression looks like.
+        /// </summary>
         private static void Report(string expected, string actual, string path)
         {
-            var want = expected.Split('\n');
-            var got = actual.Split('\n');
-
             Console.Error.WriteLine($"Schema differs from {path}.");
-            Console.Error.WriteLine($"  snapshot: {want.Length} lines, {CountTypes(expected)} types");
-            Console.Error.WriteLine($"  current:  {got.Length} lines, {CountTypes(actual)} types");
+            Console.Error.WriteLine($"  snapshot: {expected.Split('\n').Length} lines, {CountTypes(expected)} types");
+            Console.Error.WriteLine($"  current:  {actual.Split('\n').Length} lines, {CountTypes(actual)} types");
+
+            var removed = Surplus(expected, actual);
+            var added = Surplus(actual, expected);
+
+            Write("Only in the snapshot (removed)", removed, '-');
+            Write("Only in the current schema (added)", added, '+');
+
             Console.Error.WriteLine();
+            Console.Error.WriteLine("If the change is intended, regenerate with --out and commit the result.");
+            Console.Error.WriteLine("If it is not, something has changed the public schema - read the lines above first.");
+        }
 
-            var shown = 0;
-            for (var i = 0; i < Math.Max(want.Length, got.Length) && shown < 40; i++)
+        /// <summary>Lines occurring more often in <paramref name="a"/> than in <paramref name="b"/>.</summary>
+        private static List<string> Surplus(string a, string b)
+        {
+            var counts = new Dictionary<string, int>();
+            foreach (var line in b.Split('\n'))
             {
-                var w = i < want.Length ? want[i] : "<end of file>";
-                var g = i < got.Length ? got[i] : "<end of file>";
-                if (w == g) continue;
-
-                Console.Error.WriteLine($"  line {i + 1}:");
-                Console.Error.WriteLine($"    - {w}");
-                Console.Error.WriteLine($"    + {g}");
-                shown++;
+                counts.TryGetValue(line, out var n);
+                counts[line] = n + 1;
             }
 
-            if (shown == 40) Console.Error.WriteLine("  ... further differences suppressed.");
+            var surplus = new List<string>();
+            foreach (var line in a.Split('\n'))
+            {
+                if (counts.TryGetValue(line, out var n) && n > 0)
+                {
+                    counts[line] = n - 1;
+                    continue;
+                }
+
+                // Braces and blank lines carry no meaning without position; they only ever differ
+                // because something else did, and listing them hides the real change.
+                var trimmed = line.Trim();
+                if (trimmed.Length == 0 || trimmed == "}" || trimmed == "{") continue;
+
+                surplus.Add(line);
+            }
+
+            return surplus;
+        }
+
+        private static void Write(string heading, List<string> lines, char marker)
+        {
+            if (lines.Count == 0) return;
+
             Console.Error.WriteLine();
-            Console.Error.WriteLine("If this change is intended, regenerate with --out and commit the result.");
+            Console.Error.WriteLine($"  {heading}: {lines.Count}");
+            foreach (var line in lines.Take(40)) Console.Error.WriteLine($"    {marker} {line.Trim()}");
+            if (lines.Count > 40) Console.Error.WriteLine($"    ... and {lines.Count - 40} more");
         }
     }
 }

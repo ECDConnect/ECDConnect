@@ -1204,6 +1204,8 @@ type JourneyTimeline {
   dateValue: DateTime
   type: String
   visitId: UUID
+  userTrainingCourseId: UUID
+  certificateName: String
   secondaryText: String
 }
 
@@ -1734,7 +1736,7 @@ type Mutation {
   addCoachVisitInviteForPractitioner(input: VisitModelInput): Visit @permission(objectType: "Visits", methodType: CREATE)
   bulkUpdateConsentImages(contentId: Int! contentTypeId: Int! localeId: UUID! imageUrl: String): Boolean! @permission(objectType: "Portal", methodType: UPDATE)
   updatePublishStatus(contentId: String isPublished: String): Boolean! @permission(objectType: "Portal", methodType: UPDATE)
-  saveHealthCertificateDetails(visitId: UUID! certificateName: String certificateRegNr: String): Boolean! @permission(objectType: "Journey", methodType: UPDATE)
+  saveCertificateDetails(certificateName: String certificateRegNr: String visitId: UUID userTrainingCourseId: UUID): String @permission(objectType: "Journey", methodType: UPDATE)
   submitJourneyAssessmentFormData(formId: String formName: String input: [AssessmentPageInput]): AssessmentReport @permission(objectType: "Journey", methodType: CREATE)
   updateStoryBookAndParts(storyBookParts: [StoryBookModelInput] storyBookContentId: Int! localeId: UUID! currentBookPartsIds: String): Boolean! @permission(objectType: "Static", methodType: UPDATE)
   updateTenantTheme(theme: String): String @permission(objectType: "Static", methodType: UPDATE)
