@@ -1,18 +1,31 @@
 #!/usr/bin/env node
 /**
- * Validates every persisted operation against the SDL snapshot.
+ * Validates every persisted operation against a GraphQL schema.
  *
  * Deliberately out of process and independent of Hot Chocolate: it reads the SDL as text and
  * validates with graphql-js, so it needs no rebuild and behaves identically on every Hot
- * Chocolate major. Regenerate schema.graphql after an upgrade, run this, and it names exactly
- * which of the 222 operations the upgrade broke.
+ * Chocolate major.
+ *
+ * There are two schemas to validate against, because the schema is not a pure function of the
+ * code - ContentTypeModule and SettingsModule build types from CMS content and system settings
+ * held in the database:
  *
  *   node Tools/validate-persisted-operations.mjs
- *   node Tools/validate-persisted-operations.mjs --schema schema.graphql --ops core-api/PersistedQueries
- *   node Tools/validate-persisted-operations.mjs --no-baseline    # show every failure
+ *       The code-derived snapshot (schema.graphql). Offline, deterministic, safe in CI - but
+ *       its CMS and settings types are placeholders, so operations querying them cannot pass.
+ *       17 of the baselined entries are that limitation rather than real breakage.
  *
- * Some operations already fail against the current schema - see the baseline file for why - so
- * they are listed there and excluded. Only failures outside the baseline are treated as errors.
+ *   node Tools/validate-persisted-operations.mjs --deployed
+ *       The real schema captured from a running environment (schema.deployed.graphql), which
+ *       includes the dynamic types. This is the true client contract, so the baseline shrinks
+ *       to only the operations that are genuinely broken. Capture it with
+ *       Tools/capture-deployed-schema.sh - see Tools/README.md.
+ *
+ * Other options:
+ *   --schema <path>    validate against a specific SDL file
+ *   --baseline <path>  use a specific baseline
+ *   --ops <dir>        operations directory
+ *   --no-baseline      report every failure, ignoring the baseline
  *
  * Exit codes: 0 no new failures, 1 new failures, 2 could not run.
  */
@@ -28,19 +41,42 @@ function arg(name, fallback) {
   return i !== -1 && process.argv[i + 1] ? process.argv[i + 1] : fallback;
 }
 
-const schemaPath = resolve(apiRoot, arg('--schema', 'schema.graphql'));
+const deployed = process.argv.includes('--deployed');
+
+const schemaPath = resolve(
+  apiRoot,
+  arg('--schema', deployed ? 'schema.deployed.graphql' : 'schema.graphql'),
+);
 const opsDir = resolve(apiRoot, arg('--ops', 'core-api/PersistedQueries'));
-const baselinePath = resolve(apiRoot, arg('--baseline', 'Tools/persisted-operations-baseline.txt'));
+const baselinePath = resolve(
+  apiRoot,
+  arg(
+    '--baseline',
+    deployed
+      ? 'Tools/persisted-operations-baseline.deployed.txt'
+      : 'Tools/persisted-operations-baseline.txt',
+  ),
+);
 const useBaseline = !process.argv.includes('--no-baseline');
 
 let schema;
 try {
-  // assumeValidSDL: the snapshot comes from Hot Chocolate, which has already validated it, and
-  // it declares scalars (UUID, Upload) that graphql-js does not know natively.
+  // assumeValidSDL: the SDL comes from Hot Chocolate, which has already validated it, and it
+  // declares scalars (UUID, Upload) that graphql-js does not know natively.
   schema = buildSchema(readFileSync(schemaPath, 'utf8'), { assumeValidSDL: true });
 } catch (err) {
   console.error(`Could not read the schema at ${schemaPath}: ${err.message}`);
-  console.error('Generate it with: dotnet run --project Tools/ECDLink.SchemaSnapshot -- --out schema.graphql');
+  if (deployed) {
+    console.error('');
+    console.error('The deployed schema is captured from a running environment, not generated:');
+    console.error('  ./Tools/capture-deployed-schema.sh <base-url> [host-header]');
+    console.error('');
+    console.error('Without it, validate against the code-derived snapshot instead by dropping');
+    console.error('--deployed - but note that excludes the dynamic CMS and settings types.');
+  } else {
+    console.error('Generate it with:');
+    console.error('  dotnet run --project Tools/ECDLink.SchemaSnapshot -- --out schema.graphql');
+  }
   process.exit(2);
 }
 
