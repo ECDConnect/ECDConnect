@@ -34,7 +34,7 @@ namespace ECDLink.EGraphQL.Registration
         private const string GetPrefix = "Get";
         private const string AsyncSuffix = "Async";
 
-        public override NameString GetMemberName(MemberInfo member, MemberKind kind)
+        public override string GetMemberName(MemberInfo member, MemberKind kind)
         {
             // An explicit [GraphQLName] is an author's decision, not a convention's - leave it be.
             if (member.IsDefined(typeof(GraphQLNameAttribute), inherit: true))

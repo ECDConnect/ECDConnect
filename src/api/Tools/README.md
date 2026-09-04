@@ -70,6 +70,21 @@ API contract and the whole point of having it. A failure means one of two things
 `saveCertificateDetails`, and the persisted operation now aliases the old name onto the new field
 so deployed clients keep working. That alias only covers persisted operations — the admin portal
 sends ad-hoc queries and gets no such protection.
+
+#### Accepted schema changes
+
+A log of changes deliberately taken into the snapshot during the upgrade, so a future reader can
+tell an accepted change from a regression:
+
+- **v13** — Hot Chocolate renamed and consolidated the filter input types, e.g.
+  `ComparableInt32OperationFilterInput` → `IntOperationFilterInput` and
+  `ComparableGuidOperationFilterInput` plus its nullable variant → `UuidOperationFilterInput`
+  (10 types became 5). Accepted because nothing outside the generated
+  `packages/graphql` types names them: all 223 persisted operations still validate, and no
+  hand-written client code refers to them. `@defer`, `@stream` and the unused `@authorize`
+  declarations also left the schema, and `ApplyPolicy` gained `VALIDATION`.
+  Field-level `@permission` applications were unchanged at 831.
+
 ### What the snapshot does not cover
 
 The schema is not a pure function of the code: `ContentTypeModule` and `SettingsModule` add types

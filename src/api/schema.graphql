@@ -2352,274 +2352,274 @@ type Province {
 
 type Query {
   GetAllEcdRegistration(pagingInput: PagedQueryInput where: EcdRegistrationFilterInput order: [EcdRegistrationSortInput!]): [EcdRegistration] @permission(objectType: "Registration", methodType: VIEW)
-  countEcdRegistration(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Registration", methodType: VIEW)
+  countEcdRegistration(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Registration", methodType: VIEW)
   GetEcdRegistrationById(id: UUID where: EcdRegistrationFilterInput): EcdRegistration @permission(objectType: "Registration", methodType: VIEW)
   GetAllEcdRegistrationHistory(pagingInput: PagedQueryInput where: EcdRegistrationHistoryFilterInput order: [EcdRegistrationHistorySortInput!]): [EcdRegistrationHistory] @permission(objectType: "Registration", methodType: VIEW)
-  countEcdRegistrationHistory(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Registration", methodType: VIEW)
+  countEcdRegistrationHistory(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Registration", methodType: VIEW)
   GetEcdRegistrationHistoryById(id: UUID where: EcdRegistrationHistoryFilterInput): EcdRegistrationHistory @permission(objectType: "Registration", methodType: VIEW)
   GetAllMeetingType(pagingInput: PagedQueryInput where: MeetingTypeFilterInput order: [MeetingTypeSortInput!]): [MeetingType] @permission(objectType: "*", methodType: VIEW)
-  countMeetingType(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
+  countMeetingType(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
   GetMeetingTypeById(id: UUID where: MeetingTypeFilterInput): MeetingType @permission(objectType: "*", methodType: VIEW)
   GetAllHierarchyEntity(pagingInput: PagedQueryInput where: HierarchyEntityFilterInput order: [HierarchyEntitySortInput!]): [HierarchyEntity] @permission(objectType: "*", methodType: VIEW)
-  countHierarchyEntity(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
+  countHierarchyEntity(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
   GetHierarchyEntityById(id: UUID where: HierarchyEntityFilterInput): HierarchyEntity @permission(objectType: "*", methodType: VIEW)
   GetAllUserHierarchyEntity(pagingInput: PagedQueryInput where: UserHierarchyEntityFilterInput order: [UserHierarchyEntitySortInput!]): [UserHierarchyEntity] @permission(objectType: "*", methodType: VIEW)
-  countUserHierarchyEntity(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
+  countUserHierarchyEntity(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
   GetUserHierarchyEntityById(id: UUID where: UserHierarchyEntityFilterInput): UserHierarchyEntity @permission(objectType: "*", methodType: VIEW)
   GetAllCoachContact(pagingInput: PagedQueryInput where: CoachContactFilterInput order: [CoachContactSortInput!]): [CoachContact] @permission(objectType: "Static", methodType: VIEW)
-  countCoachContact(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
+  countCoachContact(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
   GetCoachContactById(id: UUID where: CoachContactFilterInput): CoachContact @permission(objectType: "Static", methodType: VIEW)
   GetAllEducation(pagingInput: PagedQueryInput where: EducationFilterInput order: [EducationSortInput!]): [Education] @permission(objectType: "Static", methodType: VIEW)
-  countEducation(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
+  countEducation(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
   GetEducationById(id: UUID where: EducationFilterInput): Education @permission(objectType: "Static", methodType: VIEW)
   GetAllGender(pagingInput: PagedQueryInput where: GenderFilterInput order: [GenderSortInput!]): [Gender] @permission(objectType: "Static", methodType: VIEW)
-  countGender(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
+  countGender(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
   GetGenderById(id: UUID where: GenderFilterInput): Gender @permission(objectType: "Static", methodType: VIEW)
   GetAllGrant(pagingInput: PagedQueryInput where: GrantFilterInput order: [GrantSortInput!]): [Grant] @permission(objectType: "Static", methodType: VIEW)
-  countGrant(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
+  countGrant(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
   GetGrantById(id: UUID where: GrantFilterInput): Grant @permission(objectType: "Static", methodType: VIEW)
   GetAllInvite(pagingInput: PagedQueryInput where: InviteFilterInput order: [InviteSortInput!]): [Invite] @permission(objectType: "Static", methodType: VIEW)
-  countInvite(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
+  countInvite(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
   GetInviteById(id: UUID where: InviteFilterInput): Invite @permission(objectType: "Static", methodType: VIEW)
   GetAllLanguage(pagingInput: PagedQueryInput where: LanguageFilterInput order: [LanguageSortInput!]): [Language] @permission(objectType: "Static", methodType: VIEW)
-  countLanguage(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
+  countLanguage(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
   GetLanguageById(id: UUID where: LanguageFilterInput): Language @permission(objectType: "Static", methodType: VIEW)
   GetAllPermission(pagingInput: PagedQueryInput where: PermissionFilterInput order: [PermissionSortInput!]): [Permission] @permission(objectType: "Static", methodType: VIEW)
-  countPermission(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
+  countPermission(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
   GetPermissionById(id: UUID where: PermissionFilterInput): Permission @permission(objectType: "Static", methodType: VIEW)
   GetAllProvince(pagingInput: PagedQueryInput where: ProvinceFilterInput order: [ProvinceSortInput!]): [Province] @permission(objectType: "Static", methodType: VIEW)
-  countProvince(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
+  countProvince(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
   GetProvinceById(id: UUID where: ProvinceFilterInput): Province @permission(objectType: "Static", methodType: VIEW)
   GetAllRace(pagingInput: PagedQueryInput where: RaceFilterInput order: [RaceSortInput!]): [Race] @permission(objectType: "Static", methodType: VIEW)
-  countRace(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
+  countRace(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
   GetRaceById(id: UUID where: RaceFilterInput): Race @permission(objectType: "Static", methodType: VIEW)
   GetAllReasonForLeaving(pagingInput: PagedQueryInput where: ReasonForLeavingFilterInput order: [ReasonForLeavingSortInput!]): [ReasonForLeaving] @permission(objectType: "Static", methodType: VIEW)
-  countReasonForLeaving(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
+  countReasonForLeaving(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
   GetReasonForLeavingById(id: UUID where: ReasonForLeavingFilterInput): ReasonForLeaving @permission(objectType: "Static", methodType: VIEW)
   GetAllReasonForPractitionerLeaving(pagingInput: PagedQueryInput where: ReasonForPractitionerLeavingFilterInput order: [ReasonForPractitionerLeavingSortInput!]): [ReasonForPractitionerLeaving] @permission(objectType: "Static", methodType: VIEW)
-  countReasonForPractitionerLeaving(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
+  countReasonForPractitionerLeaving(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
   GetReasonForPractitionerLeavingById(id: UUID where: ReasonForPractitionerLeavingFilterInput): ReasonForPractitionerLeaving @permission(objectType: "Static", methodType: VIEW)
   GetAllReasonForPractitionerLeavingProgramme(pagingInput: PagedQueryInput where: ReasonForPractitionerLeavingProgrammeFilterInput order: [ReasonForPractitionerLeavingProgrammeSortInput!]): [ReasonForPractitionerLeavingProgramme] @permission(objectType: "Static", methodType: VIEW)
-  countReasonForPractitionerLeavingProgramme(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
+  countReasonForPractitionerLeavingProgramme(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
   GetReasonForPractitionerLeavingProgrammeById(id: UUID where: ReasonForPractitionerLeavingProgrammeFilterInput): ReasonForPractitionerLeavingProgramme @permission(objectType: "Static", methodType: VIEW)
   GetAllRelation(pagingInput: PagedQueryInput where: RelationFilterInput order: [RelationSortInput!]): [Relation] @permission(objectType: "Static", methodType: VIEW)
-  countRelation(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
+  countRelation(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
   GetRelationById(id: UUID where: RelationFilterInput): Relation @permission(objectType: "Static", methodType: VIEW)
   GetAllResourceLinkHealthCheck(pagingInput: PagedQueryInput where: ResourceLinkHealthCheckFilterInput order: [ResourceLinkHealthCheckSortInput!]): [ResourceLinkHealthCheck] @permission(objectType: "*", methodType: VIEW)
-  countResourceLinkHealthCheck(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
+  countResourceLinkHealthCheck(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
   GetResourceLinkHealthCheckById(id: UUID where: ResourceLinkHealthCheckFilterInput): ResourceLinkHealthCheck @permission(objectType: "*", methodType: VIEW)
   GetAllSiteAddress(pagingInput: PagedQueryInput where: SiteAddressFilterInput order: [SiteAddressSortInput!]): [SiteAddress] @permission(objectType: "User", methodType: VIEW)
-  countSiteAddress(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "User", methodType: VIEW)
+  countSiteAddress(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "User", methodType: VIEW)
   GetSiteAddressById(id: UUID where: SiteAddressFilterInput): SiteAddress @permission(objectType: "User", methodType: VIEW)
   GetAllSystemSetting(pagingInput: PagedQueryInput where: SystemSettingFilterInput order: [SystemSettingSortInput!]): [SystemSetting] @permission(objectType: "System", methodType: VIEW)
-  countSystemSetting(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "System", methodType: VIEW)
+  countSystemSetting(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "System", methodType: VIEW)
   GetSystemSettingById(id: UUID where: SystemSettingFilterInput): SystemSetting @permission(objectType: "System", methodType: VIEW)
   GetAllTenantSetupInfo(pagingInput: PagedQueryInput where: TenantSetupInfoFilterInput order: [TenantSetupInfoSortInput!]): [TenantSetupInfo] @permission(objectType: "Static", methodType: VIEW)
-  countTenantSetupInfo(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
+  countTenantSetupInfo(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
   GetTenantSetupInfoById(id: UUID where: TenantSetupInfoFilterInput): TenantSetupInfo @permission(objectType: "Static", methodType: VIEW)
   GetAllUserCertificate(pagingInput: PagedQueryInput where: UserCertificateFilterInput order: [UserCertificateSortInput!]): [UserCertificate] @permission(objectType: "*", methodType: VIEW)
-  countUserCertificate(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
+  countUserCertificate(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
   GetUserCertificateById(id: UUID where: UserCertificateFilterInput): UserCertificate @permission(objectType: "*", methodType: VIEW)
   GetAllUserHelp(pagingInput: PagedQueryInput where: UserHelpFilterInput order: [UserHelpSortInput!]): [UserHelp] @permission(objectType: "Static", methodType: VIEW)
-  countUserHelp(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
+  countUserHelp(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
   GetUserHelpById(id: UUID where: UserHelpFilterInput): UserHelp @permission(objectType: "Static", methodType: VIEW)
   GetAllUserPermission(pagingInput: PagedQueryInput where: UserPermissionFilterInput order: [UserPermissionSortInput!]): [UserPermission] @permission(objectType: "Static", methodType: VIEW)
-  countUserPermission(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
+  countUserPermission(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
   GetUserPermissionById(id: UUID where: UserPermissionFilterInput): UserPermission @permission(objectType: "Static", methodType: VIEW)
   GetAllUserResourceLikes(pagingInput: PagedQueryInput where: UserResourceLikesFilterInput order: [UserResourceLikesSortInput!]): [UserResourceLikes] @permission(objectType: "Static", methodType: VIEW)
-  countUserResourceLikes(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
+  countUserResourceLikes(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
   GetUserResourceLikesById(id: UUID where: UserResourceLikesFilterInput): UserResourceLikes @permission(objectType: "Static", methodType: VIEW)
   GetAllUserResourceProblemReport(pagingInput: PagedQueryInput where: UserResourceProblemReportFilterInput order: [UserResourceProblemReportSortInput!]): [UserResourceProblemReport] @permission(objectType: "Static", methodType: VIEW)
-  countUserResourceProblemReport(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
+  countUserResourceProblemReport(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
   GetUserResourceProblemReportById(id: UUID where: UserResourceProblemReportFilterInput): UserResourceProblemReport @permission(objectType: "Static", methodType: VIEW)
   GetAllWorkflowStatus(pagingInput: PagedQueryInput where: WorkflowStatusFilterInput order: [WorkflowStatusSortInput!]): [WorkflowStatus] @permission(objectType: "Workflow", methodType: VIEW)
-  countWorkflowStatus(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Workflow", methodType: VIEW)
+  countWorkflowStatus(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Workflow", methodType: VIEW)
   GetWorkflowStatusById(id: UUID where: WorkflowStatusFilterInput): WorkflowStatus @permission(objectType: "Workflow", methodType: VIEW)
   GetAllWorkflowStatusType(pagingInput: PagedQueryInput where: WorkflowStatusTypeFilterInput order: [WorkflowStatusTypeSortInput!]): [WorkflowStatusType] @permission(objectType: "Workflow", methodType: VIEW)
-  countWorkflowStatusType(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Workflow", methodType: VIEW)
+  countWorkflowStatusType(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Workflow", methodType: VIEW)
   GetWorkflowStatusTypeById(id: UUID where: WorkflowStatusTypeFilterInput): WorkflowStatusType @permission(objectType: "Workflow", methodType: VIEW)
   GetAllPQARating(pagingInput: PagedQueryInput where: PQARatingFilterInput order: [PQARatingSortInput!]): [PQARating] @permission(objectType: "*", methodType: VIEW)
-  countPQARating(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
+  countPQARating(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
   GetPQARatingById(id: UUID where: PQARatingFilterInput): PQARating @permission(objectType: "*", methodType: VIEW)
   GetAllPQASectionRating(pagingInput: PagedQueryInput where: PQASectionRatingFilterInput order: [PQASectionRatingSortInput!]): [PQASectionRating] @permission(objectType: "*", methodType: VIEW)
-  countPQASectionRating(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
+  countPQASectionRating(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
   GetPQASectionRatingById(id: UUID where: PQASectionRatingFilterInput): PQASectionRating @permission(objectType: "*", methodType: VIEW)
   GetAllVisit(pagingInput: PagedQueryInput where: VisitFilterInput order: [VisitSortInput!]): [Visit] @permission(objectType: "*", methodType: VIEW)
-  countVisit(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
+  countVisit(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
   GetVisitById(id: UUID where: VisitFilterInput): Visit @permission(objectType: "*", methodType: VIEW)
   GetAllVisitData(pagingInput: PagedQueryInput where: VisitDataFilterInput order: [VisitDataSortInput!]): [VisitData] @permission(objectType: "*", methodType: VIEW)
-  countVisitData(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
+  countVisitData(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
   GetVisitDataById(id: UUID where: VisitDataFilterInput): VisitData @permission(objectType: "*", methodType: VIEW)
   GetAllVisitDataStatus(pagingInput: PagedQueryInput where: VisitDataStatusFilterInput order: [VisitDataStatusSortInput!]): [VisitDataStatus] @permission(objectType: "*", methodType: VIEW)
-  countVisitDataStatus(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
+  countVisitDataStatus(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
   GetVisitDataStatusById(id: UUID where: VisitDataStatusFilterInput): VisitDataStatus @permission(objectType: "*", methodType: VIEW)
   GetAllVisitType(pagingInput: PagedQueryInput where: VisitTypeFilterInput order: [VisitTypeSortInput!]): [VisitType] @permission(objectType: "*", methodType: VIEW)
-  countVisitType(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
+  countVisitType(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
   GetVisitTypeById(id: UUID where: VisitTypeFilterInput): VisitType @permission(objectType: "*", methodType: VIEW)
   GetAllUserTrainingCourse(pagingInput: PagedQueryInput where: UserTrainingCourseFilterInput order: [UserTrainingCourseSortInput!]): [UserTrainingCourse] @permission(objectType: "Static", methodType: VIEW)
-  countUserTrainingCourse(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
+  countUserTrainingCourse(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
   GetUserTrainingCourseById(id: UUID where: UserTrainingCourseFilterInput): UserTrainingCourse @permission(objectType: "Static", methodType: VIEW)
   GetAllChildProgressReport(pagingInput: PagedQueryInput where: ChildProgressReportFilterInput order: [ChildProgressReportSortInput!]): [ChildProgressReport] @permission(objectType: "Report", methodType: VIEW)
-  countChildProgressReport(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Report", methodType: VIEW)
+  countChildProgressReport(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Report", methodType: VIEW)
   GetChildProgressReportById(id: UUID where: ChildProgressReportFilterInput): ChildProgressReport @permission(objectType: "Report", methodType: VIEW)
   GetAllChildProgressReportPeriod(pagingInput: PagedQueryInput where: ChildProgressReportPeriodFilterInput order: [ChildProgressReportPeriodSortInput!]): [ChildProgressReportPeriod] @permission(objectType: "Report", methodType: VIEW)
-  countChildProgressReportPeriod(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Report", methodType: VIEW)
+  countChildProgressReportPeriod(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Report", methodType: VIEW)
   GetChildProgressReportPeriodById(id: UUID where: ChildProgressReportPeriodFilterInput): ChildProgressReportPeriod @permission(objectType: "Report", methodType: VIEW)
   GetAllPointsActivity(pagingInput: PagedQueryInput where: PointsActivityFilterInput order: [PointsActivitySortInput!]): [PointsActivity] @permission(objectType: "*", methodType: VIEW)
-  countPointsActivity(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
+  countPointsActivity(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
   GetPointsActivityById(id: UUID where: PointsActivityFilterInput): PointsActivity @permission(objectType: "*", methodType: VIEW)
   GetAllPointsCategory(pagingInput: PagedQueryInput where: PointsCategoryFilterInput order: [PointsCategorySortInput!]): [PointsCategory] @permission(objectType: "*", methodType: VIEW)
-  countPointsCategory(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
+  countPointsCategory(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
   GetPointsCategoryById(id: UUID where: PointsCategoryFilterInput): PointsCategory @permission(objectType: "*", methodType: VIEW)
   GetAllPointsClinicSummary(pagingInput: PagedQueryInput where: PointsClinicSummaryFilterInput order: [PointsClinicSummarySortInput!]): [PointsClinicSummary] @permission(objectType: "Static", methodType: VIEW)
-  countPointsClinicSummary(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
+  countPointsClinicSummary(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
   GetPointsClinicSummaryById(id: UUID where: PointsClinicSummaryFilterInput): PointsClinicSummary @permission(objectType: "Static", methodType: VIEW)
   GetAllPointsLibrary(pagingInput: PagedQueryInput where: PointsLibraryFilterInput order: [PointsLibrarySortInput!]): [PointsLibrary] @permission(objectType: "*", methodType: VIEW)
-  countPointsLibrary(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
+  countPointsLibrary(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
   GetPointsLibraryById(id: UUID where: PointsLibraryFilterInput): PointsLibrary @permission(objectType: "*", methodType: VIEW)
   GetAllPointsUserSummary(pagingInput: PagedQueryInput where: PointsUserSummaryFilterInput order: [PointsUserSummarySortInput!]): [PointsUserSummary] @permission(objectType: "*", methodType: VIEW)
-  countPointsUserSummary(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
+  countPointsUserSummary(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
   GetPointsUserSummaryById(id: UUID where: PointsUserSummaryFilterInput): PointsUserSummary @permission(objectType: "*", methodType: VIEW)
   GetAllMessageLog(pagingInput: PagedQueryInput where: MessageLogFilterInput order: [MessageLogSortInput!]): [MessageLog] @permission(objectType: "*", methodType: VIEW)
-  countMessageLog(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
+  countMessageLog(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
   GetMessageLogById(id: UUID where: MessageLogFilterInput): MessageLog @permission(objectType: "*", methodType: VIEW)
   GetAllMessageTemplate(pagingInput: PagedQueryInput where: MessageTemplateFilterInput order: [MessageTemplateSortInput!]): [MessageTemplate] @permission(objectType: "*", methodType: VIEW)
-  countMessageTemplate(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
+  countMessageTemplate(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
   GetMessageTemplateById(id: UUID where: MessageTemplateFilterInput): MessageTemplate @permission(objectType: "*", methodType: VIEW)
   GetAllShortenUrlEntity(pagingInput: PagedQueryInput where: ShortenUrlEntityFilterInput order: [ShortenUrlEntitySortInput!]): [ShortenUrlEntity] @permission(objectType: "*", methodType: VIEW)
-  countShortenUrlEntity(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
+  countShortenUrlEntity(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
   GetShortenUrlEntityById(id: UUID where: ShortenUrlEntityFilterInput): ShortenUrlEntity @permission(objectType: "*", methodType: VIEW)
   GetAllNote(pagingInput: PagedQueryInput where: NoteFilterInput order: [NoteSortInput!]): [Note] @permission(objectType: "*", methodType: VIEW)
-  countNote(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
+  countNote(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
   GetNoteById(id: UUID where: NoteFilterInput): Note @permission(objectType: "*", methodType: VIEW)
   GetAllNoteType(pagingInput: PagedQueryInput where: NoteTypeFilterInput order: [NoteTypeSortInput!]): [NoteType] @permission(objectType: "*", methodType: VIEW)
-  countNoteType(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
+  countNoteType(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
   GetNoteTypeById(id: UUID where: NoteTypeFilterInput): NoteType @permission(objectType: "*", methodType: VIEW)
   GetAllNavigation(pagingInput: PagedQueryInput where: NavigationFilterInput order: [NavigationSortInput!]): [Navigation] @permission(objectType: "*", methodType: VIEW)
-  countNavigation(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
+  countNavigation(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
   GetNavigationById(id: UUID where: NavigationFilterInput): Navigation @permission(objectType: "*", methodType: VIEW)
   GetAllStatementsContributionType(pagingInput: PagedQueryInput where: StatementsContributionTypeFilterInput order: [StatementsContributionTypeSortInput!]): [StatementsContributionType] @permission(objectType: "IncomeStatements", methodType: VIEW)
-  countStatementsContributionType(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "IncomeStatements", methodType: VIEW)
+  countStatementsContributionType(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "IncomeStatements", methodType: VIEW)
   GetStatementsContributionTypeById(id: UUID where: StatementsContributionTypeFilterInput): StatementsContributionType @permission(objectType: "IncomeStatements", methodType: VIEW)
   GetAllStatementsExpenses(pagingInput: PagedQueryInput where: StatementsExpensesFilterInput order: [StatementsExpensesSortInput!]): [StatementsExpenses] @permission(objectType: "IncomeStatements", methodType: VIEW)
-  countStatementsExpenses(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "IncomeStatements", methodType: VIEW)
+  countStatementsExpenses(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "IncomeStatements", methodType: VIEW)
   GetStatementsExpensesById(id: UUID where: StatementsExpensesFilterInput): StatementsExpenses @permission(objectType: "IncomeStatements", methodType: VIEW)
   GetAllStatementsExpenseType(pagingInput: PagedQueryInput where: StatementsExpenseTypeFilterInput order: [StatementsExpenseTypeSortInput!]): [StatementsExpenseType] @permission(objectType: "IncomeStatements", methodType: VIEW)
-  countStatementsExpenseType(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "IncomeStatements", methodType: VIEW)
+  countStatementsExpenseType(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "IncomeStatements", methodType: VIEW)
   GetStatementsExpenseTypeById(id: UUID where: StatementsExpenseTypeFilterInput): StatementsExpenseType @permission(objectType: "IncomeStatements", methodType: VIEW)
   GetAllStatementsFeeType(pagingInput: PagedQueryInput where: StatementsFeeTypeFilterInput order: [StatementsFeeTypeSortInput!]): [StatementsFeeType] @permission(objectType: "IncomeStatements", methodType: VIEW)
-  countStatementsFeeType(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "IncomeStatements", methodType: VIEW)
+  countStatementsFeeType(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "IncomeStatements", methodType: VIEW)
   GetStatementsFeeTypeById(id: UUID where: StatementsFeeTypeFilterInput): StatementsFeeType @permission(objectType: "IncomeStatements", methodType: VIEW)
   GetAllStatementsIncome(pagingInput: PagedQueryInput where: StatementsIncomeFilterInput order: [StatementsIncomeSortInput!]): [StatementsIncome] @permission(objectType: "IncomeStatements", methodType: VIEW)
-  countStatementsIncome(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "IncomeStatements", methodType: VIEW)
+  countStatementsIncome(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "IncomeStatements", methodType: VIEW)
   GetStatementsIncomeById(id: UUID where: StatementsIncomeFilterInput): StatementsIncome @permission(objectType: "IncomeStatements", methodType: VIEW)
   GetAllStatementsIncomeStatement(pagingInput: PagedQueryInput where: StatementsIncomeStatementFilterInput order: [StatementsIncomeStatementSortInput!]): [StatementsIncomeStatement] @permission(objectType: "IncomeStatements", methodType: VIEW)
-  countStatementsIncomeStatement(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "IncomeStatements", methodType: VIEW)
+  countStatementsIncomeStatement(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "IncomeStatements", methodType: VIEW)
   GetStatementsIncomeStatementById(id: UUID where: StatementsIncomeStatementFilterInput): StatementsIncomeStatement @permission(objectType: "IncomeStatements", methodType: VIEW)
   GetAllStatementsIncomeType(pagingInput: PagedQueryInput where: StatementsIncomeTypeFilterInput order: [StatementsIncomeTypeSortInput!]): [StatementsIncomeType] @permission(objectType: "IncomeStatements", methodType: VIEW)
-  countStatementsIncomeType(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "IncomeStatements", methodType: VIEW)
+  countStatementsIncomeType(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "IncomeStatements", methodType: VIEW)
   GetStatementsIncomeTypeById(id: UUID where: StatementsIncomeTypeFilterInput): StatementsIncomeType @permission(objectType: "IncomeStatements", methodType: VIEW)
   GetAllStatementsPayType(pagingInput: PagedQueryInput where: StatementsPayTypeFilterInput order: [StatementsPayTypeSortInput!]): [StatementsPayType] @permission(objectType: "IncomeStatements", methodType: VIEW)
-  countStatementsPayType(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "IncomeStatements", methodType: VIEW)
+  countStatementsPayType(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "IncomeStatements", methodType: VIEW)
   GetStatementsPayTypeById(id: UUID where: StatementsPayTypeFilterInput): StatementsPayType @permission(objectType: "IncomeStatements", methodType: VIEW)
   GetAllStatementsStartupSupport(pagingInput: PagedQueryInput where: StatementsStartupSupportFilterInput order: [StatementsStartupSupportSortInput!]): [StatementsStartupSupport] @permission(objectType: "IncomeStatements", methodType: VIEW)
-  countStatementsStartupSupport(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "IncomeStatements", methodType: VIEW)
+  countStatementsStartupSupport(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "IncomeStatements", methodType: VIEW)
   GetStatementsStartupSupportById(id: UUID where: StatementsStartupSupportFilterInput): StatementsStartupSupport @permission(objectType: "IncomeStatements", methodType: VIEW)
   GetAllDocument(pagingInput: PagedQueryInput where: DocumentFilterInput order: [DocumentSortInput!]): [Document] @permission(objectType: "Documents", methodType: VIEW)
-  countDocument(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Documents", methodType: VIEW)
+  countDocument(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Documents", methodType: VIEW)
   GetDocumentById(id: UUID where: DocumentFilterInput): Document @permission(objectType: "Documents", methodType: VIEW)
   GetAllDocumentType(pagingInput: PagedQueryInput where: DocumentTypeFilterInput order: [DocumentTypeSortInput!]): [DocumentType] @permission(objectType: "Documents", methodType: VIEW)
-  countDocumentType(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Documents", methodType: VIEW)
+  countDocumentType(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Documents", methodType: VIEW)
   GetDocumentTypeById(id: UUID where: DocumentTypeFilterInput): DocumentType @permission(objectType: "Documents", methodType: VIEW)
   GetAllUserConsent(pagingInput: PagedQueryInput where: UserConsentFilterInput order: [UserConsentSortInput!]): [UserConsent] @permission(objectType: "User", methodType: VIEW)
-  countUserConsent(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "User", methodType: VIEW)
+  countUserConsent(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "User", methodType: VIEW)
   GetUserConsentById(id: UUID where: UserConsentFilterInput): UserConsent @permission(objectType: "User", methodType: VIEW)
   GetAllCoachFeedback(pagingInput: PagedQueryInput where: CoachFeedbackFilterInput order: [CoachFeedbackSortInput!]): [CoachFeedback] @permission(objectType: "*", methodType: VIEW)
-  countCoachFeedback(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
+  countCoachFeedback(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
   GetCoachFeedbackById(id: UUID where: CoachFeedbackFilterInput): CoachFeedback @permission(objectType: "*", methodType: VIEW)
   GetAllCoachFeedbackType(pagingInput: PagedQueryInput where: CoachFeedbackTypeFilterInput order: [CoachFeedbackTypeSortInput!]): [CoachFeedbackType] @permission(objectType: "*", methodType: VIEW)
-  countCoachFeedbackType(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
+  countCoachFeedbackType(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
   GetCoachFeedbackTypeById(id: UUID where: CoachFeedbackTypeFilterInput): CoachFeedbackType @permission(objectType: "*", methodType: VIEW)
   GetAllCommunityProfile(pagingInput: PagedQueryInput where: CommunityProfileFilterInput order: [CommunityProfileSortInput!]): [CommunityProfile] @permission(objectType: "User", methodType: VIEW)
-  countCommunityProfile(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "User", methodType: VIEW)
+  countCommunityProfile(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "User", methodType: VIEW)
   GetCommunityProfileById(id: UUID where: CommunityProfileFilterInput): CommunityProfile @permission(objectType: "User", methodType: VIEW)
   GetAllCommunityProfileConnection(pagingInput: PagedQueryInput where: CommunityProfileConnectionFilterInput order: [CommunityProfileConnectionSortInput!]): [CommunityProfileConnection] @permission(objectType: "User", methodType: VIEW)
-  countCommunityProfileConnection(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "User", methodType: VIEW)
+  countCommunityProfileConnection(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "User", methodType: VIEW)
   GetCommunityProfileConnectionById(id: UUID where: CommunityProfileConnectionFilterInput): CommunityProfileConnection @permission(objectType: "User", methodType: VIEW)
   GetAllCommunityProfileSkill(pagingInput: PagedQueryInput where: CommunityProfileSkillFilterInput order: [CommunityProfileSkillSortInput!]): [CommunityProfileSkill] @permission(objectType: "*", methodType: VIEW)
-  countCommunityProfileSkill(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
+  countCommunityProfileSkill(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
   GetCommunityProfileSkillById(id: UUID where: CommunityProfileSkillFilterInput): CommunityProfileSkill @permission(objectType: "*", methodType: VIEW)
   GetAllCommunitySkill(pagingInput: PagedQueryInput where: CommunitySkillFilterInput order: [CommunitySkillSortInput!]): [CommunitySkill] @permission(objectType: "*", methodType: VIEW)
-  countCommunitySkill(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
+  countCommunitySkill(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
   GetCommunitySkillById(id: UUID where: CommunitySkillFilterInput): CommunitySkill @permission(objectType: "*", methodType: VIEW)
   GetAllFeedbackType(pagingInput: PagedQueryInput where: FeedbackTypeFilterInput order: [FeedbackTypeSortInput!]): [FeedbackType] @permission(objectType: "*", methodType: VIEW)
-  countFeedbackType(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
+  countFeedbackType(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
   GetFeedbackTypeById(id: UUID where: FeedbackTypeFilterInput): FeedbackType @permission(objectType: "*", methodType: VIEW)
   GetAllSupportRating(pagingInput: PagedQueryInput where: SupportRatingFilterInput order: [SupportRatingSortInput!]): [SupportRating] @permission(objectType: "*", methodType: VIEW)
-  countSupportRating(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
+  countSupportRating(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "*", methodType: VIEW)
   GetSupportRatingById(id: UUID where: SupportRatingFilterInput): SupportRating @permission(objectType: "*", methodType: VIEW)
   GetAllClassProgramme(pagingInput: PagedQueryInput where: ClassProgrammeFilterInput order: [ClassProgrammeSortInput!]): [ClassProgramme] @permission(objectType: "Classroom", methodType: VIEW)
-  countClassProgramme(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Classroom", methodType: VIEW)
+  countClassProgramme(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Classroom", methodType: VIEW)
   GetClassProgrammeById(id: UUID where: ClassProgrammeFilterInput): ClassProgramme @permission(objectType: "Classroom", methodType: VIEW)
   GetAllClassroom(pagingInput: PagedQueryInput where: ClassroomFilterInput order: [ClassroomSortInput!]): [Classroom] @permission(objectType: "Classroom", methodType: VIEW)
-  countClassroom(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Classroom", methodType: VIEW)
+  countClassroom(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Classroom", methodType: VIEW)
   GetClassroomById(id: UUID where: ClassroomFilterInput): Classroom @permission(objectType: "Classroom", methodType: VIEW)
   GetAllClassroomGroup(pagingInput: PagedQueryInput where: ClassroomGroupFilterInput order: [ClassroomGroupSortInput!]): [ClassroomGroup] @permission(objectType: "Classroom", methodType: VIEW)
-  countClassroomGroup(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Classroom", methodType: VIEW)
+  countClassroomGroup(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Classroom", methodType: VIEW)
   GetClassroomGroupById(id: UUID where: ClassroomGroupFilterInput): ClassroomGroup @permission(objectType: "Classroom", methodType: VIEW)
   GetAllDailyProgramme(pagingInput: PagedQueryInput where: DailyProgrammeFilterInput order: [DailyProgrammeSortInput!]): [DailyProgramme] @permission(objectType: "Classroom", methodType: VIEW)
-  countDailyProgramme(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Classroom", methodType: VIEW)
+  countDailyProgramme(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Classroom", methodType: VIEW)
   GetDailyProgrammeById(id: UUID where: DailyProgrammeFilterInput): DailyProgramme @permission(objectType: "Classroom", methodType: VIEW)
   GetAllLearner(pagingInput: PagedQueryInput where: LearnerFilterInput order: [LearnerSortInput!]): [Learner] @permission(objectType: "Classroom", methodType: VIEW)
-  countLearner(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Classroom", methodType: VIEW)
+  countLearner(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Classroom", methodType: VIEW)
   GetLearnerById(id: UUID where: LearnerFilterInput): Learner @permission(objectType: "Classroom", methodType: VIEW)
   GetAllProgramme(pagingInput: PagedQueryInput where: ProgrammeFilterInput order: [ProgrammeSortInput!]): [Programme] @permission(objectType: "Classroom", methodType: VIEW)
-  countProgramme(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Classroom", methodType: VIEW)
+  countProgramme(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Classroom", methodType: VIEW)
   GetProgrammeById(id: UUID where: ProgrammeFilterInput): Programme @permission(objectType: "Classroom", methodType: VIEW)
   GetAllProgrammeAttendanceReason(pagingInput: PagedQueryInput where: ProgrammeAttendanceReasonFilterInput order: [ProgrammeAttendanceReasonSortInput!]): [ProgrammeAttendanceReason] @permission(objectType: "Classroom", methodType: VIEW)
-  countProgrammeAttendanceReason(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Classroom", methodType: VIEW)
+  countProgrammeAttendanceReason(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Classroom", methodType: VIEW)
   GetProgrammeAttendanceReasonById(id: UUID where: ProgrammeAttendanceReasonFilterInput): ProgrammeAttendanceReason @permission(objectType: "Classroom", methodType: VIEW)
   GetAllProgrammeType(pagingInput: PagedQueryInput where: ProgrammeTypeFilterInput order: [ProgrammeTypeSortInput!]): [ProgrammeType] @permission(objectType: "Classroom", methodType: VIEW)
-  countProgrammeType(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Classroom", methodType: VIEW)
+  countProgrammeType(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Classroom", methodType: VIEW)
   GetProgrammeTypeById(id: UUID where: ProgrammeTypeFilterInput): ProgrammeType @permission(objectType: "Classroom", methodType: VIEW)
   GetAllCalendarEvent(pagingInput: PagedQueryInput where: CalendarEventFilterInput order: [CalendarEventSortInput!]): [CalendarEvent] @permission(objectType: "Static", methodType: VIEW)
-  countCalendarEvent(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
+  countCalendarEvent(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
   GetCalendarEventById(id: UUID where: CalendarEventFilterInput): CalendarEvent @permission(objectType: "Static", methodType: VIEW)
   GetAllCalendarEventParticipant(pagingInput: PagedQueryInput where: CalendarEventParticipantFilterInput order: [CalendarEventParticipantSortInput!]): [CalendarEventParticipant] @permission(objectType: "Static", methodType: VIEW)
-  countCalendarEventParticipant(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
+  countCalendarEventParticipant(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Static", methodType: VIEW)
   GetCalendarEventParticipantById(id: UUID where: CalendarEventParticipantFilterInput): CalendarEventParticipant @permission(objectType: "Static", methodType: VIEW)
   GetAllAuditLogType(pagingInput: PagedQueryInput where: AuditLogTypeFilterInput order: [AuditLogTypeSortInput!]): [AuditLogType] @permission(objectType: "Audit", methodType: VIEW)
-  countAuditLogType(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "Audit", methodType: VIEW)
+  countAuditLogType(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "Audit", methodType: VIEW)
   GetAuditLogTypeById(id: UUID where: AuditLogTypeFilterInput): AuditLogType @permission(objectType: "Audit", methodType: VIEW)
   GetAllAbsentees(pagingInput: PagedQueryInput where: AbsenteesFilterInput order: [AbsenteesSortInput!]): [Absentees] @permission(objectType: "User", methodType: VIEW)
-  countAbsentees(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "User", methodType: VIEW)
+  countAbsentees(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "User", methodType: VIEW)
   GetAbsenteesById(id: UUID where: AbsenteesFilterInput): Absentees @permission(objectType: "User", methodType: VIEW)
   GetAllClassReassignmentHistory(pagingInput: PagedQueryInput where: ClassReassignmentHistoryFilterInput order: [ClassReassignmentHistorySortInput!]): [ClassReassignmentHistory] @permission(objectType: "User", methodType: VIEW)
-  countClassReassignmentHistory(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "User", methodType: VIEW)
+  countClassReassignmentHistory(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "User", methodType: VIEW)
   GetClassReassignmentHistoryById(id: UUID where: ClassReassignmentHistoryFilterInput): ClassReassignmentHistory @permission(objectType: "User", methodType: VIEW)
   GetAllPractitionerRemovalHistory(pagingInput: PagedQueryInput where: PractitionerRemovalHistoryFilterInput order: [PractitionerRemovalHistorySortInput!]): [PractitionerRemovalHistory] @permission(objectType: "User", methodType: VIEW)
-  countPractitionerRemovalHistory(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "User", methodType: VIEW)
+  countPractitionerRemovalHistory(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "User", methodType: VIEW)
   GetPractitionerRemovalHistoryById(id: UUID where: PractitionerRemovalHistoryFilterInput): PractitionerRemovalHistory @permission(objectType: "User", methodType: VIEW)
   GetAllCaregiver(pagingInput: PagedQueryInput where: CaregiverFilterInput order: [CaregiverSortInput!]): [Caregiver] @permission(objectType: "User", methodType: VIEW)
-  countCaregiver(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "User", methodType: VIEW)
+  countCaregiver(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "User", methodType: VIEW)
   GetCaregiverById(id: UUID where: CaregiverFilterInput): Caregiver @permission(objectType: "User", methodType: VIEW)
   GetAllChild(pagingInput: PagedQueryInput where: ChildFilterInput order: [ChildSortInput!]): [Child] @permission(objectType: "User", methodType: VIEW)
-  countChild(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "User", methodType: VIEW)
+  countChild(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "User", methodType: VIEW)
   GetChildById(id: UUID where: ChildFilterInput): Child @permission(objectType: "User", methodType: VIEW)
   GetAllCoach(pagingInput: PagedQueryInput where: CoachFilterInput order: [CoachSortInput!]): [Coach] @permission(objectType: "User", methodType: VIEW)
-  countCoach(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "User", methodType: VIEW)
+  countCoach(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "User", methodType: VIEW)
   GetCoachById(id: UUID where: CoachFilterInput): Coach @permission(objectType: "User", methodType: VIEW)
   GetAllPractitioner(pagingInput: PagedQueryInput where: PractitionerFilterInput order: [PractitionerSortInput!]): [Practitioner] @permission(objectType: "User", methodType: VIEW)
-  countPractitioner(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "User", methodType: VIEW)
+  countPractitioner(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "User", methodType: VIEW)
   GetPractitionerById(id: UUID where: PractitionerFilterInput): Practitioner @permission(objectType: "User", methodType: VIEW)
   GetAllPrincipal(pagingInput: PagedQueryInput where: PrincipalFilterInput order: [PrincipalSortInput!]): [Principal] @permission(objectType: "User", methodType: VIEW)
-  countPrincipal(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "User", methodType: VIEW)
+  countPrincipal(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "User", methodType: VIEW)
   GetPrincipalById(id: UUID where: PrincipalFilterInput): Principal @permission(objectType: "User", methodType: VIEW)
   GetAllUserGrant(pagingInput: PagedQueryInput where: UserGrantFilterInput order: [UserGrantSortInput!]): [UserGrant] @permission(objectType: "User", methodType: VIEW)
-  countUserGrant(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "User", methodType: VIEW)
+  countUserGrant(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "User", methodType: VIEW)
   GetUserGrantById(id: UUID where: UserGrantFilterInput): UserGrant @permission(objectType: "User", methodType: VIEW)
   GetAllUserLanguage(pagingInput: PagedQueryInput where: UserLanguageFilterInput order: [UserLanguageSortInput!]): [UserLanguage] @permission(objectType: "User", methodType: VIEW)
-  countUserLanguage(pagingInput: PagedQueryInput where: ComparableInt32OperationFilterInput): Int @permission(objectType: "User", methodType: VIEW)
+  countUserLanguage(pagingInput: PagedQueryInput where: IntOperationFilterInput): Int @permission(objectType: "User", methodType: VIEW)
   GetUserLanguageById(id: UUID where: UserLanguageFilterInput): UserLanguage @permission(objectType: "User", methodType: VIEW)
   settings: SettingsType
   GetAllConsent(locale: String localeId: String): [Consent]! @permission(objectType: "Static", methodType: VIEW)
@@ -3507,21 +3507,21 @@ input AbsenteesFilterInput {
   and: [AbsenteesFilterInput!]
   or: [AbsenteesFilterInput!]
   user: ApplicationUserFilterInput
-  userId: ComparableNullableOfGuidOperationFilterInput
+  userId: UuidOperationFilterInput
   reason: StringOperationFilterInput
-  absentDate: ComparableDateTimeOperationFilterInput
-  absentDateEnd: ComparableNullableOfDateTimeOperationFilterInput
+  absentDate: DateTimeOperationFilterInput
+  absentDateEnd: DateTimeOperationFilterInput
   loggedBy: StringOperationFilterInput
   reassignedClass: StringOperationFilterInput
   reassignedToPractitioner: StringOperationFilterInput
   program: ProgrammeFilterInput
-  completedDate: ComparableNullableOfDateTimeOperationFilterInput
-  assignedDate: ComparableNullableOfDateTimeOperationFilterInput
+  completedDate: DateTimeOperationFilterInput
+  assignedDate: DateTimeOperationFilterInput
   isRoleAssign: BooleanOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -3644,12 +3644,12 @@ input ApplicationUserFilterInput {
   and: [ApplicationUserFilterInput!]
   or: [ApplicationUserFilterInput!]
   race: RaceFilterInput
-  raceId: ComparableNullableOfGuidOperationFilterInput
+  raceId: UuidOperationFilterInput
   gender: GenderFilterInput
-  genderId: ComparableNullableOfGuidOperationFilterInput
+  genderId: UuidOperationFilterInput
   notes: ListFilterInputTypeOfNoteFilterInput
   documents: ListFilterInputTypeOfDocumentFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   userName: StringOperationFilterInput
   normalizedUserName: StringOperationFilterInput
   email: StringOperationFilterInput
@@ -3685,24 +3685,24 @@ input ApplicationUserFilterInput {
   coachObjectData: CoachFilterInput
   principalObjectData: PractitionerFilterInput
   practitionerObjectData: PractitionerFilterInput
-  lockoutEnd: ComparableNullableOfDateTimeOffsetOperationFilterInput
-  tenantId: ComparableNullableOfGuidOperationFilterInput
+  lockoutEnd: DateTimeOperationFilterInput
+  tenantId: UuidOperationFilterInput
   language: LanguageFilterInput
-  languageId: ComparableNullableOfGuidOperationFilterInput
-  insertedDate: ComparableNullableOfDateTimeOperationFilterInput
-  updatedDate: ComparableNullableOfDateTimeOperationFilterInput
+  languageId: UuidOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   trainingCourses: ListFilterInputTypeOfUserTrainingCourseFilterInput
   isSouthAfricanCitizen: BooleanOperationFilterInput
   idNumber: StringOperationFilterInput
   verifiedByHomeAffairs: BooleanOperationFilterInput
-  dateOfBirth: ComparableDateTimeOperationFilterInput
+  dateOfBirth: DateTimeOperationFilterInput
   firstName: StringOperationFilterInput
   surname: StringOperationFilterInput
   fullName: StringOperationFilterInput
   contactPreference: StringOperationFilterInput
   profileImageUrl: StringOperationFilterInput
   isActive: BooleanOperationFilterInput
-  lastSeen: ComparableDateTimeOperationFilterInput
+  lastSeen: DateTimeOperationFilterInput
 }
 
 input ApplicationUserInput {
@@ -3843,18 +3843,18 @@ input AttendanceFilterInput {
   and: [AttendanceFilterInput!]
   or: [AttendanceFilterInput!]
   parentRecordId: StringOperationFilterInput
-  monthOfYear: ComparableInt32OperationFilterInput
-  weekOfYear: ComparableInt32OperationFilterInput
-  year: ComparableInt32OperationFilterInput
+  monthOfYear: IntOperationFilterInput
+  weekOfYear: IntOperationFilterInput
+  year: IntOperationFilterInput
   attended: BooleanOperationFilterInput
-  attendanceDate: ComparableDateTimeOperationFilterInput
+  attendanceDate: DateTimeOperationFilterInput
   classroomProgramme: ClassProgrammeFilterInput
-  classroomProgrammeId: ComparableGuidOperationFilterInput
+  classroomProgrammeId: UuidOperationFilterInput
   user: ApplicationUserFilterInput
-  userId: ComparableNullableOfGuidOperationFilterInput
-  tenantId: ComparableGuidOperationFilterInput
-  insertedDate: ComparableNullableOfDateTimeOperationFilterInput
-  updatedDate: ComparableNullableOfDateTimeOperationFilterInput
+  userId: UuidOperationFilterInput
+  tenantId: UuidOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
 }
 
 input AuditLogTypeEnumOperationFilterInput {
@@ -3869,10 +3869,10 @@ input AuditLogTypeFilterInput {
   or: [AuditLogTypeFilterInput!]
   enumId: AuditLogTypeEnumOperationFilterInput
   description: StringOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -3944,18 +3944,18 @@ input CalendarEventFilterInput {
   name: StringOperationFilterInput
   eventType: StringOperationFilterInput
   allDay: BooleanOperationFilterInput
-  start: ComparableDateTimeOperationFilterInput
-  end: ComparableDateTimeOperationFilterInput
+  start: DateTimeOperationFilterInput
+  end: DateTimeOperationFilterInput
   description: StringOperationFilterInput
   action: StringOperationFilterInput
   participants: ListFilterInputTypeOfCalendarEventParticipantFilterInput
   user: ApplicationUserFilterInput
-  userId: ComparableNullableOfGuidOperationFilterInput
+  userId: UuidOperationFilterInput
   visit: VisitFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -3992,13 +3992,13 @@ input CalendarEventParticipantFilterInput {
   and: [CalendarEventParticipantFilterInput!]
   or: [CalendarEventParticipantFilterInput!]
   participantUser: ApplicationUserFilterInput
-  participantUserId: ComparableNullableOfGuidOperationFilterInput
+  participantUserId: UuidOperationFilterInput
   user: ApplicationUserFilterInput
-  userId: ComparableNullableOfGuidOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  userId: UuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -4068,17 +4068,17 @@ input CaregiverFilterInput {
   isAllowedCustody: BooleanOperationFilterInput
   grants: ListFilterInputTypeOfGrantFilterInput
   siteAddress: SiteAddressFilterInput
-  siteAddressId: ComparableNullableOfGuidOperationFilterInput
+  siteAddressId: UuidOperationFilterInput
   relation: RelationFilterInput
-  relationId: ComparableNullableOfGuidOperationFilterInput
+  relationId: UuidOperationFilterInput
   education: EducationFilterInput
-  educationId: ComparableNullableOfGuidOperationFilterInput
+  educationId: UuidOperationFilterInput
   language: LanguageFilterInput
-  languageId: ComparableNullableOfGuidOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  languageId: UuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -4177,29 +4177,29 @@ input ChildFilterInput {
   and: [ChildFilterInput!]
   or: [ChildFilterInput!]
   user: ApplicationUserFilterInput
-  userId: ComparableNullableOfGuidOperationFilterInput
+  userId: UuidOperationFilterInput
   caregiver: CaregiverFilterInput
-  caregiverId: ComparableNullableOfGuidOperationFilterInput
+  caregiverId: UuidOperationFilterInput
   allergies: StringOperationFilterInput
   disabilities: StringOperationFilterInput
   otherHealthConditions: StringOperationFilterInput
   documents: ListFilterInputTypeOfDocumentFilterInput
   reasonForLeaving: ReasonForLeavingFilterInput
-  reasonForLeavingId: ComparableNullableOfGuidOperationFilterInput
+  reasonForLeavingId: UuidOperationFilterInput
   workflowStatus: WorkflowStatusFilterInput
-  workflowStatusId: ComparableNullableOfGuidOperationFilterInput
+  workflowStatusId: UuidOperationFilterInput
   insertedBy: StringOperationFilterInput
-  startDate: ComparableNullableOfDateTimeOperationFilterInput
+  startDate: DateTimeOperationFilterInput
   playgroupGroup: StringOperationFilterInput
   inactiveReason: StringOperationFilterInput
-  inactiveDate: ComparableNullableOfDateTimeOperationFilterInput
+  inactiveDate: DateTimeOperationFilterInput
   inactivityComments: StringOperationFilterInput
   isAddedByCaregiver: BooleanOperationFilterInput
   otherLanguages: StringOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -4233,18 +4233,18 @@ input ChildProgressReportFilterInput {
   and: [ChildProgressReportFilterInput!]
   or: [ChildProgressReportFilterInput!]
   child: ChildFilterInput
-  childId: ComparableGuidOperationFilterInput
+  childId: UuidOperationFilterInput
   reportContent: StringOperationFilterInput
   user: ApplicationUserFilterInput
-  userId: ComparableNullableOfGuidOperationFilterInput
-  dateCompleted: ComparableNullableOfDateTimeOperationFilterInput
+  userId: UuidOperationFilterInput
+  dateCompleted: DateTimeOperationFilterInput
   childProgressReportPeriod: ChildProgressReportPeriodFilterInput
-  childProgressReportPeriodId: ComparableGuidOperationFilterInput
-  observationsCompleteDate: ComparableNullableOfDateTimeOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  childProgressReportPeriodId: UuidOperationFilterInput
+  observationsCompleteDate: DateTimeOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -4287,13 +4287,13 @@ input ChildProgressReportPeriodFilterInput {
   and: [ChildProgressReportPeriodFilterInput!]
   or: [ChildProgressReportPeriodFilterInput!]
   classroom: ClassroomFilterInput
-  classroomId: ComparableGuidOperationFilterInput
-  startDate: ComparableDateTimeOperationFilterInput
-  endDate: ComparableDateTimeOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  classroomId: UuidOperationFilterInput
+  startDate: DateTimeOperationFilterInput
+  endDate: DateTimeOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -4388,15 +4388,15 @@ input ChildUserUpdateInput {
 input ClassProgrammeFilterInput {
   and: [ClassProgrammeFilterInput!]
   or: [ClassProgrammeFilterInput!]
-  programmeStartDate: ComparableDateTimeOperationFilterInput
-  meetingDay: ComparableInt32OperationFilterInput
+  programmeStartDate: DateTimeOperationFilterInput
+  meetingDay: IntOperationFilterInput
   isFullDay: BooleanOperationFilterInput
   classroomGroup: ClassroomGroupFilterInput
-  classroomGroupId: ComparableNullableOfGuidOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  classroomGroupId: UuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -4428,13 +4428,13 @@ input ClassReassignmentHistoryFilterInput {
   and: [ClassReassignmentHistoryFilterInput!]
   or: [ClassReassignmentHistoryFilterInput!]
   user: ApplicationUserFilterInput
-  userId: ComparableNullableOfGuidOperationFilterInput
+  userId: UuidOperationFilterInput
   reason: StringOperationFilterInput
-  loggedBy: ComparableNullableOfGuidOperationFilterInput
-  reassignedToUser: ComparableNullableOfGuidOperationFilterInput
-  reassignedToDate: ComparableDateTimeOperationFilterInput
-  reassignedBackToUserId: ComparableNullableOfGuidOperationFilterInput
-  reassignedBackToDate: ComparableNullableOfDateTimeOperationFilterInput
+  loggedBy: UuidOperationFilterInput
+  reassignedToUser: UuidOperationFilterInput
+  reassignedToDate: DateTimeOperationFilterInput
+  reassignedBackToUserId: UuidOperationFilterInput
+  reassignedBackToDate: DateTimeOperationFilterInput
   hierarchyToUser: StringOperationFilterInput
   hierarchyBackToUser: StringOperationFilterInput
   reassignedClassrooms: StringOperationFilterInput
@@ -4442,16 +4442,16 @@ input ClassReassignmentHistoryFilterInput {
   reassignedChildrenUserIds: StringOperationFilterInput
   reassignedClassProgrammes: StringOperationFilterInput
   reassignedLearners: StringOperationFilterInput
-  assignedToDate: ComparableDateTimeOperationFilterInput
-  assignedRoleDate: ComparableNullableOfDateTimeOperationFilterInput
-  reassignedRoleBackDate: ComparableNullableOfDateTimeOperationFilterInput
+  assignedToDate: DateTimeOperationFilterInput
+  assignedRoleDate: DateTimeOperationFilterInput
+  reassignedRoleBackDate: DateTimeOperationFilterInput
   assignedRole: StringOperationFilterInput
   reassignedRoleBack: StringOperationFilterInput
   roleAssignedToUser: StringOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -4519,8 +4519,8 @@ input ClassroomFilterInput {
   and: [ClassroomFilterInput!]
   or: [ClassroomFilterInput!]
   user: ApplicationUserFilterInput
-  userId: ComparableNullableOfGuidOperationFilterInput
-  siteAddressId: ComparableNullableOfGuidOperationFilterInput
+  userId: UuidOperationFilterInput
+  siteAddressId: UuidOperationFilterInput
   siteAddress: SiteAddressFilterInput
   classroomGroups: ListFilterInputTypeOfClassroomGroupFilterInput
   programmes: ListFilterInputTypeOfProgrammeFilterInput
@@ -4529,28 +4529,28 @@ input ClassroomFilterInput {
   preschoolCode: StringOperationFilterInput
   isDummySchool: BooleanOperationFilterInput
   childProgressReportPeriods: ListFilterInputTypeOfChildProgressReportPeriodFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
 input ClassroomGroupFilterInput {
   and: [ClassroomGroupFilterInput!]
   or: [ClassroomGroupFilterInput!]
-  classroomId: ComparableGuidOperationFilterInput
+  classroomId: UuidOperationFilterInput
   classroom: ClassroomFilterInput
   programmeType: ProgrammeTypeFilterInput
-  programmeTypeId: ComparableNullableOfGuidOperationFilterInput
+  programmeTypeId: UuidOperationFilterInput
   learners: ListFilterInputTypeOfLearnerFilterInput
   classProgrammes: ListFilterInputTypeOfClassProgrammeFilterInput
   name: StringOperationFilterInput
-  userId: ComparableNullableOfGuidOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  userId: UuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -4624,18 +4624,18 @@ input ClassroomSortInput {
 input CoachContactFilterInput {
   and: [CoachContactFilterInput!]
   or: [CoachContactFilterInput!]
-  id: ComparableGuidOperationFilterInput
-  userId: ComparableNullableOfGuidOperationFilterInput
-  practitionerId: ComparableNullableOfGuidOperationFilterInput
-  coachId: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
+  userId: UuidOperationFilterInput
+  practitionerId: UuidOperationFilterInput
+  coachId: UuidOperationFilterInput
   actionItemType: ActionItemTypeOperationFilterInput
-  period: ComparableDateTimeOperationFilterInput
-  contactedDate: ComparableDateTimeOperationFilterInput
+  period: DateTimeOperationFilterInput
+  contactedDate: DateTimeOperationFilterInput
   practitioner: PractitionerFilterInput
   coach: CoachFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -4672,15 +4672,15 @@ input CoachContactSortInput {
 input CoachFeedbackFilterInput {
   and: [CoachFeedbackFilterInput!]
   or: [CoachFeedbackFilterInput!]
-  fromUserId: ComparableGuidOperationFilterInput
-  toUserId: ComparableGuidOperationFilterInput
-  supportRatingId: ComparableGuidOperationFilterInput
+  fromUserId: UuidOperationFilterInput
+  toUserId: UuidOperationFilterInput
+  supportRatingId: UuidOperationFilterInput
   feedbackDetails: StringOperationFilterInput
   coachFeedbackTypes: ListFilterInputTypeOfCoachFeedbackTypeFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -4719,12 +4719,12 @@ input CoachFeedbackTypeFilterInput {
   and: [CoachFeedbackTypeFilterInput!]
   or: [CoachFeedbackTypeFilterInput!]
   feedbackType: FeedbackTypeFilterInput
-  feedbackTypeId: ComparableGuidOperationFilterInput
-  coachFeedbackId: ComparableGuidOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  feedbackTypeId: UuidOperationFilterInput
+  coachFeedbackId: UuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -4752,22 +4752,22 @@ input CoachFilterInput {
   and: [CoachFilterInput!]
   or: [CoachFilterInput!]
   user: ApplicationUserFilterInput
-  userId: ComparableNullableOfGuidOperationFilterInput
+  userId: UuidOperationFilterInput
   areaOfOperation: StringOperationFilterInput
   secondaryAreaOfOperation: StringOperationFilterInput
-  startDate: ComparableDateTimeOperationFilterInput
+  startDate: DateTimeOperationFilterInput
   siteAddress: SiteAddressFilterInput
-  siteAddressId: ComparableNullableOfGuidOperationFilterInput
+  siteAddressId: UuidOperationFilterInput
   signingSignature: StringOperationFilterInput
   practitionerVisits: ListFilterInputTypeOfVisitFilterInput
   aboutInfo: StringOperationFilterInput
   isRegistered: BooleanOperationFilterInput
   shareInfo: BooleanOperationFilterInput
   clickedCommunityTab: BooleanOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -4819,14 +4819,14 @@ input CommunityProfileConnectionFilterInput {
   and: [CommunityProfileConnectionFilterInput!]
   or: [CommunityProfileConnectionFilterInput!]
   fromProfile: CommunityProfileFilterInput
-  fromCommunityProfileId: ComparableGuidOperationFilterInput
+  fromCommunityProfileId: UuidOperationFilterInput
   toProfile: CommunityProfileFilterInput
-  toCommunityProfileId: ComparableGuidOperationFilterInput
+  toCommunityProfileId: UuidOperationFilterInput
   inviteAccepted: BooleanOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -4858,7 +4858,7 @@ input CommunityProfileFilterInput {
   and: [CommunityProfileFilterInput!]
   or: [CommunityProfileFilterInput!]
   user: ApplicationUserFilterInput
-  userId: ComparableNullableOfGuidOperationFilterInput
+  userId: UuidOperationFilterInput
   aboutShort: StringOperationFilterInput
   aboutLong: StringOperationFilterInput
   shareContactInfo: BooleanOperationFilterInput
@@ -4868,13 +4868,13 @@ input CommunityProfileFilterInput {
   shareProvince: BooleanOperationFilterInput
   shareRole: BooleanOperationFilterInput
   province: ProvinceFilterInput
-  provinceId: ComparableNullableOfGuidOperationFilterInput
+  provinceId: UuidOperationFilterInput
   clickedECDHeros: BooleanOperationFilterInput
   profileSkills: ListFilterInputTypeOfCommunityProfileSkillFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -4916,13 +4916,13 @@ input CommunityProfileSkillFilterInput {
   and: [CommunityProfileSkillFilterInput!]
   or: [CommunityProfileSkillFilterInput!]
   communitySkill: CommunitySkillFilterInput
-  communitySkillId: ComparableGuidOperationFilterInput
+  communitySkillId: UuidOperationFilterInput
   profile: CommunityProfileFilterInput
-  communityProfileId: ComparableGuidOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  communityProfileId: UuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -4975,11 +4975,11 @@ input CommunitySkillFilterInput {
   name: StringOperationFilterInput
   description: StringOperationFilterInput
   imageName: StringOperationFilterInput
-  ordering: ComparableInt32OperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  ordering: IntOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -5005,156 +5005,6 @@ input CommunitySkillSortInput {
   updatedBy: SortEnumType
 }
 
-input ComparableDateTimeOperationFilterInput {
-  eq: DateTime
-  neq: DateTime
-  in: [DateTime!]
-  nin: [DateTime!]
-  gt: DateTime
-  ngt: DateTime
-  gte: DateTime
-  ngte: DateTime
-  lt: DateTime
-  nlt: DateTime
-  lte: DateTime
-  nlte: DateTime
-}
-
-input ComparableDecimalOperationFilterInput {
-  eq: Decimal
-  neq: Decimal
-  in: [Decimal!]
-  nin: [Decimal!]
-  gt: Decimal
-  ngt: Decimal
-  gte: Decimal
-  ngte: Decimal
-  lt: Decimal
-  nlt: Decimal
-  lte: Decimal
-  nlte: Decimal
-}
-
-input ComparableDoubleOperationFilterInput {
-  eq: Float
-  neq: Float
-  in: [Float!]
-  nin: [Float!]
-  gt: Float
-  ngt: Float
-  gte: Float
-  ngte: Float
-  lt: Float
-  nlt: Float
-  lte: Float
-  nlte: Float
-}
-
-input ComparableGuidOperationFilterInput {
-  eq: UUID
-  neq: UUID
-  in: [UUID!]
-  nin: [UUID!]
-  gt: UUID
-  ngt: UUID
-  gte: UUID
-  ngte: UUID
-  lt: UUID
-  nlt: UUID
-  lte: UUID
-  nlte: UUID
-}
-
-input ComparableInt32OperationFilterInput {
-  eq: Int
-  neq: Int
-  in: [Int!]
-  nin: [Int!]
-  gt: Int
-  ngt: Int
-  gte: Int
-  ngte: Int
-  lt: Int
-  nlt: Int
-  lte: Int
-  nlte: Int
-}
-
-input ComparableNullableOfDateTimeOffsetOperationFilterInput {
-  eq: DateTime
-  neq: DateTime
-  in: [DateTime]
-  nin: [DateTime]
-  gt: DateTime
-  ngt: DateTime
-  gte: DateTime
-  ngte: DateTime
-  lt: DateTime
-  nlt: DateTime
-  lte: DateTime
-  nlte: DateTime
-}
-
-input ComparableNullableOfDateTimeOperationFilterInput {
-  eq: DateTime
-  neq: DateTime
-  in: [DateTime]
-  nin: [DateTime]
-  gt: DateTime
-  ngt: DateTime
-  gte: DateTime
-  ngte: DateTime
-  lt: DateTime
-  nlt: DateTime
-  lte: DateTime
-  nlte: DateTime
-}
-
-input ComparableNullableOfDecimalOperationFilterInput {
-  eq: Decimal
-  neq: Decimal
-  in: [Decimal]
-  nin: [Decimal]
-  gt: Decimal
-  ngt: Decimal
-  gte: Decimal
-  ngte: Decimal
-  lt: Decimal
-  nlt: Decimal
-  lte: Decimal
-  nlte: Decimal
-}
-
-input ComparableNullableOfGuidOperationFilterInput {
-  eq: UUID
-  neq: UUID
-  in: [UUID]
-  nin: [UUID]
-  gt: UUID
-  ngt: UUID
-  gte: UUID
-  ngte: UUID
-  lt: UUID
-  nlt: UUID
-  lte: UUID
-  nlte: UUID
-}
-
-input ComparableNullableOfInt32OperationFilterInput {
-  eq: Int
-  neq: Int
-  in: [Int]
-  nin: [Int]
-  gt: Int
-  ngt: Int
-  gte: Int
-  ngte: Int
-  lt: Int
-  nlt: Int
-  lte: Int
-  nlte: Int
-}
-
 input ConsentInput {
   name: String
 }
@@ -5162,20 +5012,20 @@ input ConsentInput {
 input DailyProgrammeFilterInput {
   and: [DailyProgrammeFilterInput!]
   or: [DailyProgrammeFilterInput!]
-  programmeId: ComparableGuidOperationFilterInput
+  programmeId: UuidOperationFilterInput
   programme: ProgrammeFilterInput
-  day: ComparableInt32OperationFilterInput
-  dayDate: ComparableDateTimeOperationFilterInput
+  day: IntOperationFilterInput
+  dayDate: DateTimeOperationFilterInput
   messageBoardText: StringOperationFilterInput
-  smallGroupActivityId: ComparableInt32OperationFilterInput
-  largeGroupActivityId: ComparableInt32OperationFilterInput
-  storyBookId: ComparableInt32OperationFilterInput
-  storyActivityId: ComparableInt32OperationFilterInput
-  dateCompleted: ComparableNullableOfDateTimeOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  smallGroupActivityId: IntOperationFilterInput
+  largeGroupActivityId: IntOperationFilterInput
+  storyBookId: IntOperationFilterInput
+  storyActivityId: IntOperationFilterInput
+  dateCompleted: DateTimeOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -5225,27 +5075,57 @@ input DailyProgrammeSortInput {
   updatedBy: SortEnumType
 }
 
+input DateTimeOperationFilterInput {
+  eq: DateTime
+  neq: DateTime
+  in: [DateTime]
+  nin: [DateTime]
+  gt: DateTime
+  ngt: DateTime
+  gte: DateTime
+  ngte: DateTime
+  lt: DateTime
+  nlt: DateTime
+  lte: DateTime
+  nlte: DateTime
+}
+
+input DecimalOperationFilterInput {
+  eq: Decimal
+  neq: Decimal
+  in: [Decimal]
+  nin: [Decimal]
+  gt: Decimal
+  ngt: Decimal
+  gte: Decimal
+  ngte: Decimal
+  lt: Decimal
+  nlt: Decimal
+  lte: Decimal
+  nlte: Decimal
+}
+
 input DocumentFilterInput {
   and: [DocumentFilterInput!]
   or: [DocumentFilterInput!]
   name: StringOperationFilterInput
   reference: StringOperationFilterInput
   user: ApplicationUserFilterInput
-  userId: ComparableNullableOfGuidOperationFilterInput
+  userId: UuidOperationFilterInput
   documentType: DocumentTypeFilterInput
-  documentTypeId: ComparableGuidOperationFilterInput
+  documentTypeId: UuidOperationFilterInput
   workflowStatus: WorkflowStatusFilterInput
-  workflowStatusId: ComparableGuidOperationFilterInput
+  workflowStatusId: UuidOperationFilterInput
   hierarchy: StringOperationFilterInput
-  createdUserId: ComparableNullableOfGuidOperationFilterInput
+  createdUserId: UuidOperationFilterInput
   createdUser: ApplicationUserFilterInput
   clientName: StringOperationFilterInput
   createdByName: StringOperationFilterInput
   clientStatus: StringOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -5296,10 +5176,10 @@ input DocumentTypeFilterInput {
   name: StringOperationFilterInput
   description: StringOperationFilterInput
   enumId: FileTypeEnumOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -5327,8 +5207,8 @@ input EcdRegistrationFilterInput {
   and: [EcdRegistrationFilterInput!]
   or: [EcdRegistrationFilterInput!]
   user: ApplicationUserFilterInput
-  userId: ComparableGuidOperationFilterInput
-  practitionerId: ComparableNullableOfGuidOperationFilterInput
+  userId: UuidOperationFilterInput
+  practitionerId: UuidOperationFilterInput
   practitioner: PractitionerFilterInput
   subsidy: SubsidyStatusOperationFilterInput
   registrationType: NullableOfNonSubsidyRegistrationTypeOperationFilterInput
@@ -5341,10 +5221,10 @@ input EcdRegistrationFilterInput {
   initialCertificates: StringOperationFilterInput
   eCaresStatus: NullableOfSubsidyStatusOperationFilterInput
   history: ListFilterInputTypeOfEcdRegistrationHistoryFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -5352,15 +5232,15 @@ input EcdRegistrationHistoryFilterInput {
   and: [EcdRegistrationHistoryFilterInput!]
   or: [EcdRegistrationHistoryFilterInput!]
   user: ApplicationUserFilterInput
-  userId: ComparableNullableOfGuidOperationFilterInput
-  ecdRegistrationId: ComparableGuidOperationFilterInput
+  userId: UuidOperationFilterInput
+  ecdRegistrationId: UuidOperationFilterInput
   ecdRegistration: EcdRegistrationFilterInput
   propertyName: StringOperationFilterInput
   changeReason: StringOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -5463,10 +5343,10 @@ input EducationFilterInput {
   and: [EducationFilterInput!]
   or: [EducationFilterInput!]
   description: StringOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -5500,11 +5380,11 @@ input FeedbackTypeFilterInput {
   and: [FeedbackTypeFilterInput!]
   or: [FeedbackTypeFilterInput!]
   name: StringOperationFilterInput
-  ordering: ComparableInt32OperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  ordering: IntOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -5539,6 +5419,21 @@ input FilterByFieldInput {
   filterType: InputFilterComparer
 }
 
+input FloatOperationFilterInput {
+  eq: Float
+  neq: Float
+  in: [Float]
+  nin: [Float]
+  gt: Float
+  ngt: Float
+  gte: Float
+  ngte: Float
+  lt: Float
+  nlt: Float
+  lte: Float
+  nlte: Float
+}
+
 input FollowUpVisitModelInput {
   plannedVisitDate: DateTime
   actualVisitDate: DateTime
@@ -5557,10 +5452,10 @@ input GenderFilterInput {
   and: [GenderFilterInput!]
   or: [GenderFilterInput!]
   description: StringOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -5584,10 +5479,10 @@ input GrantFilterInput {
   and: [GrantFilterInput!]
   or: [GrantFilterInput!]
   description: StringOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -5616,11 +5511,11 @@ input HierarchyEntityFilterInput {
   or: [HierarchyEntityFilterInput!]
   type: StringOperationFilterInput
   systemType: StringOperationFilterInput
-  parentId: ComparableGuidOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  parentId: UuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -5679,23 +5574,38 @@ input InfographicsInput {
   name: String
 }
 
+input IntOperationFilterInput {
+  eq: Int
+  neq: Int
+  in: [Int]
+  nin: [Int]
+  gt: Int
+  ngt: Int
+  gte: Int
+  ngte: Int
+  lt: Int
+  nlt: Int
+  lte: Int
+  nlte: Int
+}
+
 input InviteFilterInput {
   and: [InviteFilterInput!]
   or: [InviteFilterInput!]
   isAccepted: BooleanOperationFilterInput
   status: StringOperationFilterInput
-  acceptedDate: ComparableNullableOfDateTimeOperationFilterInput
-  rejectedDate: ComparableNullableOfDateTimeOperationFilterInput
+  acceptedDate: DateTimeOperationFilterInput
+  rejectedDate: DateTimeOperationFilterInput
   practitioner: PractitionerFilterInput
-  practitionerId: ComparableNullableOfGuidOperationFilterInput
+  practitionerId: UuidOperationFilterInput
   principal: PractitionerFilterInput
-  principalId: ComparableGuidOperationFilterInput
+  principalId: UuidOperationFilterInput
   user: ApplicationUserFilterInput
-  userId: ComparableNullableOfGuidOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  userId: UuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -5738,10 +5648,10 @@ input LanguageFilterInput {
   or: [LanguageFilterInput!]
   locale: StringOperationFilterInput
   description: StringOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -5766,19 +5676,19 @@ input LanguageSortInput {
 input LearnerFilterInput {
   and: [LearnerFilterInput!]
   or: [LearnerFilterInput!]
-  userId: ComparableNullableOfGuidOperationFilterInput
+  userId: UuidOperationFilterInput
   user: ApplicationUserFilterInput
   classroomGroup: ClassroomGroupFilterInput
-  classroomGroupId: ComparableGuidOperationFilterInput
+  classroomGroupId: UuidOperationFilterInput
   programmeAttendanceReason: ProgrammeAttendanceReasonFilterInput
-  programmeAttendanceReasonId: ComparableNullableOfGuidOperationFilterInput
+  programmeAttendanceReasonId: UuidOperationFilterInput
   otherAttendanceReason: StringOperationFilterInput
-  startedAttendance: ComparableDateTimeOperationFilterInput
-  stoppedAttendance: ComparableNullableOfDateTimeOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  startedAttendance: DateTimeOperationFilterInput
+  stoppedAttendance: DateTimeOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -5994,10 +5904,10 @@ input MeetingTypeFilterInput {
   name: StringOperationFilterInput
   normalizedName: StringOperationFilterInput
   description: StringOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -6033,23 +5943,23 @@ input MessageLogFilterInput {
   status: StringOperationFilterInput
   cTAText: StringOperationFilterInput
   cTA: StringOperationFilterInput
-  fromUserId: ComparableGuidOperationFilterInput
-  sentByUserId: ComparableGuidOperationFilterInput
-  messageDate: ComparableNullableOfDateTimeOperationFilterInput
-  messageEndDate: ComparableNullableOfDateTimeOperationFilterInput
-  readDate: ComparableNullableOfDateTimeOperationFilterInput
+  fromUserId: UuidOperationFilterInput
+  sentByUserId: UuidOperationFilterInput
+  messageDate: DateTimeOperationFilterInput
+  messageEndDate: DateTimeOperationFilterInput
+  readDate: DateTimeOperationFilterInput
   toGroups: StringOperationFilterInput
   action: StringOperationFilterInput
-  groupingId: ComparableNullableOfGuidOperationFilterInput
-  notificationResult: ComparableNullableOfInt32OperationFilterInput
+  groupingId: UuidOperationFilterInput
+  notificationResult: IntOperationFilterInput
   notificationResultProviderCode: StringOperationFilterInput
   notificationResultProviderMessage: StringOperationFilterInput
   messageTemplate: MessageTemplateFilterInput
   messageLogRelatedTos: ListFilterInputTypeOfMessageLogRelatedToFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -6101,8 +6011,8 @@ input MessageLogModelInput {
 input MessageLogRelatedToFilterInput {
   and: [MessageLogRelatedToFilterInput!]
   or: [MessageLogRelatedToFilterInput!]
-  messageLogId: ComparableGuidOperationFilterInput
-  relatedEntityId: ComparableGuidOperationFilterInput
+  messageLogId: UuidOperationFilterInput
+  relatedEntityId: UuidOperationFilterInput
   entityType: StringOperationFilterInput
 }
 
@@ -6150,13 +6060,13 @@ input MessageTemplateFilterInput {
   subject: StringOperationFilterInput
   cTA: StringOperationFilterInput
   cTAText: StringOperationFilterInput
-  typeCode: ComparableNullableOfInt32OperationFilterInput
-  ordering: ComparableInt32OperationFilterInput
+  typeCode: IntOperationFilterInput
+  ordering: IntOperationFilterInput
   action: StringOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -6199,15 +6109,15 @@ input MoreInformationInput {
 input NavigationFilterInput {
   and: [NavigationFilterInput!]
   or: [NavigationFilterInput!]
-  sequence: ComparableInt32OperationFilterInput
+  sequence: IntOperationFilterInput
   name: StringOperationFilterInput
   icon: StringOperationFilterInput
   route: StringOperationFilterInput
   description: StringOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -6240,15 +6150,15 @@ input NoteFilterInput {
   or: [NoteFilterInput!]
   name: StringOperationFilterInput
   bodyText: StringOperationFilterInput
-  noteTypeId: ComparableGuidOperationFilterInput
+  noteTypeId: UuidOperationFilterInput
   noteType: NoteTypeFilterInput
-  userId: ComparableNullableOfGuidOperationFilterInput
+  userId: UuidOperationFilterInput
   user: ApplicationUserFilterInput
-  createdUserId: ComparableNullableOfGuidOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  createdUserId: UuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -6294,10 +6204,10 @@ input NoteTypeFilterInput {
   normalizedName: StringOperationFilterInput
   description: StringOperationFilterInput
   enumId: NoteTypeEnumOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -6365,19 +6275,19 @@ input PQARatingFilterInput {
   and: [PQARatingFilterInput!]
   or: [PQARatingFilterInput!]
   visitName: StringOperationFilterInput
-  overallScore: ComparableDoubleOperationFilterInput
+  overallScore: FloatOperationFilterInput
   overallRating: StringOperationFilterInput
   overallRatingStars: StringOperationFilterInput
   overallRatingColor: StringOperationFilterInput
   visitTypeName: StringOperationFilterInput
-  linkedVisitId: ComparableNullableOfGuidOperationFilterInput
-  visitId: ComparableGuidOperationFilterInput
+  linkedVisitId: UuidOperationFilterInput
+  visitId: UuidOperationFilterInput
   visit: VisitFilterInput
   sections: ListFilterInputTypeOfPQASectionRatingFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -6417,16 +6327,16 @@ input PQARatingSortInput {
 input PQASectionRatingFilterInput {
   and: [PQASectionRatingFilterInput!]
   or: [PQASectionRatingFilterInput!]
-  pQARatingId: ComparableGuidOperationFilterInput
+  pQARatingId: UuidOperationFilterInput
   pQARating: PQARatingFilterInput
   visitSection: StringOperationFilterInput
-  sectionScore: ComparableDoubleOperationFilterInput
+  sectionScore: FloatOperationFilterInput
   sectionRating: StringOperationFilterInput
   sectionRatingColor: StringOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -6468,10 +6378,10 @@ input PermissionFilterInput {
   name: StringOperationFilterInput
   normalizedName: StringOperationFilterInput
   grouping: StringOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -6499,15 +6409,15 @@ input PointsActivityFilterInput {
   and: [PointsActivityFilterInput!]
   or: [PointsActivityFilterInput!]
   name: StringOperationFilterInput
-  points: ComparableInt32OperationFilterInput
-  maxPointsIndividualMonthly: ComparableNullableOfInt32OperationFilterInput
-  maxPointsIndividualYearly: ComparableNullableOfInt32OperationFilterInput
-  pointsCategoryId: ComparableNullableOfGuidOperationFilterInput
+  points: IntOperationFilterInput
+  maxPointsIndividualMonthly: IntOperationFilterInput
+  maxPointsIndividualYearly: IntOperationFilterInput
+  pointsCategoryId: UuidOperationFilterInput
   pointsCategory: PointsCategoryFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -6541,10 +6451,10 @@ input PointsCategoryFilterInput {
   and: [PointsCategoryFilterInput!]
   or: [PointsCategoryFilterInput!]
   name: StringOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -6567,16 +6477,16 @@ input PointsCategorySortInput {
 input PointsClinicSummaryFilterInput {
   and: [PointsClinicSummaryFilterInput!]
   or: [PointsClinicSummaryFilterInput!]
-  dateScored: ComparableDateTimeOperationFilterInput
-  timesScored: ComparableInt32OperationFilterInput
-  pointsTotal: ComparableInt32OperationFilterInput
-  clinicId: ComparableGuidOperationFilterInput
-  pointsCategoryId: ComparableGuidOperationFilterInput
+  dateScored: DateTimeOperationFilterInput
+  timesScored: IntOperationFilterInput
+  pointsTotal: IntOperationFilterInput
+  clinicId: UuidOperationFilterInput
+  pointsCategoryId: UuidOperationFilterInput
   pointsCategory: PointsCategoryFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -6613,18 +6523,18 @@ input PointsLibraryFilterInput {
   subActivity: StringOperationFilterInput
   description: StringOperationFilterInput
   todoDescription: StringOperationFilterInput
-  points: ComparableInt32OperationFilterInput
-  maxPointsIndividualMonthly: ComparableNullableOfInt32OperationFilterInput
-  maxPointsNonPrincipalMonthly: ComparableInt32OperationFilterInput
-  maxPointsNonPrincipalYearly: ComparableInt32OperationFilterInput
-  maxPointsPrincipalMonthly: ComparableInt32OperationFilterInput
-  maxPointsPrincipalYearly: ComparableInt32OperationFilterInput
+  points: IntOperationFilterInput
+  maxPointsIndividualMonthly: IntOperationFilterInput
+  maxPointsNonPrincipalMonthly: IntOperationFilterInput
+  maxPointsNonPrincipalYearly: IntOperationFilterInput
+  maxPointsPrincipalMonthly: IntOperationFilterInput
+  maxPointsPrincipalYearly: IntOperationFilterInput
   calculatedAtMonthEnd: BooleanOperationFilterInput
   calculatedAtYearEnd: BooleanOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -6669,22 +6579,22 @@ input PointsLibrarySortInput {
 input PointsUserSummaryFilterInput {
   and: [PointsUserSummaryFilterInput!]
   or: [PointsUserSummaryFilterInput!]
-  timesScored: ComparableInt32OperationFilterInput
-  pointsTotal: ComparableInt32OperationFilterInput
-  pointsYTD: ComparableInt32OperationFilterInput
-  month: ComparableInt32OperationFilterInput
-  year: ComparableInt32OperationFilterInput
-  dateScored: ComparableDateTimeOperationFilterInput
-  userId: ComparableNullableOfGuidOperationFilterInput
+  timesScored: IntOperationFilterInput
+  pointsTotal: IntOperationFilterInput
+  pointsYTD: IntOperationFilterInput
+  month: IntOperationFilterInput
+  year: IntOperationFilterInput
+  dateScored: DateTimeOperationFilterInput
+  userId: UuidOperationFilterInput
   user: ApplicationUserFilterInput
-  pointsLibraryId: ComparableNullableOfGuidOperationFilterInput
+  pointsLibraryId: UuidOperationFilterInput
   pointsLibrary: PointsLibraryFilterInput
-  pointsActivityId: ComparableGuidOperationFilterInput
+  pointsActivityId: UuidOperationFilterInput
   pointsActivity: PointsActivityFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -6729,10 +6639,10 @@ input PointsUserSummarySortInput {
 input PortalCoachModelFilterInput {
   and: [PortalCoachModelFilterInput!]
   or: [PortalCoachModelFilterInput!]
-  id: ComparableGuidOperationFilterInput
-  userId: ComparableNullableOfGuidOperationFilterInput
+  id: UuidOperationFilterInput
+  userId: UuidOperationFilterInput
   isRegistered: BooleanOperationFilterInput
-  insertedDate: ComparableNullableOfDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
   user: PortalCoachUserModelFilterInput
 }
 
@@ -6747,10 +6657,10 @@ input PortalCoachModelSortInput {
 input PortalCoachUserModelFilterInput {
   and: [PortalCoachUserModelFilterInput!]
   or: [PortalCoachUserModelFilterInput!]
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   idNumber: StringOperationFilterInput
-  insertedDate: ComparableNullableOfDateTimeOperationFilterInput
-  lastSeen: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  lastSeen: DateTimeOperationFilterInput
   firstName: StringOperationFilterInput
   surname: StringOperationFilterInput
   fullName: StringOperationFilterInput
@@ -6781,11 +6691,11 @@ input PortalCoachUserModelSortInput {
 input PortalPractitionerModelFilterInput {
   and: [PortalPractitionerModelFilterInput!]
   or: [PortalPractitionerModelFilterInput!]
-  id: ComparableGuidOperationFilterInput
-  userId: ComparableNullableOfGuidOperationFilterInput
+  id: UuidOperationFilterInput
+  userId: UuidOperationFilterInput
   isRegistered: BooleanOperationFilterInput
   isPrincipal: BooleanOperationFilterInput
-  insertedDate: ComparableNullableOfDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
   user: PortalPractitionerUserModelFilterInput
 }
 
@@ -6801,10 +6711,10 @@ input PortalPractitionerModelSortInput {
 input PortalPractitionerUserModelFilterInput {
   and: [PortalPractitionerUserModelFilterInput!]
   or: [PortalPractitionerUserModelFilterInput!]
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   idNumber: StringOperationFilterInput
-  insertedDate: ComparableNullableOfDateTimeOperationFilterInput
-  lastSeen: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  lastSeen: DateTimeOperationFilterInput
   firstName: StringOperationFilterInput
   surname: StringOperationFilterInput
   fullName: StringOperationFilterInput
@@ -6837,43 +6747,43 @@ input PractitionerFilterInput {
   or: [PractitionerFilterInput!]
   attendanceRegisterLink: StringOperationFilterInput
   consentForPhoto: BooleanOperationFilterInput
-  parentFees: ComparableNullableOfDecimalOperationFilterInput
+  parentFees: DecimalOperationFilterInput
   languageUsedInGroups: StringOperationFilterInput
-  startDate: ComparableNullableOfDateTimeOperationFilterInput
+  startDate: DateTimeOperationFilterInput
   documents: ListFilterInputTypeOfDocumentFilterInput
   user: ApplicationUserFilterInput
-  userId: ComparableNullableOfGuidOperationFilterInput
+  userId: UuidOperationFilterInput
   siteAddress: SiteAddressFilterInput
-  siteAddressId: ComparableNullableOfGuidOperationFilterInput
+  siteAddressId: UuidOperationFilterInput
   coach: CoachFilterInput
-  coachHierarchy: ComparableNullableOfGuidOperationFilterInput
+  coachHierarchy: UuidOperationFilterInput
   principal: PractitionerFilterInput
-  principalHierarchy: ComparableNullableOfGuidOperationFilterInput
+  principalHierarchy: UuidOperationFilterInput
   isPrincipal: BooleanOperationFilterInput
   signingSignature: StringOperationFilterInput
   isRegistered: BooleanOperationFilterInput
   shareInfo: BooleanOperationFilterInput
-  dateLinked: ComparableNullableOfDateTimeOperationFilterInput
-  dateAccepted: ComparableNullableOfDateTimeOperationFilterInput
-  dateToBeRemoved: ComparableNullableOfDateTimeOperationFilterInput
+  dateLinked: DateTimeOperationFilterInput
+  dateAccepted: DateTimeOperationFilterInput
+  dateToBeRemoved: DateTimeOperationFilterInput
   isLeaving: BooleanOperationFilterInput
   reasonForLeaving: ReasonForPractitionerLeavingFilterInput
-  reasonForPractitionerLeavingId: ComparableNullableOfGuidOperationFilterInput
+  reasonForPractitionerLeavingId: UuidOperationFilterInput
   reasonForLeavingDetails: StringOperationFilterInput
-  progress: ComparableDecimalOperationFilterInput
+  progress: DecimalOperationFilterInput
   programmeType: StringOperationFilterInput
   leavingComment: StringOperationFilterInput
   usePhotoInReport: StringOperationFilterInput
   isCompletedBusinessWalkThrough: BooleanOperationFilterInput
   clickedCommunityTab: BooleanOperationFilterInput
-  communitySectionViewDate: ComparableNullableOfDateTimeOperationFilterInput
+  communitySectionViewDate: DateTimeOperationFilterInput
   progressWalkthroughComplete: BooleanOperationFilterInput
-  coachLinkDate: ComparableNullableOfDateTimeOperationFilterInput
+  coachLinkDate: DateTimeOperationFilterInput
   ecdRegistration: EcdRegistrationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -6922,17 +6832,17 @@ input PractitionerRemovalHistoryFilterInput {
   and: [PractitionerRemovalHistoryFilterInput!]
   or: [PractitionerRemovalHistoryFilterInput!]
   user: ApplicationUserFilterInput
-  userId: ComparableNullableOfGuidOperationFilterInput
-  classroomId: ComparableGuidOperationFilterInput
-  dateOfRemoval: ComparableDateTimeOperationFilterInput
-  removedByUserId: ComparableGuidOperationFilterInput
-  reasonForPractitionerLeavingProgrammeId: ComparableGuidOperationFilterInput
+  userId: UuidOperationFilterInput
+  classroomId: UuidOperationFilterInput
+  dateOfRemoval: DateTimeOperationFilterInput
+  removedByUserId: UuidOperationFilterInput
+  reasonForPractitionerLeavingProgrammeId: UuidOperationFilterInput
   reasonDetails: StringOperationFilterInput
   classReassignments: ListFilterInputTypeOfAbsenteesFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -7012,38 +6922,38 @@ input PrincipalFilterInput {
   or: [PrincipalFilterInput!]
   attendanceRegisterLink: StringOperationFilterInput
   consentForPhoto: BooleanOperationFilterInput
-  parentFees: ComparableNullableOfDecimalOperationFilterInput
+  parentFees: DecimalOperationFilterInput
   languageUsedInGroups: StringOperationFilterInput
-  startDate: ComparableNullableOfDateTimeOperationFilterInput
+  startDate: DateTimeOperationFilterInput
   documents: ListFilterInputTypeOfDocumentFilterInput
   user: ApplicationUserFilterInput
-  userId: ComparableNullableOfGuidOperationFilterInput
+  userId: UuidOperationFilterInput
   siteAddress: SiteAddressFilterInput
-  siteAddressId: ComparableNullableOfGuidOperationFilterInput
+  siteAddressId: UuidOperationFilterInput
   coach: CoachFilterInput
-  coachHierarchy: ComparableNullableOfGuidOperationFilterInput
+  coachHierarchy: UuidOperationFilterInput
   isPrincipal: BooleanOperationFilterInput
   signingSignature: StringOperationFilterInput
   isRegistered: BooleanOperationFilterInput
   shareInfo: BooleanOperationFilterInput
-  dateLinked: ComparableNullableOfDateTimeOperationFilterInput
-  dateAccepted: ComparableNullableOfDateTimeOperationFilterInput
-  dateToBeRemoved: ComparableNullableOfDateTimeOperationFilterInput
+  dateLinked: DateTimeOperationFilterInput
+  dateAccepted: DateTimeOperationFilterInput
+  dateToBeRemoved: DateTimeOperationFilterInput
   isLeaving: BooleanOperationFilterInput
   reasonForLeaving: ReasonForPractitionerLeavingFilterInput
-  reasonForPractitionerLeavingId: ComparableNullableOfGuidOperationFilterInput
+  reasonForPractitionerLeavingId: UuidOperationFilterInput
   reasonForLeavingDetails: StringOperationFilterInput
-  progress: ComparableDecimalOperationFilterInput
+  progress: DecimalOperationFilterInput
   programmeType: StringOperationFilterInput
   leavingComment: StringOperationFilterInput
   usePhotoInReport: StringOperationFilterInput
   isCompletedBusinessWalkThrough: BooleanOperationFilterInput
   clickedCommunityTab: BooleanOperationFilterInput
-  communitySectionViewDate: ComparableNullableOfDateTimeOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  communitySectionViewDate: DateTimeOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -7124,10 +7034,10 @@ input ProgrammeAttendanceReasonFilterInput {
   and: [ProgrammeAttendanceReasonFilterInput!]
   or: [ProgrammeAttendanceReasonFilterInput!]
   reason: StringOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -7151,18 +7061,18 @@ input ProgrammeFilterInput {
   and: [ProgrammeFilterInput!]
   or: [ProgrammeFilterInput!]
   name: StringOperationFilterInput
-  startDate: ComparableDateTimeOperationFilterInput
-  endDate: ComparableDateTimeOperationFilterInput
+  startDate: DateTimeOperationFilterInput
+  endDate: DateTimeOperationFilterInput
   preferredLanguage: StringOperationFilterInput
   classroom: ClassroomFilterInput
-  classroomId: ComparableGuidOperationFilterInput
+  classroomId: UuidOperationFilterInput
   dailyProgrammes: ListFilterInputTypeOfDailyProgrammeFilterInput
   classroomGroup: ClassroomGroupFilterInput
-  classroomGroupId: ComparableNullableOfGuidOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  classroomGroupId: UuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -7218,10 +7128,10 @@ input ProgrammeTypeFilterInput {
   or: [ProgrammeTypeFilterInput!]
   description: StringOperationFilterInput
   enumId: ProgrammeTypeEnumOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -7253,10 +7163,10 @@ input ProvinceFilterInput {
   and: [ProvinceFilterInput!]
   or: [ProvinceFilterInput!]
   description: StringOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -7280,10 +7190,10 @@ input RaceFilterInput {
   and: [RaceFilterInput!]
   or: [RaceFilterInput!]
   description: StringOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -7321,10 +7231,10 @@ input ReasonForLeavingFilterInput {
   and: [ReasonForLeavingFilterInput!]
   or: [ReasonForLeavingFilterInput!]
   description: StringOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -7348,10 +7258,10 @@ input ReasonForPractitionerLeavingFilterInput {
   and: [ReasonForPractitionerLeavingFilterInput!]
   or: [ReasonForPractitionerLeavingFilterInput!]
   description: StringOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -7366,10 +7276,10 @@ input ReasonForPractitionerLeavingProgrammeFilterInput {
   and: [ReasonForPractitionerLeavingProgrammeFilterInput!]
   or: [ReasonForPractitionerLeavingProgrammeFilterInput!]
   description: StringOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -7402,10 +7312,10 @@ input RelationFilterInput {
   and: [RelationFilterInput!]
   or: [RelationFilterInput!]
   description: StringOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -7429,22 +7339,22 @@ input ResourceLinkHealthCheckFilterInput {
   and: [ResourceLinkHealthCheckFilterInput!]
   or: [ResourceLinkHealthCheckFilterInput!]
   contentType: StringOperationFilterInput
-  contentId: ComparableInt32OperationFilterInput
-  localeId: ComparableGuidOperationFilterInput
+  contentId: IntOperationFilterInput
+  localeId: UuidOperationFilterInput
   sectionType: StringOperationFilterInput
   title: StringOperationFilterInput
   url: StringOperationFilterInput
   status: StringOperationFilterInput
   lastCheckStatus: StringOperationFilterInput
-  lastStatusCode: ComparableNullableOfInt32OperationFilterInput
+  lastStatusCode: IntOperationFilterInput
   lastError: StringOperationFilterInput
-  consecutiveFailureCount: ComparableInt32OperationFilterInput
-  lastCheckedDate: ComparableDateTimeOperationFilterInput
-  lastNotifiedDate: ComparableNullableOfDateTimeOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  consecutiveFailureCount: IntOperationFilterInput
+  lastCheckedDate: DateTimeOperationFilterInput
+  lastNotifiedDate: DateTimeOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -7499,16 +7409,16 @@ input ResourceProblemReportInputModelInput {
 input ShortenUrlEntityFilterInput {
   and: [ShortenUrlEntityFilterInput!]
   or: [ShortenUrlEntityFilterInput!]
-  userId: ComparableNullableOfGuidOperationFilterInput
+  userId: UuidOperationFilterInput
   messageType: StringOperationFilterInput
   uRL: StringOperationFilterInput
-  clicked: ComparableInt32OperationFilterInput
-  notificationResult: ComparableNullableOfInt32OperationFilterInput
-  messageLogId: ComparableNullableOfGuidOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  clicked: IntOperationFilterInput
+  notificationResult: IntOperationFilterInput
+  messageLogId: UuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -7552,11 +7462,11 @@ input SiteAddressFilterInput {
   municipality: StringOperationFilterInput
   area: StringOperationFilterInput
   province: ProvinceFilterInput
-  provinceId: ComparableNullableOfGuidOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  provinceId: UuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -7613,10 +7523,10 @@ input StatementsContributionTypeFilterInput {
   or: [StatementsContributionTypeFilterInput!]
   description: StringOperationFilterInput
   notes: StringOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -7643,10 +7553,10 @@ input StatementsExpenseTypeFilterInput {
   or: [StatementsExpenseTypeFilterInput!]
   description: StringOperationFilterInput
   notes: StringOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -7673,14 +7583,14 @@ input StatementsExpensesFilterInput {
   or: [StatementsExpensesFilterInput!]
   notes: StringOperationFilterInput
   expenseTypeId: StringOperationFilterInput
-  amount: ComparableDoubleOperationFilterInput
+  amount: FloatOperationFilterInput
   photoProof: StringOperationFilterInput
-  datePaid: ComparableDateTimeOperationFilterInput
-  statementsIncomeStatementId: ComparableNullableOfGuidOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  datePaid: DateTimeOperationFilterInput
+  statementsIncomeStatementId: UuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -7715,10 +7625,10 @@ input StatementsFeeTypeFilterInput {
   or: [StatementsFeeTypeFilterInput!]
   description: StringOperationFilterInput
   notes: StringOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -7747,17 +7657,17 @@ input StatementsIncomeFilterInput {
   description: StringOperationFilterInput
   payTypeId: StringOperationFilterInput
   incomeTypeId: StringOperationFilterInput
-  amount: ComparableDoubleOperationFilterInput
+  amount: FloatOperationFilterInput
   photoProof: StringOperationFilterInput
   childUser: ApplicationUserFilterInput
-  childUserId: ComparableNullableOfGuidOperationFilterInput
-  statementsIncomeStatementId: ComparableNullableOfGuidOperationFilterInput
-  dateReceived: ComparableDateTimeOperationFilterInput
-  numberOfChildrenCovered: ComparableNullableOfInt32OperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  childUserId: UuidOperationFilterInput
+  statementsIncomeStatementId: UuidOperationFilterInput
+  dateReceived: DateTimeOperationFilterInput
+  numberOfChildrenCovered: IntOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -7801,17 +7711,17 @@ input StatementsIncomeStatementFilterInput {
   and: [StatementsIncomeStatementFilterInput!]
   or: [StatementsIncomeStatementFilterInput!]
   notes: StringOperationFilterInput
-  month: ComparableInt32OperationFilterInput
-  year: ComparableInt32OperationFilterInput
-  userId: ComparableNullableOfGuidOperationFilterInput
+  month: IntOperationFilterInput
+  year: IntOperationFilterInput
+  userId: UuidOperationFilterInput
   incomeItems: ListFilterInputTypeOfStatementsIncomeFilterInput
   expenseItems: ListFilterInputTypeOfStatementsExpensesFilterInput
   contactedByCoach: BooleanOperationFilterInput
   downloaded: BooleanOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -7848,10 +7758,10 @@ input StatementsIncomeTypeFilterInput {
   or: [StatementsIncomeTypeFilterInput!]
   description: StringOperationFilterInput
   notes: StringOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -7878,10 +7788,10 @@ input StatementsPayTypeFilterInput {
   or: [StatementsPayTypeFilterInput!]
   description: StringOperationFilterInput
   notes: StringOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -7908,16 +7818,16 @@ input StatementsStartupSupportFilterInput {
   or: [StatementsStartupSupportFilterInput!]
   notes: StringOperationFilterInput
   description: StringOperationFilterInput
-  startDate: ComparableNullableOfDateTimeOperationFilterInput
-  endDate: ComparableNullableOfDateTimeOperationFilterInput
-  amount: ComparableDoubleOperationFilterInput
-  programmeId: ComparableNullableOfGuidOperationFilterInput
-  childUserId: ComparableNullableOfGuidOperationFilterInput
-  userId: ComparableNullableOfGuidOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  startDate: DateTimeOperationFilterInput
+  endDate: DateTimeOperationFilterInput
+  amount: FloatOperationFilterInput
+  programmeId: UuidOperationFilterInput
+  childUserId: UuidOperationFilterInput
+  userId: UuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -7999,11 +7909,11 @@ input SupportRatingFilterInput {
   name: StringOperationFilterInput
   normalizedName: StringOperationFilterInput
   imageName: StringOperationFilterInput
-  ordering: ComparableInt32OperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  ordering: IntOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -8053,10 +7963,10 @@ input SystemSettingFilterInput {
   name: StringOperationFilterInput
   value: StringOperationFilterInput
   isSystemValue: BooleanOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -8095,10 +8005,10 @@ input TenantSetupInfoFilterInput {
   or: [TenantSetupInfoFilterInput!]
   organisationName: StringOperationFilterInput
   setupJsonData: StringOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -8175,17 +8085,17 @@ input UserCertificateFilterInput {
   and: [UserCertificateFilterInput!]
   or: [UserCertificateFilterInput!]
   visit: VisitFilterInput
-  visitId: ComparableNullableOfGuidOperationFilterInput
+  visitId: UuidOperationFilterInput
   userTrainingCourse: UserTrainingCourseFilterInput
-  userTrainingCourseId: ComparableNullableOfGuidOperationFilterInput
+  userTrainingCourseId: UuidOperationFilterInput
   user: ApplicationUserFilterInput
-  userId: ComparableNullableOfGuidOperationFilterInput
+  userId: UuidOperationFilterInput
   certificateName: StringOperationFilterInput
   certificateRegNr: StringOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -8223,13 +8133,13 @@ input UserConsentFilterInput {
   and: [UserConsentFilterInput!]
   or: [UserConsentFilterInput!]
   consentType: StringOperationFilterInput
-  consentId: ComparableInt32OperationFilterInput
-  userId: ComparableGuidOperationFilterInput
-  createdUserId: ComparableNullableOfGuidOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  consentId: IntOperationFilterInput
+  userId: UuidOperationFilterInput
+  createdUserId: UuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -8258,13 +8168,13 @@ input UserConsentSortInput {
 input UserGrantFilterInput {
   and: [UserGrantFilterInput!]
   or: [UserGrantFilterInput!]
-  userId: ComparableNullableOfGuidOperationFilterInput
+  userId: UuidOperationFilterInput
   grant: GrantFilterInput
-  grantId: ComparableGuidOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  grantId: UuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -8298,11 +8208,11 @@ input UserHelpFilterInput {
   email: StringOperationFilterInput
   isLoggedIn: BooleanOperationFilterInput
   user: ApplicationUserFilterInput
-  userId: ComparableNullableOfGuidOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  userId: UuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -8339,17 +8249,17 @@ input UserHelpSortInput {
 input UserHierarchyEntityFilterInput {
   and: [UserHierarchyEntityFilterInput!]
   or: [UserHierarchyEntityFilterInput!]
-  parentId: ComparableGuidOperationFilterInput
+  parentId: UuidOperationFilterInput
   user: ApplicationUserFilterInput
-  userId: ComparableNullableOfGuidOperationFilterInput
+  userId: UuidOperationFilterInput
   userType: StringOperationFilterInput
   namedTypePath: StringOperationFilterInput
   hierarchy: StringOperationFilterInput
-  key: ComparableInt32OperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  key: IntOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -8383,14 +8293,14 @@ input UserHierarchyEntitySortInput {
 input UserLanguageFilterInput {
   and: [UserLanguageFilterInput!]
   or: [UserLanguageFilterInput!]
-  userId: ComparableGuidOperationFilterInput
+  userId: UuidOperationFilterInput
   user: ApplicationUserFilterInput
   language: LanguageFilterInput
-  languageId: ComparableGuidOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  languageId: UuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -8451,13 +8361,13 @@ input UserPermissionFilterInput {
   and: [UserPermissionFilterInput!]
   or: [UserPermissionFilterInput!]
   user: ApplicationUserFilterInput
-  userId: ComparableNullableOfGuidOperationFilterInput
+  userId: UuidOperationFilterInput
   permission: PermissionFilterInput
-  permissionId: ComparableGuidOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  permissionId: UuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -8486,12 +8396,12 @@ input UserPermissionSortInput {
 input UserResourceLikesFilterInput {
   and: [UserResourceLikesFilterInput!]
   or: [UserResourceLikesFilterInput!]
-  userId: ComparableGuidOperationFilterInput
-  contentId: ComparableInt32OperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  userId: UuidOperationFilterInput
+  contentId: IntOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -8516,16 +8426,16 @@ input UserResourceLikesSortInput {
 input UserResourceProblemReportFilterInput {
   and: [UserResourceProblemReportFilterInput!]
   or: [UserResourceProblemReportFilterInput!]
-  userId: ComparableGuidOperationFilterInput
-  contentId: ComparableInt32OperationFilterInput
+  userId: UuidOperationFilterInput
+  contentId: IntOperationFilterInput
   problemType: StringOperationFilterInput
   additionalDetails: StringOperationFilterInput
   dataFreeAtReport: StringOperationFilterInput
   linkAtReport: StringOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -8559,13 +8469,13 @@ input UserTrainingCourseFilterInput {
   and: [UserTrainingCourseFilterInput!]
   or: [UserTrainingCourseFilterInput!]
   user: ApplicationUserFilterInput
-  userId: ComparableGuidOperationFilterInput
+  userId: UuidOperationFilterInput
   courseName: StringOperationFilterInput
-  completedDate: ComparableDateTimeOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  completedDate: DateTimeOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -8591,22 +8501,37 @@ input UserTrainingCourseSortInput {
   updatedBy: SortEnumType
 }
 
+input UuidOperationFilterInput {
+  eq: UUID
+  neq: UUID
+  in: [UUID]
+  nin: [UUID]
+  gt: UUID
+  ngt: UUID
+  gte: UUID
+  ngte: UUID
+  lt: UUID
+  nlt: UUID
+  lte: UUID
+  nlte: UUID
+}
+
 input VisitDataFilterInput {
   and: [VisitDataFilterInput!]
   or: [VisitDataFilterInput!]
-  visitId: ComparableGuidOperationFilterInput
+  visitId: UuidOperationFilterInput
   visit: VisitFilterInput
   visitName: StringOperationFilterInput
   visitSection: StringOperationFilterInput
   question: StringOperationFilterInput
   questionAnswer: StringOperationFilterInput
-  questionContentId: ComparableNullableOfInt32OperationFilterInput
+  questionContentId: IntOperationFilterInput
   answerContentId: StringOperationFilterInput
   visitDataStatus: ListFilterInputTypeOfVisitDataStatusFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -8644,17 +8569,17 @@ input VisitDataSortInput {
 input VisitDataStatusFilterInput {
   and: [VisitDataStatusFilterInput!]
   or: [VisitDataStatusFilterInput!]
-  visitDataId: ComparableGuidOperationFilterInput
+  visitDataId: UuidOperationFilterInput
   visitData: VisitDataFilterInput
   comment: StringOperationFilterInput
   color: StringOperationFilterInput
   type: StringOperationFilterInput
   section: StringOperationFilterInput
   isCompleted: BooleanOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -8689,35 +8614,35 @@ input VisitDataStatusSortInput {
 input VisitFilterInput {
   and: [VisitFilterInput!]
   or: [VisitFilterInput!]
-  plannedVisitDate: ComparableDateTimeOperationFilterInput
-  actualVisitDate: ComparableNullableOfDateTimeOperationFilterInput
+  plannedVisitDate: DateTimeOperationFilterInput
+  actualVisitDate: DateTimeOperationFilterInput
   attended: BooleanOperationFilterInput
   isCancelled: BooleanOperationFilterInput
-  visitTypeId: ComparableGuidOperationFilterInput
+  visitTypeId: UuidOperationFilterInput
   visitType: VisitTypeFilterInput
   risk: StringOperationFilterInput
   comment: StringOperationFilterInput
-  linkedVisitId: ComparableNullableOfGuidOperationFilterInput
-  practitionerId: ComparableNullableOfGuidOperationFilterInput
+  linkedVisitId: UuidOperationFilterInput
+  practitionerId: UuidOperationFilterInput
   practitioner: PractitionerFilterInput
-  coachId: ComparableNullableOfGuidOperationFilterInput
+  coachId: UuidOperationFilterInput
   coach: CoachFilterInput
-  orderDate: ComparableNullableOfDateTimeOperationFilterInput
+  orderDate: DateTimeOperationFilterInput
   overallRatingColor: StringOperationFilterInput
   delicenseQuestionAnswered: BooleanOperationFilterInput
   visitInProgress: BooleanOperationFilterInput
-  dueDate: ComparableNullableOfDateTimeOperationFilterInput
-  eventId: ComparableNullableOfGuidOperationFilterInput
+  dueDate: DateTimeOperationFilterInput
+  eventId: UuidOperationFilterInput
   event: CalendarEventFilterInput
   hasAnswerData: BooleanOperationFilterInput
   rating: StringOperationFilterInput
   pQARating: PQARatingFilterInput
   visitData: ListFilterInputTypeOfVisitDataFilterInput
-  formContentId: ComparableNullableOfInt32OperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  formContentId: IntOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -8806,12 +8731,12 @@ input VisitTypeFilterInput {
   name: StringOperationFilterInput
   normalizedName: StringOperationFilterInput
   description: StringOperationFilterInput
-  order: ComparableInt32OperationFilterInput
+  order: IntOperationFilterInput
   type: StringOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -8855,12 +8780,12 @@ input WorkflowStatusFilterInput {
   or: [WorkflowStatusFilterInput!]
   description: StringOperationFilterInput
   workflowStatusType: WorkflowStatusTypeFilterInput
-  workflowStatusTypeId: ComparableGuidOperationFilterInput
+  workflowStatusTypeId: UuidOperationFilterInput
   enumId: WorkflowStatusEnumOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -8890,10 +8815,10 @@ input WorkflowStatusTypeFilterInput {
   and: [WorkflowStatusTypeFilterInput!]
   or: [WorkflowStatusTypeFilterInput!]
   description: StringOperationFilterInput
-  id: ComparableGuidOperationFilterInput
+  id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
-  insertedDate: ComparableDateTimeOperationFilterInput
-  updatedDate: ComparableDateTimeOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
   updatedBy: StringOperationFilterInput
 }
 
@@ -8925,6 +8850,7 @@ enum ActionItemType {
 enum ApplyPolicy {
   BEFORE_RESOLVER
   AFTER_RESOLVER
+  VALIDATION
 }
 
 enum AuditLogTypeEnum {
@@ -9041,18 +8967,7 @@ enum WorkflowStatusEnum {
   CHILD_EXTERNAL_LINK
 }
 
-directive @authorize("The name of the authorization policy that determines access to the annotated resource." policy: String "Roles that are allowed to access the annotated resource." roles: [String!] "Defines when when the resolver shall be executed.By default the resolver is executed after the policy has determined that the current user is allowed to access the field." apply: ApplyPolicy! = BEFORE_RESOLVER) repeatable on SCHEMA | OBJECT | FIELD_DEFINITION
-
-"The `@defer` directive may be provided for fragment spreads and inline fragments to inform the executor to delay the execution of the current fragment to indicate deprioritization of the current fragment. A query with `@defer` directive will cause the request to potentially return multiple responses, where non-deferred data is delivered in the initial response and data deferred is delivered in a subsequent response. `@include` and `@skip` take precedence over `@defer`."
-directive @defer("If this argument label has a value other than null, it will be passed on to the result of this defer directive. This label is intended to give client applications a way to identify to which fragment a deferred result belongs to." label: String "Deferred when true." if: Boolean) on FRAGMENT_SPREAD | INLINE_FRAGMENT
-
 directive @permission(objectType: String methodType: GraphActionEnum) repeatable on SCHEMA | OBJECT | FIELD_DEFINITION
-
-"The `@specifiedBy` directive is used within the type system definition language to provide a URL for specifying the behavior of custom scalar definitions."
-directive @specifiedBy("The specifiedBy URL points to a human-readable specification. This field will only read a result for scalar types." url: String!) on SCALAR
-
-"The `@stream` directive may be provided for a field of `List` type so that the backend can leverage technology such as asynchronous iterators to provide a partial list in the initial response, and additional list items in subsequent responses. `@include` and `@skip` take precedence over `@stream`."
-directive @stream("If this argument label has a value other than null, it will be passed on to the result of this stream directive. This label is intended to give client applications a way to identify to which fragment a streamed result belongs to." label: String "The initial elements that shall be send down to the consumer." initialCount: Int! = 0 "Streamed when true." if: Boolean) on FIELD
 
 directive @token repeatable on SCHEMA | FIELD_DEFINITION
 

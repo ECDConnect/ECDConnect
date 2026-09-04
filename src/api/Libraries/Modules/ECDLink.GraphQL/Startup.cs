@@ -9,6 +9,8 @@ using ECDLink.EGraphQL.Registration;
 using ECDLink.EGraphQL.Registration.Modules;
 using ECDLink.Security.Extensions;
 using HotChocolate;
+using HotChocolate.AspNetCore;
+using HotChocolate.AspNetCore.Serialization;
 using HotChocolate.Execution;
 using HotChocolate.Types;
 using HotChocolate.Types.Descriptors;
@@ -45,6 +47,17 @@ namespace ECDLink.EGraphQL
 
             services.AddSingleton(contentReloader);
             services.AddHttpContextAccessor();
+
+            // v13 adopts the GraphQL-over-HTTP spec by default, which returns non-2xx status
+            // codes for validation and execution errors. Both clients assume the older
+            // always-200 behaviour - the PWA treats any non-200 as a connection failure in
+            // axios.helper.ts, and axios rejects non-2xx before that check even runs - so errors
+            // would surface to users as lost connectivity on an offline-first app. Legacy keeps
+            // the v12 contract. Adopting the spec belongs in its own change, with the client work.
+            services.AddHttpResponseFormatter(new HttpResponseFormatterOptions
+            {
+                HttpTransportVersion = HttpTransportVersion.Legacy,
+            });
 
             var builder = services
               .AddGraphQLServer(maxAllowedRequestSize: maxRequestSize)

@@ -2,6 +2,7 @@ using ECDLink.Security.Enums;
 using ECDLink.Security.JwtSecurity.Managers;
 using ECDLink.Security.Managers;
 using HotChocolate.Resolvers;
+using HotChocolate.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,23 +14,27 @@ namespace ECDLink.EGraphQL.Authorization
     internal sealed class PermissionMiddleware : AuthorizationMiddlewareBase
     {
         private readonly FieldDelegate _next;
+
+        // v13 removed IDirectiveContext: the directive is handed to the middleware when it is
+        // built rather than read off the execution context.
+        private readonly Directive _directive;
         private readonly IAuthorizationManager _authorizationManager;
         private readonly IClaimsManager _claimsManager;
         public JwtTokenManager _jwtTokenManager { get; set; }
 
-        public PermissionMiddleware(FieldDelegate next, IAuthorizationManager authorizationManager, IClaimsManager claimsManager,
+        public PermissionMiddleware(FieldDelegate next, Directive directive, IAuthorizationManager authorizationManager, IClaimsManager claimsManager,
           JwtTokenManager tokenManager)
         {
             _next = next ?? throw new ArgumentNullException(nameof(next));
+            _directive = directive ?? throw new ArgumentNullException(nameof(directive));
             _authorizationManager = authorizationManager;
             _claimsManager = claimsManager;
             _jwtTokenManager = tokenManager;
         }
 
-        public override async Task InvokeAsync(IDirectiveContext context)
+        public override async Task InvokeAsync(IMiddlewareContext context)
         {
-            PermissionDirective directive = context.Directive
-                .ToObject<PermissionDirective>();
+            PermissionDirective directive = _directive.AsValue<PermissionDirective>();
 
             var state = ValidateResult(context, directive);
 
@@ -43,7 +48,7 @@ namespace ECDLink.EGraphQL.Authorization
             }
         }
 
-        private AuthState ValidateResult(IDirectiveContext context, PermissionDirective directive)
+        private AuthState ValidateResult(IMiddlewareContext context, PermissionDirective directive)
         {
             // If no directive is set, assume end point is completely open
             if (directive == default(PermissionDirective))
@@ -72,7 +77,7 @@ namespace ECDLink.EGraphQL.Authorization
             return AuthState.Allowed;
         }
 
-        private List<string> GetClaimRoles(IDirectiveContext context)
+        private List<string> GetClaimRoles(IMiddlewareContext context)
         {
             ClaimsPrincipal principal;
 
