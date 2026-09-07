@@ -4,6 +4,7 @@ using ECDLink.Security.Enums;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace ECDLink.EGraphQL.Authorization
@@ -12,19 +13,29 @@ namespace ECDLink.EGraphQL.Authorization
     {
         private readonly FieldDelegate _next;
 
-        // v13 removed IDirectiveContext: the directive is handed to the middleware when it is
-        // built rather than read off the execution context.
-        private readonly Directive _directive;
+        /// The directive name as declared in TokenAccessDirectiveType.
+        private const string DirectiveName = "token";
 
-        public TokenAccessMiddleware(FieldDelegate next, Directive directive)
+        public TokenAccessMiddleware(FieldDelegate next)
         {
             _next = next ?? throw new ArgumentNullException(nameof(next));
-            _directive = directive ?? throw new ArgumentNullException(nameof(directive));
         }
 
         public override async Task InvokeAsync(IMiddlewareContext context)
         {
-            var directive = _directive.AsValue<TokenAccessDirective>();
+            // Same fix as PermissionMiddleware: the directive has to come from the field being
+            // executed, not from one captured when the middleware was built. Latent here today -
+            // nothing in the schema applies @token - but wrong for the same reason.
+            var directive = context.Selection.Field.Directives
+                .Where(d => string.Equals(d.Type.Name, DirectiveName, StringComparison.Ordinal))
+                .Select(d => d.AsValue<TokenAccessDirective>())
+                .FirstOrDefault();
+
+            if (directive is null)
+            {
+                await _next(context).ConfigureAwait(false);
+                return;
+            }
 
             var validatorType = typeof(IOpenAccessValidator<>).MakeGenericType(directive.Validator);
 

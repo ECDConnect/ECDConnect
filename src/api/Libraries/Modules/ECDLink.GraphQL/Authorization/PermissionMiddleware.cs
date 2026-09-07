@@ -14,39 +14,49 @@ namespace ECDLink.EGraphQL.Authorization
     internal sealed class PermissionMiddleware : AuthorizationMiddlewareBase
     {
         private readonly FieldDelegate _next;
-
-        // v13 removed IDirectiveContext: the directive is handed to the middleware when it is
-        // built rather than read off the execution context.
-        private readonly Directive _directive;
         private readonly IAuthorizationManager _authorizationManager;
         private readonly IClaimsManager _claimsManager;
         public JwtTokenManager _jwtTokenManager { get; set; }
 
-        public PermissionMiddleware(FieldDelegate next, Directive directive, IAuthorizationManager authorizationManager, IClaimsManager claimsManager,
+        public PermissionMiddleware(FieldDelegate next, IAuthorizationManager authorizationManager, IClaimsManager claimsManager,
           JwtTokenManager tokenManager)
         {
             _next = next ?? throw new ArgumentNullException(nameof(next));
-            _directive = directive ?? throw new ArgumentNullException(nameof(directive));
             _authorizationManager = authorizationManager;
             _claimsManager = claimsManager;
             _jwtTokenManager = tokenManager;
         }
 
+        /// The directive name as declared in PermissionDirectiveType.
+        private const string DirectiveName = "permission";
+
         public override async Task InvokeAsync(IMiddlewareContext context)
         {
-            PermissionDirective directive = _directive.AsValue<PermissionDirective>();
-
-            var state = ValidateResult(context, directive);
-
-            if (state == AuthState.Allowed)
+            // v12 read this off IDirectiveContext, which handed over the directive belonging to
+            // the field being executed. v13 removed that type, and taking a Directive by
+            // constructor injection instead binds ONE directive for the middleware's lifetime -
+            // so every field ended up authorised against some other field's permission
+            // (userById was checking view_registration). Read them from the executing field
+            // instead, and require all of them, which is what v12 achieved by running this
+            // middleware once per directive application.
+            foreach (var directive in GetPermissionDirectives(context))
             {
-                await _next(context).ConfigureAwait(false);
+                var state = ValidateResult(context, directive);
+
+                if (state != AuthState.Allowed)
+                {
+                    SetError(context, state);
+                    return;
+                }
             }
-            else
-            {
-                SetError(context, state);
-            }
+
+            await _next(context).ConfigureAwait(false);
         }
+
+        private static IEnumerable<PermissionDirective> GetPermissionDirectives(IMiddlewareContext context)
+            => context.Selection.Field.Directives
+                .Where(d => string.Equals(d.Type.Name, DirectiveName, StringComparison.Ordinal))
+                .Select(d => d.AsValue<PermissionDirective>());
 
         private AuthState ValidateResult(IMiddlewareContext context, PermissionDirective directive)
         {
