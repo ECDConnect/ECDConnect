@@ -37,7 +37,7 @@
     
     <PackageReference Include="Google.Apis.Auth" Version="1.74.0" />
     
-    <PackageReference Include="HotChocolate.Data.EntityFramework" Version="14.3.2" />
+    <PackageReference Include="HotChocolate.Data.EntityFramework" Version="15.1.18" />
     
     <PackageReference Include="HtmlToPdfConverter.Core" Version="2.0.0" />
     
