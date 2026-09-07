@@ -8,7 +8,7 @@
 # Regenerate the reasons at any time with: node Tools/validate-persisted-operations.mjs --no-baseline
 
 # ---------------------------------------------------------------------------------------
-# Snapshot artefacts (17). Not broken in production.
+# Snapshot artefacts (18). Not broken in production.
 #
 # schema.graphql is generated without a database, so CMS content types and system settings
 # are placeholders (see StaticSchemaStubs.cs). These operations query dynamic types whose
@@ -36,11 +36,14 @@ GetAllStoryBook.graphql
 GetAllTheme.graphql
 GetResourcesLinks.graphql
 
+# Queries a CMS content type the stub does not model
+hasContentTypeBeenTranslated.graphql
+
 # Settings groups exist only as data; the stub supplies one placeholder group
 getSettings.graphql
 
 # ---------------------------------------------------------------------------------------
-# Genuinely broken (18). These fail against the real v12 schema too, so they cannot be
+# Genuinely broken (17). These fail against the real v12 schema too, so they cannot be
 # served today - they reference fields the schema does not have, or will not parse at all.
 # Nothing to do with the upgrade; found while building the validator. Each is either dead
 # and should be deleted, or a bug and should be fixed.
@@ -61,7 +64,6 @@ childProgressReportSummary.graphql
 childProgressReports.graphql
 createChildProgressReport.graphql
 generateChildProgressReport.graphql
-hasContentTypeBeenTranslated.graphql
 inviteByPractitionerIdNum.graphql
 syncChildProgressReport.graphql
 updateCareGiverGrants.graphql

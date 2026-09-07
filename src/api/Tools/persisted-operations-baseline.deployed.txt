@@ -11,7 +11,7 @@
 # be fixed; none of it is related to the Hot Chocolate upgrade. Worth its own ticket.
 #
 # If an entry starts passing, the validator will say so - remove it from this file.
-# If the count here is not 18, something changed: re-derive with
+# If the count here is not 17, something changed: re-derive with
 #   node Tools/validate-persisted-operations.mjs --deployed --no-baseline
 
 # Will not parse
@@ -29,7 +29,6 @@ childProgressReportSummary.graphql
 childProgressReports.graphql
 createChildProgressReport.graphql
 generateChildProgressReport.graphql
-hasContentTypeBeenTranslated.graphql
 inviteByPractitionerIdNum.graphql
 syncChildProgressReport.graphql
 updateCareGiverGrants.graphql

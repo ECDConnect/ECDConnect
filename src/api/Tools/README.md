@@ -85,21 +85,72 @@ There are two schemas, and the difference matters.
 
 `schema.graphql` is generated from the code and has placeholder CMS and settings types, because
 the real ones are built from database rows. That makes it reproducible offline and safe in CI,
-but it is not the full client contract — 17 persisted operations query dynamic types it does not
+but it is not the full client contract — 18 persisted operations query dynamic types it does not
 have, so they can never pass against it.
 
-`schema.deployed.graphql` is the real thing, fetched from a running environment:
+`schema.deployed.graphql` is the real thing, fetched from a running API:
 
 ```bash
-./Tools/capture-deployed-schema.sh https://dev-api.example.com
-./Tools/capture-deployed-schema.sh http://localhost:5000 my-tenant.localhost:5001
+# a deployed environment
+./Tools/capture-deployed-schema.sh https://ecd-connect-develop-api.azurewebsites.net
+
+# running locally - the HTTPS endpoint needs --insecure for the dev certificate
+./Tools/capture-deployed-schema.sh https://localhost:5001 --insecure
+
+# or over plain HTTP, pointing Origin at the local PWA to resolve the tenant
+./Tools/capture-deployed-schema.sh http://localhost:5000 --header 'Origin: http://localhost:3000'
 ```
 
-Only the schema crosses the wire, never any data, so there is nothing to anonymise. Two caveats:
-tenancy is resolved from the `Host` header and settings are tenant-scoped, so the `Setting_*`
-types you capture belong to one tenant; and `?sdl` may be refused outside development, since
-`AllowIntrospection(isDevelopment)` is set in `ECDLink.GraphQL/Startup.cs`. Commit the result so
-CI and everyone else share one contract, and re-capture when CMS content changes — it goes stale.
+Options: `--out <path>` to write elsewhere, `--header 'K: V'` (repeatable), `--insecure`.
+
+Only the schema crosses the wire, never any data, so there is nothing to anonymise.
+
+### Tenancy decides what you get
+
+Settings are tenant-scoped, so the tenant a request resolves to decides which `Setting_*` types
+appear. `TenancyMiddleware` resolves it in this order, first match winning:
+
+1. the `tenantId` claim on the JWT — not used here, these requests are unauthenticated
+2. the `Referer` header
+3. the `Origin` header
+4. the `Host` header
+
+Whatever it finds becomes `host:port` (or just `host` on a default port) and is looked up as a
+tenant site address. **An address with no matching tenant yields an empty tenant and a schema
+with no settings types at all** — which is the usual reason a capture comes back looking thin.
+The script fails rather than writing one, so this cannot pass unnoticed.
+
+This is why `http://localhost:5000` alone does not work: no tenant has that site address.
+`https://localhost:5001` matches the host tenant, and `Origin: http://localhost:3000` matches
+the local PWA's.
+
+Two captures are only comparable if both resolved the **same tenant** — otherwise a tenant
+difference lands in the diff alongside whatever you were actually looking for.
+
+`?sdl` also needs introspection, which `Startup.cs` enables only in development via
+`AllowIntrospection(isDevelopment)`, so a deployed instance may refuse it. A local run always
+works, since `launchSettings.json` sets `ASPNETCORE_ENVIRONMENT=Development`.
+
+Commit the result so CI and everyone else share one contract, and re-capture when CMS content
+changes — it goes stale.
+
+### Comparing before and after an upgrade
+
+Local runs use the shared `ECDConnectDev` database, so a local capture has the real dynamic
+types. Nothing is written on startup — no migration, no seeding — so this is read-only against
+that shared database.
+
+```bash
+# before: on develop
+./Tools/capture-deployed-schema.sh https://localhost:5001 --insecure --out ~/schema-before.graphql
+
+# after: on the upgrade branch, same URL so the same tenant resolves
+./Tools/capture-deployed-schema.sh https://localhost:5001 --insecure --out ~/schema-after.graphql
+
+diff ~/schema-before.graphql ~/schema-after.graphql
+```
+
+`--out` keeps both out of the working tree, so neither clobbers the committed capture.
 
 ## validate-persisted-operations.mjs
 
@@ -114,6 +165,10 @@ node Tools/validate-persisted-operations.mjs
 node Tools/validate-persisted-operations.mjs --deployed
 
 node Tools/validate-persisted-operations.mjs --no-baseline   # include known failures
+
+# against a capture kept outside the working tree
+node Tools/validate-persisted-operations.mjs --schema ~/schema-after.graphql \
+  --baseline Tools/persisted-operations-baseline.deployed.txt
 ```
 
 Each mode has its own baseline, and the difference between them is the point:
@@ -121,13 +176,13 @@ Each mode has its own baseline, and the difference between them is the point:
 | mode | baseline | entries |
 | --- | --- | --- |
 | default | `persisted-operations-baseline.txt` | 35 |
-| `--deployed` | `persisted-operations-baseline.deployed.txt` | 18 |
+| `--deployed` | `persisted-operations-baseline.deployed.txt` | 17 |
 
-The 17-entry gap is exactly the operations that query dynamic CMS and settings types. They are
+The 18-entry gap is exactly the operations that query dynamic CMS and settings types. They are
 excluded from the offline run as a limitation of how that snapshot is taken, not because anything
 is wrong with them — so **`--deployed` is the run that actually gates the client contract.**
 
-The 18 in both lists are genuinely broken: 2 will not parse at all, 16 reference fields the
+The 17 in both lists are genuinely broken: 2 will not parse at all, 15 reference fields the
 schema does not have. Those cannot be served today. Unrelated to the upgrade, and each is either
 dead and should be deleted, or a bug and should be fixed.
 
@@ -141,11 +196,12 @@ At each Hot Chocolate major:
 Both clean means the upgrade left the code-derived schema alone. Either failing tells you what
 moved, and which client operations it takes with it.
 
-Then, once the upgrade is deployed to a test environment, check the part the offline snapshot
-cannot reach:
+Then check the part the offline snapshot cannot reach. This needs a running API, but not a
+deployment — running locally against the shared `ECDConnectDev` database works and is quicker:
 
-3. `./Tools/capture-deployed-schema.sh <base-url>`
+3. `./Tools/capture-deployed-schema.sh https://localhost:5001 --insecure`
 4. `node Tools/validate-persisted-operations.mjs --deployed`
 
-Steps 1 and 2 run anywhere and are the fast gate. Steps 3 and 4 need a deployment and are what
-actually confirm the client contract survived, dynamic CMS and settings types included.
+Steps 1 and 2 run anywhere and are the fast gate. Steps 3 and 4 need the API up, and are what
+actually confirm the client contract survived, dynamic CMS and settings types included. Capture
+before and after the upgrade against the same URL and diff the two — see above.
