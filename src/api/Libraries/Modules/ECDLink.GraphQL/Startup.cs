@@ -72,19 +72,25 @@ namespace ECDLink.EGraphQL
               {
                   o.DefaultResolverStrategy = HotChocolate.Execution.ExecutionStrategy.Serial;
 
-                  // v14 changed the default to a fresh service scope per resolver and per
-                  // DataLoader dispatch. That would hand each resolver its own DbContext, so
-                  // change tracking would stop spanning resolvers and - the dangerous part - a
-                  // transaction opened in one resolver would no longer cover work done in
-                  // another. Nine BeginTransaction/TransactionScope sites depend on the old
-                  // behaviour, and nothing in the test suite would catch it breaking.
+                  // v14 removed RegisterService and RegisterDbContext, along with ServiceKind
+                  // and DbContextKind, and changed the default to a fresh service scope per
+                  // resolver and per DataLoader dispatch. Request scope keeps the v12/v13
+                  // semantics - one scope and one DbContext shared for the whole request - which
+                  // is what RegisterDbContext(DbContextKind.Synchronized) and
+                  // RegisterService(ServiceKind.Synchronized) used to give us.
                   //
-                  // Request scope keeps the v12/v13 semantics: one scope, one DbContext, shared
-                  // for the whole request, which is what RegisterDbContext(DbContextKind
-                  // .Synchronized) and RegisterService(ServiceKind.Synchronized) used to give us
-                  // before v14 removed them. It is safe here precisely because
-                  // DefaultResolverStrategy is Serial - nothing executes concurrently, which is
-                  // why sharing a context was never a race in this codebase.
+                  // What this protects is the ~56 places in core-api/GraphApi that take an
+                  // AuthenticationDbContext directly as a resolver parameter, where per-resolver
+                  // scoping would stop entity change tracking spanning resolvers within one
+                  // request. It is safe because DefaultResolverStrategy is Serial - nothing
+                  // executes concurrently, which is why sharing one context was never a race.
+                  //
+                  // It is NOT what protects the nine explicit BeginTransaction sites: those all
+                  // call dbFactory.CreateDbContext(), which returns a fresh context regardless
+                  // of DI scope, so they never depended on this setting either way. (Eight of
+                  // those nine open the transaction on that context and then do their work
+                  // through a different one, so they are not atomic at all - a pre-existing bug,
+                  // unrelated to the upgrade, and worth its own ticket.)
                   o.DefaultQueryDependencyInjectionScope = DependencyInjectionScope.Request;
                   o.DefaultMutationDependencyInjectionScope = DependencyInjectionScope.Request;
               })
