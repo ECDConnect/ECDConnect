@@ -37,7 +37,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         {
             var callerId = httpContextAccessor.HttpContext.GetUser().Id;
             if (!engine.UserInHierarchy(callerId, Guid.Parse(practitionerId)))
-                throw new HotChocolate.Execution.QueryException("You are not authorized to log absence for this practitioner.");
+                throw new HotChocolate.GraphQLException("You are not authorized to log absence for this practitioner.");
 
             return absenteeService.AddAbsenteeForPractitioner(practitionerId, reassignedToPractitioner, reason, absentDate, loggedByUser, classProgram, absentDateEnd, isRoleAssign, fromRole, toRole, roleAssignedToUser, null);
         }

@@ -68,29 +68,51 @@ namespace ECDLink.EGraphQL
               .AddDiagnosticEventListener<Diagnostic.AppServerDiagnosticEventListener>(services => new Diagnostic.AppServerDiagnosticEventListener(services))
               .AddDiagnosticEventListener<Diagnostic.AppExecutionDiagnosticEventListener>(services => new Diagnostic.AppExecutionDiagnosticEventListener(services))
               //.AddDiagnosticEventListener<Diagnostic.AppDataLoaderDiagnosticEventListener>(services => new Diagnostic.AppDataLoaderDiagnosticEventListener(services))
-              .ModifyOptions(o => o.DefaultResolverStrategy = HotChocolate.Execution.ExecutionStrategy.Serial)
+              .ModifyOptions(o =>
+              {
+                  o.DefaultResolverStrategy = HotChocolate.Execution.ExecutionStrategy.Serial;
+
+                  // v14 changed the default to a fresh service scope per resolver and per
+                  // DataLoader dispatch. That would hand each resolver its own DbContext, so
+                  // change tracking would stop spanning resolvers and - the dangerous part - a
+                  // transaction opened in one resolver would no longer cover work done in
+                  // another. Nine BeginTransaction/TransactionScope sites depend on the old
+                  // behaviour, and nothing in the test suite would catch it breaking.
+                  //
+                  // Request scope keeps the v12/v13 semantics: one scope, one DbContext, shared
+                  // for the whole request, which is what RegisterDbContext(DbContextKind
+                  // .Synchronized) and RegisterService(ServiceKind.Synchronized) used to give us
+                  // before v14 removed them. It is safe here precisely because
+                  // DefaultResolverStrategy is Serial - nothing executes concurrently, which is
+                  // why sharing a context was never a race in this codebase.
+                  o.DefaultQueryDependencyInjectionScope = DependencyInjectionScope.Request;
+                  o.DefaultMutationDependencyInjectionScope = DependencyInjectionScope.Request;
+              })
               .ModifyRequestOptions(opt => opt.IncludeExceptionDetails = isDevelopment)
               .AddQueryType<Query>()
-              .SetRequestOptions(_ => new HotChocolate.Execution.Options.RequestExecutorOptions { ExecutionTimeout = System.TimeSpan.FromMinutes(2) })
+              .ModifyRequestOptions(opt => opt.ExecutionTimeout = System.TimeSpan.FromMinutes(2))
               .AddTypeModule(sp => new ContentTypeModule(contentReloader))
               .AddTypeModule(sp => new SettingsModule(contentReloader))
               .AddMutationType<Mutation>()
               .AddType<UploadType>()
               .AddDirectiveType<TokenAccessDirectiveType>()
               .AddDirectiveType<PermissionDirectiveType>()
+              // v14 replaced the complexity analyser with cost analysis, on and enforcing by
+              // default. It annotates ~1,780 fields and arguments with @cost weights and would
+              // start rejecting operations that exceed its limits - a new runtime failure mode
+              // for a hop that is meant to change nothing observable, and one that would first
+              // show up as users being unable to load a screen. The annotations are harmless and
+              // stay; enforcement is off until it can be turned on deliberately, with the limits
+              // measured against the 223 persisted operations rather than guessed at.
+              .ModifyCostOptions(o => o.EnforceCostLimits = false)
               .AddProjections()
               .AddFiltering()
               .AddSorting()
-              .RegisterDbContext<AuthenticationDbContext>(HotChocolate.Data.DbContextKind.Synchronized)
-              .RegisterService<HierarchyEngine>(ServiceKind.Synchronized)
-              .RegisterService<IDbContextFactory<AuthenticationDbContext>>(ServiceKind.Synchronized)
-              .RegisterService<ApplicationUserManager>(ServiceKind.Synchronized)
-              .RegisterService<IGenericRepositoryFactory>(ServiceKind.Synchronized)
               .AllowIntrospection(isDevelopment)
               .UseExceptions()
               .UseTimeout()
               .UseDocumentCache()
-              .UseReadPersistedQuery()
+              .UseReadPersistedOperation()
               .UseDocumentParser()
               .UseDocumentValidation()
               .UseOperationCache()
@@ -98,7 +120,11 @@ namespace ECDLink.EGraphQL
               .UseRequest(next => async context => await GraphQLRequestMiddleware(next, context))
               .UseOperationVariableCoercion()
               .UseOperationExecution()
-              .AddReadOnlyFileSystemQueryStorage(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "PersistedQueries"));
+              // v13's read-only variant is gone; v14 has one file-system storage implementing
+              // the read/write IOperationDocumentStorage. Still effectively read-only here,
+              // because writes only happen through the automatic-persisted-operations
+              // middleware and this pipeline only reads (UseReadPersistedOperation above).
+              .AddFileSystemOperationDocumentStorage(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "PersistedQueries"));
 
             builder = builder
                 .AddAuthorization()
@@ -139,7 +165,7 @@ namespace ECDLink.EGraphQL
             {
                 if (userSupportPersistedQueries)
                 {
-                    if (context.Request.Query is null && (context.IsCachedDocument || context.IsPersistedDocument))
+                    if (context.Request.Document is null && (context.IsCachedDocument || context.IsPersistedDocument))
                     {
                         await next(context);
                         return;
@@ -151,13 +177,13 @@ namespace ECDLink.EGraphQL
                     return;
                 }
             }
-            else if (context.Request.Query is null && (context.IsCachedDocument || context.IsPersistedDocument))
+            else if (context.Request.Document is null && (context.IsCachedDocument || context.IsPersistedDocument))
             {
                 await next(context);
                 return;
             }
             var error = ErrorBuilder.New().SetMessage("Persisted Operations Only").Build();
-            context.Result = QueryResultBuilder.CreateError(error);
+            context.Result = OperationResultBuilder.CreateError(error);
         }
 
         private static bool GraphQLPlaygroundEnabled(bool defaultValue = false)

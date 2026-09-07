@@ -479,7 +479,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         {
             if (childId == Guid.Empty)
             {
-                throw new QueryException($"{nameof(childId)} cannot be empty");
+                throw new GraphQLException($"{nameof(childId)} cannot be empty");
             }
 
             var childRepo = repoFactory.CreateRepository<Child>(userContext: httpContext.HttpContext.GetUser().Id);
@@ -494,14 +494,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             if (child == null)
             {
-                throw new QueryException($"Child not found");
+                throw new GraphQLException($"Child not found");
             }
 
             var appUser = await userManager.FindByIdAsync(child.UserId.ToString());
 
             if (appUser == null)
             {
-                throw new QueryException($"Child user not found");
+                throw new GraphQLException($"Child user not found");
             }
 
             await tokenManager.RetractTokensAsync(appUser);

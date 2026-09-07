@@ -1,7 +1,12 @@
 using ECDLink.Core.Services.Interfaces;
+using ECDLink.DataAccessLayer.Context;
+using ECDLink.DataAccessLayer.Hierarchy;
+using ECDLink.DataAccessLayer.Managers;
+using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL;
 using ECDLink.EGraphQL.ObjectTypes.Services;
 using HotChocolate.Execution;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ECDLink.SchemaSnapshot
@@ -81,6 +86,30 @@ namespace ECDLink.SchemaSnapshot
             services.AddLogging();
             services.AddSingleton<IDynamicTypeDefinitionService, PlaceholderContentTypes>();
             services.AddSingleton<ISystemSettingsService, PlaceholderSystemSettings>();
+
+            // From v14 Hot Chocolate infers what is a service purely from the DI container:
+            // RegisterService and RegisterDbContext were removed, so there is no longer any way
+            // to mark a resolver parameter as a service explicitly. Anything it cannot find in
+            // the container it treats as a GraphQL input argument and then tries to build a type
+            // from - so an unregistered ApplicationUserManager surfaces as failures to infer
+            // types for ILookupNormalizer, IPasswordHasher and a uint property on it.
+            //
+            // These are never resolved while the schema is built, only recognised, so a throwing
+            // factory is enough. They are the services that used to be listed explicitly via
+            // RegisterService(ServiceKind.Synchronized).
+            foreach (var serviceType in new[]
+            {
+                typeof(AuthenticationDbContext),
+                typeof(IDbContextFactory<AuthenticationDbContext>),
+                typeof(HierarchyEngine),
+                typeof(ApplicationUserManager),
+                typeof(IGenericRepositoryFactory),
+            })
+            {
+                services.AddSingleton(serviceType, _ => throw new NotSupportedException(
+                    $"{serviceType.Name} is registered so the schema builder recognises it as a " +
+                    "service; the snapshot never executes resolvers, so it is never resolved."));
+            }
 
             GraphStartup.ConfigureGraphQlServices(services, isDevelopment: false);
 

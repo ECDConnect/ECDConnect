@@ -40,7 +40,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
 
             if (file is null || currentUserId is null)
             {
-                throw new QueryException("Invalid input.");
+                throw new GraphQLException("Invalid input.");
             }
 
             var validationErrors = new List<InputValidationError>();
@@ -145,7 +145,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
 
             if (file is null || currentUserId is null)
             {
-                throw new QueryException("Invalid input.");
+                throw new GraphQLException("Invalid input.");
             }
 
             var userImportList = new List<ApplicationUser>();

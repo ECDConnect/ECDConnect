@@ -4,7 +4,7 @@
 	<Nullable>disable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="HotChocolate.AspNetCore" Version="13.9.17" />
+    <PackageReference Include="HotChocolate.AspNetCore" Version="14.3.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
 </Project>

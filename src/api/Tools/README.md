@@ -84,6 +84,14 @@ tell an accepted change from a regression:
   hand-written client code refers to them. `@defer`, `@stream` and the unused `@authorize`
   declarations also left the schema, and `ApplyPolicy` gained `VALIDATION`.
   Field-level `@permission` applications were unchanged at 831.
+- **v14** — cost analysis replaced the complexity analyser, annotating roughly 1,780 fields and
+  arguments with `@cost(weight: ...)`. Purely additive, and no client reads it, so the
+  annotations were accepted. **Enforcement was turned off** in `ECDLink.GraphQL/Startup.cs`
+  (`ModifyCostOptions(o => o.EnforceCostLimits = false)`): it is on by default in v14 and would
+  start rejecting operations over its limits, which is a new runtime failure mode rather than a
+  schema change. Turning it on is a separate decision, and the limits should be measured against
+  the 223 persisted operations rather than guessed. `ApplyPolicy` enum values also gained
+  descriptions. `@permission` applications were unchanged.
 
 ### What the snapshot does not cover
 
