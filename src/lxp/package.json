@@ -1,6 +1,6 @@
 {
   "name": "lxp",
-  "version": "1.0.46",
+  "version": "1.0.47",
   "private": true,
   "dependencies": {
     "@ecdlink/core": "^1.0.0",
