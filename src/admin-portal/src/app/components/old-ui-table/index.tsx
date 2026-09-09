@@ -177,7 +177,7 @@ export default function UiTable({
             display_value.map((item) => (
               <div
                 key={item.id}
-                className="bg-uiMid m-1 rounded-full py-1 px-3 text-xs text-white"
+                className="bg-uiMid m-1 rounded-full px-3 py-1 text-xs text-white"
               >
                 {item[column.displayProperty]}
               </div>
@@ -211,7 +211,7 @@ export default function UiTable({
       {showSearch && (
         <div className="relative bg-gray-50 p-2 px-4 text-gray-400 focus-within:text-gray-600">
           <input
-            className="focus:outline-none focus:ring-offset-primary block w-full rounded-md border border-gray-200 bg-white py-2 pl-8 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 sm:text-sm"
+            className="focus:ring-offset-primary block w-full rounded-md border border-gray-200 bg-white py-2 pl-8 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 sm:text-sm"
             placeholder="Search..."
             onChange={search}
           />
@@ -247,35 +247,34 @@ export default function UiTable({
               main: 'hidden',
             },
           },
-          main: 'rounded-lg',
+          main: '',
           table_head: {
-            table_row: `text-gray-900 border-b-2 border-gray-100 bg-blue-50`,
-            table_data: `px-6 py-3 pl-6 pr-6 pt-3 pb-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider leading-none`,
+            table_row: `border-b-2 border-quatenary bg-adminPortalBg`,
+            table_data: `px-6 py-4 text-left text-sm font-semibold normal-case tracking-normal text-textMid whitespace-nowrap leading-none`,
           },
           table_body: {
             main: ``,
-            table_row: 'border-none  ',
+            table_row:
+              'border-none bg-white transition-colors hover:bg-adminPortalBg',
             table_data:
-              'truncate w-24 px-6 pt-3 pb-3 text-sm font-medium text-gray-900 border-b border-gray-100',
+              'truncate px-6 py-3 text-sm font-medium text-textMid border-b border-uiLight align-middle',
           },
           footer: options.footer || {
-            main: `${rows.length < 10 ? 'hidden' : ''} mt-8 mx-5 table-footer`,
+            main: `${rows.length < 10 ? 'hidden' : ''} mt-6 mx-5 table-footer`,
             statistics: {
               main: `${
                 rows.length < 10 ? 'hidden' : ''
-              } text-gray-600 table-stats md:w-auto md:flex-row`,
-              bold_numbers: `text-gray-900 font-bold`,
+              } text-textMid table-stats md:w-auto md:flex-row`,
+              bold_numbers: `text-textDark font-bold`,
             },
-            page_numbers: `page-numbers z-10 text-primary relative inline-flex items-center px-4 py-2 text-sm font-medium w-4`,
+            page_numbers: `page-numbers z-10 text-quatenary relative inline-flex items-center px-4 py-2 text-sm font-medium w-4`,
           },
         }}
         columns={makeColumns()}
         rows={makeRows()}
         per_page={options.per_page || 10}
         no_content_text="-"
-        striped
-        bordered
-        hovered={false}
+        striped={false}
       />
     </div>
   );

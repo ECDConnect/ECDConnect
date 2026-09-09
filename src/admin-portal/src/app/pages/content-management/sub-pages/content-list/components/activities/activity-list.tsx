@@ -543,13 +543,13 @@ export default function ActivityList({
           item?.type === 'Small group' ? (
             <div className="ml-1 flex cursor-pointer">
               <div className="bg-darkBlue inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white">
-                <span>{item?.type}</span>
+                <span className="text-xs">{item?.type}</span>
               </div>
             </div>
           ) : (
             <div className="ml-1 flex cursor-pointer">
               <div className="bg-secondary inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white">
-                <span>{item?.type}</span>
+                <span className="text-xs">{item?.type}</span>
               </div>
             </div>
           ),

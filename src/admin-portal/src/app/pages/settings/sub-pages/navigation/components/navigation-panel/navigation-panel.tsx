@@ -177,24 +177,24 @@ export default function NavigationPanel(props: NavigationPanelProps) {
       <div className="space-y-8 divide-y divide-gray-200">
         <div className="pt-8">
           <div className="grid grid-cols-2">
-            <span className="text-lg leading-6 font-medium text-gray-900"></span>
+            <span className="text-lg font-medium leading-6 text-gray-900"></span>
             <div className="flex justify-end">
               <button
                 onClick={() => emitCloseDialog(false)}
                 type="button"
-                className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                className="focus:ring-primary rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-uiLight focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                className="bg-primary hover:bg-uiLight focus:ring-primary ml-3 inline-flex justify-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
               >
                 {!isEdit ? <span> Save & Continue </span> : <span> Save </span>}
               </button>
             </div>
           </div>
-          <div className="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+          <div className="mt-6 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-6">
             <div className="sm:col-span-3">
               <FormField
                 label={'Sequence'}
@@ -230,14 +230,14 @@ export default function NavigationPanel(props: NavigationPanelProps) {
             </div>
           </div>
 
-          <div className="sm:col-span-12 mt-6">
+          <div className="mt-6 sm:col-span-12">
             <Editor
               label={'Description'}
               currentValue={props.item ? props.item.description : undefined}
               onStateChange={(data) => onDescriptionChange(data)}
             />
           </div>
-          <div className="sm:col-span-12 mt-3">
+          <div className="mt-3 sm:col-span-12">
             <Typography
               type={'body'}
               weight={'bold'}
@@ -247,12 +247,12 @@ export default function NavigationPanel(props: NavigationPanelProps) {
 
             {dataPermissionGroups && dataPermissionGroups.permissionGroups ? (
               <>
-                <table className="min-w-full divide-y divide-gray-200 mt-3">
-                  <thead className="bg-gray-50">
+                <table className="mt-3 min-w-full">
+                  <thead className="bg-adminPortalBg border-quatenary border-b-2">
                     <tr>
                       <th
                         scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        className="text-textMid px-6 py-3 text-left text-sm font-semibold normal-case"
                       >
                         Content
                       </th>
@@ -261,7 +261,7 @@ export default function NavigationPanel(props: NavigationPanelProps) {
                         <th
                           key={permission.id}
                           scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="text-textMid px-6 py-3 text-left text-sm font-semibold normal-case"
                         >
                           {permission.name}
                         </th>
@@ -272,14 +272,14 @@ export default function NavigationPanel(props: NavigationPanelProps) {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="z-10 bg-white divide-y divide-gray-200">
+                  <tbody className="divide-uiLight z-10 divide-y bg-white">
                     {tableData &&
                       tableData.map((permissionGroup: any) => (
                         <tr key={permissionGroup.groupName}>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="whitespace-nowrap px-6 py-4">
                             <div className="flex items-center">
                               <div className="ml-4">
-                                <div className="text-sm font-medium text-gray-900">
+                                <div className="text-textMid text-sm font-medium">
                                   {permissionGroup.groupName}
                                 </div>
                               </div>
@@ -298,14 +298,14 @@ export default function NavigationPanel(props: NavigationPanelProps) {
                                 return (
                                   <td
                                     key={permission.id}
-                                    className="px-6 py-4 whitespace-nowrap"
+                                    className="whitespace-nowrap px-6 py-4"
                                   >
                                     <div className="flex items-center">
-                                      <div className="text-sm font-medium text-gray-900">
+                                      <div className="text-textMid text-sm font-medium">
                                         <input
                                           defaultChecked={checked}
                                           type="checkbox"
-                                          className="focus:ring-primary h-4 w-4 text-primary border-gray-300 rounded"
+                                          className="focus:ring-primary text-primary h-4 w-4 rounded border-gray-300"
                                           onChange={(e) =>
                                             handlePermissionChange(
                                               permission,
