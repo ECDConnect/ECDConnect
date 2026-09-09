@@ -133,7 +133,7 @@ export function StaticData() {
               onChange={search}
             />
           </div>
-          <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
+          <div>
             <UiTable
               columns={[
                 { field: 'name', use: 'Field' },
