@@ -93,7 +93,7 @@ export const AddProgrammeForm: React.FC<{
       for (const classroomGroup of classroomGroups) {
         const classroomGroupInput = {
           ...classroomGroup,
-          classroomId: classroom?.id!,
+          classroomId,
         };
         appDispatch(
           classroomsActions.updateClassroomGroup(classroomGroupInput)
@@ -132,7 +132,7 @@ export const AddProgrammeForm: React.FC<{
       for (const classroomGroup of classroomGroups) {
         const classroomGroupInput = {
           ...classroomGroup,
-          classroomId: classroom?.id!,
+          classroomId,
         };
         appDispatch(
           classroomsActions.updateClassroomGroup(classroomGroupInput)
