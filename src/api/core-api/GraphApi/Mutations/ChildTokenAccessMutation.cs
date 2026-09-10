@@ -13,6 +13,7 @@ using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Workflow;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
@@ -57,6 +58,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             IGenericRepositoryFactory repoFactory,
             [Service] IHttpContextAccessor httpContext,
             [Service] ApplicationUserManager userManager,
+            [Service] HierarchyEngine hierarchyEngine,
             string firstname,
             string surname,
             Guid classgroupId)
@@ -66,9 +68,26 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             var workflowStatusRepo = repoFactory.CreateRepository<WorkflowStatus>(userContext: userId);
             var workflowStatus = workflowStatusRepo.GetAll().Where(x => x.EnumId == WorkflowStatusEnum.ChildExternalLink).OrderBy(x => x.Id).FirstOrDefault();
-            var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: userId);
+            var classroomGroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: userId);
 
             var classroomGroup = classroomGroupRepo.GetById(classgroupId);
+            if (classroomGroup == null)
+            {
+                throw new GraphQLException(
+                    ErrorBuilder.New()
+                        .SetMessage("Class not found. Please save the class and try again.")
+                        .SetCode("USER_ERROR")
+                        .Build());
+            }
+
+            if (!await CallerCanAccessClassroomGroup(userId, classroomGroup, repoFactory, userManager, hierarchyEngine))
+            {
+                throw new GraphQLException(
+                    ErrorBuilder.New()
+                        .SetMessage("You do not have access to this class.")
+                        .SetCode("USER_ERROR")
+                        .Build());
+            }
 
             // Create these repos in the context of the class owner, so the hierarchy gets setup correctly
             var childRepo = repoFactory.CreateRepository<Child>(userContext: classroomGroup.UserId);
@@ -369,6 +388,44 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public void CalculateChildrenRegistrationRemoval([Service] IPointsEngineService pointsEngineService, Guid userId)
         {
             pointsEngineService.CalculateChildRemovedFromPreschool(userId);
+        }
+
+        private async Task<bool> CallerCanAccessClassroomGroup(
+            Guid callerUserId,
+            ClassroomGroup classroomGroup,
+            IGenericRepositoryFactory repoFactory,
+            ApplicationUserManager userManager,
+            HierarchyEngine hierarchyEngine)
+        {
+            var caller = await userManager.FindByIdAsync(callerUserId.ToString());
+            if (caller == null)
+            {
+                return false;
+            }
+
+            var roles = await userManager.GetRolesAsync(caller);
+            if (roles.Contains(Roles.ADMINISTRATOR))
+            {
+                return true;
+            }
+
+            if (classroomGroup.UserId.HasValue && classroomGroup.UserId.Value == callerUserId)
+            {
+                return true;
+            }
+
+            if (classroomGroup.ClassroomId != Guid.Empty)
+            {
+                var classroomRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: callerUserId);
+                var classroom = classroomRepo.GetById(classroomGroup.ClassroomId);
+                if (classroom?.UserId == callerUserId)
+                {
+                    return true;
+                }
+            }
+
+            return classroomGroup.UserId.HasValue
+                && hierarchyEngine.UserInHierarchy(callerUserId, classroomGroup.UserId.Value, checkChildUserIds: false);
         }
 
         private bool AddConsent(AuthenticationDbContext context, AddChildUserConsentTokenModel consent, ChildTokenWrapperModel tokenModel)

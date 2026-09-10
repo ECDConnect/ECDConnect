@@ -236,7 +236,9 @@ const InitialStoreSetup: React.FC = ({ children }) => {
         appDispatch(classroomsThunkActions.getClassroomForUser({})).unwrap()
       );
       promises.push(
-        appDispatch(classroomsThunkActions.getClassroomGroups({})).unwrap()
+        appDispatch(
+          classroomsThunkActions.getClassroomGroups({ overrideCache: true })
+        ).unwrap()
       );
       promises.push(
         appDispatch(

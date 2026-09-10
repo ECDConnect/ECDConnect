@@ -272,29 +272,29 @@ const classroomsSlice = createSlice({
       // Start with current state or empty array if none exists
       const currentGroups = state.classroomGroupData?.classroomGroups ?? [];
 
-      // Build the new array by merging/updating existing groups and adding new ones
-      const updatedGroups = currentGroups.map((existing) => {
+      // Keep unsynced local groups; drop groups the server no longer returns
+      const updatedGroups = currentGroups.flatMap((existing) => {
         const incoming = incomingMap.get(existing.id);
 
         if (!incoming) {
-          // Group was removed remotely
-          return { ...existing, synced: true, isActive: false };
+          return existing.synced === false ? [existing] : [];
         }
 
-        // Group exists → update it
-        return {
-          ...existing, // keep any local-only fields you might have
-          ...incoming, // overwrite with fresh server data
-          synced: true,
-          learners: incoming.learners.map((l) => ({
-            ...l,
+        return [
+          {
+            ...existing,
+            ...incoming,
             synced: true,
-          })),
-          classProgrammes: incoming.classProgrammes.map((p) => ({
-            ...p,
-            synced: true,
-          })),
-        };
+            learners: (incoming.learners ?? []).map((l) => ({
+              ...l,
+              synced: true,
+            })),
+            classProgrammes: (incoming.classProgrammes ?? []).map((p) => ({
+              ...p,
+              synced: true,
+            })),
+          },
+        ];
       });
 
       // Add any completely new groups that weren't in the current state

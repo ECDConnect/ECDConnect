@@ -56,6 +56,12 @@ export const getClassroomGroups = (
 ): SimpleClassroomGroupDto[] =>
   state.classroomData.classroomGroupData.classroomGroups;
 
+export const getSelectableClassroomGroups = createSelector(
+  getClassroomGroups,
+  (classroomGroups): SimpleClassroomGroupDto[] =>
+    classroomGroups.filter((group) => group.isActive !== false)
+);
+
 export const getClassroomGroupsForUser = (userId: string) =>
   createSelector(
     (state: RootState) =>

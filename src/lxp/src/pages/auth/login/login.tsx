@@ -122,17 +122,26 @@ export const Login: React.FC = () => {
 
   const checkSyncData = async () => {
     if (
-      checkIdOrPassport !== userIdHashDecryptedToString &&
-      !!practitioner &&
-      isOnline
+      !userIdHashDecryptedToString ||
+      checkIdOrPassport === userIdHashDecryptedToString ||
+      !isOnline
     ) {
-      await appDispatch(
-        triggerBackgroundSync({ includeOfflineSyncData: true })
-      );
-      await resetAppStore();
-      await resetAuth();
-      await resetUser();
+      return;
     }
+
+    try {
+      if (practitioner) {
+        await appDispatch(
+          triggerBackgroundSync({ includeOfflineSyncData: true })
+        );
+      }
+    } catch (error) {
+      console.error('Failed to sync previous user data before login', error);
+    }
+
+    await resetAppStore();
+    await resetAuth();
+    await resetUser();
   };
 
   const submitForm = async () => {
@@ -285,7 +294,7 @@ export const Login: React.FC = () => {
             )}
             {!idFieldVisible && (
               <Button
-                className={'mt-3 mb-2'}
+                className={'mb-2 mt-3'}
                 type="outlined"
                 color="primary"
                 background={'transparent'}
@@ -301,7 +310,7 @@ export const Login: React.FC = () => {
             )}
             {idFieldVisible && (
               <Button
-                className={'mt-3 mb-2'}
+                className={'mb-2 mt-3'}
                 type="outlined"
                 color="primary"
                 size="small"
@@ -317,7 +326,7 @@ export const Login: React.FC = () => {
             )}
             <PasswordInput<LoginModel>
               label={'Password'}
-              className={'mt-1 mb-2'}
+              className={'mb-2 mt-1'}
               nameProp={'password'}
               sufficIconColor={'uiMidDark'}
               value={loginFormGetValues().password}
@@ -325,7 +334,7 @@ export const Login: React.FC = () => {
             />
             <div>
               <Button
-                className={'mt-1 mb-3'}
+                className={'mb-3 mt-1'}
                 type="outlined"
                 color="secondary"
                 background={'transparent'}
@@ -343,14 +352,14 @@ export const Login: React.FC = () => {
             <Divider></Divider>
             {displayError && (
               <Alert
-                className={'mt-5 mb-3'}
+                className={'mb-3 mt-5'}
                 title={displayMessage}
                 type={'error'}
               />
             )}
             {displayWrongUserError && (
               <Alert
-                className={'mt-5 mb-3'}
+                className={'mb-3 mt-5'}
                 message={`Another user is already logged in on this device. Please try again ${
                   isOnline ? '' : 'when you are online'
                 }`}
@@ -360,7 +369,7 @@ export const Login: React.FC = () => {
           </div>
           {!isOnline && (
             <Alert
-              className={'mt-5 mb-3'}
+              className={'mb-3 mt-5'}
               title="Your internet connection is unstable."
               type={'warning'}
             />
