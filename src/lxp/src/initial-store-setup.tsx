@@ -85,6 +85,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const [initLoading, setInitLoading] = useState(false);
   const [staticDataLoading, setStaticDataLoading] = useState(false);
   const userData = useSelector(userSelectors.getUser);
+  const storedUser = useSelector(userSelectors.getStoredUser);
   const userAuth = useSelector(authSelectors.getAuthUser);
   const isCoach = userData?.roles?.some(
     (role) => role.systemName === RoleSystemNameEnum.Coach
@@ -509,6 +510,13 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   };
 
   useEffect(() => {
+    if (userAuth?.id && storedUser?.id && userAuth.id !== storedUser.id) {
+      resetAppStore(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userAuth?.id, storedUser?.id]);
+
+  useEffect(() => {
     async function init() {
       if (userAuth && !!userAuth.resetData) {
         await resetAppStore();
@@ -521,7 +529,12 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    if (userData && !!userData?.id && !isCoach) {
+    if (
+      userData &&
+      !!userData?.id &&
+      userData.id === userAuth?.id &&
+      !isCoach
+    ) {
       (async () =>
         await appDispatch(
           practitionerThunkActions.getPractitionerByUserId({
@@ -543,7 +556,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
           ).unwrap())();
       }
     }
-  }, [appDispatch, userData, isCoach, isPrincipal]);
+  }, [appDispatch, userData, userAuth?.id, isCoach, isPrincipal]);
 
   const handleNoClassroomForInvitedUser = useCallback(async () => {
     const classroom = await new ClassroomService(
