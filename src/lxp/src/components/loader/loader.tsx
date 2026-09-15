@@ -8,12 +8,29 @@ import { TIMEOUTS } from '@/constants/timeouts';
 import { ExclamationCircleIcon } from '@heroicons/react/solid';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
+// robothearts.gif has 8 frames at 200ms each (1.6s loop): the heart builds up
+// piece by piece (blue, then yellow, then pink) and then disassembles again.
+const GIF_FRAME_DURATION = 200;
+const GIF_FRAME_COUNT = 8;
+const DOTS_PER_FRAME = [0, 1, 2, 3, 3, 2, 1, 0];
+
 const Loader = ({ loadingMessage = 'Waking up the robots' }) => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const { resetAuth, resetAppStore } = useStoreSetup();
 
   const [showIssue, setShowIssue] = useState<boolean>(false);
+  const [gifFrame, setGifFrame] = useState<number>(0);
+
+  useEffect(() => {
+    if (!isOnline) return;
+
+    const interval = setInterval(() => {
+      setGifFrame((frame) => (frame + 1) % GIF_FRAME_COUNT);
+    }, GIF_FRAME_DURATION);
+
+    return () => clearInterval(interval);
+  }, [isOnline]);
 
   useEffect(() => {
     if (!isOnline) return;
@@ -34,20 +51,35 @@ const Loader = ({ loadingMessage = 'Waking up the robots' }) => {
   return (
     <div
       style={{ backgroundColor: '#27385A' }}
-      className="top-0 bottom-0 left-0 right-0 z-50 flex h-full w-full flex-col items-center justify-between overflow-hidden"
+      className="bottom-0 left-0 right-0 top-0 z-50 flex h-full w-full flex-col items-center justify-between overflow-hidden"
     >
       <div className="flex flex-col items-center justify-center"></div>
       <div className="flex flex-col items-center justify-center">
         {isOnline ? (
           <img src={RobotHearts} alt="loading rocket" className="h-16 w-16" />
         ) : null}
-        <Typography
-          type="h2"
-          color="white"
-          weight="bold"
-          className="text-center"
-          text={loadingMessage}
-        />
+        <div className="flex items-end">
+          <Typography
+            type="h2"
+            color="white"
+            weight="bold"
+            className="text-center"
+            text={loadingMessage}
+          />
+          {isOnline && (
+            <div className="ml-1 flex items-end gap-1 pb-1">
+              {[0, 1, 2].map((dotIndex) => (
+                <span
+                  key={dotIndex}
+                  className="h-1 w-1 rounded-full bg-white transition-opacity duration-200"
+                  style={{
+                    opacity: dotIndex < DOTS_PER_FRAME[gifFrame] ? 1 : 0,
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
       <div className="flex flex-col items-center justify-center px-4 py-4">
         {showIssue && (
