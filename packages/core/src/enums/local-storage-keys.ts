@@ -29,4 +29,5 @@ export enum LocalStorageKeys {
   hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod4 = 'hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod4',
   hasClikedOnProgrammePlanningAfterEndOfProgressReportYear = 'hasClikedOnProgrammePlanningAfterEndOfProgressReportYear',
   hasClickedOnCommunityWalkThrough = 'hasClickedOnCommunityWalkThrough',
+  acquisitionTracking = 'acquisitionTracking',
 }

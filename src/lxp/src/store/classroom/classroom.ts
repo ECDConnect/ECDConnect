@@ -67,7 +67,7 @@ const classroomsSlice = createSlice({
       state,
       action: PayloadAction<SimpleClassroomGroupDto>
     ) => {
-      const payloadUpdated = { ...action.payload };
+      const payloadUpdated = { ...action.payload, synced: false };
       for (
         let i = 0;
         i < state.classroomGroupData.classroomGroups.length;
@@ -240,13 +240,43 @@ const classroomsSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(getClassroomForUser.fulfilled, (state, action) => {
-      if (action.payload) {
+      if (!action.payload) return;
+
+      const local = state.classroom;
+      const incoming = action.payload;
+
+      // Keep in-progress setup data. A later server fetch (dummy preschool
+      // created at OA signup) must not replace an unsynced local classroom
+      // or leave classroom groups pointing at an id that was never saved.
+      if (local && local.synced === false) {
+        const localId = local.id;
+        const serverId = incoming.id;
+
+        if (localId && serverId && localId !== serverId) {
+          state.classroomGroupData.classroomGroups =
+            state.classroomGroupData.classroomGroups.map((group) =>
+              group.classroomId === localId
+                ? { ...group, classroomId: serverId, synced: false }
+                : group
+            );
+        }
+
         state.classroom = {
-          ...action.payload,
+          ...incoming,
+          ...local,
+          id: serverId || localId,
+          principal: local.principal ?? incoming.principal,
           dateRefreshed: new Date().toDateString(),
-          synced: true,
+          synced: false,
         };
+        return;
       }
+
+      state.classroom = {
+        ...incoming,
+        dateRefreshed: new Date().toDateString(),
+        synced: true,
+      };
     });
     builder.addCase(getClassroomGroupForClassId.fulfilled, (state, action) => {
       if (!action.payload) return;
@@ -277,7 +307,7 @@ const classroomsSlice = createSlice({
         const incoming = incomingMap.get(existing.id);
 
         if (!incoming) {
-          return existing.synced === false ? [existing] : [];
+          return existing.synced !== true ? [existing] : [];
         }
 
         return [
@@ -305,8 +335,8 @@ const classroomsSlice = createSlice({
         .map((cg) => ({
           ...cg,
           synced: true,
-          learners: cg.learners.map((l) => ({ ...l, synced: true })),
-          classProgrammes: cg.classProgrammes.map((p) => ({
+          learners: (cg.learners ?? []).map((l) => ({ ...l, synced: true })),
+          classProgrammes: (cg.classProgrammes ?? []).map((p) => ({
             ...p,
             synced: true,
           })),

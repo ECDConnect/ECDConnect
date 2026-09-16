@@ -283,12 +283,12 @@ export const OaLogin: React.FC = () => {
 
   const checkSyncData = async (username: string) => {
     const previousUsername = decryptCurrentUserId();
-    if (!previousUsername || username === previousUsername) {
+    if (username === previousUsername) {
       return;
     }
 
     try {
-      if (practitioner) {
+      if (previousUsername && practitioner) {
         await appDispatch(
           triggerBackgroundSync({ includeOfflineSyncData: true })
         );

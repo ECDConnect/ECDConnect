@@ -121,16 +121,16 @@ export const Login: React.FC = () => {
   };
 
   const checkSyncData = async () => {
-    if (
-      !userIdHashDecryptedToString ||
-      checkIdOrPassport === userIdHashDecryptedToString ||
-      !isOnline
-    ) {
+    if (checkIdOrPassport === userIdHashDecryptedToString) {
+      return;
+    }
+
+    if (!isOnline) {
       return;
     }
 
     try {
-      if (practitioner) {
+      if (userIdHashDecryptedToString && practitioner) {
         await appDispatch(
           triggerBackgroundSync({ includeOfflineSyncData: true })
         );

@@ -359,6 +359,10 @@ export type ApplicationUser = {
   reasonForLeaving?: Maybe<Scalars['String']>;
   reasonForLeavingComments?: Maybe<Scalars['String']>;
   registerType?: Maybe<Scalars['String']>;
+  acquisitionUrl?: Maybe<Scalars['String']>;
+  utmSource?: Maybe<Scalars['String']>;
+  utmMedium?: Maybe<Scalars['String']>;
+  utmCampaign?: Maybe<Scalars['String']>;
   resetData?: Maybe<Scalars['Boolean']>;
   roles?: Maybe<Array<Maybe<ApplicationIdentityRole>>>;
   shareInfoPartners?: Maybe<Scalars['Boolean']>;
@@ -425,6 +429,10 @@ export type ApplicationUserFilterInput = {
   reasonForLeaving?: InputMaybe<StringOperationFilterInput>;
   reasonForLeavingComments?: InputMaybe<StringOperationFilterInput>;
   registerType?: InputMaybe<StringOperationFilterInput>;
+  acquisitionUrl?: InputMaybe<StringOperationFilterInput>;
+  utmSource?: InputMaybe<StringOperationFilterInput>;
+  utmMedium?: InputMaybe<StringOperationFilterInput>;
+  utmCampaign?: InputMaybe<StringOperationFilterInput>;
   resetData?: InputMaybe<BooleanOperationFilterInput>;
   shareInfoPartners?: InputMaybe<BooleanOperationFilterInput>;
   surname?: InputMaybe<StringOperationFilterInput>;
@@ -488,6 +496,10 @@ export type ApplicationUserInput = {
   reasonForLeaving?: InputMaybe<Scalars['String']>;
   reasonForLeavingComments?: InputMaybe<Scalars['String']>;
   registerType?: InputMaybe<Scalars['String']>;
+  acquisitionUrl?: InputMaybe<Scalars['String']>;
+  utmSource?: InputMaybe<Scalars['String']>;
+  utmMedium?: InputMaybe<Scalars['String']>;
+  utmCampaign?: InputMaybe<Scalars['String']>;
   resetData?: InputMaybe<Scalars['Boolean']>;
   shareInfoPartners?: InputMaybe<Scalars['Boolean']>;
   surname?: InputMaybe<Scalars['String']>;
@@ -549,6 +561,10 @@ export type ApplicationUserSortInput = {
   reasonForLeaving?: InputMaybe<SortEnumType>;
   reasonForLeavingComments?: InputMaybe<SortEnumType>;
   registerType?: InputMaybe<SortEnumType>;
+  acquisitionUrl?: InputMaybe<SortEnumType>;
+  utmSource?: InputMaybe<SortEnumType>;
+  utmMedium?: InputMaybe<SortEnumType>;
+  utmCampaign?: InputMaybe<SortEnumType>;
   resetData?: InputMaybe<SortEnumType>;
   shareInfoPartners?: InputMaybe<SortEnumType>;
   surname?: InputMaybe<SortEnumType>;

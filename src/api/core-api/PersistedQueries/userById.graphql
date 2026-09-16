@@ -33,7 +33,11 @@
               systemName
             }   
             resetData  
-            registerType    
+            registerType
+            acquisitionUrl
+            utmSource
+            utmMedium
+            utmCampaign
             whatsAppConsent   
           }
         }

@@ -58,6 +58,11 @@ export const GetUserById = gql`
       profileImageUrl
       isImported
       resetData
+      registerType
+      acquisitionUrl
+      utmSource
+      utmMedium
+      utmCampaign
       raceId
       languageId
       insertedDate

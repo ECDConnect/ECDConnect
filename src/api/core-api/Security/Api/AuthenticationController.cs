@@ -16,6 +16,7 @@ using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Api.Constants;
+using ECDLink.Security.Api.Helpers;
 using ECDLink.Security.Extensions;
 using ECDLink.Security.Helpers;
 using ECDLink.Security.JwtSecurity.Enums;
@@ -612,6 +613,12 @@ namespace ECDLink.Security.Api
                 existingUser.IsActive = true;
                 existingUser.RegisterType = addOAPractitionerModel.RegisterType;
                 existingUser.ShareInfoPartners = addOAPractitionerModel.ShareInfoPartners;
+                AcquisitionTrackingHelper.Apply(
+                    existingUser,
+                    addOAPractitionerModel.AcquisitionUrl,
+                    addOAPractitionerModel.UtmSource,
+                    addOAPractitionerModel.UtmMedium,
+                    addOAPractitionerModel.UtmCampaign);
 
                 // Validate password for user
                 if (!await _passwordManager.IsPasswordSecureAsync(existingUser, addOAPractitionerModel.Password))
@@ -695,6 +702,13 @@ namespace ECDLink.Security.Api
             }
             if (newUser != null)
             {
+                AcquisitionTrackingHelper.Apply(
+                    newUser,
+                    addOAPractitionerModel.AcquisitionUrl,
+                    addOAPractitionerModel.UtmSource,
+                    addOAPractitionerModel.UtmMedium,
+                    addOAPractitionerModel.UtmCampaign);
+
                 var created = await _userManager.CreateAsync(newUser);
                 if (!created.Succeeded)
                 {
