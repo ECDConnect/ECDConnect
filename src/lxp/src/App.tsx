@@ -31,6 +31,9 @@ import { Helmet } from 'react-helmet';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { FacebookProvider } from 'react-facebook';
 import { settingActions, settingSelectors } from './store/settings';
+import { captureAcquisitionTracking } from '@/utils/user/acquisition-tracking.utils';
+
+captureAcquisitionTracking();
 
 if (process.env.NODE_ENV === 'development') {
   stopReportingRuntimeErrors();

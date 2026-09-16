@@ -34,6 +34,10 @@ export interface RegisterRequestModel {
   preferId?: boolean | undefined;
   phoneNumber?: string;
   registerType?: LoginType;
+  acquisitionUrl?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
   shareInfoPartners?: boolean;
   googleToken?: string;
   facebookToken?: string;
