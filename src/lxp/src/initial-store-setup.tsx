@@ -191,6 +191,9 @@ const InitialStoreSetup: React.FC = ({ children }) => {
           appDispatch(programmeThunkActions.getUserProgrammes({})).unwrap(),
           appDispatch(userThunkActions.getUserConsents({})).unwrap(),
           appDispatch(
+            communityThunkActions.getCommunityProfile({ overrideCache: true })
+          ).unwrap(),
+          appDispatch(
             calendarThunkActions.getCalendarEvents({
               start: subMonths(
                 new Date(new Date().getFullYear(), new Date().getMonth(), 0),

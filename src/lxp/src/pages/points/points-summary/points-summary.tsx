@@ -152,14 +152,36 @@ export const PointsSummary: React.FC = () => {
 
   const getPhase1StackedMenuList = (): MenuListDataItem[] => {
     const titleStyle = 'text-textDark font-semibold text-base leading-snug';
-    const subTitleStyle = 'text-sm font-h1 font-normal text-textMid';
+    const subTitleStyle = 'text-sm font-normal text-textMid';
+    const completedTitleStyle =
+      'text-successDark font-semibold text-base leading-snug';
+    const completedSubTitleStyle = 'text-sm font-normal text-successDark';
     const stackedMenuList: MenuListDataItem[] = [];
 
-    // To make tichere clickable
+    const completedVisual = {
+      titleStyle: completedTitleStyle,
+      subTitleStyle: completedSubTitleStyle,
+      menuIcon: 'CheckIcon',
+      iconBackgroundColor: 'successMain' as const,
+      iconColor: 'white' as const,
+      backgroundColor: 'successBg' as const,
+      showIcon: true,
+      hideRightIcon: true,
+    };
+
+    const lockedVisual = {
+      titleStyle,
+      subTitleStyle,
+      iconBackgroundColor: 'uiLight' as const,
+      iconColor: 'white' as const,
+      backgroundColor: 'adminPortalBg' as const,
+      showIcon: true,
+      hideRightIcon: true,
+    };
+
     const canClickTichere = tenant.isWhiteLabel
       ? pointsToDo?.signedUpForApp && !isPartOfPreschool
-      : // OA Principal/Practitioner will have a preschool by default, but we need to check for progress less than 2
-        pointsToDo?.signedUpForApp && !isPartOfPreschool;
+      : pointsToDo?.signedUpForApp && !isPartOfPreschool;
 
     const tichereUrl = practitioner?.isPrincipal
       ? ROUTES.PRINCIPAL.SETUP_PROFILE
@@ -167,115 +189,64 @@ export const PointsSummary: React.FC = () => {
       ? ROUTES.PRACTITIONER.PROFILE.EDIT
       : ROUTES.PRINCIPAL.SETUP_PROFILE;
 
-    // To make influencer clickable
     const canClickInfluencer =
       isPartOfPreschool && !pointsToDo?.viewedCommunitySection;
 
+    const bossCompleted = practitioner?.isPrincipal
+      ? !!pointsToDo?.savedIncomeOrExpense
+      : !!pointsToDo?.plannedOneDay;
+    const influencerUnlocked =
+      bossCompleted ||
+      (!practitioner?.isPrincipal &&
+        planActivitiesPermission?.isActive === false &&
+        isPartOfPreschool);
+
     const umtsha: MenuListDataItem = {
       id: '1',
-      title: `Umtsha`,
-      titleStyle: pointsToDo?.signedUpForApp
-        ? 'text-successDark'
-        : 'text-white',
+      title: 'Umtsha',
       subTitle: `Sign up for ${appName}`,
-      subTitleStyle: pointsToDo?.signedUpForApp
-        ? 'text-successDark'
-        : 'text-white',
-      className: !pointsToDo?.signedUpForApp ? '' : 'px-2',
-      menuIcon: pointsToDo?.signedUpForApp ? 'CheckIcon' : 'ClipboardCheckIcon',
-      iconBackgroundColor: 'quatenary',
-      iconColor: 'white',
-      menuIconClassName: 'bg-successMain rounded-full h-12 w-12 p-2.5',
-      backgroundColor: 'successBg',
-      showIcon: true,
       onActionClick: () => {},
-      hideRightIcon: true,
+      ...(pointsToDo?.signedUpForApp
+        ? completedVisual
+        : {
+            titleStyle,
+            subTitleStyle,
+            menuIcon: 'ClipboardCheckIcon',
+            iconBackgroundColor: 'alertMain' as const,
+            iconColor: 'white' as const,
+            backgroundColor: 'alertBg' as const,
+            showIcon: true,
+            hideRightIcon: true,
+          }),
     };
 
     const tichere: MenuListDataItem = {
       id: '2',
       title: 'Tichere',
-      titleStyle: isPartOfPreschool ? 'text-successDark' : titleStyle,
       subTitle: 'Set up or join your preschool',
-      subTitleStyle: isPartOfPreschool ? 'text-successDark' : subTitleStyle,
-      className: !isPartOfPreschool ? '' : 'px-2',
-      menuIcon: isPartOfPreschool ? 'CheckIcon' : '',
-      customIcon: !isPartOfPreschool ? (
-        <Kindgarden
-          className={`${
-            isPartOfPreschool
-              ? `bg-successMain text-white`
-              : 'text-quatenary bg-quatenary'
-          } z-50 mr-4 h-12 w-12 rounded-full p-2`}
-        />
-      ) : undefined,
-      iconBackgroundColor: isPartOfPreschool ? 'successMain' : 'quatenary',
-      showIcon: true,
-      iconColor: 'white',
-      hideRightIcon: true,
-      backgroundColor: isPartOfPreschool ? 'successBg' : 'quatenaryBg',
       onActionClick: canClickTichere
         ? () => history.push(tichereUrl, {})
         : () => {},
+      ...(isPartOfPreschool
+        ? completedVisual
+        : {
+            titleStyle,
+            subTitleStyle,
+            svgIcon: Kindgarden,
+            iconBackgroundColor: 'secondary' as const,
+            iconColor: 'white' as const,
+            backgroundColor: 'secondaryAccent2' as const,
+            showIcon: true,
+            hideRightIcon: true,
+          }),
     };
 
     const bossOrCwepheshe: MenuListDataItem = {
       id: '3',
       title: practitioner?.isPrincipal ? 'Boss' : 'Cwepheshe',
-      titleStyle:
-        pointsToDo?.savedIncomeOrExpense || pointsToDo?.plannedOneDay
-          ? 'text-successDark'
-          : titleStyle,
       subTitle: practitioner?.isPrincipal
         ? 'Add income/expense'
         : 'Plan your daily routine',
-      subTitleStyle:
-        pointsToDo?.savedIncomeOrExpense || pointsToDo?.plannedOneDay
-          ? 'text-successDark'
-          : subTitleStyle,
-      className:
-        isPartOfPreschool &&
-        !pointsToDo?.savedIncomeOrExpense &&
-        !pointsToDo?.plannedOneDay
-          ? ''
-          : 'px-2',
-      menuIcon:
-        (practitioner?.isPrincipal && pointsToDo?.savedIncomeOrExpense) ||
-        (!practitioner?.isPrincipal && pointsToDo?.plannedOneDay)
-          ? 'CheckIcon'
-          : !practitioner?.isPrincipal && !pointsToDo?.plannedOneDay
-          ? 'CalendarIcon'
-          : '',
-      customIcon:
-        pointsToDo?.signedUpForApp &&
-        practitioner?.isPrincipal &&
-        !pointsToDo?.savedIncomeOrExpense &&
-        !pointsToDo?.plannedOneDay ? (
-          <Crown
-            className={`${
-              pointsToDo?.savedIncomeOrExpense || pointsToDo?.plannedOneDay
-                ? 'bg-successMain'
-                : !isPartOfPreschool && isTrialPeriod
-                ? `bg-uiLight text-white`
-                : 'text-quatenary bg-quatenary'
-            } z-50 mr-4 h-12 w-12 rounded-full p-2`}
-          />
-        ) : undefined,
-      iconBackgroundColor:
-        pointsToDo?.savedIncomeOrExpense || pointsToDo?.plannedOneDay
-          ? 'successMain'
-          : !isPartOfPreschool
-          ? 'uiLight'
-          : 'quatenary',
-      showIcon: true,
-      iconColor: 'white',
-      hideRightIcon: true,
-      backgroundColor:
-        pointsToDo?.savedIncomeOrExpense || pointsToDo?.plannedOneDay
-          ? 'successBg'
-          : isPartOfPreschool
-          ? 'quatenaryBg'
-          : 'adminPortalBg',
       onActionClick:
         isPartOfPreschool &&
         !pointsToDo?.savedIncomeOrExpense &&
@@ -292,57 +263,51 @@ export const PointsSummary: React.FC = () => {
                 activeTabIndex: TabsItems.ACTIVITES,
               })
           : () => {},
+      ...(bossCompleted
+        ? completedVisual
+        : isPartOfPreschool
+        ? {
+            titleStyle,
+            subTitleStyle,
+            menuIcon: practitioner?.isPrincipal ? undefined : 'CalendarIcon',
+            svgIcon: practitioner?.isPrincipal ? Crown : undefined,
+            iconBackgroundColor: 'quatenary' as const,
+            iconColor: 'white' as const,
+            backgroundColor: 'quatenaryBg' as const,
+            showIcon: true,
+            hideRightIcon: true,
+          }
+        : {
+            ...lockedVisual,
+            menuIcon: practitioner?.isPrincipal ? undefined : 'CalendarIcon',
+            svgIcon: practitioner?.isPrincipal ? Crown : undefined,
+          }),
     };
 
     const influencer: MenuListDataItem = {
       id: '4',
-      title: `Influencer`,
-      titleStyle: pointsToDo?.viewedCommunitySection
-        ? 'text-successDark'
-        : titleStyle,
-      subTitle: `Explore the community`,
-      subTitleStyle: pointsToDo?.viewedCommunitySection
-        ? 'text-successDark'
-        : subTitleStyle,
-      className:
-        (pointsToDo?.savedIncomeOrExpense ||
-          pointsToDo?.plannedOneDay ||
-          (!practitioner?.isPrincipal &&
-            planActivitiesPermission?.isActive === false &&
-            isPartOfPreschool)) &&
-        !pointsToDo?.viewedCommunitySection
-          ? ''
-          : 'px-2',
-      menuIcon: pointsToDo?.viewedCommunitySection ? 'CheckIcon' : 'FireIcon',
-      iconBackgroundColor: 'quatenary',
-      iconColor: 'white',
-      menuIconClassName: `${
-        pointsToDo?.viewedCommunitySection
-          ? 'bg-successMain'
-          : pointsToDo?.savedIncomeOrExpense ||
-            pointsToDo?.plannedOneDay ||
-            (!practitioner?.isPrincipal &&
-              (planActivitiesPermission?.isActive === false ||
-                planActivitiesPermission?.isActive === undefined) &&
-              isPartOfPreschool)
-          ? 'quatenary'
-          : 'bg-uiLight'
-      } rounded-full h-12 w-12 p-2.5`,
-      showIcon: true,
+      title: 'Influencer',
+      subTitle: 'Explore the community',
       onActionClick: canClickInfluencer
         ? () => clickInfluencerHandler()
         : () => {},
-      hideRightIcon: true,
-      backgroundColor: pointsToDo?.viewedCommunitySection
-        ? 'successBg'
-        : pointsToDo?.savedIncomeOrExpense ||
-          pointsToDo?.plannedOneDay ||
-          (!practitioner?.isPrincipal &&
-            (planActivitiesPermission?.isActive === false ||
-              planActivitiesPermission?.isActive === undefined) &&
-            isPartOfPreschool)
-        ? 'quatenaryBg'
-        : 'adminPortalBg',
+      ...(pointsToDo?.viewedCommunitySection
+        ? completedVisual
+        : influencerUnlocked
+        ? {
+            titleStyle: 'text-white font-semibold text-base leading-snug',
+            subTitleStyle: 'text-white text-sm font-normal',
+            menuIcon: 'FireIcon',
+            iconBackgroundColor: 'white' as const,
+            iconColor: 'quatenary' as const,
+            backgroundColor: 'quatenary' as const,
+            showIcon: true,
+            hideRightIcon: true,
+          }
+        : {
+            ...lockedVisual,
+            menuIcon: 'FireIcon',
+          }),
     };
 
     stackedMenuList.push(umtsha);
@@ -602,7 +567,7 @@ export const PointsSummary: React.FC = () => {
               />
               <Divider dividerType="dashed" className="mt-4" />
               <Typography
-                className="mt-4 mb-4"
+                className="mb-4 mt-4"
                 type={'h3'}
                 color="black"
                 text={`Get to the next level!`}
@@ -612,7 +577,7 @@ export const PointsSummary: React.FC = () => {
                 <StackedList
                   listItems={getPhase1StackedMenuList()}
                   type={'MenuList'}
-                  className={'-mt-0.5 flex flex-col gap-1.5'}
+                  className={'flex flex-col gap-3'}
                 ></StackedList>
               </div>
             </>
@@ -632,7 +597,7 @@ export const PointsSummary: React.FC = () => {
               <div>
                 <Divider dividerType="dashed" className="mt-4" />
                 <Typography
-                  className="mt-4 mb-4"
+                  className="mb-4 mt-4"
                   type={'h3'}
                   color="black"
                   text={`Get to the next level!`}
@@ -641,7 +606,7 @@ export const PointsSummary: React.FC = () => {
                   <StackedList
                     listItems={getPhase1StackedMenuList()}
                     type={'MenuList'}
-                    className={'-mt-0.5 flex flex-col gap-1.5'}
+                    className={'flex flex-col gap-3'}
                   ></StackedList>
                 </div>
               </div>
@@ -719,7 +684,7 @@ export const PointsSummary: React.FC = () => {
           pointsTotalForYear &&
           pointsTotalForYear > 0 ? (
             <Typography
-              className="mt-4 mb-4"
+              className="mb-4 mt-4"
               type={'h3'}
               color="black"
               text={`How you can earn more points in ${format(

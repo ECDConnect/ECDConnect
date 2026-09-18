@@ -85,6 +85,14 @@ const notificationsState = createSlice({
 
       state.notifications.splice(notificationIndex, 1);
     },
+    removeNotificationsByReference: (state, action: PayloadAction<string>) => {
+      state.notifications = state.notifications.filter(
+        (n) => n.message.reference !== action.payload
+      );
+      state.notificationReferences = state.notificationReferences.filter(
+        (reference) => reference !== action.payload
+      );
+    },
   },
   extraReducers: (builder) => {
     setThunkActionStatus(builder, disableBackendNotification);

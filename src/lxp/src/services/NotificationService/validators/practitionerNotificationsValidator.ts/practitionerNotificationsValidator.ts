@@ -132,9 +132,17 @@ export class PractitionerNotificationValidator
       });
     }
 
+    const communityProfileLoaded =
+      communityState?.status?.some(
+        (currentStatus) =>
+          currentStatus.actionName === 'getCommunityProfile' &&
+          currentStatus.value === 'fulfilled'
+      ) || !!communityState?.communityProfile;
+
     if (
       isMoreThan30Days &&
       classroomState?.classroomGroupData?.classroomGroups?.length > 0 &&
+      communityProfileLoaded &&
       !communityState?.communityProfile
     ) {
       notifications.push({

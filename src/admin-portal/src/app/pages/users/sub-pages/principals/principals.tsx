@@ -121,12 +121,12 @@ export default function Practitioners() {
           <div className="pb-5 sm:flex sm:items-center sm:justify-between">
             <span className="text-lg font-medium leading-6 text-gray-900"></span>
             <div className="flex flex-row">
-              <div className="mt-3 sm:mt-0 sm:ml-4">
+              <div className="mt-3 sm:ml-4 sm:mt-0">
                 {hasPermission(PermissionEnum.create_user) && (
                   <button
                     onClick={displayPanel}
                     type="button"
-                    className="bg-uiMid hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                    className="bg-uiMid hover:bg-uiLight inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
                   >
                     Create Principal
                   </button>
@@ -141,7 +141,7 @@ export default function Practitioners() {
                           <div>
                             <Menu.Button
                               type="button"
-                              className="bg-uiMid hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                              className="bg-uiMid hover:bg-uiLight inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
                             >
                               <span className="sr-only">Open options</span>
                               <CogIcon className="h-5 w-5" aria-hidden="true" />
@@ -203,7 +203,7 @@ export default function Practitioners() {
 
           <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-              <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
+              <div>
                 <UiTable
                   columns={[
                     { field: 'idNumber', use: 'id / Passport' },

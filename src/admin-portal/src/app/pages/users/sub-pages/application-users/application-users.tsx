@@ -237,7 +237,7 @@ export default function ApplicationUsers() {
 
   return (
     <div className="bg-adminPortalBg h-full rounded-2xl p-4 ">
-      <div className="rounded-xl bg-white p-12">
+      <div className="rounded-xl bg-white p-12 [&_tbody_td]:py-2">
         <Table
           watchMode
           ref={tableRef}

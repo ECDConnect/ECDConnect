@@ -22,7 +22,6 @@ import {
   FieldType,
   ResourcesTitles,
 } from '../../../../content-management-models';
-// import { useResources } from '../../../../../../hooks/useResources';
 import { LanguageId } from '../../../../../../constants/language';
 import { ContentTypes } from '../../../../../../constants/content-management';
 import { BulkActionStatus } from '../../../../../../components/ui-table/type';

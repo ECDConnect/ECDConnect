@@ -374,7 +374,7 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
             }
           />
 
-          <div className="mt-4 overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
+          <div className="mt-4">
             {tableData &&
               tableData.map((item: any) => {
                 const maximumItemsChecked = tableData.filter((x) =>
@@ -436,7 +436,7 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
           text={'You must add at least one part.'}
         />
 
-        <div className="mt-4 overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
+        <div className="mt-4">
           <div className="min-w-full divide-gray-200">
             {storyBookPartsValuesFormatted &&
               storyBookPartsValuesFormatted.map((item: any, idx: number) => {

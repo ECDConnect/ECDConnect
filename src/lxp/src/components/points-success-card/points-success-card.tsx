@@ -4,6 +4,7 @@ import { PointsSuccessCardProps } from './points-success-card.types';
 
 export const PointsSuccessCard: React.FC<PointsSuccessCardProps> = ({
   icon = '',
+  customIcon,
   message = '',
   prePointsText,
   postPointsText,
@@ -22,28 +23,14 @@ export const PointsSuccessCard: React.FC<PointsSuccessCardProps> = ({
     <>
       {visible && (
         <div className={className}>
-          <div
-            className={classNames(styles.wrapper)}
-            style={{
-              backgroundColor: 'successMain',
-              backgroundRepeat: 'no-repeat',
-              backgroundSize: 'cover',
-            }}
-          >
+          <div className={classNames(styles.wrapper)}>
             <div className={styles.contentWrapper}>
-              <div className={'flex flex-1 flex-row'}>
-                <div>
-                  <div
-                    className={styles.iconRound}
-                    style={{
-                      backgroundImage: `url(../assets/b.png)`,
-                      backgroundRepeat: 'no-repeat',
-                      backgroundSize: 'cover',
-                    }}
-                  >
-                    {/* {renderIcon(icon, 'h-6 w-6 text-white')} */}
+              <div className={'flex flex-1 flex-row items-center'}>
+                {customIcon || (
+                  <div className={styles.iconRound}>
+                    {icon && renderIcon(icon, 'h-6 w-6 text-white')}
                   </div>
-                </div>
+                )}
                 <div
                   className={styles.textWrapper}
                   data-testid="important-wrapper"
@@ -89,11 +76,11 @@ export const PointsSuccessCard: React.FC<PointsSuccessCardProps> = ({
                     </div>
                   )}
                 </div>
-                <div className={styles.closeWrapper}>
-                  <div onClick={() => onClose && onClose()}>
-                    {onClose && renderIcon('XIcon', 'h-6 w-6 text-white')}
+                {onClose && (
+                  <div className={styles.closeWrapper} onClick={onClose}>
+                    {renderIcon('XIcon', 'h-6 w-6 text-white')}
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
