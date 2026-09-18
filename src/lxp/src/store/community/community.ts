@@ -26,6 +26,8 @@ const communitySlice = createSlice({
   reducers: {
     resetCommunityConnectState: (state) => {
       state.connect = initialState.connect;
+      state.connectItem = initialState.connectItem;
+      state.communityProfile = initialState.communityProfile;
     },
   },
   extraReducers: (builder) => {

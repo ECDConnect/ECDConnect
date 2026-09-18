@@ -27,6 +27,12 @@ import { UiTableProps } from './type';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
 import { useUserRole } from '../../../../../../hooks/useUserRole';
 
+// A leading checkbox column is always the first column - squeeze that first
+// header/body cell down to just wide enough for the checkbox.
+const SELECT_COLUMN_CLASSES =
+  '[&_thead_th:first-child]:w-px [&_thead_th:first-child]:pl-4 [&_thead_th:first-child]:pr-2 ' +
+  '[&_tbody_td:first-child]:w-px [&_tbody_td:first-child]:pl-4 [&_tbody_td:first-child]:pr-2';
+
 export default function UiTable({
   columns = [],
   rows = [],
@@ -216,8 +222,8 @@ export default function UiTable({
   const makeColumns = (cols: any[] = []) => {
     const selectColumn = {
       field: 'select',
-      use: '',
-      Header: 'Select',
+      use: selectAllCheckbox,
+      Header: 'select',
       accessor: '', // Set the accessor value based on your data structure
       Cell: null,
     };
@@ -231,6 +237,9 @@ export default function UiTable({
     const columnsWithSelect = [selectColumn, ...cols];
     return [...columnsWithSelect, ...columns];
   };
+
+  const hasSelectColumn =
+    !noBulkSelection && component !== 'cms' && component !== 'roles';
 
   const handleRowSelect = (
     event: ChangeEvent<HTMLInputElement>,
@@ -253,6 +262,31 @@ export default function UiTable({
       }
     });
   };
+
+  const selectableRows: any[] = searchRows ?? [];
+  const allRowsSelected =
+    selectableRows.length > 0 && selectedRows.length === selectableRows.length;
+
+  const handleSelectAll = (event: ChangeEvent<HTMLInputElement>) => {
+    setSelectedRows(
+      event.target.checked ? selectableRows.map((row) => row.id) : []
+    );
+  };
+
+  const selectAllCheckbox = (
+    <input
+      type="checkbox"
+      aria-label="Select all rows"
+      className="form-checkbox text-primary border-gray-30 focus:border-secondary h-5 w-5 rounded focus:outline"
+      checked={allRowsSelected}
+      ref={(el) => {
+        if (el) {
+          el.indeterminate = selectedRows.length > 0 && !allRowsSelected;
+        }
+      }}
+      onChange={handleSelectAll}
+    />
+  );
 
   const makeRows = () => {
     if ((!searchRows?.length && searchValue) || !rows.length) {
@@ -289,7 +323,7 @@ export default function UiTable({
     const checkboxCell = (
       <input
         type="checkbox"
-        className="form-checkbox text-primary border-gray-30 focus:border-secondary focus:outline h-5 w-5 rounded "
+        className="form-checkbox text-primary border-gray-30 focus:border-secondary h-5 w-5 rounded focus:outline "
         checked={selectedRows.includes(row.id)}
         onChange={(event) => handleRowSelect(event, row)}
       />
@@ -347,7 +381,7 @@ export default function UiTable({
                 key={`role_` + item?.id}
                 className={
                   `${chipColor(item?.name)}` +
-                  ' m-1 rounded-full py-1 px-3 text-xs text-white'
+                  ' m-1 rounded-full px-3 py-1 text-xs text-white'
                 }
               >
                 {item?.name}
@@ -500,7 +534,7 @@ export default function UiTable({
   return (
     <div className="table-top w-full overflow-hidden rounded-lg shadow-lg">
       {selectedRows?.length >= 1 && (
-        <div className="bg-infoMain flex w-full flex-row items-center justify-between py-2 px-4">
+        <div className="bg-infoMain flex w-full flex-row items-center justify-between px-4 py-2">
           <div className="w-4/12">
             <p className="text-md text-white">
               {selectedRows?.length} Selected
@@ -525,28 +559,28 @@ export default function UiTable({
               main: 'hidden',
             },
           },
-          main: 'rounded-lg',
+          main: hasSelectColumn ? SELECT_COLUMN_CLASSES : '',
           table_head: {
-            table_row: ` mb-10 border-b-2 border-secondary bg-blue-50 `,
-            table_data: `px-6 py-8 pl-6 pr-6 pt-4 pb-4 bg-quaternary text-left text-xs font-medium text-gray-500 uppercase tracking-wider leading-none bg-D2F1F9`,
+            table_row: `border-b-0 border-quatenary bg-adminPortalBg`,
+            table_data: `px-6 py-4 text-left text-sm font-semibold normal-case tracking-normal text-textMid whitespace-nowrap leading-none`,
           },
           table_body: {
             main: ``,
-            // table_row: 'border-none bg-secondary ',
-            table_row: 'border-none py-6 bg-white',
+            table_row:
+              'border-none bg-white transition-colors hover:bg-adminPortalBg',
 
             table_data:
-              'truncate w-20 px-6 pt-2 pb-2 text-sm font-medium text-gray-900 border-b border-gray-100',
+              'truncate px-6 py-3 text-sm font-medium text-textMid border-b border-uiLight align-middle',
           },
           footer: options.footer || {
-            main: `${rows.length < 10 ? 'hidden' : ''} mt-8 mx-5 table-footer`,
+            main: `${rows.length < 10 ? 'hidden' : ''} mt-6 mx-5 table-footer`,
             statistics: {
               main: `${
                 rows.length < 10 ? 'hidden' : ''
-              } text-gray-600 table-stats md:w-auto md:flex-row`,
-              bold_numbers: `text-gray-900 font-bold`,
+              } text-textMid table-stats md:w-auto md:flex-row`,
+              bold_numbers: `text-textDark font-bold`,
             },
-            page_numbers: ` text-secondary page-numbers z-10 relative inline-flex items-center px-4 py-2 text-sm font-medium w-4`,
+            page_numbers: ` text-quatenary page-numbers z-10 relative inline-flex items-center px-4 py-2 text-sm font-medium w-4`,
           },
         }}
         columns={makeColumns()}
@@ -554,7 +588,6 @@ export default function UiTable({
         per_page={20}
         no_content_text="-"
         striped={false}
-        bordered
       />
     </div>
   );

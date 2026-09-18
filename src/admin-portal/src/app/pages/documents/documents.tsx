@@ -196,7 +196,7 @@ export default function Documents() {
         <div className="flex flex-col">
           <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-              <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
+              <div>
                 <UiTable
                   columns={[
                     { field: 'clientName', use: 'Client' },
@@ -233,7 +233,7 @@ export default function Documents() {
             )}
           </span>
           <input
-            className="bg-adminPortalBg focus:outline-none sm:text-md block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
+            className="bg-adminPortalBg sm:text-md block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
             placeholder="      Search by email or name..."
             onChange={search}
           />
@@ -242,7 +242,7 @@ export default function Documents() {
               <button
                 onClick={() => setShowFilter(!showFilter)}
                 id="dropdownHoverButton"
-                className="bg-secondary focus:border-secondary focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
+                className="bg-secondary focus:border-secondary focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-gray-300 focus:outline-none focus:ring-2"
                 type="button"
               >
                 Filter

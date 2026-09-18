@@ -165,7 +165,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             }
             var uId = contextAccessor.HttpContext.GetUser().Id.ToString();
             var classRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
-            return classRepo.GetAll().Where(x => x.PreschoolCode == preSchoolCode).FirstOrDefault();
+            
+            return classRepo.GetAll()
+                .Where(x => x.PreschoolCode == preSchoolCode
+                    && x.IsActive
+                    && x.UserId.HasValue)
+                .FirstOrDefault();
         }
 
     }

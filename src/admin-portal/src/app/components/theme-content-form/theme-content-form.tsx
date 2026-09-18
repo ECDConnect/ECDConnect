@@ -355,7 +355,7 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
             }
           />
 
-          <div className="mt-4 overflow-scroll border-b border-gray-200 shadow sm:rounded-lg">
+          <div className="mt-4">
             {tableData &&
               tableData.map((item: any, idx: number) => {
                 const maximumItemsChecked = tableData.filter((x) =>

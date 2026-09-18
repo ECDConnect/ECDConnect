@@ -4,8 +4,9 @@ import {
   Colours,
   GoogleMapGeoCodeResponse,
   GoogleMapGeoCodeAddressComponentType,
+  MapCoordinates,
 } from '@ecdlink/ui';
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useState, useMemo } from 'react';
 import { SiteAddressDto } from '@ecdlink/core';
 import { staticDataSelectors } from '@/store/static-data';
 import { useSelector } from 'react-redux';
@@ -13,7 +14,7 @@ import { CustomGoogleMap } from '../google-map';
 
 // Format the address based on its components
 export const formatAddress = (address: SiteAddressDto) => {
-  if (address.addressLine1 === '') {
+  if (!address?.addressLine1) {
     return '';
   }
   const parts = [address.addressLine1];
@@ -23,16 +24,32 @@ export const formatAddress = (address: SiteAddressDto) => {
   return parts.join(', ');
 };
 
-// Extract address components from the geocoding response
+// Search every geocode result; results[0] is not always street-level.
 const getAddressComponent = (
   result: GoogleMapGeoCodeResponse,
   type: GoogleMapGeoCodeAddressComponentType
 ) => {
-  const address_components = result.results[0].address_components;
-  const component = address_components.find((item) =>
-    item.types.includes(type)
-  );
-  return component;
+  for (const geocodeResult of result.results) {
+    const component = geocodeResult.address_components.find((item) =>
+      item.types.includes(type)
+    );
+    if (component) {
+      return component;
+    }
+  }
+  return undefined;
+};
+
+const emptyAddress: SiteAddressDto = {
+  addressLine1: '',
+  addressLine2: '',
+  addressLine3: '',
+  municipality: '',
+  provinceId: null,
+  province: null,
+  postalCode: '',
+  latitude: '',
+  longitude: '',
 };
 
 interface AddressMapProps {
@@ -50,102 +67,15 @@ export const AddressMap: React.FC<AddressMapProps> = ({
   onClose,
   onSubmit,
 }) => {
-  // State to hold the address and its formatted version
+  // State to hold the address being edited
   const [address, setAddress] = useState<SiteAddressDto>(
-    propAddress || {
-      addressLine1: '',
-      addressLine2: '',
-      addressLine3: '',
-      municipality: '',
-      provinceId: null,
-      province: null,
-      postalCode: '',
-      latitude: '',
-      longitude: '',
-    }
+    propAddress || emptyAddress
   );
-  const [formattedAddress, setFormattedAddress] = useState<string>(
-    formatAddress(propAddress)
-  );
+
+  // Derived rather than stored, so it can never fall out of step with the pin.
+  const formattedAddress = useMemo(() => formatAddress(address), [address]);
 
   const provinces = useSelector(staticDataSelectors.getProvinces);
-
-  // Function to reverse geocode the coordinates to an address
-  const reverseGeocode = useCallback(
-    async (latitude: number, longitude: number) => {
-      const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${
-        process.env.REACT_APP_MAP_API_KEY ||
-        'AIzaSyAmTVxElyncQJh2hJ1ATFS0K_cB6d3VoSk'
-      }`;
-      const response = await fetch(geocodeUrl);
-      const data = await response.json();
-
-      if (data.status === 'OK' && data.results.length > 0) {
-        const mapData = data;
-        const province = getAddressComponent(
-          mapData,
-          'administrative_area_level_1'
-        )?.long_name;
-        const matchedProvince = province
-          ? provinces.find(
-              (p) => p.description.toLowerCase() === province.toLowerCase()
-            )
-          : null;
-
-        setAddress((prevAddress) => {
-          const updatedAddress: SiteAddressDto = {
-            ...prevAddress,
-            addressLine1: `${
-              getAddressComponent(mapData, 'street_number')?.short_name || ''
-            } ${getAddressComponent(mapData, 'route')?.short_name || ''}`,
-            addressLine2:
-              getAddressComponent(mapData, 'sublocality')?.short_name || '',
-            addressLine3:
-              getAddressComponent(mapData, 'locality')?.short_name || '',
-            municipality:
-              getAddressComponent(mapData, 'administrative_area_level_2')
-                ?.short_name || '',
-            provinceId: matchedProvince ? matchedProvince.id : null,
-            province: !matchedProvince
-              ? null
-              : {
-                  id: matchedProvince.id || '',
-                  enumId: matchedProvince.id || '',
-                  description: matchedProvince.description || '',
-                },
-            postalCode:
-              getAddressComponent(mapData, 'postal_code')?.short_name || '',
-            latitude: latitude.toString(),
-            longitude: longitude.toString(),
-          };
-          setFormattedAddress(formatAddress(updatedAddress));
-          return updatedAddress;
-        });
-      }
-    },
-    [provinces]
-  );
-
-  // Get current location when the component mounts
-  useEffect(() => {
-    if (!propAddress.latitude && !propAddress.longitude) {
-      if ('geolocation' in navigator) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const { latitude, longitude } = position.coords;
-            reverseGeocode(latitude, longitude);
-          },
-          (error) => {
-            console.error('Error getting location:', error);
-          }
-        );
-      } else {
-        console.error('Geolocation is not supported by this browser.');
-      }
-    } else {
-      setFormattedAddress(formatAddress(propAddress));
-    }
-  }, [propAddress, reverseGeocode]);
 
   // Save the address and close the dialog
   const onClickSaveAddress = useCallback(() => {
@@ -158,9 +88,13 @@ export const AddressMap: React.FC<AddressMapProps> = ({
     onClose && onClose();
   }, [onClose]);
 
-  // Handle map data change when the pin is moved
-  const onChangeMapData = (mapData?: GoogleMapGeoCodeResponse) => {
-    if (mapData && mapData.results.length > 0 && mapData.status === 'OK') {
+  // Handle map data change when the pin is moved or the map first locates
+  const onChangeMapData = useCallback(
+    (mapData?: GoogleMapGeoCodeResponse, coordinates?: MapCoordinates) => {
+      if (!mapData || mapData.status !== 'OK' || !mapData.results?.length) {
+        return;
+      }
+
       const province = getAddressComponent(
         mapData,
         'administrative_area_level_1'
@@ -170,52 +104,67 @@ export const AddressMap: React.FC<AddressMapProps> = ({
             (p) => p.description.toLowerCase() === province.toLowerCase()
           )
         : null;
+      const streetNumber =
+        getAddressComponent(mapData, 'street_number')?.short_name || '';
+      const route = getAddressComponent(mapData, 'route')?.short_name || '';
+      // Prefer where the pin actually sits over the address the geocoder
+      // snapped it to.
+      const latitude =
+        coordinates?.latitude ?? mapData.results[0].geometry.location.lat;
+      const longitude =
+        coordinates?.longitude ?? mapData.results[0].geometry.location.lng;
 
-      const updatedAddress: SiteAddressDto = {
-        ...address,
-        addressLine1: `${
-          getAddressComponent(mapData, 'street_number')?.short_name || ''
-        } ${getAddressComponent(mapData, 'route')?.short_name || ''}`,
-        addressLine2:
-          getAddressComponent(mapData, 'sublocality')?.short_name || '',
-        addressLine3:
-          getAddressComponent(mapData, 'locality')?.short_name || '',
-        municipality:
-          getAddressComponent(mapData, 'administrative_area_level_2')
-            ?.short_name || '',
-        provinceId: matchedProvince ? matchedProvince.id : null,
-        province: !matchedProvince
-          ? null
-          : {
-              id: matchedProvince.id || '',
-              enumId: matchedProvince.id || '',
-              description: matchedProvince.description || '',
-            },
-        postalCode:
-          getAddressComponent(mapData, 'postal_code')?.short_name || '',
-        latitude: mapData.results[0].geometry.location.lat.toString(),
-        longitude: mapData.results[0].geometry.location.lng.toString(),
-      };
+      setAddress((prevAddress) => {
+        const updatedAddress: SiteAddressDto = {
+          ...prevAddress,
+          addressLine1:
+            `${streetNumber} ${route}`.trim() ||
+            mapData.results[0]?.formatted_address ||
+            '',
+          addressLine2:
+            getAddressComponent(mapData, 'sublocality')?.short_name || '',
+          addressLine3:
+            getAddressComponent(mapData, 'locality')?.short_name || '',
+          municipality:
+            getAddressComponent(mapData, 'administrative_area_level_2')
+              ?.short_name || '',
+          provinceId: matchedProvince ? matchedProvince.id : null,
+          province: !matchedProvince
+            ? null
+            : {
+                id: matchedProvince.id || '',
+                enumId: matchedProvince.id || '',
+                description: matchedProvince.description || '',
+              },
+          postalCode:
+            getAddressComponent(mapData, 'postal_code')?.short_name || '',
+          latitude: latitude.toString(),
+          longitude: longitude.toString(),
+        };
 
-      // Only update the state if the address has changed
-      if (JSON.stringify(address) !== JSON.stringify(updatedAddress)) {
-        setAddress(updatedAddress);
-        setFormattedAddress(formatAddress(updatedAddress));
-      }
-    }
-  };
+        return JSON.stringify(prevAddress) === JSON.stringify(updatedAddress)
+          ? prevAddress
+          : updatedAddress;
+      });
+    },
+    [provinces]
+  );
 
   return (
     <div>
       <CustomGoogleMap
         height={window.screen.height - componentHeight}
         longitude={
-          !address.longitude ? undefined : parseFloat(address.longitude)
+          !propAddress?.longitude
+            ? undefined
+            : parseFloat(propAddress.longitude)
         }
-        latitude={!address.latitude ? undefined : parseFloat(address.latitude)}
+        latitude={
+          !propAddress?.latitude ? undefined : parseFloat(propAddress.latitude)
+        }
         onChangeMapData={onChangeMapData}
       />
-      <div className="min-h-64 absolute bottom-0 w-full flex-1 rounded-t-2xl bg-white px-5">
+      <div className="absolute bottom-0 min-h-64 w-full flex-1 rounded-t-2xl bg-white px-5">
         <Typography
           type="h2"
           color={'textDark'}

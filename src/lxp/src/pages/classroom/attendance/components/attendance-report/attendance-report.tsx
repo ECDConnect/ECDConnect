@@ -33,6 +33,7 @@ import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { IconInformationIndicator } from '@/pages/classroom/programme-planning/components/icon-information-indicator/icon-information-indicator';
 import { useHolidays } from '@/hooks/useHolidays';
 import { useMonthlyAttendanceSummary } from '@/hooks/useMonthlyAttendanceSummary';
+import { ReactComponent as YellowSmile } from '@/assets/emoji_yellow_bigsmile.svg';
 
 export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   classroom,
@@ -98,6 +99,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     | undefined;
 
   const [attendanceTracked, setAttendanceTracked] = useState<boolean>(false);
+  const [isSuccessCardDismissed, setIsSuccessCardDismissed] = useState(false);
   const [selectedClassroomGroups, setSelectedClassroomGroups] = useState<
     ClassroomGroupDto[]
   >([]);
@@ -240,10 +242,11 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
               className="mb-4"
             />
             <PointsSuccessCard
-              visible={!!isAllRegistersCompleted}
+              visible={!!isAllRegistersCompleted && !isSuccessCardDismissed}
               className="mb-4"
               message="Good job! All your attendance registers are up to date!"
-              icon="SparklesIcon"
+              customIcon={<YellowSmile className="h-12 w-12 shrink-0" />}
+              onClose={() => setIsSuccessCardDismissed(true)}
             />
           </>
         )}
