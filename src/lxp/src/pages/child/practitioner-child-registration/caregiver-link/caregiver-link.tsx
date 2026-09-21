@@ -31,6 +31,7 @@ import {
 } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import { ClassDashboardRouteState } from '@/pages/business/business.types';
 import childRegistrationForm from '@/assets/ECD_connect_registration_form.pdf';
+import { ChildRegistrationDto } from '@/models/child/child-registration.dto';
 
 export interface CaregiverLinkProps extends ComponentBaseProps {
   childDetails: ChildBasicInfoModel;
@@ -119,7 +120,7 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
 
   const createLink = async () => {
     setLoadingLink(true);
-    let childRegistrationDetails;
+    let childRegistrationDetails: ChildRegistrationDto;
     try {
       childRegistrationDetails = await getChildToken();
     } catch {
