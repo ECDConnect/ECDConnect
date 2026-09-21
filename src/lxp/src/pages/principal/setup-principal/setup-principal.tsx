@@ -282,7 +282,7 @@ export const SetupPrincipal: React.FC = () => {
     const classroomInputModel = classroom as ClassroomDto;
     await appDispatch(
       classroomsThunkActions.upsertClassroom(classroomInputModel)
-    );
+    ).unwrap();
     // save practitioners and permissions
     await appDispatch(
       classroomsThunkActions.updateClassroomPractitionerPermissions({})

@@ -94,7 +94,7 @@ export const ChildBasicInfo: React.FC<
     useState<ChildRegistrationDto>();
   const [loadingLink, setLoadingLink] = useState(false);
   const allClassroomGroups = useSelector(
-    classroomsSelectors?.getClassroomGroups
+    classroomsSelectors.getSelectableClassroomGroups
   );
 
   const user = useSelector(getUser);
@@ -108,10 +108,15 @@ export const ChildBasicInfo: React.FC<
     (role) => role.systemName === RoleSystemNameEnum.Coach
   );
 
-  const { isLoading } = useThunkFetchCall(
+  const { isLoading: isFindingChild } = useThunkFetchCall(
     'children',
     ChildrenActions.FIND_CREATED_CHILD
   );
+  const { isLoading: isGeneratingToken } = useThunkFetchCall(
+    'children',
+    ChildrenActions.GENERATE_CAREGIVER_CHILD_TOKEN
+  );
+  const isLoading = isFindingChild || isGeneratingToken;
 
   // List of children available with similar name
   const setNewStackListItems = (checkChild: ChildMatchingDto) => {
@@ -225,24 +230,32 @@ export const ChildBasicInfo: React.FC<
   };
 
   const generateCaregiverChildToken = async () => {
+    if (isLoading) {
+      return;
+    }
+
     let newChild;
-    if (isOnline) {
-      newChild = await dispatch(
-        childrenThunkActions.generateCaregiverChildToken({
-          firstName: firstName,
-          surname: surname,
-          classgroupId: getSelectedClassroomGroupId(),
-        })
-      ).unwrap();
-    } else {
-      newChild = {
-        childId: newGuid(),
-        childUserId: newGuid(),
-        addedByUserId: '',
-        classroomGroupId: getSelectedClassroomGroupId(),
-        caregiverRegistrationUrl: '',
-      };
-      createLocalUser(newChild);
+    try {
+      if (isOnline) {
+        newChild = await dispatch(
+          childrenThunkActions.generateCaregiverChildToken({
+            firstName: firstName,
+            surname: surname,
+            classgroupId: getSelectedClassroomGroupId(),
+          })
+        ).unwrap();
+      } else {
+        newChild = {
+          childId: newGuid(),
+          childUserId: newGuid(),
+          addedByUserId: '',
+          classroomGroupId: getSelectedClassroomGroupId(),
+          caregiverRegistrationUrl: '',
+        };
+        createLocalUser(newChild);
+      }
+    } catch {
+      return;
     }
     setRegisteredChild(newChild);
     showMenuOptions(newChild);
@@ -318,21 +331,26 @@ export const ChildBasicInfo: React.FC<
     if (isOnline) {
       setLoadingLink(true);
       let childDetails: ChildRegistrationDto;
-      if (newChild?.childId) {
-        childDetails = await dispatch(
-          childrenThunkActions.refreshCaregiverChildToken({
-            childId: newChild?.childId,
-            classgroupId: newChild?.classroomGroupId,
-          })
-        ).unwrap();
-      } else {
-        childDetails = await dispatch(
-          childrenThunkActions.generateCaregiverChildToken({
-            firstName: firstName,
-            surname: surname,
-            classgroupId: newChild?.classroomGroupId,
-          })
-        ).unwrap();
+      try {
+        if (newChild?.childId) {
+          childDetails = await dispatch(
+            childrenThunkActions.refreshCaregiverChildToken({
+              childId: newChild?.childId,
+              classgroupId: newChild?.classroomGroupId,
+            })
+          ).unwrap();
+        } else {
+          childDetails = await dispatch(
+            childrenThunkActions.generateCaregiverChildToken({
+              firstName: firstName,
+              surname: surname,
+              classgroupId: newChild?.classroomGroupId,
+            })
+          ).unwrap();
+        }
+      } catch {
+        setLoadingLink(false);
+        return;
       }
       setChildRegistrationDetails(childDetails);
 

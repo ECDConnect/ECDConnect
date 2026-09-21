@@ -57,6 +57,10 @@ export interface UpdateUsernameModel {
   token?: string;
   shareInfo?: boolean;
   registerType?: LoginType;
+  acquisitionUrl?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
 }
 
 export interface PortalConsentModel {

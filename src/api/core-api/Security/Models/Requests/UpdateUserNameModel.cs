@@ -10,5 +10,9 @@ namespace EcdLink.Api.CoreApi.Security.Models.Requests
         public string Token { get; set; }
         public bool ShareInfo { get; set; } = false;
         public string RegisterType { get; set; }
+        public string AcquisitionUrl { get; set; }
+        public string UtmSource { get; set; }
+        public string UtmMedium { get; set; }
+        public string UtmCampaign { get; set; }
     }
 }

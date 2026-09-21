@@ -24,26 +24,29 @@ export const getUser = createAsyncThunk<
       user: { user: userCache },
     } = getState();
 
-    if (!userCache) {
-      try {
-        let user: UserDto | undefined;
+    const cacheBelongsToCurrentUser =
+      !!userCache && !!userAuth?.id && userCache.id === userAuth.id;
 
-        if (userAuth?.auth_token) {
-          user = await new UserService(userAuth?.auth_token).getUser();
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        if (!user) {
-          return rejectWithValue('Error getting User');
-        }
-
-        return user;
-      } catch (err) {
-        return rejectWithValue(err);
-      }
-    } else {
+    if (cacheBelongsToCurrentUser) {
       return userCache as UserDto;
+    }
+
+    try {
+      let user: UserDto | undefined;
+
+      if (userAuth?.auth_token) {
+        user = await new UserService(userAuth?.auth_token).getUser();
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!user) {
+        return rejectWithValue('Error getting User');
+      }
+
+      return user;
+    } catch (err) {
+      return rejectWithValue(err);
     }
   }
 );
@@ -62,28 +65,35 @@ export const getUserConsents = createAsyncThunk<
       user: { userConsent: userConsentCache },
     } = getState();
 
-    if (!userConsentCache) {
-      try {
-        let userConsent: UserConsentDto[] | undefined;
+    const cacheBelongsToCurrentUser =
+      !!userConsentCache &&
+      !!userAuth?.id &&
+      userConsentCache.every(
+        (consent) => !consent.userId || consent.userId === userAuth.id
+      );
 
-        if (userAuth?.auth_token) {
-          userConsent = await new UserService(
-            userAuth?.auth_token
-          ).getUserConsents(userAuth.id);
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        if (!userConsent) {
-          return rejectWithValue('Error getting User Consent');
-        }
-
-        return userConsent;
-      } catch (err) {
-        return rejectWithValue(err);
-      }
-    } else {
+    if (cacheBelongsToCurrentUser) {
       return userConsentCache;
+    }
+
+    try {
+      let userConsent: UserConsentDto[] | undefined;
+
+      if (userAuth?.auth_token) {
+        userConsent = await new UserService(
+          userAuth?.auth_token
+        ).getUserConsents(userAuth.id);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!userConsent) {
+        return rejectWithValue('Error getting User Consent');
+      }
+
+      return userConsent;
+    } catch (err) {
+      return rejectWithValue(err);
     }
   }
 );

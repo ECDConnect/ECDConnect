@@ -15,6 +15,7 @@ using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Api.Constants;
+using ECDLink.Security.Api.Helpers;
 using ECDLink.Security.Extensions;
 using ECDLink.Security.Helpers;
 using ECDLink.Security.JwtSecurity.Enums;
@@ -510,6 +511,12 @@ namespace ECDLink.Security.Api
             user.UserName = input.UserName;
             user.UpdatedDate = DateTime.Now;
             user.RegisterType = string.IsNullOrEmpty(input.RegisterType) ? RegisterTypeConstants.USERNAME : input.RegisterType;
+            AcquisitionTrackingHelper.Apply(
+                user,
+                input.AcquisitionUrl,
+                input.UtmSource,
+                input.UtmMedium,
+                input.UtmCampaign);
             var updateResult = _userManager.UpdateAsync(user).Result;
             if (!updateResult.Succeeded)
             {

@@ -41,6 +41,10 @@ export interface UserDto extends EntityBase {
   connectUsage?: string;
   profilePicIsEmoji?: boolean;
   registerType?: string;
+  acquisitionUrl?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
   synced?: boolean;
   whatsAppConsent?: boolean | null;
 }

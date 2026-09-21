@@ -282,19 +282,24 @@ export const OaLogin: React.FC = () => {
   };
 
   const checkSyncData = async (username: string) => {
-    if (
-      username !== decryptCurrentUserId() &&
-      !!practitioner /* &&
-      isOnline*/
-    ) {
-      await appDispatch(
-        triggerBackgroundSync({ includeOfflineSyncData: true })
-      );
-
-      resetAppStore && (await resetAppStore());
-      resetAuth && (await resetAuth());
-      resetUser && (await resetUser());
+    const previousUsername = decryptCurrentUserId();
+    if (username === previousUsername) {
+      return;
     }
+
+    try {
+      if (previousUsername && practitioner) {
+        await appDispatch(
+          triggerBackgroundSync({ includeOfflineSyncData: true })
+        );
+      }
+    } catch (error) {
+      console.error('Failed to sync previous user data before login', error);
+    }
+
+    resetAppStore && (await resetAppStore());
+    resetAuth && (await resetAuth());
+    resetUser && (await resetUser());
   };
 
   const loginOffline = async (loginRequest: LoginRequestModel) => {

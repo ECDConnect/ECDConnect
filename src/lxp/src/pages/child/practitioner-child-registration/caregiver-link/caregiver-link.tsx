@@ -119,7 +119,13 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
 
   const createLink = async () => {
     setLoadingLink(true);
-    const childRegistrationDetails = await getChildToken();
+    let childRegistrationDetails;
+    try {
+      childRegistrationDetails = await getChildToken();
+    } catch {
+      setLoadingLink(false);
+      return;
+    }
 
     if (!childId) {
       refetchData(childId!);
@@ -268,7 +274,7 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
         disabled={loadingManualUpload}
         onClick={onUploadSelf}
       />
-      <Divider title="OR" dividerType="solid" className="mt-8 mb-6" />
+      <Divider title="OR" dividerType="solid" className="mb-6 mt-8" />
       <Typography
         type="h4"
         color="textDark"
