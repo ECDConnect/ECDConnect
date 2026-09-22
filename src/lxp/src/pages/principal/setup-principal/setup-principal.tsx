@@ -1,4 +1,8 @@
-import { useDialog, usePrevious, LocalStorageKeys } from '@ecdlink/core';
+import { useDialog, usePrevious, SessionStorageKeys } from '@ecdlink/core';
+import {
+  getSessionItem,
+  removeSessionItem,
+} from '@/utils/common/session-storage.utils';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { MutationAddPractitionerToPrincipalArgs } from '@ecdlink/graphql';
 import { IonContent } from '@ionic/react';
@@ -82,9 +86,9 @@ export const SetupPrincipal: React.FC = () => {
   };
 
   const [isLoading, setIsLoading] = useState(false);
-  const inviTePractitionerUserId = localStorage
-    .getItem(LocalStorageKeys.practitionerInvitedPrincipalUserId)
-    ?.replace(/['"]+/g, '');
+  const inviTePractitionerUserId = getSessionItem<string>(
+    SessionStorageKeys.practitionerInvitedPrincipalUserId
+  );
 
   const [confirmPractitionerPage, setConfirmPractitionerPage] =
     useState<ConfirmPractitionersSteps>(
@@ -422,12 +426,8 @@ export const SetupPrincipal: React.FC = () => {
         await appDispatch(notificationActions.resetFrontendNotificationState());
       }
     }
-    localStorage.removeItem(
-      LocalStorageKeys.practitionerInvitedPrincipalIdNumber
-    );
-    localStorage.removeItem(
-      LocalStorageKeys.practitionerInvitedPrincipalUserId
-    );
+    removeSessionItem(SessionStorageKeys.practitionerInvitedPrincipalIdNumber);
+    removeSessionItem(SessionStorageKeys.practitionerInvitedPrincipalUserId);
     // clear practitioners and permissions on state
     await appDispatch(classroomsActions.deleteClassroomPractitioner());
     setIsLoading(false);

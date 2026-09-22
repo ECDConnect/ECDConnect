@@ -47,11 +47,7 @@ import { programmeActions, programmeThunkActions } from './store/programme';
 import { calendarActions, calendarThunkActions } from './store/calendar';
 import { authSelectors } from '@store/auth';
 import { statementsActions, statementsThunkActions } from '@store/statements';
-import {
-  LocalStorageKeys,
-  ResourceLocaleId,
-  RoleSystemNameEnum,
-} from '@ecdlink/core';
+import { ResourceLocaleId, RoleSystemNameEnum } from '@ecdlink/core';
 import { communityActions, communityThunkActions } from './store/community';
 import { ClassroomService } from './services/ClassroomService';
 import { pointsActions, pointsThunkActions } from './store/points';
@@ -563,12 +559,11 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       userAuth?.auth_token!
     ).getClassroomForUser(practitioner?.principalHierarchy!);
     if (classroom) {
-      localStorage.setItem(
-        LocalStorageKeys.classroomForInvitedUser,
-        classroom?.name
+      appDispatch(
+        classroomsActions.setInvitedUserClassroomName(classroom?.name)
       );
     }
-  }, [practitioner?.principalHierarchy, userAuth?.auth_token]);
+  }, [appDispatch, practitioner?.principalHierarchy, userAuth?.auth_token]);
 
   useEffect(() => {
     if (userData && practitioner?.principalHierarchy && !classroomForUser)
