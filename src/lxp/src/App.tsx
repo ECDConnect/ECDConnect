@@ -24,7 +24,6 @@ import { LoginModal } from './pages/auth/login-modal/login-modal';
 import { authActions, authSelectors } from './store/auth';
 import { useVersionCheck } from './hooks/useVersionCheck';
 import { UpdateRequired } from './pages/update-required/update-required';
-import { differenceInHours, isSameDay } from 'date-fns';
 import { stopReportingRuntimeErrors } from 'react-error-overlay';
 import { useTenant } from './hooks/useTenant';
 import { Helmet } from 'react-helmet';
@@ -226,28 +225,6 @@ const App: React.FC = () => {
       // Optionally block form or show message immediately
     }
   }, [freeMemory]);
-
-  const onFocus = () => {
-    const focusItem = JSON.parse(localStorage?.getItem('appFocus')!);
-    const isSameDayItem = isSameDay(new Date(), new Date(focusItem));
-    const differenceInHoursBetweenItems = differenceInHours(
-      new Date(),
-      new Date(focusItem)
-    );
-
-    if (!isSameDayItem || differenceInHoursBetweenItems > 6) {
-      localStorage.setItem('appFocus', JSON.stringify(new Date()));
-    }
-  };
-
-  useEffect(() => {
-    window.addEventListener('focus', onFocus);
-    onFocus();
-    return () => {
-      window.removeEventListener('focus', onFocus);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const reloadView = () => {
     window.location.reload();

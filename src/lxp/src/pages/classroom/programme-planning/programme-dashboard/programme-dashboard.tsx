@@ -7,10 +7,7 @@ import { DailyRoutine } from './components/daily-routine/daily-routine';
 import { useCallback, useEffect, useState } from 'react';
 import { useHolidays } from '@/hooks/useHolidays';
 import { LocalStorageKeys, useDialog, usePrevious } from '@ecdlink/core';
-import {
-  getStorageItem,
-  setStorageItem,
-} from '@/utils/common/local-storage.utils';
+import { getStorageItem } from '@/utils/common/local-storage.utils';
 import { progressTrackingSelectors } from '@/store/progress-tracking';
 import { useHistory, useLocation, useParams } from 'react-router';
 import ProgressReport from '../components/progress-report/progress-report';
@@ -198,10 +195,6 @@ export const ProgrammeDashboard: React.FC = () => {
                 colour: 'quatenary',
                 type: 'filled',
                 onClick: () => {
-                  setStorageItem(
-                    true,
-                    LocalStorageKeys.hasVisitedProgrammeDashboard
-                  );
                   history.push(ROUTES.PROGRAMMES.THEME, {
                     classroomGroupId,
                   } as ProgrammeThemeRouteState);
@@ -215,10 +208,6 @@ export const ProgrammeDashboard: React.FC = () => {
                 colour: 'quatenary',
                 type: 'outlined',
                 onClick: () => {
-                  setStorageItem(
-                    true,
-                    LocalStorageKeys.hasVisitedProgrammeDashboard
-                  );
                   onCancel();
                 },
                 leadingIcon: 'PencilAltIcon',
