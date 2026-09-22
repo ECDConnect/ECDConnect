@@ -10,4 +10,7 @@ export enum SessionStorageKeys {
   firstTimeOnCommunityDashboard = 'firstTimeOnCommunityDashboard',
   practitionerInvitedPrincipalIdNumber = 'practitionerInvitedPrincipal',
   practitionerInvitedPrincipalUserId = 'practitionerInvitedPrincipalUserId',
+  selectedUser = 'selectedUser',
+  selectedMessage = 'selectedMessage',
+  passwordResetEmail = 'passwordResetEmail',
 }
