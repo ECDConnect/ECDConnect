@@ -47,6 +47,7 @@ import { programmeActions, programmeThunkActions } from './store/programme';
 import { calendarActions, calendarThunkActions } from './store/calendar';
 import { authSelectors } from '@store/auth';
 import { statementsActions, statementsThunkActions } from '@store/statements';
+import { userFlagsActions, userFlagsThunkActions } from '@store/user-flags';
 import { ResourceLocaleId, RoleSystemNameEnum } from '@ecdlink/core';
 import { communityActions, communityThunkActions } from './store/community';
 import { ClassroomService } from './services/ClassroomService';
@@ -144,6 +145,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     appDispatch(practitionerForCoachActions.resetPractitionerState());
     appDispatch(programmeActions.resetProgrammeState());
     appDispatch(statementsActions.resetStatementsState());
+    appDispatch(userFlagsActions.resetUserFlagsState());
   };
 
   const initStoreSetup = useCallback(async () => {
@@ -209,6 +211,8 @@ const InitialStoreSetup: React.FC = ({ children }) => {
             })
           ),
         ];
+
+    promises.push(appDispatch(userFlagsThunkActions.getUserFlags()).unwrap());
 
     if (isPrincipal) {
       promises.push(

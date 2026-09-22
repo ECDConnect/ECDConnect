@@ -40,4 +40,5 @@ export * from './dto/Meetings';
 export * from './dto/Resources';
 export * from './help-form';
 export * from './dto/Invite';
+export * from './dto/UserFlag';
 export * from './dto/EcdRegistration';
