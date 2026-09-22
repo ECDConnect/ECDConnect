@@ -10,6 +10,7 @@ import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils
 import { useAppContext } from '@/walkthrougContext';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { IncomeStatementDto, LocalStorageKeys } from '@ecdlink/core';
+import { getStorageItem } from '@/utils/common/local-storage.utils';
 
 interface IncomeStatementProps {
   statements: IncomeStatementDto[];
@@ -21,9 +22,7 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
   statements,
 }) => {
   const { isOnline } = useOnlineStatus();
-  const offlineImg = window.localStorage.getItem(
-    LocalStorageKeys.offlineStatments
-  );
+  const offlineImg = getStorageItem<string>(LocalStorageKeys.offlineStatments);
   const {
     state: { stepIndex },
   } = useAppContext();
