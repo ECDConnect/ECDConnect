@@ -9,8 +9,8 @@ import React, { useEffect, useMemo } from 'react';
 import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
 import { useAppContext } from '@/walkthrougContext';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { IncomeStatementDto, LocalStorageKeys } from '@ecdlink/core';
-import { getStorageItem } from '@/utils/common/local-storage.utils';
+import { IncomeStatementDto } from '@ecdlink/core';
+import offlineStatementsImage from '../../../../../assets/statements-offline.png';
 
 interface IncomeStatementProps {
   statements: IncomeStatementDto[];
@@ -22,7 +22,6 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
   statements,
 }) => {
   const { isOnline } = useOnlineStatus();
-  const offlineImg = getStorageItem<string>(LocalStorageKeys.offlineStatments);
   const {
     state: { stepIndex },
   } = useAppContext();
@@ -215,7 +214,12 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
   return (
     <>
       <div className="pb-180 flex flex-col justify-center p-4">
-        {!isOnline && <img src={offlineImg!} alt="offline img" />}
+        {!isOnline && (
+          <img
+            src={offlineStatementsImage}
+            alt="Statements are unavailable offline"
+          />
+        )}
         {renderData}
       </div>
     </>

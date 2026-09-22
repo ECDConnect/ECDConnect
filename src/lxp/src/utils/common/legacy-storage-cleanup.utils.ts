@@ -27,6 +27,10 @@ const MIGRATED_LOCAL_STORAGE_KEYS = [
   'hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod3',
   'hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod4',
   'hasClikedOnProgrammePlanningAfterEndOfProgressReportYear',
+  // A base64 copy of a bundled placeholder image, re-encoded through a canvas
+  // on every dashboard visit. The asset ships in the bundle and is precached,
+  // so this only ever consumed quota.
+  'offlineStatments',
 ];
 
 /** Deletes storage left behind by earlier builds. Safe to run on every start. */
