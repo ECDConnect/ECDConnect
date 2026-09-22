@@ -1,7 +1,7 @@
 import { LocalStorageKeys } from '@ecdlink/core';
 import { getStorageItem, setStorageItem } from './local-storage.utils';
 
-const key = LocalStorageKeys.attendanceTutorialComplete;
+const key = LocalStorageKeys.offlineStatments;
 
 describe('local-storage.utils', () => {
   beforeEach(() => {
