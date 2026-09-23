@@ -137,6 +137,10 @@ type ApplicationUser {
   reasonForLeaving: String
   reasonForLeavingComments: String
   registerType: String
+  acquisitionUrl: String
+  utmSource: String
+  utmMedium: String
+  utmCampaign: String
   shareInfoPartners: Boolean
   whatsAppConsent: Boolean
   userPermissions: [UserPermission]
@@ -1417,6 +1421,9 @@ type Mutation {
   updateUserCertificate(input: UserCertificateInput id: UUID): UserCertificate @permission(objectType: "*", methodType: UPDATE)
   createUserCertificate(input: UserCertificateInput): UserCertificate @permission(objectType: "*", methodType: CREATE)
   deleteUserCertificate(id: UUID): Boolean @permission(objectType: "*", methodType: DELETE)
+  updateUserFlag(input: UserFlagInput id: UUID): UserFlag @permission(objectType: "UserFlag", methodType: UPDATE)
+  createUserFlag(input: UserFlagInput): UserFlag @permission(objectType: "UserFlag", methodType: CREATE)
+  deleteUserFlag(id: UUID): Boolean @permission(objectType: "UserFlag", methodType: DELETE)
   updateUserHelp(input: UserHelpInput id: UUID): UserHelp @permission(objectType: "Static", methodType: UPDATE)
   createUserHelp(input: UserHelpInput): UserHelp @permission(objectType: "Static", methodType: CREATE)
   deleteUserHelp(id: UUID): Boolean @permission(objectType: "Static", methodType: DELETE)
@@ -1714,6 +1721,7 @@ type Mutation {
   sendBulkInviteToPortal(userIds: [String]): BulkInvitationResult @permission(objectType: "Notifications", methodType: CREATE) @cost(weight: "10")
   sendPractitionerInviteToPreSchool(practitionerPhoneNumber: String preSchoolNameCode: String preSchoolName: String principalUserId: UUID! idOrPassport: String): String @permission(objectType: "Notifications", methodType: CREATE) @cost(weight: "10")
   sendPrincipalInviteToApplication(principalPhoneNumber: String practitionerUserId: UUID!): String @permission(objectType: "Notifications", methodType: CREATE) @cost(weight: "10")
+  setUserFlag(key: String value: String): Boolean! @permission(objectType: "Static", methodType: UPDATE)
   addUser(input: UserModelInput): ApplicationUser @permission(objectType: "User", methodType: CREATE) @cost(weight: "10")
   updateUser(id: String input: UserModelInput): ApplicationUser @permission(objectType: "User", methodType: UPDATE) @cost(weight: "10")
   deleteUser(id: String): Boolean! @permission(objectType: "User", methodType: DELETE) @cost(weight: "10")
@@ -2420,6 +2428,9 @@ type Query {
   GetAllUserCertificate(pagingInput: PagedQueryInput where: UserCertificateFilterInput @cost(weight: "10") order: [UserCertificateSortInput!] @cost(weight: "10")): [UserCertificate] @permission(objectType: "*", methodType: VIEW)
   countUserCertificate(pagingInput: PagedQueryInput where: IntOperationFilterInput @cost(weight: "10")): Int @permission(objectType: "*", methodType: VIEW)
   GetUserCertificateById(id: UUID where: UserCertificateFilterInput @cost(weight: "10")): UserCertificate @permission(objectType: "*", methodType: VIEW) @cost(weight: "10")
+  GetAllUserFlag(pagingInput: PagedQueryInput where: UserFlagFilterInput @cost(weight: "10") order: [UserFlagSortInput!] @cost(weight: "10")): [UserFlag] @permission(objectType: "UserFlag", methodType: VIEW)
+  countUserFlag(pagingInput: PagedQueryInput where: IntOperationFilterInput @cost(weight: "10")): Int @permission(objectType: "UserFlag", methodType: VIEW)
+  GetUserFlagById(id: UUID where: UserFlagFilterInput @cost(weight: "10")): UserFlag @permission(objectType: "UserFlag", methodType: VIEW) @cost(weight: "10")
   GetAllUserHelp(pagingInput: PagedQueryInput where: UserHelpFilterInput @cost(weight: "10") order: [UserHelpSortInput!] @cost(weight: "10")): [UserHelp] @permission(objectType: "Static", methodType: VIEW)
   countUserHelp(pagingInput: PagedQueryInput where: IntOperationFilterInput @cost(weight: "10")): Int @permission(objectType: "Static", methodType: VIEW)
   GetUserHelpById(id: UUID where: UserHelpFilterInput @cost(weight: "10")): UserHelp @permission(objectType: "Static", methodType: VIEW) @cost(weight: "10")
@@ -2737,12 +2748,13 @@ type Query {
   allDocument(userId: String showOnlyTypes: [String] search: String pagingInput: PagedQueryInput order: [DocumentSortInput!] @cost(weight: "10")): [Document] @permission(objectType: "Documents", methodType: VIEW) @cost(weight: "10")
   cmsSyncStatus(lastSync: DateTime!): CmsSyncStatus @permission(objectType: "UserConsent", methodType: VIEW) @cost(weight: "10")
   currentUserCompletedTrainingCourses: [UserTrainingCourse] @permission(objectType: "Training", methodType: VIEW) @cost(weight: "10")
+  userFlags: [UserFlag] @permission(objectType: "Static", methodType: VIEW)
   users(pagingInput: PagedQueryInput search: String order: [ApplicationUserSortInput!] @cost(weight: "10")): [ApplicationUser] @permission(objectType: "Portal", methodType: VIEW) @cost(weight: "10")
   countUsers(pagingInput: PagedQueryInput search: String): Int! @permission(objectType: "Portal", methodType: VIEW) @cost(weight: "10")
   userById(userId: String): ApplicationUser @permission(objectType: "User", methodType: VIEW) @cost(weight: "10")
   userByToken(token: String): UserByToken @permission(objectType: "User", methodType: VIEW)
   getMoodleSessionForCurrentUser: String @permission(objectType: "User", methodType: VIEW) @cost(weight: "10")
-  latestUrlInviteForUser(userId: UUID!): String @permission(objectType: "User", methodType: VIEW) @cost(weight: "10")
+  latestUrlInviteForUser(userId: UUID!): String @cost(weight: "10")
   userSyncStatus(lastSync: DateTime! classroomId: UUID!): UserSyncStatus @permission(objectType: "User", methodType: VIEW) @cost(weight: "10")
   visitDataForVisit(visitId: String): [VisitData] @permission(objectType: "Visits", methodType: VIEW)
   completedVisitsForVisitId(visitId: String): [String] @permission(objectType: "Visits", methodType: VIEW)
@@ -3247,6 +3259,17 @@ type UserConsent {
   updatedBy: String
 }
 
+type UserFlag {
+  userId: UUID!
+  flagKey: String
+  flagValue: String
+  id: UUID!
+  isActive: Boolean!
+  insertedDate: DateTime!
+  updatedDate: DateTime!
+  updatedBy: String
+}
+
 type UserGrant {
   userId: UUID
   grant: Grant
@@ -3386,7 +3409,12 @@ type UserTrainingCourse {
   user: ApplicationUser
   userId: UUID!
   courseName: String
-  completedDate: DateTime!
+  completedDate: DateTime
+  startedDate: DateTime
+  progressPercentage: Decimal!
+  lastActivityDate: DateTime
+  externalCourseId: String
+  status: String
   id: UUID!
   isActive: Boolean!
   insertedDate: DateTime!
@@ -3677,6 +3705,10 @@ input ApplicationUserFilterInput {
   reasonForLeaving: StringOperationFilterInput
   reasonForLeavingComments: StringOperationFilterInput
   registerType: StringOperationFilterInput
+  acquisitionUrl: StringOperationFilterInput
+  utmSource: StringOperationFilterInput
+  utmMedium: StringOperationFilterInput
+  utmCampaign: StringOperationFilterInput
   shareInfoPartners: BooleanOperationFilterInput
   whatsAppConsent: BooleanOperationFilterInput
   userPermissions: ListFilterInputTypeOfUserPermissionFilterInput
@@ -3740,6 +3772,10 @@ input ApplicationUserInput {
   reasonForLeaving: String
   reasonForLeavingComments: String
   registerType: String
+  acquisitionUrl: String
+  utmSource: String
+  utmMedium: String
+  utmCampaign: String
   shareInfoPartners: Boolean
   whatsAppConsent: Boolean
   userPermissions: [UserPermissionInput]
@@ -3801,6 +3837,10 @@ input ApplicationUserSortInput {
   reasonForLeaving: SortEnumType @cost(weight: "10")
   reasonForLeavingComments: SortEnumType @cost(weight: "10")
   registerType: SortEnumType @cost(weight: "10")
+  acquisitionUrl: SortEnumType @cost(weight: "10")
+  utmSource: SortEnumType @cost(weight: "10")
+  utmMedium: SortEnumType @cost(weight: "10")
+  utmCampaign: SortEnumType @cost(weight: "10")
   shareInfoPartners: SortEnumType @cost(weight: "10")
   whatsAppConsent: SortEnumType @cost(weight: "10")
   isAdminRegistered: SortEnumType @cost(weight: "10")
@@ -8165,6 +8205,39 @@ input UserConsentSortInput {
   updatedBy: SortEnumType @cost(weight: "10")
 }
 
+input UserFlagFilterInput {
+  and: [UserFlagFilterInput!]
+  or: [UserFlagFilterInput!]
+  userId: UuidOperationFilterInput
+  flagKey: StringOperationFilterInput
+  flagValue: StringOperationFilterInput
+  id: UuidOperationFilterInput
+  isActive: BooleanOperationFilterInput
+  insertedDate: DateTimeOperationFilterInput
+  updatedDate: DateTimeOperationFilterInput
+  updatedBy: StringOperationFilterInput
+}
+
+input UserFlagInput {
+  UserId: UUID!
+  FlagKey: String
+  FlagValue: String
+  Id: UUID
+  IsActive: Boolean!
+  UpdatedBy: String
+}
+
+input UserFlagSortInput {
+  userId: SortEnumType @cost(weight: "10")
+  flagKey: SortEnumType @cost(weight: "10")
+  flagValue: SortEnumType @cost(weight: "10")
+  id: SortEnumType @cost(weight: "10")
+  isActive: SortEnumType @cost(weight: "10")
+  insertedDate: SortEnumType @cost(weight: "10")
+  updatedDate: SortEnumType @cost(weight: "10")
+  updatedBy: SortEnumType @cost(weight: "10")
+}
+
 input UserGrantFilterInput {
   and: [UserGrantFilterInput!]
   or: [UserGrantFilterInput!]
@@ -8472,6 +8545,11 @@ input UserTrainingCourseFilterInput {
   userId: UuidOperationFilterInput
   courseName: StringOperationFilterInput
   completedDate: DateTimeOperationFilterInput
+  startedDate: DateTimeOperationFilterInput
+  progressPercentage: DecimalOperationFilterInput
+  lastActivityDate: DateTimeOperationFilterInput
+  externalCourseId: StringOperationFilterInput
+  status: StringOperationFilterInput
   id: UuidOperationFilterInput
   isActive: BooleanOperationFilterInput
   insertedDate: DateTimeOperationFilterInput
@@ -8483,7 +8561,12 @@ input UserTrainingCourseInput {
   User: ApplicationUserInput
   UserId: UUID!
   CourseName: String
-  CompletedDate: DateTime!
+  CompletedDate: DateTime
+  StartedDate: DateTime
+  ProgressPercentage: Decimal!
+  LastActivityDate: DateTime
+  ExternalCourseId: String
+  Status: String
   Id: UUID
   IsActive: Boolean!
   UpdatedBy: String
@@ -8494,6 +8577,11 @@ input UserTrainingCourseSortInput {
   userId: SortEnumType @cost(weight: "10")
   courseName: SortEnumType @cost(weight: "10")
   completedDate: SortEnumType @cost(weight: "10")
+  startedDate: SortEnumType @cost(weight: "10")
+  progressPercentage: SortEnumType @cost(weight: "10")
+  lastActivityDate: SortEnumType @cost(weight: "10")
+  externalCourseId: SortEnumType @cost(weight: "10")
+  status: SortEnumType @cost(weight: "10")
   id: SortEnumType @cost(weight: "10")
   isActive: SortEnumType @cost(weight: "10")
   insertedDate: SortEnumType @cost(weight: "10")
