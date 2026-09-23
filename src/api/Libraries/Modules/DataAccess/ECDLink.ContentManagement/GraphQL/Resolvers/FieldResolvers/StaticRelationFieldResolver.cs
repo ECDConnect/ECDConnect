@@ -15,7 +15,7 @@ namespace ECDLink.ContentManagement.GraphQL.Resolvers.FieldResolvers
         // Assembly scanning is expensive — cache the result per entity name across all requests
         private static readonly ConcurrentDictionary<string, Type> _typeCache = new();
 
-        public object ResolveField(IPureResolverContext ctx, FieldDefinitionModel definition, int? contentTypeId = null)
+        public object ResolveField(IResolverContext ctx, FieldDefinitionModel definition, int? contentTypeId = null)
         {
             var fieldValue = base.GetFieldValue(ctx, definition.Name);
 

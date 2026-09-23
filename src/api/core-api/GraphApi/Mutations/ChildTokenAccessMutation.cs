@@ -383,8 +383,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
         #endregion
 
-[Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Create)]
-
+        // Not part of the schema, and never has been: it returns void, which earlier Hot
+        // Chocolate versions skipped silently. v15 instead tries to infer a type for it and the
+        // whole schema fails to build with "System.Void may not be used as a type argument", so
+        // the omission now has to be explicit. [GraphQLIgnore] alone is not enough - the
+        // [Permission] attribute is a descriptor attribute and makes Hot Chocolate process the
+        // member as a field regardless - so that attribute is removed too. No behavioural
+        // change: this was never reachable through GraphQL.
+        //
+        // Worth a ticket, separately: the PWA calls this mutation
+        // (src/lxp/src/services/ChildService/ChildService.ts) and always has, so that call has
+        // never done anything. The points calculation it wants does happen on another path, via
+        // ChildService.CalculateChildRemovedFromPreschool.
+        [GraphQLIgnore]
         public void CalculateChildrenRegistrationRemoval([Service] IPointsEngineService pointsEngineService, Guid userId)
         {
             pointsEngineService.CalculateChildRemovedFromPreschool(userId);
@@ -479,7 +490,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         {
             if (childId == Guid.Empty)
             {
-                throw new QueryException($"{nameof(childId)} cannot be empty");
+                throw new GraphQLException($"{nameof(childId)} cannot be empty");
             }
 
             var childRepo = repoFactory.CreateRepository<Child>(userContext: httpContext.HttpContext.GetUser().Id);
@@ -494,14 +505,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             if (child == null)
             {
-                throw new QueryException($"Child not found");
+                throw new GraphQLException($"Child not found");
             }
 
             var appUser = await userManager.FindByIdAsync(child.UserId.ToString());
 
             if (appUser == null)
             {
-                throw new QueryException($"Child user not found");
+                throw new GraphQLException($"Child user not found");
             }
 
             await tokenManager.RetractTokensAsync(appUser);
