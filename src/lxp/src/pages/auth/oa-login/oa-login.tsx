@@ -1,10 +1,11 @@
 import {
   LoginRequestModel,
-  LocalStorageKeys,
+  SessionStorageKeys,
   useDialog,
   LoginType,
   Config,
 } from '@ecdlink/core';
+import { setSessionItem } from '@/utils/common/session-storage.utils';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
   Alert,
@@ -268,11 +269,7 @@ export const OaLogin: React.FC = () => {
     appDispatch(settingActions.setLoginDate());
     console.log('login - 4');
     const user = await appDispatch(userThunkActions.getUser({})).unwrap();
-    console.log('login - 5');
-    localStorage.setItem(
-      LocalStorageKeys.firstTimeOnCommunityDashboard,
-      'true'
-    );
+    setSessionItem(true, SessionStorageKeys.firstTimeOnCommunityDashboard);
     setIsLoading(false);
     setLoginAttempts(0);
     // Set userId for google

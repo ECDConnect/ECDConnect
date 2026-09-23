@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import debounce from 'lodash.debounce';
+import { SessionStorageKeys } from '@ecdlink/core';
+import { removeSessionItem } from '../../utils/session-storage.utils';
 import { useQuery } from '@apollo/client/react/hooks/useQuery';
 import {
   GetAllLanguage,
@@ -190,7 +192,7 @@ export function ContentManagement() {
 
   const history = useHistory();
   useEffect(() => {
-    localStorage.removeItem('selectedUser');
+    removeSessionItem(SessionStorageKeys.selectedUser);
 
     // GO TO DEFAULT ROUTE
     async function init() {

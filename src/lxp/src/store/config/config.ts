@@ -75,6 +75,10 @@ import {
 } from '../static-data/static-data';
 import { syncReducer } from '../sync';
 import { userPersistConfig, userReducer } from '../user/user';
+import {
+  userFlagsPersistConfig,
+  userFlagsReducer,
+} from '../user-flags/user-flags';
 import type { RootState } from './types';
 import {
   statementsPersistConfig,
@@ -141,6 +145,7 @@ const persistedReducers = {
   sync: syncReducer,
   tenant: persistReducer(tenantPersistConfig, tenantReducer),
   user: persistReducer(userPersistConfig, userReducer),
+  userFlags: persistReducer(userFlagsPersistConfig, userFlagsReducer),
   // Data for activities tab should not be stored in redux - datasets are too large
   programmeThemeData: programmeThemeReducer,
   activityData: activityReducer,

@@ -21,6 +21,10 @@ export const getClassroom = (
   state: RootState
 ): SimpleClassroomDto | undefined => state.classroomData.classroom;
 
+export const getInvitedUserClassroomName = (
+  state: RootState
+): string | undefined => state.classroomData.invitedUserClassroomName;
+
 export const getIsReportingPeriodsSet = () =>
   createSelector(
     (state: RootState) => state.classroomData.classroom,

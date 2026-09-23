@@ -19,14 +19,11 @@ import { IconInformationIndicator } from '../programme-planning/components/icon-
 import { practitionerSelectors } from '@/store/practitioner';
 import { progressTrackingSelectors } from '@/store/progress-tracking';
 import iconRobotImage from '@/assets/iconRobot.svg';
-import { LocalStorageKeys, useDialog } from '@ecdlink/core';
+import { programmePlanningPromptKey, useDialog } from '@ecdlink/core';
 
 import { replaceSkillText } from '@/utils/child/child-progress-report.utils';
 
-import {
-  getStorageItem,
-  setStorageItem,
-} from '@/utils/common/local-storage.utils';
+import { useUserFlag } from '@/hooks/useUserFlag';
 
 export const ActivitiesTab = () => {
   const history = useHistory();
@@ -53,66 +50,17 @@ export const ActivitiesTab = () => {
       report.childProgressReportPeriodId == latestPeriod?.id
   );
 
-  const storageYear = getStorageItem(
-    LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportYear
+  // One flag per reporting period, keyed by the period id, so a new period is
+  // a key nobody has set yet - there is nothing to reset when the year rolls
+  // over, which is what the four numbered keys and a stored year used to do.
+  const [hasDismissedPeriodPrompt, dismissPeriodPrompt] = useUserFlag(
+    programmePlanningPromptKey(latestPeriod?.id ?? '')
   );
-  // make sure the storageKeyYear is available
-  useEffect(() => {
-    if (!storageYear) {
-      setStorageItem(
-        new Date().getFullYear(),
-        LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportYear
-      );
-    }
-  }, [storageYear]);
-
-  // update keys if year changes
-  useEffect(() => {
-    if (
-      storageYear &&
-      storageYear.toString() != new Date().getFullYear().toString()
-    ) {
-      setStorageItem(
-        false,
-        LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod1
-      );
-      setStorageItem(
-        false,
-        LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod2
-      );
-      setStorageItem(
-        false,
-        LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod3
-      );
-      setStorageItem(
-        false,
-        LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod4
-      );
-    }
-  }, [storageYear]);
-
-  const storageKey =
-    latestPeriod?.reportNumber == 1
-      ? LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod1
-      : latestPeriod?.reportNumber == 2
-      ? LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod2
-      : latestPeriod?.reportNumber == 3
-      ? LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod3
-      : latestPeriod?.reportNumber == 4
-      ? LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod4
-      : null;
-
-  // make sure the storageKey is available
-  useEffect(() => {
-    if (storageKey && !getStorageItem(storageKey)) {
-      setStorageItem(false, storageKey);
-    }
-  }, [storageKey]);
 
   const hasClickedOnLatestPeriod =
-    storageKey && completedReports.length > 0
-      ? getStorageItem(storageKey)
-      : false;
+    !!latestPeriod?.id &&
+    completedReports.length > 0 &&
+    hasDismissedPeriodPrompt;
 
   const allSkills = useSelector(
     progressTrackingSelectors.getProgressTrackingSkillsWithCategoryInfo()
@@ -177,7 +125,7 @@ export const ActivitiesTab = () => {
                     'Child'
                   )}`}</div>
                 ))}
-                <div className="mt-8 mb-2">{`Think about adding activities to work on these areas. Download the full summary.`}</div>
+                <div className="mb-2 mt-8">{`Think about adding activities to work on these areas. Download the full summary.`}</div>
               </div>
             </div>
           }
@@ -200,7 +148,7 @@ export const ActivitiesTab = () => {
                     report: 'completed-all',
                   }
                 );
-                if (storageKey) setStorageItem(true, storageKey);
+                if (latestPeriod?.id) dismissPeriodPrompt();
                 onCancel();
               },
               type: 'filled',
@@ -213,7 +161,7 @@ export const ActivitiesTab = () => {
               colour: 'quatenary',
               type: 'outlined',
               onClick: () => {
-                if (storageKey) setStorageItem(true, storageKey);
+                if (latestPeriod?.id) dismissPeriodPrompt();
                 onCancel();
               },
               leadingIcon: 'XIcon',
@@ -222,7 +170,14 @@ export const ActivitiesTab = () => {
         />
       ),
     });
-  }, [latestPeriod?.reportNumber, dialog, history, listOfWorkingOnActivities]);
+  }, [
+    latestPeriod?.id,
+    latestPeriod?.reportNumber,
+    dismissPeriodPrompt,
+    dialog,
+    history,
+    listOfWorkingOnActivities,
+  ]);
 
   useEffect(() => {
     if (

@@ -1,8 +1,9 @@
 import {
   Config,
-  LocalStorageKeys,
+  SessionStorageKeys,
   VerifyPrincipalInvitationModel,
 } from '@ecdlink/core';
+import { setSessionItem } from '@/utils/common/session-storage.utils';
 import {
   Alert,
   BannerWrapper,
@@ -93,13 +94,13 @@ export const OASignUpOrLogin: React.FC = () => {
       ).unwrap();
 
       if (principalToken?.data) {
-        localStorage.setItem(
-          LocalStorageKeys.practitionerInvitedPrincipalIdNumber,
-          JSON.stringify(principalToken.data?.idNumber)
+        setSessionItem(
+          principalToken.data?.idNumber,
+          SessionStorageKeys.practitionerInvitedPrincipalIdNumber
         );
-        localStorage.setItem(
-          LocalStorageKeys.practitionerInvitedPrincipalUserId,
-          JSON.stringify(principalToken.data?.addedByUserId)
+        setSessionItem(
+          principalToken.data?.addedByUserId,
+          SessionStorageKeys.practitionerInvitedPrincipalUserId
         );
       }
     } else {
@@ -159,7 +160,7 @@ export const OASignUpOrLogin: React.FC = () => {
             />
 
             <Button
-              className={'mt-6 mb-12 w-full'}
+              className={'mb-12 mt-6 w-full'}
               type="outlined"
               color="quatenary"
               onClick={() => history.push(ROUTES.LOGIN)}
@@ -185,7 +186,7 @@ export const OASignUpOrLogin: React.FC = () => {
 
       {!isOnline && (
         <Alert
-          className={'mt-5 mb-3'}
+          className={'mb-3 mt-5'}
           title="Your internet connection is unstable."
           type={'warning'}
         />

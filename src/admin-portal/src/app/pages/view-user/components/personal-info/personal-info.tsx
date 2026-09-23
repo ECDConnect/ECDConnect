@@ -346,7 +346,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
 
   return (
     <div className="border-l-primary border-primary mb-6 rounded-2xl border-2  border-l-8 bg-white lg:min-w-0 lg:flex-1">
-      <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
+      <div className="h-full px-4 py-6 sm:px-6 lg:px-8">
         {/* Start main area*/}
         <Typography type="h3" text="Personal information" color="textMid" />
         <Divider dividerType="dashed" className="my-4" />
@@ -389,7 +389,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                                 />
                                 <div className=" mb-4 flex flex-row">
                                   <Button
-                                    className={'mt-3 mr-1 w-full rounded-md '}
+                                    className={'mr-1 mt-3 w-full rounded-md '}
                                     type={'filled'}
                                     color={
                                       idType === idTypeEnum.idNumber
@@ -398,10 +398,6 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                                     }
                                     onClick={() => {
                                       setIdType(idTypeEnum.idNumber);
-                                      localStorage.setItem(
-                                        'preferedId',
-                                        idTypeEnum.idNumber
-                                      );
                                     }}
                                   >
                                     <Typography
@@ -416,7 +412,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                                   </Button>
 
                                   <Button
-                                    className={'mt-3 mr-1 w-full rounded-md '}
+                                    className={'mr-1 mt-3 w-full rounded-md '}
                                     type={'filled'}
                                     color={
                                       idType === idTypeEnum.idNumber
@@ -425,10 +421,6 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                                     }
                                     onClick={() => {
                                       setIdType(idTypeEnum.passport);
-                                      localStorage.setItem(
-                                        'preferedId',
-                                        idTypeEnum.passport
-                                      );
                                     }}
                                   >
                                     <Typography
@@ -516,7 +508,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                       !!practitionerPrincipal &&
                       isWhiteLabel && (
                         <Alert
-                          className={'mt-5 mb-3 rounded-xl'}
+                          className={'mb-3 mt-5 rounded-xl'}
                           title={
                             `All practitioners at a preschool must have the same ` +
                             tenant.modules.coachRoleName +
@@ -657,7 +649,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
         )}
       </div>
       <Dialog
-        className="rounded-2xl py-36 px-72"
+        className="rounded-2xl px-72 py-36"
         visible={practitionerDetailsHasChanged}
         position={DialogPosition.Middle}
       >
