@@ -13,4 +13,6 @@ export interface EventTracking {
   action: string;
   label?: string;
   value?: string;
+  // Extra GA4 event parameters, e.g. link_url
+  params?: Record<string, string | number | undefined>;
 }
