@@ -138,7 +138,7 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
     );
 
     const whatsapp = () => {
-      const textMessage = `${practitioner?.user?.firstName} practitioner has invited you to register your child at their care centre. Tap this link to register ${childDetails.firstName} for ${classroom?.name}: ${childRegistrationDetails.caregiverRegistrationUrl}`;
+      const textMessage = `${practitioner?.user?.firstName} has invited you to register your child at their preschool. Tap this link to register ${childDetails.firstName} for ${classroom?.name}: ${childRegistrationDetails.caregiverRegistrationUrl}`;
       const whatsAppLink = `whatsapp://send?text=${textMessage}`;
       window.open(whatsAppLink);
     };
