@@ -455,6 +455,39 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             bool syncLearners = learnerCount >= 1;
 
+            var practitionerCount = 0;
+            var attendanceCount = 0;
+            if (isPrincipal)
+            {
+                // Practitioners linked to this principal, including people who joined since lastSync.
+                practitionerCount = await dbContext.Practitioners.FromSql($@"
+                SELECT p.""Id""
+                FROM ""Practitioner"" p
+                WHERE p.""PrincipalHierarchy"" = {userId}::uuid
+                AND (
+                    p.""UpdatedDate"" > {lastSyncLocal}
+                    OR p.""InsertedDate"" > {lastSyncLocal}
+                )
+                ").CountAsync();
+
+                // Attendance captured on the principal's school by someone else.
+                // ParentRecordId is the programme owner who took the register.
+                var userIdText = userId.ToString();
+                attendanceCount = await dbContext.Database.SqlQuery<int>($@"
+                SELECT COUNT(*)::int AS ""Value""
+                FROM ""Attendance"" a
+                INNER JOIN ""ClassProgramme"" cp ON a.""ClassroomProgrammeId"" = cp.""Id""
+                INNER JOIN ""ClassroomGroup"" cg ON cp.""ClassroomGroupId"" = cg.""Id""
+                INNER JOIN ""Classroom"" c ON cg.""ClassroomId"" = c.""Id""
+                WHERE c.""UserId"" = {userId}::uuid
+                AND a.""ParentRecordId"" IS DISTINCT FROM {userIdText}
+                AND (
+                    a.""UpdatedDate"" > {lastSyncLocal}
+                    OR a.""InsertedDate"" > {lastSyncLocal}
+                )
+                ").SingleAsync();
+            }
+
             return new UserSyncStatus
             {
                 SyncChildren = childrenCount >= 1 || syncLearners,
@@ -463,6 +496,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 SyncPoints = pointsCount >= 1,
                 SyncPermissions = permissionsCount >= 1,
                 SyncLearners = syncLearners,
+                SyncPractitioners = practitionerCount >= 1,
+                SyncAttendance = attendanceCount >= 1,
             };
         }
     }
