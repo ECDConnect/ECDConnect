@@ -351,6 +351,41 @@ export const pullRemoteChanges = createAsyncThunk<
           )
         );
       }
+      if (isPrincipal && userSyncStatus.syncPractitioners) {
+        otherPromises.push(
+          retryWithExponentialBackoff(() =>
+            dispatch(
+              practitionerThunkActions.getAllPractitioners({
+                overrideCache: true,
+              })
+            ).unwrap()
+          ),
+          retryWithExponentialBackoff(() =>
+            dispatch(
+              classroomsThunkActions.getClassroomGroups({
+                overrideCache: true,
+              })
+            ).unwrap()
+          )
+        );
+      }
+      if (isPrincipal && userSyncStatus.syncAttendance) {
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(endDate.getDate() - 30);
+
+        otherPromises.push(
+          retryWithExponentialBackoff(() =>
+            dispatch(
+              attendanceThunkActions.getAttendance({
+                startDate,
+                endDate,
+                overrideCache: true,
+              })
+            ).unwrap()
+          )
+        );
+      }
       if (userSyncStatus.syncPoints) {
         const now = new Date();
         const oneYearAgo = new Date();

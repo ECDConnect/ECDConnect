@@ -4131,6 +4131,8 @@ type UserSyncStatus {
   syncPoints: Boolean!
   syncPermissions: Boolean!
   syncLearners: Boolean!
+  syncPractitioners: Boolean!
+  syncAttendance: Boolean!
 }
 
 type UserTrainingCourse {
