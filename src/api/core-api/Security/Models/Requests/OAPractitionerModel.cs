@@ -8,6 +8,10 @@ namespace EcdLink.Api.CoreApi.Security.Models.Requests
         public string PhoneNumber { get; set; }
         public string Password { get; set; }
         public string RegisterType { get; set; } // username, google, facebook
+        public string AcquisitionUrl { get; set; }
+        public string UtmSource { get; set; }
+        public string UtmMedium { get; set; }
+        public string UtmCampaign { get; set; }
         public bool ShareInfoPartners { get; set; }
         public string GoogleToken { get; set; }
         public string FacebookToken { get; set; }

@@ -67,7 +67,7 @@ const classroomsSlice = createSlice({
       state,
       action: PayloadAction<SimpleClassroomGroupDto>
     ) => {
-      const payloadUpdated = { ...action.payload };
+      const payloadUpdated = { ...action.payload, synced: false };
       for (
         let i = 0;
         i < state.classroomGroupData.classroomGroups.length;
@@ -240,13 +240,43 @@ const classroomsSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(getClassroomForUser.fulfilled, (state, action) => {
-      if (action.payload) {
+      if (!action.payload) return;
+
+      const local = state.classroom;
+      const incoming = action.payload;
+
+      // Keep in-progress setup data. A later server fetch (dummy preschool
+      // created at OA signup) must not replace an unsynced local classroom
+      // or leave classroom groups pointing at an id that was never saved.
+      if (local && local.synced === false) {
+        const localId = local.id;
+        const serverId = incoming.id;
+
+        if (localId && serverId && localId !== serverId) {
+          state.classroomGroupData.classroomGroups =
+            state.classroomGroupData.classroomGroups.map((group) =>
+              group.classroomId === localId
+                ? { ...group, classroomId: serverId, synced: false }
+                : group
+            );
+        }
+
         state.classroom = {
-          ...action.payload,
+          ...incoming,
+          ...local,
+          id: serverId || localId,
+          principal: local.principal ?? incoming.principal,
           dateRefreshed: new Date().toDateString(),
-          synced: true,
+          synced: false,
         };
+        return;
       }
+
+      state.classroom = {
+        ...incoming,
+        dateRefreshed: new Date().toDateString(),
+        synced: true,
+      };
     });
     builder.addCase(getClassroomGroupForClassId.fulfilled, (state, action) => {
       if (!action.payload) return;
@@ -272,29 +302,29 @@ const classroomsSlice = createSlice({
       // Start with current state or empty array if none exists
       const currentGroups = state.classroomGroupData?.classroomGroups ?? [];
 
-      // Build the new array by merging/updating existing groups and adding new ones
-      const updatedGroups = currentGroups.map((existing) => {
+      // Keep unsynced local groups; drop groups the server no longer returns
+      const updatedGroups = currentGroups.flatMap((existing) => {
         const incoming = incomingMap.get(existing.id);
 
         if (!incoming) {
-          // Group was removed remotely
-          return { ...existing, synced: true, isActive: false };
+          return existing.synced !== true ? [existing] : [];
         }
 
-        // Group exists → update it
-        return {
-          ...existing, // keep any local-only fields you might have
-          ...incoming, // overwrite with fresh server data
-          synced: true,
-          learners: incoming.learners.map((l) => ({
-            ...l,
+        return [
+          {
+            ...existing,
+            ...incoming,
             synced: true,
-          })),
-          classProgrammes: incoming.classProgrammes.map((p) => ({
-            ...p,
-            synced: true,
-          })),
-        };
+            learners: (incoming.learners ?? []).map((l) => ({
+              ...l,
+              synced: true,
+            })),
+            classProgrammes: (incoming.classProgrammes ?? []).map((p) => ({
+              ...p,
+              synced: true,
+            })),
+          },
+        ];
       });
 
       // Add any completely new groups that weren't in the current state
@@ -305,8 +335,8 @@ const classroomsSlice = createSlice({
         .map((cg) => ({
           ...cg,
           synced: true,
-          learners: cg.learners.map((l) => ({ ...l, synced: true })),
-          classProgrammes: cg.classProgrammes.map((p) => ({
+          learners: (cg.learners ?? []).map((l) => ({ ...l, synced: true })),
+          classProgrammes: (cg.classProgrammes ?? []).map((p) => ({
             ...p,
             synced: true,
           })),
