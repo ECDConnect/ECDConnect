@@ -296,6 +296,7 @@ export const ChildBasicInfo: React.FC<
     childInputModel = {
       ...childInputModel,
       id: newChild.childId,
+      insertedBy: userAuth?.id || user?.id || '',
       user: {
         ...userInputModel,
         isActive: true,

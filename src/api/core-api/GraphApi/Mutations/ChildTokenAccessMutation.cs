@@ -515,6 +515,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 throw new GraphQLException($"Child user not found");
             }
 
+            // Older offline syncs left InsertedBy empty. Guid.Parse below needs it.
+            if (string.IsNullOrWhiteSpace(child.InsertedBy))
+            {
+                child.InsertedBy = httpContext.HttpContext.GetUser().Id.ToString();
+                childRepo.Update(child);
+            }
+
             await tokenManager.RetractTokensAsync(appUser);
 
             var tokenWrapper = new ChildTokenWrapperModel
