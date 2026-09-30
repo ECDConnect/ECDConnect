@@ -88,6 +88,7 @@ export const mapChildDto = (
     } = child;
     return {
       ...restChild,
+      insertedBy,
       homeLanguageIds: childExtraInformationForm?.homeLanguageIds,
       allergies: healthInformationForm?.allergies ?? '',
       disabilities: healthInformationForm?.disabilities ?? '',
