@@ -37,9 +37,6 @@ import * as styles from './dashboard.styles';
 import ROUTES from '@routes/routes';
 import { statementsThunkActions } from '@/store/statements';
 import { programmeThunkActions } from '@/store/programme';
-import offlineStatments from '../../assets/statements-offline.png';
-import { setStorageItem } from '@/utils/common/local-storage.utils';
-import { convertImageToBase64 } from '@/utils/common/convert-image-to-64.utils';
 import { pointsSelectors } from '@/store/points';
 import { pointsConstants } from '@/constants/points';
 import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg';
@@ -516,10 +513,6 @@ export const Dashboard: React.FC = () => {
 
     Promise.allSettled(promises);
   };
-
-  useEffect(() => {
-    convertImageToBase64(offlineStatments, setStorageItem);
-  }, []);
 
   useEffect(() => {
     if (isOnline) {
@@ -1288,7 +1281,7 @@ export const Dashboard: React.FC = () => {
           !isCoach &&
           !!pointsScoreProps ? (
             <ScoreCard
-              className="mt-4 mb-1 h-20 w-full"
+              className="mb-1 mt-4 h-20 w-full"
               progressBarClassName="flex pt-2"
               mainText={pointsScoreProps?.mainText!}
               hint={pointsScoreProps?.hint}

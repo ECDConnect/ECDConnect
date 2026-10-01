@@ -1,0 +1,36 @@
+# Persisted operations that fail against the real, deployed schema.
+#
+# Used by: node Tools/validate-persisted-operations.mjs --deployed
+#
+# This is the honest list. It is shorter than persisted-operations-baseline.txt because that
+# one validates against the code-derived snapshot, whose CMS and settings types are
+# placeholders - 17 operations are excluded there purely because of that limitation. Against
+# the real schema those 17 should pass, so only genuinely broken operations remain here.
+#
+# These cannot be served today. Each is either dead and should be deleted, or a bug and should
+# be fixed; none of it is related to the Hot Chocolate upgrade. Worth its own ticket.
+#
+# If an entry starts passing, the validator will say so - remove it from this file.
+# If the count here is not 17, something changed: re-derive with
+#   node Tools/validate-persisted-operations.mjs --deployed --no-baseline
+
+# Will not parse
+GetCommunitySkills.graphql
+queryChangesToSync.graphql
+
+# Reference fields the schema does not have
+CalculateChildrenRegistrationRemoval.graphql
+GetClassroomGroupClassroomsForPractitioner.graphql
+GetUserContentChildProgressReport.graphql
+RemoveInvite.graphql
+addChildRegistrationPoints.graphql
+childProgressReport.graphql
+childProgressReportSummary.graphql
+childProgressReports.graphql
+createChildProgressReport.graphql
+generateChildProgressReport.graphql
+inviteByPractitionerIdNum.graphql
+syncChildProgressReport.graphql
+updateCareGiverGrants.graphql
+updateChildProgressReport.graphql
+updateInviteStatus.graphql

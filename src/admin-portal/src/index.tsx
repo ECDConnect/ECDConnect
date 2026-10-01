@@ -6,6 +6,9 @@ import './app/i18n';
 // in package.json. Edit styles.css, never the generated file.
 import './styles.generated.css';
 import { TenantContextProvider } from './app/hooks/useTenant';
+import { clearMigratedLocalStorageKeys } from './app/utils/legacy-storage-cleanup.utils';
+
+clearMigratedLocalStorageKeys();
 
 ReactDOM.render(
   <ConfigProvider

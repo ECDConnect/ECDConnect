@@ -19,6 +19,8 @@ import { RootState, ThunkApiType } from '../types';
 import { OverrideCache } from '@/models/sync/override-cache';
 import { ChildRegistrationDto } from '@/models/child/child-registration.dto';
 import { RetrieveFromCache } from '@/models/sync/retrieve-from-cache';
+import { upsertClassroomGroups } from '../classroom/classroom.actions';
+import { AppDispatch } from '../types';
 
 export const ChildrenActions = {
   GET_CHILD_BY_ID: 'getChildById',
@@ -395,18 +397,44 @@ type GenerateCaregiverChildTokenRequest = {
   classgroupId?: string;
 };
 
+const persistClassroomGroupIfNeeded = async (
+  classgroupId: string | undefined,
+  getState: () => RootState,
+  dispatch: AppDispatch
+) => {
+  if (!classgroupId) {
+    throw new Error('Please select a class');
+  }
+
+  const group =
+    getState().classroomData.classroomGroupData.classroomGroups.find(
+      (classroomGroup) => classroomGroup.id === classgroupId
+    );
+
+  if (group?.isActive === false) {
+    throw new Error(
+      'This class is no longer available. Please select another class.'
+    );
+  }
+
+  if (group?.synced === false) {
+    await dispatch(upsertClassroomGroups({})).unwrap();
+  }
+};
+
 export const generateCaregiverChildToken = createAsyncThunk<
   ChildRegistrationDto,
   GenerateCaregiverChildTokenRequest,
   ThunkApiType<RootState>
 >(
   ChildrenActions.GENERATE_CAREGIVER_CHILD_TOKEN,
-  // eslint-disable-next-line no-empty-pattern
   async (
     { firstName, surname, classgroupId },
-    { getState, rejectWithValue }
+    { getState, dispatch, rejectWithValue }
   ) => {
     try {
+      await persistClassroomGroupIfNeeded(classgroupId, getState, dispatch);
+
       const {
         auth: { userAuth },
       } = getState();
@@ -437,8 +465,13 @@ export const refreshCaregiverChildToken = createAsyncThunk<
   ThunkApiType<RootState>
 >(
   ChildrenActions.REFRESH_CAREGIVER_CHILD_TOKEN,
-  async ({ classgroupId, childId }, { getState, rejectWithValue }) => {
+  async (
+    { classgroupId, childId },
+    { getState, dispatch, rejectWithValue }
+  ) => {
     try {
+      await persistClassroomGroupIfNeeded(classgroupId, getState, dispatch);
+
       const {
         auth: { userAuth },
       } = getState();

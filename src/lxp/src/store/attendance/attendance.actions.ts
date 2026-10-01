@@ -27,36 +27,39 @@ export const AttendanceActions = {
 
 export const getAttendance = createAsyncThunk<
   AttendanceDto[],
-  { startDate: Date; endDate: Date },
+  { startDate: Date; endDate: Date } & OverrideCache,
   ThunkApiType<RootState>
 >(
   AttendanceActions.GET_ATTENDANCE,
-  async ({ startDate, endDate }, { getState, rejectWithValue }) => {
+  async (
+    { startDate, endDate, overrideCache = false },
+    { getState, rejectWithValue }
+  ) => {
     const {
       auth: { userAuth },
       attendanceData: { attendance: attendanceCache },
     } = getState();
 
-    if (!attendanceCache) {
-      try {
-        let attendance: AttendanceDto[] | undefined;
-
-        if (userAuth?.auth_token) {
-          attendance = await new AttendanceService(
-            userAuth?.auth_token
-          ).getAttendance(startDate, endDate);
-        }
-
-        if (!attendance) {
-          return rejectWithValue('Error getting Attendance Records');
-        }
-
-        return attendance;
-      } catch (err) {
-        return rejectWithValue(err);
-      }
-    } else {
+    if (!overrideCache && attendanceCache) {
       return attendanceCache;
+    }
+
+    try {
+      let attendance: AttendanceDto[] | undefined;
+
+      if (userAuth?.auth_token) {
+        attendance = await new AttendanceService(
+          userAuth?.auth_token
+        ).getAttendance(startDate, endDate);
+      }
+
+      if (!attendance) {
+        return rejectWithValue('Error getting Attendance Records');
+      }
+
+      return attendance;
+    } catch (err) {
+      return rejectWithValue(err);
     }
   }
 );

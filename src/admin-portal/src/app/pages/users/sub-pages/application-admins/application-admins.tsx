@@ -1,6 +1,12 @@
 import { useQuery } from '@apollo/client';
 import debounce from 'lodash.debounce';
-import { PermissionEnum, usePanel, UserDto } from '@ecdlink/core';
+import {
+  PermissionEnum,
+  SessionStorageKeys,
+  usePanel,
+  UserDto,
+} from '@ecdlink/core';
+import { setSessionItem } from '../../../../utils/session-storage.utils';
 import { UserList } from '@ecdlink/graphql';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
@@ -191,9 +197,9 @@ export default function ApplicationAdmins() {
   const viewSelectedRow = (selectedRow: any) => {
     const role = selectedRow?.roles;
 
-    localStorage.setItem(
-      'selectedUser',
-      selectedRow?.userId ?? selectedRow?.id
+    setSessionItem(
+      selectedRow?.userId ?? selectedRow?.id,
+      SessionStorageKeys.selectedUser
     );
     history.push({
       pathname: '/users/view-user',

@@ -2,8 +2,16 @@ import { ContentConsentTypeEnum, UserConsentDto, UserDto } from '@ecdlink/core';
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../types';
 
-export const getUser = (state: RootState): UserDto | undefined =>
+export const getStoredUser = (state: RootState): UserDto | undefined =>
   state.user.user;
+
+export const getUser = (state: RootState): UserDto | undefined => {
+  const user = state.user.user;
+  const authId = state.auth.userAuth?.id;
+  if (!user) return undefined;
+  if (authId && user.id !== authId) return undefined;
+  return user;
+};
 
 export const getUserUnstableConnection = (state: RootState): boolean =>
   state.user.unstableConnection;

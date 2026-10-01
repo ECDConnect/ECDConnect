@@ -1,4 +1,6 @@
 import { useMutation, useQuery } from '@apollo/client';
+import { SessionStorageKeys } from '@ecdlink/core';
+import { setSessionItem } from '../../../../utils/session-storage.utils';
 import {
   CoachDto,
   NOTIFICATION,
@@ -169,9 +171,9 @@ export default function Coaches() {
       (item) => item?.userId === selectedRow?.userId
     );
 
-    localStorage.setItem(
-      'selectedUser',
-      selectedRow?.userId ?? selectedRow?.id
+    setSessionItem(
+      selectedRow?.userId ?? selectedRow?.id,
+      SessionStorageKeys.selectedUser
     );
     history.push({
       pathname: ROUTES.USERS.VIEW_USER,

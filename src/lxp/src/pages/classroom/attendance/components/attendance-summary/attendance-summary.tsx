@@ -1,9 +1,4 @@
-import {
-  AttendanceDto,
-  LocalStorageKeys,
-  sortDateFunction,
-  useSnackbar,
-} from '@ecdlink/core';
+import { AttendanceDto, sortDateFunction, useSnackbar } from '@ecdlink/core';
 import { Holiday } from '@ecdlink/graphql';
 import {
   ActionListDataItem,
@@ -38,10 +33,6 @@ import {
   getMissedAttendanceSummaryGroups,
   isValidAttendableDate,
 } from '@utils/classroom/attendance/track-attendance-utils';
-import {
-  getStorageItem,
-  setStorageItem,
-} from '@utils/common/local-storage.utils';
 import EditAttendanceRegister from '../edit-attendance-register/edit-attendance-register';
 import * as styles from './attendance-summary.styles';
 import { usePrevious } from '@ecdlink/core/lib/hooks/usePrevious';
@@ -66,7 +57,8 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
   const [successMessageVisible, setSuccessMessageVisible] =
     useState<boolean>(false);
 
-  const [isSmartStartUser, setIsSmartStartUser] = useState<boolean>(true);
+  // SmartStart-specific points messaging is not currently enabled.
+  const isSmartStartUser = false;
   const [attendanceActionList, setAttendanceActionList] = useState<
     ActionListDataItem[]
   >([]);
@@ -111,10 +103,6 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
 
   const { showMessage } = useSnackbar();
 
-  let isCurrentSmartStartUser = getStorageItem<boolean>(
-    LocalStorageKeys.isSmartStartUser
-  );
-
   const onSeeMoreRegisters = () => {
     setRegistersToShow(registersToShow + 5);
   };
@@ -143,14 +131,6 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trackedAttendance]);
-
-  useEffect(() => {
-    if (isCurrentSmartStartUser === undefined) {
-      setStorageItem(true, LocalStorageKeys.isSmartStartUser);
-    }
-    setIsSmartStartUser(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   useEffect(() => {
     if (
@@ -364,7 +344,6 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
 
   const closeNotification = () => {
     setSuccessMessageVisible(false);
-    setStorageItem(true, LocalStorageKeys.hasClosedSuccessAttendanceSubmitted);
     const today = new Date().toDateString();
     localStorage.setItem('summarylastDate', today);
   };

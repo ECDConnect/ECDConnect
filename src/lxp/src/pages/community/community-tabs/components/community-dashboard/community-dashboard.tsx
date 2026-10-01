@@ -4,7 +4,11 @@ import { useAppDispatch } from '@/store';
 import { coachSelectors, coachThunkActions } from '@/store/coach';
 import { communitySelectors, communityThunkActions } from '@/store/community';
 import { practitionerSelectors } from '@/store/practitioner';
-import { getAvatarColor, LocalStorageKeys } from '@ecdlink/core';
+import { getAvatarColor, SessionStorageKeys } from '@ecdlink/core';
+import {
+  getSessionItem,
+  removeSessionItem,
+} from '@/utils/common/session-storage.utils';
 import {
   Alert,
   Button,
@@ -36,8 +40,8 @@ export const CommunityDashboard = () => {
   const communityAboutLong = communityProfile?.aboutLong;
   const receivedConnections = communityProfile?.pendingConnections;
   const profileCoachId = communityProfile?.coachUserId;
-  const firstTimeOnCommunityDashboard = window.localStorage.getItem(
-    LocalStorageKeys.firstTimeOnCommunityDashboard
+  const firstTimeOnCommunityDashboard = getSessionItem<boolean>(
+    SessionStorageKeys.firstTimeOnCommunityDashboard
   );
 
   const renderConnectionsRequestsString = useMemo(
@@ -98,9 +102,7 @@ export const CommunityDashboard = () => {
           subTitle: item?.aboutShort,
           subTitleStyle: 'text-infoDark',
           onActionClick: () => {
-            localStorage.removeItem(
-              LocalStorageKeys.firstTimeOnCommunityDashboard
-            );
+            removeSessionItem(SessionStorageKeys.firstTimeOnCommunityDashboard);
             history.push(ROUTES.COMMUNITY.CONNECTION_PROFILE, {
               connectionProfile: item,
               isFromDashboard: true,
@@ -177,8 +179,8 @@ export const CommunityDashboard = () => {
               color={'quatenary'}
               textColor={'white'}
               onClick={() => {
-                localStorage.removeItem(
-                  LocalStorageKeys.firstTimeOnCommunityDashboard
+                removeSessionItem(
+                  SessionStorageKeys.firstTimeOnCommunityDashboard
                 );
                 history.push(ROUTES.COMMUNITY.PROFILE, {
                   isFromAddMoreDetails: true,
@@ -214,8 +216,8 @@ export const CommunityDashboard = () => {
                 color={'quatenary'}
                 textColor={'white'}
                 onClick={() => {
-                  localStorage.removeItem(
-                    LocalStorageKeys.firstTimeOnCommunityDashboard
+                  removeSessionItem(
+                    SessionStorageKeys.firstTimeOnCommunityDashboard
                   );
                   history.push(ROUTES.COMMUNITY.RECEIVED_REQUESTS, {
                     isRequest: true,
@@ -264,9 +266,7 @@ export const CommunityDashboard = () => {
           icon="UserGroupIcon"
           iconPosition="start"
           onClick={() => {
-            localStorage.removeItem(
-              LocalStorageKeys.firstTimeOnCommunityDashboard
-            );
+            removeSessionItem(SessionStorageKeys.firstTimeOnCommunityDashboard);
             history.push(ROUTES.COMMUNITY.ECD_HEROES_LIST);
           }}
         />
@@ -279,9 +279,7 @@ export const CommunityDashboard = () => {
           icon="PencilIcon"
           iconPosition="start"
           onClick={() => {
-            localStorage.removeItem(
-              LocalStorageKeys.firstTimeOnCommunityDashboard
-            );
+            removeSessionItem(SessionStorageKeys.firstTimeOnCommunityDashboard);
             history.push(ROUTES.COMMUNITY.PROFILE);
           }}
         />

@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react';
-import { LocalStorageKeys, AuthUser, MessageLogDto } from '@ecdlink/core';
+import {
+  LocalStorageKeys,
+  AuthUser,
+  MessageLogDto,
+  SessionStorageKeys,
+} from '@ecdlink/core';
+import { setSessionItem } from '../../../utils/session-storage.utils';
 import { MailIcon, SearchIcon } from '@heroicons/react/solid';
 import debounce from 'lodash.debounce';
 import { format, subDays } from 'date-fns';
@@ -99,7 +105,7 @@ export default function MessageList() {
   }, [tenant, messages]);
 
   const displayMessagePanel = (message: MessageLogDto) => {
-    localStorage.setItem('selectedMessage', JSON.stringify(message));
+    setSessionItem(message, SessionStorageKeys.selectedMessage);
 
     history.push({
       pathname: '/messaging/view-message',

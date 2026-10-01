@@ -14764,8 +14764,10 @@ export type UserSyncStatus = {
   syncChildren: Scalars['Boolean'];
   syncClassroom: Scalars['Boolean'];
   syncLearners: Scalars['Boolean'];
+  syncAttendance: Scalars['Boolean'];
   syncPermissions: Scalars['Boolean'];
   syncPoints: Scalars['Boolean'];
+  syncPractitioners: Scalars['Boolean'];
   syncReportingPeriods: Scalars['Boolean'];
 };
 

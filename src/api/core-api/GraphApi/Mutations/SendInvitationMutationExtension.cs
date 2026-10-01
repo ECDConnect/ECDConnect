@@ -178,7 +178,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var existingPhoneInvite = inviteManager.GetPendingUserInviteByPhone(normalizedPhone);
             if (existingPhoneInvite != null)
             {
-                throw new QueryException(
+                throw new GraphQLException(
                     "An invitation has already been sent to this phone number.");
             }
 
@@ -210,7 +210,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var token = TokenHelper.EncodeToken(JsonConvert.SerializeObject(tokenWrapper));
             if (string.IsNullOrWhiteSpace(token))
             {
-                throw new QueryException("Token generation failed");
+                throw new GraphQLException("Token generation failed");
             }
             
             await notificationManager.SendPreSchoolInvitationAsync(user, principal.FullName,  preSchoolName, token);
@@ -271,7 +271,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var token = TokenHelper.EncodeToken(JsonConvert.SerializeObject(tokenWrapper));
             if (string.IsNullOrWhiteSpace(token))
             {
-                throw new QueryException("Token generation failed");
+                throw new GraphQLException("Token generation failed");
             }
             var practitionerName = string.IsNullOrEmpty(practitionerUser.FullName) ? practitionerUser.UserName : practitionerUser.FullName;
             await notificationManager.SendPrincipalInvitationAsync(user, practitionerName, token);

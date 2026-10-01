@@ -29,6 +29,7 @@ const initialState: ClassroomState = {
     dateRefreshed: undefined,
   },
   classroomPractitioners: [],
+  invitedUserClassroomName: undefined,
 };
 
 const classroomsSlice = createSlice({
@@ -39,10 +40,17 @@ const classroomsSlice = createSlice({
       state.classroom = initialState.classroom;
       state.classroomGroupData = initialState.classroomGroupData;
       state.classroomPractitioners = initialState.classroomPractitioners;
+      state.invitedUserClassroomName = initialState.invitedUserClassroomName;
     },
     resetClassroomObjects: (state) => {
       state.classroomGroupData = initialState.classroomGroupData;
       state.classroomPractitioners = initialState.classroomPractitioners;
+    },
+    setInvitedUserClassroomName: (
+      state,
+      action: PayloadAction<string | undefined>
+    ) => {
+      state.invitedUserClassroomName = action.payload;
     },
     updateClassroom: (state, action: PayloadAction<SimpleClassroomDto>) => {
       state.classroom = {

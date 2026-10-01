@@ -71,7 +71,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             timeline.AddRange(courses.Select(x => new JourneyTimeline
             {
                 Name = $"Course completed: {x.CourseName}",
-                DateCompleted = x.CompletedDate.ToString("dd MMMM yyyy"),
+                DateCompleted = x.CompletedDate.HasValue ? x.CompletedDate.Value.ToString("dd MMMM yyyy") : null,
                 IconName = "AcademicCapIcon",
                 DateValue = x.CompletedDate,
                 Type = "Course",

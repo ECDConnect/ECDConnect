@@ -6,5 +6,7 @@ query getUserSyncStatus($lastSync: DateTime!, $classroomId: UUID!) {
     syncPoints
     syncPermissions
     syncLearners
+    syncPractitioners
+    syncAttendance
   }
 }
