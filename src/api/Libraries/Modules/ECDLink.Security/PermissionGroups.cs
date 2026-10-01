@@ -33,6 +33,12 @@
         public const string PORTAL = "Portal";
         public const string USERCONSENT = "UserConsent";
 
+        // Intentionally granted to no role. UserFlag rows are reached only
+        // through the userFlags / setUserFlag resolvers, which scope to the
+        // calling user; this keeps the auto-generated generic CRUD - which
+        // would accept any UserId - denied for everyone.
+        public const string USERFLAG = "UserFlag";
+
         public const string ECDREGISTRATION = "Registration";
     }
 }

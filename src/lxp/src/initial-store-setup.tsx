@@ -47,11 +47,8 @@ import { programmeActions, programmeThunkActions } from './store/programme';
 import { calendarActions, calendarThunkActions } from './store/calendar';
 import { authSelectors } from '@store/auth';
 import { statementsActions, statementsThunkActions } from '@store/statements';
-import {
-  LocalStorageKeys,
-  ResourceLocaleId,
-  RoleSystemNameEnum,
-} from '@ecdlink/core';
+import { userFlagsActions, userFlagsThunkActions } from '@store/user-flags';
+import { ResourceLocaleId, RoleSystemNameEnum } from '@ecdlink/core';
 import { communityActions, communityThunkActions } from './store/community';
 import { ClassroomService } from './services/ClassroomService';
 import { pointsActions, pointsThunkActions } from './store/points';
@@ -85,6 +82,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const [initLoading, setInitLoading] = useState(false);
   const [staticDataLoading, setStaticDataLoading] = useState(false);
   const userData = useSelector(userSelectors.getUser);
+  const storedUser = useSelector(userSelectors.getStoredUser);
   const userAuth = useSelector(authSelectors.getAuthUser);
   const isCoach = userData?.roles?.some(
     (role) => role.systemName === RoleSystemNameEnum.Coach
@@ -147,6 +145,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     appDispatch(practitionerForCoachActions.resetPractitionerState());
     appDispatch(programmeActions.resetProgrammeState());
     appDispatch(statementsActions.resetStatementsState());
+    appDispatch(userFlagsActions.resetUserFlagsState());
   };
 
   const initStoreSetup = useCallback(async () => {
@@ -213,6 +212,8 @@ const InitialStoreSetup: React.FC = ({ children }) => {
           ),
         ];
 
+    promises.push(appDispatch(userFlagsThunkActions.getUserFlags()).unwrap());
+
     if (isPrincipal) {
       promises.push(
         appDispatch(
@@ -236,7 +237,9 @@ const InitialStoreSetup: React.FC = ({ children }) => {
         appDispatch(classroomsThunkActions.getClassroomForUser({})).unwrap()
       );
       promises.push(
-        appDispatch(classroomsThunkActions.getClassroomGroups({})).unwrap()
+        appDispatch(
+          classroomsThunkActions.getClassroomGroups({ overrideCache: true })
+        ).unwrap()
       );
       promises.push(
         appDispatch(
@@ -507,6 +510,13 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   };
 
   useEffect(() => {
+    if (userAuth?.id && storedUser?.id && userAuth.id !== storedUser.id) {
+      resetAppStore(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userAuth?.id, storedUser?.id]);
+
+  useEffect(() => {
     async function init() {
       if (userAuth && !!userAuth.resetData) {
         await resetAppStore();
@@ -519,7 +529,12 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    if (userData && !!userData?.id && !isCoach) {
+    if (
+      userData &&
+      !!userData?.id &&
+      userData.id === userAuth?.id &&
+      !isCoach
+    ) {
       (async () =>
         await appDispatch(
           practitionerThunkActions.getPractitionerByUserId({
@@ -541,19 +556,18 @@ const InitialStoreSetup: React.FC = ({ children }) => {
           ).unwrap())();
       }
     }
-  }, [appDispatch, userData, isCoach, isPrincipal]);
+  }, [appDispatch, userData, userAuth?.id, isCoach, isPrincipal]);
 
   const handleNoClassroomForInvitedUser = useCallback(async () => {
     const classroom = await new ClassroomService(
       userAuth?.auth_token!
     ).getClassroomForUser(practitioner?.principalHierarchy!);
     if (classroom) {
-      localStorage.setItem(
-        LocalStorageKeys.classroomForInvitedUser,
-        classroom?.name
+      appDispatch(
+        classroomsActions.setInvitedUserClassroomName(classroom?.name)
       );
     }
-  }, [practitioner?.principalHierarchy, userAuth?.auth_token]);
+  }, [appDispatch, practitioner?.principalHierarchy, userAuth?.auth_token]);
 
   useEffect(() => {
     if (userData && practitioner?.principalHierarchy && !classroomForUser)

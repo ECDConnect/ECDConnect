@@ -6,11 +6,8 @@ import { programmeSelectors } from '@store/programme';
 import { DailyRoutine } from './components/daily-routine/daily-routine';
 import { useCallback, useEffect, useState } from 'react';
 import { useHolidays } from '@/hooks/useHolidays';
-import { LocalStorageKeys, useDialog, usePrevious } from '@ecdlink/core';
-import {
-  getStorageItem,
-  setStorageItem,
-} from '@/utils/common/local-storage.utils';
+import { UserFlagKeys, useDialog, usePrevious } from '@ecdlink/core';
+import { useUserFlag } from '@/hooks/useUserFlag';
 import { progressTrackingSelectors } from '@/store/progress-tracking';
 import { useHistory, useLocation, useParams } from 'react-router';
 import ProgressReport from '../components/progress-report/progress-report';
@@ -52,6 +49,9 @@ export interface iSkills {
 
 export const ProgrammeDashboard: React.FC = () => {
   const [showInitialWalkthrough, setShowInitialWalkthrough] = useState(false);
+  const [isProgrammeWalkthroughComplete] = useUserFlag(
+    UserFlagKeys.programmeWalkthroughComplete
+  );
 
   const { isLoading: isLoadingActivities } = useThunkFetchCall(
     'activityData',
@@ -198,10 +198,6 @@ export const ProgrammeDashboard: React.FC = () => {
                 colour: 'quatenary',
                 type: 'filled',
                 onClick: () => {
-                  setStorageItem(
-                    true,
-                    LocalStorageKeys.hasVisitedProgrammeDashboard
-                  );
                   history.push(ROUTES.PROGRAMMES.THEME, {
                     classroomGroupId,
                   } as ProgrammeThemeRouteState);
@@ -215,10 +211,6 @@ export const ProgrammeDashboard: React.FC = () => {
                 colour: 'quatenary',
                 type: 'outlined',
                 onClick: () => {
-                  setStorageItem(
-                    true,
-                    LocalStorageKeys.hasVisitedProgrammeDashboard
-                  );
                   onCancel();
                 },
                 leadingIcon: 'PencilAltIcon',
@@ -246,11 +238,15 @@ export const ProgrammeDashboard: React.FC = () => {
     if (
       hasPermissionToEdit &&
       classroomGroup?.classProgrammes.length &&
-      !getStorageItem(LocalStorageKeys.programmeWalkthroughComplete)
+      !isProgrammeWalkthroughComplete
     ) {
       setShowInitialWalkthrough(true);
     }
-  }, [classroomGroup?.classProgrammes.length, hasPermissionToEdit]);
+  }, [
+    classroomGroup?.classProgrammes.length,
+    hasPermissionToEdit,
+    isProgrammeWalkthroughComplete,
+  ]);
 
   useEffect(() => {
     checkIfToShowInitialWalkthrough();

@@ -9,6 +9,7 @@ export type ClassroomGroupDto = OfflineUpdate & {
   learners: LearnerDto[];
   classProgrammes: (ClassProgrammeDto & OfflineUpdate)[];
   meetEveryday?: boolean | undefined;
+  isActive?: boolean;
 };
 
 export type LearnerDto = OfflineUpdate & {

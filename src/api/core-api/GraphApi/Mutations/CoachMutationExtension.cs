@@ -121,7 +121,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var callerIsAdmin = userManager.IsInRoleAsync(new ApplicationUser { Id = uId }, Roles.ADMINISTRATOR).Result;
             if (uId != Guid.Parse(coachId) && !callerIsAdmin)
-                throw new HotChocolate.Execution.QueryException("You are not authorized to manage practitioners for this coach.");
+                throw new HotChocolate.GraphQLException("You are not authorized to manage practitioners for this coach.");
 
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
             Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId == Guid.Parse(practitionerId));
@@ -148,7 +148,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var callerIsAdmin = userManager.IsInRoleAsync(new ApplicationUser { Id = uId }, Roles.ADMINISTRATOR).Result;
             if (uId != Guid.Parse(coachId) && !callerIsAdmin)
-                throw new HotChocolate.Execution.QueryException("You are not authorized to manage practitioners for this coach.");
+                throw new HotChocolate.GraphQLException("You are not authorized to manage practitioners for this coach.");
 
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
             Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId == Guid.Parse(practitionerId));
@@ -171,7 +171,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var callerIsAdmin = userManager.IsInRoleAsync(new ApplicationUser { Id = uId }, Roles.ADMINISTRATOR).Result;
             if (uId != Guid.Parse(userId) && !callerIsAdmin)
-                throw new HotChocolate.Execution.QueryException("You are not authorized to update this coach.");
+                throw new HotChocolate.GraphQLException("You are not authorized to update this coach.");
 
             var dbRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
             Coach coach = dbRepo.GetByUserId(userId);
@@ -198,7 +198,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var callerIsAdmin = userManager.IsInRoleAsync(new ApplicationUser { Id = uId }, Roles.ADMINISTRATOR).Result;
             if (uId != coachUserId && !callerIsAdmin)
-                throw new HotChocolate.Execution.QueryException("You are not authorized to update this coach.");
+                throw new HotChocolate.GraphQLException("You are not authorized to update this coach.");
 
             var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
             var coach = coachRepo.GetByUserId(coachUserId);

@@ -130,7 +130,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             var uId = contextAccessor.HttpContext.GetUser().Id;
             if (uId != Guid.Parse(practitionerId))
-                throw new HotChocolate.Execution.QueryException("You are not authorized to update this practitioner.");
+                throw new HotChocolate.GraphQLException("You are not authorized to update this practitioner.");
 
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
             Practitioner practitioner = practitionerRepo.GetByUserId(practitionerId);
@@ -155,7 +155,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         {
             var uId = contextAccessor.HttpContext.GetUserId().Value;
             if (uId != Guid.Parse(practitionerId))
-                throw new HotChocolate.Execution.QueryException("You are not authorized to update this practitioner.");
+                throw new HotChocolate.GraphQLException("You are not authorized to update this practitioner.");
 
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             Practitioner practitioner = practitionerRepo.GetByUserId(practitionerId);
@@ -185,7 +185,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         {
             var uId = contextAccessor.HttpContext.GetUserId().Value;
             if (uId != Guid.Parse(practitionerId) && !engine.UserInHierarchy(uId, Guid.Parse(practitionerId)))
-                throw new HotChocolate.Execution.QueryException("You are not authorized to update this practitioner.");
+                throw new HotChocolate.GraphQLException("You are not authorized to update this practitioner.");
 
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             Practitioner practitioner = practitionerRepo.GetByUserId(practitionerId);
@@ -209,7 +209,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         {
             var uId = contextAccessor.HttpContext.GetUserId().Value;
             if (uId != Guid.Parse(practitionerId))
-                throw new HotChocolate.Execution.QueryException("You are not authorized to update this practitioner.");
+                throw new HotChocolate.GraphQLException("You are not authorized to update this practitioner.");
 
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             Practitioner practitioner = practitionerRepo.GetByUserId(practitionerId);
@@ -234,7 +234,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         {
             var callerId = contextAccessor.HttpContext.GetUserId().Value;
             if (callerId != Guid.Parse(userId))
-                throw new HotChocolate.Execution.QueryException("You are not authorized to update this user's emergency contact.");
+                throw new HotChocolate.GraphQLException("You are not authorized to update this user's emergency contact.");
 
             var user = userManager.FindByIdAsync(userId).Result;
             user.EmergencyContactFirstName = firstname;
@@ -281,7 +281,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             if (!engine.UserInHierarchy(uId, Guid.Parse(practitionerUserId))){
-                throw new HotChocolate.Execution.QueryException("You are not authorized to remove this practitioner.");
+                throw new HotChocolate.GraphQLException("You are not authorized to remove this practitioner.");
             }    
 
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
@@ -328,7 +328,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             if (!engine.UserInHierarchy(uId, Guid.Parse(practitionerUserId))){
-                throw new HotChocolate.Execution.QueryException("You are not authorized to remove this practitioner.");
+                throw new HotChocolate.GraphQLException("You are not authorized to remove this practitioner.");
             }    
 
             // Save the removal history
@@ -402,11 +402,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var removal = removalRepo.GetById(Guid.Parse(removalId));
 
             if (removal == null)            {
-                throw new HotChocolate.Execution.QueryException("Removal record not found.");           
+                throw new HotChocolate.GraphQLException("Removal record not found.");           
             }
 
              if (!engine.UserInHierarchy(uId, Guid.Parse(removal.UserId.ToString()), true)){
-                throw new HotChocolate.Execution.QueryException("You are not authorized to remove this practitioner.");
+                throw new HotChocolate.GraphQLException("You are not authorized to remove this practitioner.");
             }    
 
             removal.ReasonForPractitionerLeavingProgrammeId = Guid.Parse(reasonForPractitionerLeavingProgrammeId);
@@ -454,11 +454,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var removal = removalRepo.GetById(removalGuid);
 
              if (removal == null)            {
-                throw new HotChocolate.Execution.QueryException("Removal record not found.");           
+                throw new HotChocolate.GraphQLException("Removal record not found.");           
             }
 
              if (!engine.UserInHierarchy(uId, Guid.Parse(removal.UserId.ToString()), true)){
-                throw new HotChocolate.Execution.QueryException("You are not authorized to remove this practitioner.");
+                throw new HotChocolate.GraphQLException("You are not authorized to remove this practitioner.");
             }    
 
             removal.IsActive = false;

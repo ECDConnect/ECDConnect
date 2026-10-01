@@ -9,6 +9,7 @@ import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import './styles.generated.css';
 import './i18n';
 import pwa from './utils/pwa';
+import { clearMigratedLocalStorageKeys } from './utils/common/legacy-storage-cleanup.utils';
 
 if (
   process.env.NODE_ENV === 'development' &&
@@ -17,6 +18,8 @@ if (
   const { worker } = require('./mocks/browser');
   worker.start();
 }
+
+clearMigratedLocalStorageKeys();
 
 const updateHandler = (registration: ServiceWorkerRegistration) => {
   window.dispatchEvent(

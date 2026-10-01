@@ -1,9 +1,4 @@
-import {
-  LocalStorageKeys,
-  UserDto,
-  useDialog,
-  usePrevious,
-} from '@ecdlink/core';
+import { UserDto, useDialog, usePrevious } from '@ecdlink/core';
 import {
   ActionListDataItem,
   ActionModal,
@@ -36,7 +31,6 @@ import {
 import { useAppDispatch } from '@store';
 import { userActions, userSelectors, userThunkActions } from '@store/user';
 import { analyticsActions } from '@store/analytics';
-import { setStorageItem } from '@utils/common/local-storage.utils';
 import * as styles from './practitioner-about.styles';
 import ROUTES from '@routes/routes';
 import { EditCellPhoneNumber } from './edit-cellphone-number/edit-cellphone-number';
@@ -126,7 +120,6 @@ export const PractitionerAbout: React.FC = () => {
 
   const user = useSelector(userSelectors.getUser);
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
-  const pictureStorageKey = LocalStorageKeys.practitionerProfilePicture;
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
   // const reportingPeriod = useMemo(
   //   () => getReportingPeriodForProfileUsePhotoInReport(new Date()),
@@ -425,7 +418,6 @@ export const PractitionerAbout: React.FC = () => {
   };
 
   const picturePromtOnAction = async (imageBaseString: string) => {
-    setStorageItem(imageBaseString, pictureStorageKey);
     setEditProfilePictureVisible(!editProfilePictureVisible);
     const copy = Object.assign({}, user);
     if (copy) {

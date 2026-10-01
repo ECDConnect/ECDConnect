@@ -31,6 +31,7 @@ import {
 } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import { ClassDashboardRouteState } from '@/pages/business/business.types';
 import childRegistrationForm from '@/assets/ECD_connect_registration_form.pdf';
+import { ChildRegistrationDto } from '@/models/child/child-registration.dto';
 
 export interface CaregiverLinkProps extends ComponentBaseProps {
   childDetails: ChildBasicInfoModel;
@@ -119,7 +120,13 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
 
   const createLink = async () => {
     setLoadingLink(true);
-    const childRegistrationDetails = await getChildToken();
+    let childRegistrationDetails: ChildRegistrationDto;
+    try {
+      childRegistrationDetails = await getChildToken();
+    } catch {
+      setLoadingLink(false);
+      return;
+    }
 
     if (!childId) {
       refetchData(childId!);
@@ -131,7 +138,7 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
     );
 
     const whatsapp = () => {
-      const textMessage = `${practitioner?.user?.firstName} practitioner has invited you to register your child at their care centre. Tap this link to register ${childDetails.firstName} for ${classroom?.name}: ${childRegistrationDetails.caregiverRegistrationUrl}`;
+      const textMessage = `${practitioner?.user?.firstName} has invited you to register your child at their preschool. Tap this link to register ${childDetails.firstName} for ${classroom?.name}: ${childRegistrationDetails.caregiverRegistrationUrl}`;
       const whatsAppLink = `whatsapp://send?text=${textMessage}`;
       window.open(whatsAppLink);
     };
@@ -268,7 +275,7 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
         disabled={loadingManualUpload}
         onClick={onUploadSelf}
       />
-      <Divider title="OR" dividerType="solid" className="mt-8 mb-6" />
+      <Divider title="OR" dividerType="solid" className="mb-6 mt-8" />
       <Typography
         type="h4"
         color="textDark"

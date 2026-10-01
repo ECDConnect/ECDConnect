@@ -3,9 +3,11 @@ import {
   initialResetPasswordValues,
   PasswordResetModel,
   resetPasswordSchema,
+  SessionStorageKeys,
   useTheme,
 } from '@ecdlink/core';
 import { Button, Typography } from '@ecdlink/ui';
+import { getSessionItem } from '../../../utils/session-storage.utils';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
@@ -39,7 +41,8 @@ export default function ResetPassword() {
   const formValues = getValues();
 
   const requestResetPasword = async () => {
-    let _email = localStorage.getItem('email') ?? email;
+    let _email =
+      getSessionItem<string>(SessionStorageKeys.passwordResetEmail) ?? email;
 
     if (isValid) {
       setIsLoading(true);

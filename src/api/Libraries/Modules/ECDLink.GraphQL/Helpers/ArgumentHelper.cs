@@ -6,7 +6,7 @@ namespace ECDLink.EGraphQL.Helpers
 {
     public static class ArgumentHelper
     {
-        public static object GetArgument(IPureResolverContext ctx, string field)
+        public static object GetArgument(IResolverContext ctx, string field)
         {
             Selection selection = ctx.Selection as Selection;
 

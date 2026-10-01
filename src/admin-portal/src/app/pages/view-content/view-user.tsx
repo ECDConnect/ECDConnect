@@ -1,3 +1,5 @@
+import { SessionStorageKeys } from '@ecdlink/core';
+import { getSessionItem } from '../../utils/session-storage.utils';
 import FormField from '../../components/form-field/form-field';
 import {
   Alert,
@@ -89,7 +91,7 @@ const showNotification = (
 ) => {
   return (
     <Alert
-      className="mx-20 mt-5 mb-3 rounded-md"
+      className="mx-20 mb-3 mt-5 rounded-md"
       message={message}
       type={type}
       customIcon={icon}
@@ -116,7 +118,7 @@ export function ViewUser(props: any) {
   const [updateUser, { loading }] = useMutation(UpdateUser);
   const tenant = useTenant();
 
-  let userId = localStorage.getItem('selectedUser');
+  let userId = getSessionItem<string>(SessionStorageKeys.selectedUser);
   const [resetUserPassword] = useMutation(ResetUserPassword);
 
   const [getUserById, { data: userData, refetch }] = useLazyQuery(GetUserById, {
@@ -322,7 +324,7 @@ export function ViewUser(props: any) {
         <button
           onClick={() => history.goBack()}
           type="button"
-          className="text-secondary outline-none text-14 inline-flex w-full cursor-pointer items-center border border-transparent px-4 py-2 font-medium "
+          className="text-secondary text-14 inline-flex w-full cursor-pointer items-center border border-transparent px-4 py-2 font-medium outline-none "
         >
           <ArrowLeftIcon className="text-secondary mr-1 h-4 w-4">
             {' '}
@@ -339,11 +341,11 @@ export function ViewUser(props: any) {
         )}
 
       <div className="m-10 rounded-2xl lg:min-w-0 lg:flex-1">
-        <div className="py-0 px-4 sm:px-6 lg:px-8">
+        <div className="px-4 py-0 sm:px-6 lg:px-8">
           {/* Start main area*/}
 
           <div className="flex">
-            <div className="p-6 dark:bg-gray-900 dark:text-gray-100 sm:p-12">
+            <div className="p-6 sm:p-12 dark:bg-gray-900 dark:text-gray-100">
               <div className="flex flex-col space-y-4 md:flex-row md:space-y-0 ">
                 <ProfileAvatar
                   canChangeImage={false}
@@ -353,7 +355,7 @@ export function ViewUser(props: any) {
                   size="header"
                 />
 
-                <div className="sm: pt-4 pl-8">
+                <div className="sm: pl-8 pt-4">
                   <p className="text-3xl font-normal text-black ">
                     {userData?.userById?.fullName}
                   </p>
@@ -366,7 +368,7 @@ export function ViewUser(props: any) {
                               key={i.id}
                               className={classNames(
                                 'bg-tertiary',
-                                ' m-1 my-2 flex flex-row justify-center rounded-full py-1  px-3 text-xs text-white'
+                                ' m-1 my-2 flex flex-row justify-center rounded-full px-3  py-1 text-xs text-white'
                               )}
                             >
                               <p className="text-16"> {i.name}</p>
@@ -383,7 +385,7 @@ export function ViewUser(props: any) {
           {/* End main area */}
           {!userData && (
             <Alert
-              className="mt-5 mb-3"
+              className="mb-3 mt-5"
               message={`This user has been deactivated and cannot access ${tenant.tenant?.applicationName} App`}
               type="error"
               // customIcon={<SaveIcon></SaveIcon>}
@@ -391,7 +393,7 @@ export function ViewUser(props: any) {
           )}
           {userData && !userData?.userById?.isActive && (
             <Alert
-              className="mt-5 mb-3"
+              className="mb-3 mt-5"
               message={`This user has been deactivated and cannot access ${tenant.tenant?.applicationName} App`}
               type="error"
               // customIcon={<SaveIcon></SaveIcon>}
@@ -400,7 +402,7 @@ export function ViewUser(props: any) {
         </div>
 
         <div className="border-l-primary border-primary m-10 mt-0  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
-          <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
+          <div className="h-full px-4 py-6 sm:px-6 lg:px-8">
             {/* Start main area*/}
             <h3 className="border-b-4 border-dashed pb-2 text-xl ">
               {' '}
@@ -484,7 +486,7 @@ export function ViewUser(props: any) {
           <div className="flex w-10/12 flex-row  pl-4">
             {hasPermission(PermissionEnum.delete_user) && (
               <Button
-                className={'mt-3 mr-2 w-4/12 rounded-md'}
+                className={'mr-2 mt-3 w-4/12 rounded-md'}
                 type="outlined"
                 // isLoading={isLoading}
                 color="tertiary"

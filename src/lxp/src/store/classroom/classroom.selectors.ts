@@ -21,6 +21,10 @@ export const getClassroom = (
   state: RootState
 ): SimpleClassroomDto | undefined => state.classroomData.classroom;
 
+export const getInvitedUserClassroomName = (
+  state: RootState
+): string | undefined => state.classroomData.invitedUserClassroomName;
+
 export const getIsReportingPeriodsSet = () =>
   createSelector(
     (state: RootState) => state.classroomData.classroom,
@@ -55,6 +59,12 @@ export const getClassroomGroups = (
   state: RootState
 ): SimpleClassroomGroupDto[] =>
   state.classroomData.classroomGroupData.classroomGroups;
+
+export const getSelectableClassroomGroups = createSelector(
+  getClassroomGroups,
+  (classroomGroups): SimpleClassroomGroupDto[] =>
+    classroomGroups.filter((group) => group.isActive !== false)
+);
 
 export const getClassroomGroupsForUser = (userId: string) =>
   createSelector(
