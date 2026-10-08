@@ -470,6 +470,33 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 ").CountAsync();
             }
 
+            // Leave logged for this principal's practitioners, including leave
+            // the same principal saved on another device. Absentees are not part
+            // of the Practitioner row, so a practitioner-only check would miss them.
+            var absenteeCount = 0;
+            if (isPrincipal)
+            {
+                var userIdText = userId.ToString();
+                absenteeCount = await dbContext.Database.SqlQuery<int>($@"
+                SELECT COUNT(*)::int AS ""Value""
+                FROM ""Absentees"" a
+                WHERE (
+                    a.""UserId"" = {userId}::uuid
+                    OR a.""LoggedBy"" = {userIdText}
+                    OR EXISTS (
+                        SELECT 1
+                        FROM ""Practitioner"" p
+                        WHERE p.""UserId"" = a.""UserId""
+                        AND p.""PrincipalHierarchy"" = {userId}::uuid
+                    )
+                )
+                AND (
+                    a.""UpdatedDate"" > {lastSyncLocal}
+                    OR a.""InsertedDate"" > {lastSyncLocal}
+                )
+                ").SingleAsync();
+            }
+
             // Registers this user can see, including one they saved on another device.
             // A principal sees the whole school. A practitioner sees their own groups.
             // Open-access practitioners who have not accepted an invite have no groups,
@@ -515,7 +542,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 SyncPoints = pointsCount >= 1,
                 SyncPermissions = permissionsCount >= 1,
                 SyncLearners = syncLearners,
-                SyncPractitioners = practitionerCount >= 1,
+                SyncPractitioners = practitionerCount >= 1 || absenteeCount >= 1,
                 SyncAttendance = attendanceCount >= 1,
             };
         }

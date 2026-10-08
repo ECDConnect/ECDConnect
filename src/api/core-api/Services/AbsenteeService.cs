@@ -1,6 +1,8 @@
-﻿using ECDLink.Core.Services.Interfaces;
+﻿using ECDLink.Core.Helpers;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using HotChocolate;
+using Microsoft.EntityFrameworkCore;
 using System;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.Abstractrions.Constants;
@@ -114,78 +116,343 @@ namespace ECDLink.Api.CoreApi.Services
                 absentee.AbsentDateEnd = absentDate.Date;
             }
 
-            var createdAbsentee = _absenteeRepo.Insert(absentee);
+            var isProgrammeRemoval = practitionerRemovalHistory != null
+                || reason == LeaveOverlap.ProgrammeRemovalReason;
 
-            if (createdAbsentee.Id != Guid.Empty)
+            // Two devices of the same principal can submit leave at the same time.
+            // Hold the lock until this leave is committed so the second submit sees
+            // the first and overwrites it instead of inserting another period.
+            using var transaction = _dbContext.Database.BeginTransaction();
+            LockPractitionerLeave(absentee.UserId.Value);
+
+            OverlapApplyResult overlap = null;
+            if (!isProgrammeRemoval)
             {
-                //Log to the history table for reassignment back to owner user after absentee end date and pass on the role selectiosn to for future use with assigned absenteeid
-                _reassignmentService.AddReassignmentForPractitioner(practitionerId, reassignedToPractitioner, reason, absentDate, loggedByUser, classroomGroupId, false, absentDateEnd, isRoleAssign, fromRole, toRole, roleAssignedToUser, absentee.Id.ToString());
+                overlap = ApplyOverlappingLeave(absentee, fromRole, toRole, roleAssignedToUser);
+            }
 
-                //send notifications a) Absentee, b) long leave // dont send if user is removed completely, the logic is shared here for complete removal and absentees
-                if (reason != "Practitioner removed from programme")
+            Absentees result;
+            if (overlap != null && overlap.SkipInsert)
+            {
+                result = overlap.Absentee;
+            }
+            else
+            {
+                result = _absenteeRepo.Insert(absentee);
+                if (result.Id != Guid.Empty)
                 {
-                    var userToSend = _userManager.FindByIdAsync(practitionerId).Result;
-                    List<TagsReplacements> replacements = new List<TagsReplacements>();
-                    string parentUserId = absentee.LoggedBy;
-
-                    if (userToSend.practitionerObjectData != null && userToSend.practitionerObjectData.PrincipalHierarchy.HasValue)
-                    {
-                        parentUserId = userToSend.practitionerObjectData.PrincipalHierarchy.Value.ToString();
-                    }
-                    var parentUser = _userManager.FindByIdAsync(parentUserId).Result;
-                    if (parentUser != null)
-                    {
-                        var parentToSend = _userManager.FindByIdAsync(parentUser.Id).Result;
-
-                        replacements.Add(new TagsReplacements()
-                        {
-                            FindValue = "PrincipalName",
-                            ReplacementValue = parentToSend.FirstName
-                        });
-                    }
-                    else
-                    {
-                        replacements.Add(new TagsReplacements()
-                        {
-                            FindValue = "PrincipalName",
-                            ReplacementValue = "Principal"
-                        });
-                    }
-                    replacements.Add(new TagsReplacements()
-                    {
-                        FindValue = "AbsentStartDate",
-                        ReplacementValue = absentDate.ToLongDateString(),
-                    });
-                    replacements.Add(new TagsReplacements()
-                    {
-                        FindValue = "AbsentEndDate",
-                        ReplacementValue = (absentDateEnd.HasValue ? absentDateEnd.Value.ToLongDateString() : absentDate.AddDays(1).ToLongDateString()),
-                    });
-                    replacements.Add(new TagsReplacements()
-                    {
-                        FindValue = "PractitionerUserId",
-                        ReplacementValue = parentUser.Id.ToString()
-                    });
-
-                    var practitioner = _practiGenericRepo.GetByUserId(userToSend.Id);
-                    if (!practitioner.IsPrincipalOrAdmin())
-                    {
-                        // practitioner-marked-onleave 
-                        // show while on leave
-                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerMarkedOnLeave, absentDate, userToSend, "", MessageStatusConstants.Amber, replacements, absentDateEnd, false, false, null,
-                         relatedEntities: new List<RelatedEntity> { new RelatedEntity(Guid.Parse(practitionerId), "ApplicationUser") });
-
-                        // marked-onleave
-                        // show until day before leave starts
-                        var beforeAbsentDayStarts = absentDate.AddDays(-1);
-                        var startDate = DateTime.Now.Date < beforeAbsentDayStarts.Date ? DateTime.Now.Date : beforeAbsentDayStarts.Date;
-                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PrincipalMarkedOnLeave, startDate, userToSend, "", MessageStatusConstants.Amber, replacements, absentDate.AddDays(-1), false, false, null,
-                         relatedEntities: new List<RelatedEntity> { new RelatedEntity(Guid.Parse(practitionerId), "ApplicationUser") });
-                    }
+                    //Log to the history table for reassignment back to owner user after absentee end date and pass on the role selectiosn to for future use with assigned absenteeid
+                    _reassignmentService.AddReassignmentForPractitioner(practitionerId, reassignedToPractitioner, reason, absentDate, loggedByUser, classroomGroupId, false, absentDateEnd, isRoleAssign, fromRole, toRole, roleAssignedToUser, absentee.Id.ToString());
                 }
             }
 
-            return createdAbsentee;
+            transaction.Commit();
+
+            if (result != null && result.Id != Guid.Empty && !isProgrammeRemoval)
+            {
+                var insertedNew = overlap == null || !overlap.SkipInsert;
+                var periodChanged = overlap != null && overlap.PeriodChanged;
+                if (periodChanged)
+                {
+                    ClearLeaveNotifications(practitionerId, overlap.SupersededStartDates);
+                }
+                if (insertedNew || periodChanged)
+                {
+                    SendLeaveNotifications(practitionerId, reason, absentDate, absentDateEnd, absentee.LoggedBy);
+                }
+            }
+
+            return result;
+        }
+
+        private void LockPractitionerLeave(Guid practitionerUserId)
+        {
+            var bytes = practitionerUserId.ToByteArray();
+            var key1 = BitConverter.ToInt32(bytes, 0);
+            var key2 = BitConverter.ToInt32(bytes, 4);
+            _dbContext.Database.ExecuteSqlInterpolated(
+                $"SELECT pg_advisory_xact_lock({key1}, {key2})");
+        }
+
+        private OverlapApplyResult ApplyOverlappingLeave(
+            Absentees incoming,
+            string fromRole,
+            string toRole,
+            string roleAssignedToUser)
+        {
+            var practitionerId = incoming.UserId.Value;
+            var newEnd = incoming.AbsentDateEnd ?? incoming.AbsentDate;
+            var rows = _absenteeRepo.GetAll()
+                .Where(row => row.UserId == practitionerId && row.IsActive)
+                .ToList();
+
+            var decision = LeaveOverlap.Decide(
+                rows.Select(row => new LeaveSpan
+                {
+                    Id = row.Id,
+                    ReassignedClass = row.ReassignedClass,
+                    Start = row.AbsentDate,
+                    End = LeaveOverlap.NormalizeEnd(row.AbsentDate, row.AbsentDateEnd),
+                    UpdatedDate = row.UpdatedDate,
+                    IsActive = row.IsActive,
+                    IsProgrammeRemoval = row.PractitionerRemovalHistoryId != null
+                        || row.Reason == LeaveOverlap.ProgrammeRemovalReason,
+                }),
+                incoming.AbsentDate,
+                newEnd,
+                incoming.ReassignedClass);
+
+            if (decision.InsertNewRow && decision.MovePeriodIds.Count == 0 && decision.DeactivateIds.Count == 0)
+            {
+                return null;
+            }
+
+            var byId = rows.ToDictionary(row => row.Id);
+            var supersededStarts = decision.PeriodChanged
+                ? rows
+                    .Where(row => decision.MovePeriodIds.Contains(row.Id) || decision.DeactivateIds.Contains(row.Id))
+                    .Select(row => row.AbsentDate)
+                    .Distinct()
+                    .ToList()
+                : new List<DateTime>();
+
+            foreach (var id in decision.DeactivateIds)
+            {
+                DeactivateLeaveRow(byId[id]);
+            }
+
+            Absentees kept = null;
+            foreach (var id in decision.MovePeriodIds)
+            {
+                var row = byId[id];
+                var previousEnd = LeaveOverlap.NormalizeEnd(row.AbsentDate, row.AbsentDateEnd);
+                var datesChanged = row.AbsentDate.Date != incoming.AbsentDate.Date
+                    || previousEnd.Date != newEnd.Date;
+                var isKeep = decision.KeepId == id;
+
+                row.AbsentDate = incoming.AbsentDate;
+                row.AbsentDateEnd = newEnd;
+                row.Reason = incoming.Reason;
+                row.UpdatedBy = incoming.UpdatedBy;
+                if (isKeep)
+                {
+                    if (!string.IsNullOrWhiteSpace(incoming.ReassignedClass))
+                    {
+                        row.ReassignedClass = incoming.ReassignedClass;
+                    }
+                    if (!string.IsNullOrWhiteSpace(incoming.ReassignedToPractitioner))
+                    {
+                        row.ReassignedToPractitioner = incoming.ReassignedToPractitioner;
+                    }
+                    row.IsRoleAssign = incoming.IsRoleAssign;
+                    row.LoggedBy = incoming.LoggedBy;
+                    kept = row;
+                }
+
+                _absenteeRepo.Update(row);
+                AlignReassignment(
+                    row,
+                    isKeep ? incoming.ReassignedToPractitioner : null,
+                    datesChanged,
+                    isKeep ? fromRole : null,
+                    isKeep ? toRole : null,
+                    isKeep ? roleAssignedToUser : null);
+            }
+
+            return new OverlapApplyResult
+            {
+                SkipInsert = !decision.InsertNewRow,
+                Absentee = kept,
+                PeriodChanged = decision.PeriodChanged,
+                SupersededStartDates = supersededStarts,
+            };
+        }
+
+        private void DeactivateLeaveRow(Absentees row)
+        {
+            row.IsActive = false;
+            if (row.CompletedDate == null)
+            {
+                row.CompletedDate = DateTime.Now;
+            }
+            _absenteeRepo.Update(row);
+
+            var histories = _dbContext.ClassReassignmentHistories
+                .Where(history => history.AbsenteeId == row.Id && history.IsActive && history.ReassignedBackToDate == null)
+                .ToList();
+            foreach (var history in histories)
+            {
+                history.IsActive = false;
+                history.ReassignedBackToDate = DateTime.Now;
+                history.UpdatedDate = DateTime.Now;
+            }
+            if (histories.Count > 0)
+            {
+                _dbContext.SaveChanges();
+            }
+        }
+
+        private void AlignReassignment(
+            Absentees row,
+            string reassignedToPractitioner,
+            bool datesChanged,
+            string fromRole,
+            string toRole,
+            string roleAssignedToUser)
+        {
+            var histories = _dbContext.ClassReassignmentHistories
+                .Where(history => history.AbsenteeId == row.Id && history.IsActive && history.ReassignedBackToDate == null)
+                .ToList();
+
+            if (histories.Count == 0)
+            {
+                if (!string.IsNullOrWhiteSpace(reassignedToPractitioner))
+                {
+                    _reassignmentService.AddReassignmentForPractitioner(
+                        row.UserId.ToString(),
+                        reassignedToPractitioner,
+                        row.Reason,
+                        row.AbsentDate,
+                        row.LoggedBy,
+                        row.ReassignedClass,
+                        false,
+                        row.AbsentDateEnd,
+                        row.IsRoleAssign,
+                        fromRole,
+                        toRole,
+                        roleAssignedToUser,
+                        row.Id.ToString());
+                }
+                return;
+            }
+
+            if (row.AssignedDate != null && !datesChanged && string.IsNullOrWhiteSpace(reassignedToPractitioner))
+            {
+                return;
+            }
+
+            foreach (var history in histories)
+            {
+                if (datesChanged && row.AssignedDate == null)
+                {
+                    history.AssignedToDate = row.AbsentDate;
+                }
+                if (!string.IsNullOrWhiteSpace(reassignedToPractitioner)
+                    && Guid.TryParse(reassignedToPractitioner, out var toUser)
+                    && row.AssignedDate == null)
+                {
+                    history.ReassignedToUser = toUser;
+                    history.Reason = row.Reason;
+                    if (!string.IsNullOrWhiteSpace(row.ReassignedClass))
+                    {
+                        history.ReassignedClassroomGroups = row.ReassignedClass;
+                    }
+                }
+                history.UpdatedDate = DateTime.Now;
+            }
+
+            _dbContext.SaveChanges();
+        }
+
+        private void ClearLeaveNotifications(string practitionerId, IEnumerable<DateTime> startDates)
+        {
+            if (startDates == null)
+            {
+                return;
+            }
+
+            foreach (var startDate in startDates.Select(date => date.Date).Distinct())
+            {
+                _notificationService.DeleteAllNotificationsForTypeAndDate(practitionerId, TemplateTypeConstants.PrincipalMarkedOnLeave, startDate);
+                _notificationService.DeleteAllNotificationsForTypeAndDate(practitionerId, TemplateTypeConstants.PractitionerMarkedOnLeave, startDate);
+            }
+        }
+
+        private void SendLeaveNotifications(
+            string practitionerId,
+            string reason,
+            DateTime absentDate,
+            DateTime? absentDateEnd,
+            string loggedBy)
+        {
+            if (reason == LeaveOverlap.ProgrammeRemovalReason)
+            {
+                return;
+            }
+
+            var userToSend = _userManager.FindByIdAsync(practitionerId).Result;
+            if (userToSend == null)
+            {
+                return;
+            }
+
+            var practitioner = _practiGenericRepo.GetByUserId(userToSend.Id);
+            if (practitioner == null || practitioner.IsPrincipalOrAdmin())
+            {
+                return;
+            }
+
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            string parentUserId = loggedBy;
+
+            if (userToSend.practitionerObjectData != null && userToSend.practitionerObjectData.PrincipalHierarchy.HasValue)
+            {
+                parentUserId = userToSend.practitionerObjectData.PrincipalHierarchy.Value.ToString();
+            }
+            var parentUser = _userManager.FindByIdAsync(parentUserId).Result;
+            if (parentUser != null)
+            {
+                var parentToSend = _userManager.FindByIdAsync(parentUser.Id).Result;
+
+                replacements.Add(new TagsReplacements()
+                {
+                    FindValue = "PrincipalName",
+                    ReplacementValue = parentToSend != null ? parentToSend.FirstName : parentUser.FirstName
+                });
+            }
+            else
+            {
+                replacements.Add(new TagsReplacements()
+                {
+                    FindValue = "PrincipalName",
+                    ReplacementValue = "Principal"
+                });
+            }
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "AbsentStartDate",
+                ReplacementValue = absentDate.ToLongDateString(),
+            });
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "AbsentEndDate",
+                ReplacementValue = (absentDateEnd.HasValue ? absentDateEnd.Value.ToLongDateString() : absentDate.AddDays(1).ToLongDateString()),
+            });
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "PractitionerUserId",
+                ReplacementValue = parentUser != null ? parentUser.Id.ToString() : practitionerId
+            });
+
+            // practitioner-marked-onleave
+            // show while on leave
+            _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerMarkedOnLeave, absentDate, userToSend, "", MessageStatusConstants.Amber, replacements, absentDateEnd, false, false, null,
+             relatedEntities: new List<RelatedEntity> { new RelatedEntity(Guid.Parse(practitionerId), "ApplicationUser") });
+
+            // marked-onleave
+            // show until day before leave starts
+            var beforeAbsentDayStarts = absentDate.AddDays(-1);
+            var startDate = DateTime.Now.Date < beforeAbsentDayStarts.Date ? DateTime.Now.Date : beforeAbsentDayStarts.Date;
+            _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PrincipalMarkedOnLeave, startDate, userToSend, "", MessageStatusConstants.Amber, replacements, absentDate.AddDays(-1), false, false, null,
+             relatedEntities: new List<RelatedEntity> { new RelatedEntity(Guid.Parse(practitionerId), "ApplicationUser") });
+        }
+
+        private sealed class OverlapApplyResult
+        {
+            public bool SkipInsert { get; set; }
+            public Absentees Absentee { get; set; }
+            public bool PeriodChanged { get; set; }
+            public List<DateTime> SupersededStartDates { get; set; }
         }
 
         public Absentees EditAbsentee(
