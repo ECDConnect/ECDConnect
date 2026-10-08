@@ -40,13 +40,13 @@ export const UpdateExpense: React.FC = () => {
       );
       if (isOnline) {
         // send change to backend
-        appDispatch(statementsThunkActions.upsertIncomeStatements({})).unwrap();
+        appDispatch(statementsThunkActions.upsertIncomeStatements({}));
       }
       history.push(ROUTES.BUSINESS, {
         activeTabIndex: BusinessTabItems.MONEY,
       });
     },
-    [statementId]
+    [appDispatch, history, isOnline, statementId]
   );
 
   return (
