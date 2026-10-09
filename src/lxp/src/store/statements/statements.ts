@@ -1,9 +1,3 @@
-import {
-  ExpenseItemDto,
-  IncomeItemDto,
-  IncomeStatementDto,
-  IncomeTypeIds,
-} from '@/../../../packages/core/lib';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
@@ -18,6 +12,12 @@ import {
   StatementsState,
   UnsyncedStatementItems,
 } from './statements.types';
+import {
+  IncomeStatementDto,
+  IncomeItemDto,
+  IncomeTypeIds,
+  ExpenseItemDto,
+} from '@ecdlink/core';
 import { newGuid } from '@/utils/common/uuid.utils';
 
 const statementMonthKey = (year: number, month: number) => `${year}-${month}`;
