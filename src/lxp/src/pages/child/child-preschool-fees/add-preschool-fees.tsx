@@ -8,7 +8,12 @@ import {
 } from '@ecdlink/ui';
 import DatePicker from 'react-datepicker';
 import { useSelector } from 'react-redux';
-import { statementsActions, statementsSelectors } from '@/store/statements';
+import {
+  statementsActions,
+  statementsSelectors,
+  statementsThunkActions,
+} from '@/store/statements';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import {
   IncomeItemDto,
   IncomeStatementDto,
@@ -33,6 +38,7 @@ export const AddPreschoolFees: React.FC<AddPreschoolFeesProps> = ({
   childId,
 }) => {
   const appDispatch = useAppDispatch();
+  const { isOnline } = useOnlineStatus();
   const { showMessage } = useSnackbar();
 
   const child = useSelector(childrenSelectors.getChildById(childId));
@@ -128,6 +134,10 @@ export const AddPreschoolFees: React.FC<AddPreschoolFeesProps> = ({
         incomeItems: [mappedFees],
       })
     );
+    if (isOnline) {
+      // send change to backend
+      appDispatch(statementsThunkActions.upsertIncomeStatements({}));
+    }
 
     showMessage({
       message: 'Preschool fee added!',

@@ -1,4 +1,9 @@
-import { ExpenseItemDto, IncomeItemDto } from '@/../../../packages/core/lib';
+import {
+  ExpenseItemDto,
+  IncomeItemDto,
+  IncomeStatementDto,
+  IncomeTypeIds,
+} from '@/../../../packages/core/lib';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
@@ -8,7 +13,11 @@ import {
   getIncomeStatements,
   upsertIncomeStatements,
 } from './statements.actions';
-import { StatementsState } from './statements.types';
+import {
+  LocalIncomeStatement,
+  StatementsState,
+  UnsyncedStatementItems,
+} from './statements.types';
 import { newGuid } from '@/utils/common/uuid.utils';
 
 const statementMonthKey = (year: number, month: number) => `${year}-${month}`;
@@ -16,6 +25,46 @@ const statementMonthKey = (year: number, month: number) => `${year}-${month}`;
 /** Backend month is 1-12; Date() months are 0-11. Day 20 avoids timezone month-shift. */
 const statementSortDate = (year: number, month: number) =>
   new Date(year, month - 1, 20);
+
+/** The parts of a statement that are sent to the server */
+const statementContent = (statement: IncomeStatementDto) =>
+  JSON.stringify({
+    incomeItems: statement.incomeItems,
+    expenseItems: statement.expenseItems,
+    contactedByCoach: statement.contactedByCoach,
+    downloaded: statement.downloaded,
+  });
+
+type UnsyncedIdsKey = keyof UnsyncedStatementItems;
+
+/** Unsynced item ids before a new change; undefined means all items are unsynced */
+const pendingItemIds = (statement: LocalIncomeStatement, key: UnsyncedIdsKey) =>
+  statement.synced ? [] : statement[key];
+
+const addUnsyncedItemIds = (
+  statement: LocalIncomeStatement,
+  key: UnsyncedIdsKey,
+  ids: string[]
+) => {
+  const pending = pendingItemIds(statement, key);
+  return pending === undefined
+    ? undefined
+    : Array.from(new Set([...pending, ...ids]));
+};
+
+/** Every item id that still has to be sent, with the legacy "all items" case expanded */
+const allUnsyncedItemIds = (
+  statement: LocalIncomeStatement,
+  key: UnsyncedIdsKey
+) =>
+  pendingItemIds(statement, key) ??
+  (key === 'unsyncedIncomeItemIds'
+    ? statement.incomeItems
+    : statement.expenseItems
+  ).map((x) => x.id);
+
+const isActivePreschoolFee = (item: IncomeItemDto) =>
+  item.isActive && item.incomeTypeId === IncomeTypeIds.PRESCHOOL_FEE_ID;
 
 const findStatementForMonth = (
   statements: StatementsState['incomeStatements'],
@@ -80,6 +129,16 @@ const statementsSlice = createSlice({
         ...state.incomeStatements.filter((x) => x.id !== statementId),
         {
           ...updatedStatement,
+          unsyncedIncomeItemIds: addUnsyncedItemIds(
+            updatedStatement,
+            'unsyncedIncomeItemIds',
+            []
+          ),
+          unsyncedExpenseItemIds: addUnsyncedItemIds(
+            updatedStatement,
+            'unsyncedExpenseItemIds',
+            []
+          ),
           synced: false,
           downloaded: true,
         },
@@ -128,6 +187,8 @@ const statementsSlice = createSlice({
           downloaded: false,
           incomeItems: [],
           expenseItems: [],
+          unsyncedIncomeItemIds: [],
+          unsyncedExpenseItemIds: [],
           synced: false,
           dateRefreshed: undefined,
         };
@@ -137,6 +198,16 @@ const statementsSlice = createSlice({
         ...state.incomeStatements.filter((x) => x.id !== updatedStatement!.id),
         {
           ...updatedStatement,
+          unsyncedIncomeItemIds: addUnsyncedItemIds(
+            updatedStatement,
+            'unsyncedIncomeItemIds',
+            incomeItems.map((x) => x.id)
+          ),
+          unsyncedExpenseItemIds: addUnsyncedItemIds(
+            updatedStatement,
+            'unsyncedExpenseItemIds',
+            []
+          ),
           synced: false,
           incomeItems: [
             ...updatedStatement.incomeItems.filter(
@@ -179,6 +250,8 @@ const statementsSlice = createSlice({
             dateRefreshed: undefined,
             incomeItems: [],
             expenseItems: [action.payload],
+            unsyncedIncomeItemIds: [],
+            unsyncedExpenseItemIds: [action.payload.id],
           },
         ];
       } else {
@@ -187,6 +260,16 @@ const statementsSlice = createSlice({
           ...state.incomeStatements.filter((x) => x.id !== updatedStatement.id),
           {
             ...updatedStatement,
+            unsyncedIncomeItemIds: addUnsyncedItemIds(
+              updatedStatement,
+              'unsyncedIncomeItemIds',
+              []
+            ),
+            unsyncedExpenseItemIds: addUnsyncedItemIds(
+              updatedStatement,
+              'unsyncedExpenseItemIds',
+              [action.payload.id]
+            ),
             synced: false,
             expenseItems: [...updatedStatement.expenseItems, action.payload],
           },
@@ -212,6 +295,16 @@ const statementsSlice = createSlice({
         ),
         {
           ...updatedStatement,
+          unsyncedIncomeItemIds: addUnsyncedItemIds(
+            updatedStatement,
+            'unsyncedIncomeItemIds',
+            []
+          ),
+          unsyncedExpenseItemIds: addUnsyncedItemIds(
+            updatedStatement,
+            'unsyncedExpenseItemIds',
+            [action.payload.expenseItem.id]
+          ),
           synced: false,
           expenseItems: [
             ...updatedStatement.expenseItems.filter(
@@ -234,14 +327,19 @@ const statementsSlice = createSlice({
       state.payTypes = action.payload;
     });
     builder.addCase(upsertIncomeStatements.fulfilled, (state, action) => {
-      const returned = action.payload ?? [];
+      const { sent, returned } = action.payload;
       if (!returned.length) {
-        state.incomeStatements = state.incomeStatements.map((statement) => ({
-          ...statement,
-          synced: true,
-        }));
         return;
       }
+
+      // A local statement edited (or created) while the request was in flight
+      // has changes the server has not seen, so it must stay unsynced.
+      const sentById = new Map(sent.map((s) => [s.id, statementContent(s)]));
+      const hasUnsentChanges = (
+        statement: StatementsState['incomeStatements'][number]
+      ) =>
+        !statement.synced &&
+        sentById.get(statement.id) !== statementContent(statement);
 
       const returnedByMonth = new Map<string, (typeof returned)[number]>();
       returned.forEach((item) => {
@@ -250,13 +348,31 @@ const statementsSlice = createSlice({
       const uniqueReturned = Array.from(returnedByMonth.values());
       const returnedMonthKeys = new Set(returnedByMonth.keys());
 
+      // Item content as it was sent, to tell whether a local item changed since
+      const sentItems = new Map<string, string>();
+      sent.forEach((s) =>
+        [...(s.incomeItems ?? []), ...(s.expenseItems ?? [])].forEach((x) =>
+          sentItems.set(x.id, JSON.stringify(x))
+        )
+      );
+      const sentUnchanged = (item: { id: string }) =>
+        sentItems.get(item.id) === JSON.stringify(item);
+
+      // The server is the source of truth, except for local items it has not
+      // seen yet (new, or changed on this device and not yet synced).
       const mergeItemsById = <T extends { id: string }>(
         serverItems: T[] | undefined,
-        localItems: T[] | undefined
+        localItems: T[],
+        unsyncedIds: Set<string>
       ) => {
         const items = new Map<string, T>();
-        [...(serverItems ?? []), ...(localItems ?? [])].forEach((item) => {
+        (serverItems ?? []).forEach((item) => {
           if (item?.id) {
+            items.set(item.id, item);
+          }
+        });
+        localItems.forEach((item) => {
+          if (item?.id && (!items.has(item.id) || unsyncedIds.has(item.id))) {
             items.set(item.id, item);
           }
         });
@@ -267,23 +383,75 @@ const statementsSlice = createSlice({
         ...state.incomeStatements.filter(
           (s) => !returnedMonthKeys.has(statementMonthKey(s.year, s.month))
         ),
-        ...uniqueReturned.map((item) => {
+        ...uniqueReturned.map((item): LocalIncomeStatement => {
           const locals = state.incomeStatements.filter(
             (s) =>
               statementMonthKey(s.year, s.month) ===
               statementMonthKey(item.year, item.month)
           );
+
+          // A downloaded statement is locked on the server, so local changes are discarded
+          if (item.downloaded) {
+            return {
+              ...item,
+              unsyncedIncomeItemIds: [],
+              unsyncedExpenseItemIds: [],
+              synced: true,
+              dateRefreshed: new Date().toString(),
+            };
+          }
+
+          const synced = !locals.some(hasUnsentChanges);
+          const unsyncedIncomeIds = new Set(
+            locals.flatMap((s) =>
+              allUnsyncedItemIds(s, 'unsyncedIncomeItemIds')
+            )
+          );
+          const unsyncedExpenseIds = new Set(
+            locals.flatMap((s) =>
+              allUnsyncedItemIds(s, 'unsyncedExpenseItemIds')
+            )
+          );
+
+          // The server merges a second fee for the same child into the existing
+          // one, so drop the local copy once the server has taken its values.
+          const serverFeeChildIds = new Set(
+            (item.incomeItems ?? [])
+              .filter(isActivePreschoolFee)
+              .map((x) => x.childUserId)
+          );
+          const serverIncomeIds = new Set(
+            (item.incomeItems ?? []).map((x) => x.id)
+          );
+          const localIncomeItems = locals
+            .flatMap((s) => s.incomeItems ?? [])
+            .filter(
+              (x) =>
+                !(
+                  isActivePreschoolFee(x) &&
+                  !serverIncomeIds.has(x.id) &&
+                  serverFeeChildIds.has(x.childUserId) &&
+                  sentUnchanged(x)
+                )
+            );
+
           return {
             ...item,
             incomeItems: mergeItemsById(
               item.incomeItems,
-              locals.flatMap((s) => s.incomeItems ?? [])
+              localIncomeItems,
+              unsyncedIncomeIds
             ),
             expenseItems: mergeItemsById(
               item.expenseItems,
-              locals.flatMap((s) => s.expenseItems ?? [])
+              locals.flatMap((s) => s.expenseItems ?? []),
+              unsyncedExpenseIds
             ),
-            synced: true,
+            unsyncedIncomeItemIds: synced ? [] : Array.from(unsyncedIncomeIds),
+            unsyncedExpenseItemIds: synced
+              ? []
+              : Array.from(unsyncedExpenseIds),
+            synced,
             dateRefreshed: new Date().toString(),
           };
         }),
