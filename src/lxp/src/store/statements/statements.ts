@@ -360,7 +360,7 @@ const statementsSlice = createSlice({
 
       // The server is the source of truth, except for local items it has not
       // seen yet (new, or changed on this device and not yet synced).
-      const mergeItemsById = <T extends { id: string }>(
+      const mergeItemsById = <T extends { id: string; isActive?: boolean }>(
         serverItems: T[] | undefined,
         localItems: T[],
         unsyncedIds: Set<string>
@@ -372,8 +372,20 @@ const statementsSlice = createSlice({
           }
         });
         localItems.forEach((item) => {
-          if (item?.id && (!items.has(item.id) || unsyncedIds.has(item.id))) {
+          if (!item?.id) {
+            return;
+          }
+          const serverItem = items.get(item.id);
+          if (!serverItem || unsyncedIds.has(item.id)) {
             items.set(item.id, item);
+            return;
+          }
+          // A save response that leaves isActive off must not mark the item inactive.
+          if (
+            serverItem.isActive === undefined &&
+            item.isActive !== undefined
+          ) {
+            items.set(item.id, { ...serverItem, isActive: item.isActive });
           }
         });
         return Array.from(items.values());
@@ -459,6 +471,18 @@ const statementsSlice = createSlice({
     });
     builder.addCase(getIncomeStatements.fulfilled, (state, action) => {
       if (!action.payload?.length) {
+        return;
+      }
+
+      // The thunk returns the local cache when a statement in range is still
+      // unsynced. Writing it back with synced: true lets the in-flight save
+      // response replace those items with a payload that omits isActive, so
+      // the Money tab treats the new income as empty until the next fetch.
+      if (
+        action.payload.some(
+          (item) => (item as LocalIncomeStatement).synced === false
+        )
+      ) {
         return;
       }
 
