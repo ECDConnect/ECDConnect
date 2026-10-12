@@ -9,9 +9,9 @@ import { TIMEOUTS } from '@/constants/timeouts';
 import { queryErrorsActions } from '@/store/queryErrors';
 import { upsertQueryErrors } from '@/store/queryErrors/queryErrors.actions';
 
-const disableGraphqlErrorAlert =
-  process.env.REACT_APP_DISABLE_GRAPHQL_ERROR_ALERT;
-const disableGraphqlLogging = process.env.REACT_APP_DISABLE_GRAPHQL_LOGGING;
+const disableGraphqlErrorAlert = import.meta.env
+  .REACT_APP_DISABLE_GRAPHQL_ERROR_ALERT;
+const disableGraphqlLogging = import.meta.env.REACT_APP_DISABLE_GRAPHQL_LOGGING;
 
 const logGraphQL = (
   logFunc: (message?: string, ...optionalParams: any[]) => void,
@@ -201,8 +201,8 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
 
             const user = store?.getState()?.auth?.userAuth;
             if (
-              process.env.REACT_APP_SUPPRESS_ERROR_LOGGING === undefined ||
-              process.env.REACT_APP_SUPPRESS_ERROR_LOGGING === '1'
+              import.meta.env.REACT_APP_SUPPRESS_ERROR_LOGGING === undefined ||
+              import.meta.env.REACT_APP_SUPPRESS_ERROR_LOGGING === '1'
             ) {
               for (let err of unexpectedErrors) {
                 store.dispatch(

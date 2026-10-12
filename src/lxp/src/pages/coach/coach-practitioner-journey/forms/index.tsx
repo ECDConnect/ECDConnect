@@ -32,7 +32,7 @@ import {
 } from '@ecdlink/graphql';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { PqaActions, getVisitDataForVisitId } from '@/store/pqa/pqa.actions';
-import { ReactComponent as IconRobot } from '@/assets/iconRobot.svg';
+import IconRobot from '@/assets/iconRobot.svg?react';
 import { useAppDispatch } from '@/store';
 import {
   callAnswer,

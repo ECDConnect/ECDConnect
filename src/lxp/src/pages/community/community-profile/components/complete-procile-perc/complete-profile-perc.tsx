@@ -2,9 +2,9 @@ import { communitySelectors } from '@/store/community';
 import { Card, Colours, ProgressBar, Typography } from '@ecdlink/ui';
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import { ReactComponent as PositiveEmoticon } from '@/assets/positive-green-emoticon.svg';
-import { ReactComponent as NeutralEmoticon } from '@/assets/blueFace.svg';
-import { ReactComponent as MehEmoticon } from '@/assets/mehFace.svg';
+import PositiveEmoticon from '@/assets/positive-green-emoticon.svg?react';
+import NeutralEmoticon from '@/assets/blueFace.svg?react';
+import MehEmoticon from '@/assets/mehFace.svg?react';
 
 export const CompleteProfilePerc = () => {
   const communityProfile = useSelector(communitySelectors.getCommunityProfile);

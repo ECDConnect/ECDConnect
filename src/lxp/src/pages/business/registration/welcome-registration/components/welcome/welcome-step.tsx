@@ -5,7 +5,7 @@ import {
   DialogPosition,
   Typography,
 } from '@ecdlink/ui';
-import { ReactComponent as EmojiYellowHappy } from '../../../../../../assets/iconRobot.svg';
+import EmojiYellowHappy from '../../../../../../assets/iconRobot.svg?react';
 import TransparentLayer from '../../../../../../assets/TransparentLayer.png';
 import { useHistory } from 'react-router-dom';
 import { JoinOrAddPreschoolModal } from '../trial-period/join-or-add-preschool-modal';

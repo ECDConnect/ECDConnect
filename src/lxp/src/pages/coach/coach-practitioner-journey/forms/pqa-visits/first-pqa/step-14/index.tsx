@@ -9,7 +9,7 @@ import { DynamicFormProps, SectionQuestions } from '../../../dynamic-form';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { options as step12Options } from '../step-12/options';
 import { options as step13Options } from '../step-13/options';
-import { ReactComponent as Emoji3 } from '@/assets/ECD_Connect_emoji3.svg';
+import Emoji3 from '@/assets/ECD_Connect_emoji3.svg?react';
 import { replaceBraces, usePrevious, useSessionStorage } from '@ecdlink/core';
 import { step13VisitSection } from '../step-13';
 import { step12VisitSection } from '../step-12';
@@ -270,7 +270,7 @@ export const Step14 = ({
             type="h4"
             text={replaceBraces(questions[0].question, name)}
             color="textDark"
-            className="mt-4 mb-2"
+            className="mb-2 mt-4"
           />
           <ButtonGroup<boolean>
             color="secondary"

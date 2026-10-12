@@ -33,7 +33,7 @@ import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { IconInformationIndicator } from '@/pages/classroom/programme-planning/components/icon-information-indicator/icon-information-indicator';
 import { useHolidays } from '@/hooks/useHolidays';
 import { useMonthlyAttendanceSummary } from '@/hooks/useMonthlyAttendanceSummary';
-import { ReactComponent as YellowSmile } from '@/assets/emoji_yellow_bigsmile.svg';
+import YellowSmile from '@/assets/emoji_yellow_bigsmile.svg?react';
 
 export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   classroom,

@@ -1,12 +1,13 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
+import translation from "./locales/en/translation.json";
 
 
 // Importing translation files
 // Creating object with the variables of imported translation files
 const resources = {
   en: {
-    translation: require('./locales/en/translation.json'),
+    translation,
   }  
 };
 

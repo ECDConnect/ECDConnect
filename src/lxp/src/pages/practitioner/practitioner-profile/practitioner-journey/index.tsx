@@ -48,7 +48,7 @@ import {
   generalSupportVisitTypes,
   visitTypes as coachVisitTypes,
 } from '@/pages/coach/coach-practitioner-journey/coach-practitioner-journey.types';
-import { ReactComponent as BalloonsIcon } from '@/assets/balloons.svg';
+import BalloonsIcon from '@/assets/balloons.svg?react';
 import { ExclamationIcon } from '@heroicons/react/solid';
 import { isDateWithinThreeMonths } from '@/pages/coach/coach-practitioner-journey/timeline/utils';
 
@@ -434,12 +434,12 @@ export const PractitionerJourney = ({
         )}
       {renderAlert()}
       <Typography
-        className="mt-4 mb-2"
+        className="mb-2 mt-4"
         type="h4"
         text={`You have been a practitioner for`}
       />
       <div className="mb-4 flex gap-2">
-        <p className="bg-primary text-14 w-fit w-auto rounded-2xl py-1 px-2 font-semibold text-white">
+        <p className="bg-primary text-14 w-auto w-fit rounded-2xl px-2 py-1 font-semibold text-white">
           {getFormattedDateInYearsMonthsAndDays(
             timeline?.starterLicenseDate || new Date()
           )}

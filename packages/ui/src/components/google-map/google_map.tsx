@@ -16,7 +16,7 @@ const DEFAULT_LONGITUDE = 26.058415;
 const DEFAULT_LATITUDE = -29.1199066;
 const GEOLOCATION_TIMEOUT = 10000;
 const MAP_API_KEY =
-  process.env.REACT_APP_MAP_API_KEY ||
+  import.meta.env.REACT_APP_MAP_API_KEY ||
   'AIzaSyAmTVxElyncQJh2hJ1ATFS0K_cB6d3VoSk';
 
 // Each mounted map needs its own id, otherwise a map created by a later mount

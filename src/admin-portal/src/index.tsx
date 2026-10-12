@@ -2,9 +2,7 @@ import { ConfigProvider, SnackbarProvider } from '@ecdlink/core';
 import ReactDOM from 'react-dom';
 import ConfigWrapper from './app/config-wrapper';
 import './app/i18n';
-// Compiled from ./styles.css by the Tailwind CLI — see the `tailwind:*` scripts
-// in package.json. Edit styles.css, never the generated file.
-import './styles.generated.css';
+import './styles.css';
 import { TenantContextProvider } from './app/hooks/useTenant';
 import { clearMigratedLocalStorageKeys } from './app/utils/legacy-storage-cleanup.utils';
 
@@ -13,12 +11,12 @@ clearMigratedLocalStorageKeys();
 ReactDOM.render(
   <ConfigProvider
     config={{
-      authApi: process.env.REACT_APP_API || '',
-      graphQlApi: process.env.REACT_APP_GRAPHQLAPI || '',
-      themeUrl: process.env.REACT_APP_THEME || '',
+      authApi: import.meta.env.REACT_APP_API || '',
+      graphQlApi: import.meta.env.REACT_APP_GRAPHQLAPI || '',
+      themeUrl: import.meta.env.REACT_APP_THEME || '',
       facebookAppId: '',
       googleClientId: '',
-      configUrl: process.env.REACT_APP_REMOTE_CONFIG_URL || '',
+      configUrl: import.meta.env.REACT_APP_REMOTE_CONFIG_URL || '',
     }}
   >
     <SnackbarProvider>

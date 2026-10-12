@@ -1,5 +1,5 @@
 import { ActionModal, DialogPosition } from '@ecdlink/ui';
-import { ReactComponent as RobotImage } from '@/assets/iconRobot.svg';
+import RobotImage from '@/assets/iconRobot.svg?react';
 import { useTenant } from '@/hooks/useTenant';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useDialog } from '@ecdlink/core';

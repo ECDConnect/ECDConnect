@@ -1,13 +1,13 @@
 import { Colours, Typography, classNames } from '@ecdlink/ui';
-import { ReactComponent as Emoji1 } from '@/assets/ECD_Connect_emoji1.svg';
-import { ReactComponent as Emoji11 } from '@/assets/ECD_Connect_emoji11.svg';
-import { ReactComponent as SadRating } from '@/assets/sad_rating.svg';
-import { ReactComponent as RedRating } from '@/assets/red_rating.svg';
-import { ReactComponent as FourStars } from '@/assets/badges/4stars.svg';
-import { ReactComponent as ThreeStars } from '@/assets/badges/3stars.svg';
-import { ReactComponent as TwoStars } from '@/assets/badges/2stars.svg';
-import { ReactComponent as OneStar } from '@/assets/badges/1star.svg';
-import { ReactComponent as ZeroStars } from '@/assets/badges/0stars.svg';
+import Emoji1 from '@/assets/ECD_Connect_emoji1.svg?react';
+import Emoji11 from '@/assets/ECD_Connect_emoji11.svg?react';
+import SadRating from '@/assets/sad_rating.svg?react';
+import RedRating from '@/assets/red_rating.svg?react';
+import FourStars from '@/assets/badges/4stars.svg?react';
+import ThreeStars from '@/assets/badges/3stars.svg?react';
+import TwoStars from '@/assets/badges/2stars.svg?react';
+import OneStar from '@/assets/badges/1star.svg?react';
+import ZeroStars from '@/assets/badges/0stars.svg?react';
 
 import {
   step15ReAccreditationQuestions,
@@ -265,7 +265,7 @@ export const Rating = ({
       {getCard()}
       {(isOrangeQuestion2 || isOrangeQuestion3 || isOrangeQuestion4) &&
         !isTwoOrangeRatings && (
-          <ul className="ml-5 mb-4 list-disc">
+          <ul className="mb-4 ml-5 list-disc">
             {isOrangeQuestion2 && (
               <li className="text-textMid">
                 SmartStart programme not implemented for long enough
@@ -291,7 +291,7 @@ export const Rating = ({
             color="textDark"
             text={`${name} received an automatic red rating because:`}
           />
-          <ul className="ml-5 mb-4 list-disc">
+          <ul className="mb-4 ml-5 list-disc">
             <li className="text-textMid">
               The programme’s SmartSpace certificate has been withdrawn.
             </li>
@@ -301,7 +301,7 @@ export const Rating = ({
         <table className="text-textDark mb-6 w-full border border-gray-100">
           <thead>
             <tr className="bg-uiBg border-blue-accent3 border-b text-left">
-              <th className={'w-3/4 py-4 px-6'}>SECTION</th>
+              <th className={'w-3/4 px-6 py-4'}>SECTION</th>
               <th>SCORE</th>
             </tr>
           </thead>
@@ -314,7 +314,7 @@ export const Rating = ({
                   index % 2 === 0 ? '' : 'bg-uiBg'
                 )}
               >
-                <td className={'py-4 px-6'}>{item.section}</td>
+                <td className={'px-6 py-4'}>{item.section}</td>
                 <td className="mt-5 ">{item.score}</td>
               </tr>
             ))}

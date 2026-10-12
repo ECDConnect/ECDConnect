@@ -55,9 +55,8 @@ import { Login as FacebookLogin } from 'react-facebook';
 import { LoginResponse } from '@/types/facebook';
 import { triggerBackgroundSync } from '@/store/sync/sync.actions';
 
-const CryptoJS = require('crypto-js');
-const version: string =
-  process.env.REACT_APP_VERSION ?? require('../../../../package.json').version;
+import CryptoJS from 'crypto-js';
+const version: string = import.meta.env.REACT_APP_VERSION;
 
 enum LoginErrorEnum {
   None,
@@ -362,11 +361,11 @@ export const OaLogin: React.FC = () => {
         ) {
           console.log('preLogin - authenticated');
           const userHash = CryptoJS.AES.encrypt(
-            loginRequest.password,
+            loginRequest.password!,
             'user pass'
           ).toString();
           const userIdHash = CryptoJS.AES.encrypt(
-            loginRequest.username,
+            loginRequest.username!,
             'user id'
           ).toString();
 

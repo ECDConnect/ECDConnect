@@ -6,7 +6,7 @@ import {
   Card,
   Typography,
 } from '@ecdlink/ui';
-import { ReactComponent as JoinCommunity } from '@/assets/joinCommunity.svg';
+import JoinCommunity from '@/assets/joinCommunity.svg?react';
 import { yesOrNoOptions } from '../../community-welcome.types';
 import { UseFormSetValue } from 'react-hook-form';
 import { useAppDispatch } from '@/store';

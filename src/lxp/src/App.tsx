@@ -24,7 +24,6 @@ import { LoginModal } from './pages/auth/login-modal/login-modal';
 import { authActions, authSelectors } from './store/auth';
 import { useVersionCheck } from './hooks/useVersionCheck';
 import { UpdateRequired } from './pages/update-required/update-required';
-import { stopReportingRuntimeErrors } from 'react-error-overlay';
 import { useTenant } from './hooks/useTenant';
 import { Helmet } from 'react-helmet';
 import { GoogleOAuthProvider } from '@react-oauth/google';
@@ -33,10 +32,6 @@ import { settingActions, settingSelectors } from './store/settings';
 import { captureAcquisitionTracking } from '@/utils/user/acquisition-tracking.utils';
 
 captureAcquisitionTracking();
-
-if (process.env.NODE_ENV === 'development') {
-  stopReportingRuntimeErrors();
-}
 
 const App: React.FC = () => {
   const tenant = useTenant();
@@ -78,8 +73,7 @@ const App: React.FC = () => {
   const applicationVersion = useSelector(
     settingSelectors.getApplicationVersion
   );
-  const currentBuildVersion: string =
-    process.env.REACT_APP_VERSION ?? require('../package.json').version;
+  const currentBuildVersion: string = import.meta.env.REACT_APP_VERSION;
 
   // Latch at mount time so the UpdateRequired screen stays visible after we
   // update the stored version (preventing a reload loop when user hits "Update now").
@@ -97,7 +91,7 @@ const App: React.FC = () => {
   }, []);
 
   const getTitle = () => {
-    const env = process.env.REACT_APP_RUNENVIRONMENT || '';
+    const env = import.meta.env.REACT_APP_RUNENVIRONMENT || '';
     let title = env;
     if (title !== '') title += ' ';
     title +=
@@ -134,12 +128,12 @@ const App: React.FC = () => {
             gaOptions: {
               debug_mode:
                 window.location.host.indexOf('localhost') > 0 ||
-                !!process.env.REACT_APP_GADEBUGMODE,
+                !!import.meta.env.REACT_APP_GADEBUGMODE,
             },
             gtagOptions: {
               debug_mode:
                 window.location.host.indexOf('localhost') > 0 ||
-                !!process.env.REACT_APP_GADEBUGMODE,
+                !!import.meta.env.REACT_APP_GADEBUGMODE,
             },
           },
           // {
@@ -365,7 +359,7 @@ const App: React.FC = () => {
     };
   }, [dialog]);
 
-  const isProduction = process.env.NODE_ENV === 'production';
+  const isProduction = import.meta.env.PROD;
 
   const routerContent = (
     <IonReactRouter>

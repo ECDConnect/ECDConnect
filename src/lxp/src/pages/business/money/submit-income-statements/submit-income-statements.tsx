@@ -30,7 +30,7 @@ import {
   UserFlagKeys,
   getPreviousMonth,
 } from '@ecdlink/core';
-import { ReactComponent as MoneyIcon } from '@/assets/moneyIcon.svg';
+import MoneyIcon from '@/assets/moneyIcon.svg?react';
 import { InfoPage } from './components/info-page';
 import { useUserFlag } from '@/hooks/useUserFlag';
 import { StatementsWalkthroughStart } from './components/walkthrough-statements-wrapper/walkthrough-start';

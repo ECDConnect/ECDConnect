@@ -4,7 +4,7 @@ import {
   ChildProgressDetailedSkillObservation,
   ChildProgressSkillToWorkOn,
 } from '@/models/progress/child-progress-report';
-import { ReactComponent as EmojiYellowSmile } from '@/assets/ECD_Connect_emoji3.svg';
+import EmojiYellowSmile from '@/assets/ECD_Connect_emoji3.svg?react';
 
 export type ObservationsForChildSkillsToWorkOnProps = {
   child: ChildDto;

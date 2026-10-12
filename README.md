@@ -81,6 +81,7 @@ hosted on Azure infrastructure.
 - [Redux Toolkit](https://redux-toolkit.js.org/) for state management with
   persistence
 - [TypeScript](https://www.typescriptlang.org/) for improved syntax support
+- [Vite](https://vite.dev/) for the dev server, builds and tests (Vitest)
 - [Tailwind UI](https://tailwindui.com/) for Form layouts, tables, modal windows
   for clean & modern look
 - [heroicons](https://heroicons.com/) for SVG icons
@@ -88,6 +89,7 @@ hosted on Azure infrastructure.
 ## Frontend Admin Portal tech stack
 
 - React using Functional components
+- [Vite](https://vite.dev/) for the dev server, builds and tests (Vitest)
 - Using [Apollo Client](https://www.apollographql.com/docs/react/) GraphQL for
   Declarative data fetching
 - [Tailwind UI](https://tailwindui.com/) for Form layouts, tables, modal windows

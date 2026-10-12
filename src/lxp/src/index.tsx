@@ -4,19 +4,13 @@ import ReactDOM from 'react-dom';
 import ConfigWrapper from './config-wrapper';
 import reportWebVitals from './reportWebVitals';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
-// Compiled from ./styles.css by the Tailwind CLI — see the `tailwind:*` scripts
-// in package.json. Edit styles.css, never the generated file.
-import './styles.generated.css';
+import './styles.css';
 import './i18n';
 import pwa from './utils/pwa';
 import { clearMigratedLocalStorageKeys } from './utils/common/legacy-storage-cleanup.utils';
 
-if (
-  process.env.NODE_ENV === 'development' &&
-  process.env?.REACT_APP_RUN_MOCKS === 'run_msw'
-) {
-  const { worker } = require('./mocks/browser');
-  worker.start();
+if (import.meta.env.DEV && import.meta.env.REACT_APP_RUN_MOCKS === 'run_msw') {
+  import('./mocks/browser').then(({ worker }) => worker.start());
 }
 
 clearMigratedLocalStorageKeys();
@@ -40,14 +34,14 @@ console.log('[REACT] render app');
 ReactDOM.render(
   <ConfigProvider
     config={{
-      authApi: process.env.REACT_APP_API || '',
-      graphQlApi: process.env.REACT_APP_GRAPHQLAPI || '',
-      themeUrl: process.env.REACT_APP_THEME || '',
-      facebookAppId: process.env.REACT_APP_FACEBOOK_APP_ID || '',
-      googleClientId: process.env.REACT_APP_GOOGLE_CLIENT_ID || '',
-      configUrl: process.env.REACT_APP_REMOTE_CONFIG_URL || '',
+      authApi: import.meta.env.REACT_APP_API || '',
+      graphQlApi: import.meta.env.REACT_APP_GRAPHQLAPI || '',
+      themeUrl: import.meta.env.REACT_APP_THEME || '',
+      facebookAppId: import.meta.env.REACT_APP_FACEBOOK_APP_ID || '',
+      googleClientId: import.meta.env.REACT_APP_GOOGLE_CLIENT_ID || '',
+      configUrl: import.meta.env.REACT_APP_REMOTE_CONFIG_URL || '',
       exposeAuthCodesForTesting:
-        process.env.REACT_APP_EXPOSE_AUTH_CODES === 'true',
+        import.meta.env.REACT_APP_EXPOSE_AUTH_CODES === 'true',
     }}
   >
     <ConfigWrapper />

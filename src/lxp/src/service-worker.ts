@@ -63,7 +63,7 @@ registerRoute(({ request, url }) => {
   if (url.pathname.startsWith('/_')) return false;
   if (url.pathname.match(fileExtensionRegexp)) return false;
   return true;
-}, createHandlerBoundToURL(process.env.PUBLIC_URL + '/index.html'));
+}, createHandlerBoundToURL(import.meta.env.BASE_URL + 'index.html'));
 
 registerRoute(
   ({ url, request }) => {

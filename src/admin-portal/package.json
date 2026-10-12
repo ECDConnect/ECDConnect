@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "tailwind:build": "tailwindcss -i ./src/styles.css -o ./src/styles.generated.css --minify",
-    "tailwind:watch": "tailwindcss -i ./src/styles.css -o ./src/styles.generated.css --watch",
-    "start": "yarn tailwind:build && concurrently -k -n tw,cra -c magenta,cyan \"yarn tailwind:watch\" \"cross-env-shell NODE_OPTIONS=--openssl-legacy-provider craco start\"",
-    "build": "yarn tailwind:build && craco build"
+    "start": "vite",
+    "build": "tsc -p tsconfig.build.json && vite build",
+    "preview": "vite preview",
+    "test": "vitest"
   },
   "dependencies": {
     "@ckeditor/ckeditor5-upload": "^32.0.0",
