@@ -67,6 +67,12 @@ registerRoute(({ request, url }) => {
 
 registerRoute(
   ({ url, request }) => {
+    // Cross-origin CORS requests (fetch, cache.addAll, <img crossorigin>) must
+    // not get the opaque no-cors response below: the browser rejects it as a
+    // network error. Let them go to the network; blob storage allows CORS.
+    if (request.mode === 'cors' && url.origin !== self.location.origin) {
+      return false;
+    }
     return (
       url.pathname.endsWith('.png') ||
       url.pathname.endsWith('.ico') ||
@@ -77,7 +83,7 @@ registerRoute(
   new CacheFirst({
     cacheName: 'images',
     fetchOptions: {
-      mode: 'no-cors', // ← crucial for cross-origin blobs
+      mode: 'no-cors', // lets <img> loads of blobs be cached offline
     },
     plugins: [
       new ExpirationPlugin({
