@@ -48,21 +48,24 @@ export const AddIncome: React.FC = () => {
     childrenSelectors.getChildren
   )?.filter((x) => x.workflowStatusId === activeWorkflowStatus?.id);
 
-  const onSubmit = useCallback((incomeItem: IncomeItemDto) => {
-    // update redux
-    appDispatch(
-      statementsActions.addOrUpdateIncomeItems({ incomeItems: [incomeItem] })
-    );
-    if (isOnline) {
-      // send change to backend
-      appDispatch(statementsThunkActions.upsertIncomeStatements({})).unwrap();
-    }
+  const onSubmit = useCallback(
+    (incomeItem: IncomeItemDto) => {
+      // update redux
+      appDispatch(
+        statementsActions.addOrUpdateIncomeItems({ incomeItems: [incomeItem] })
+      );
+      if (isOnline) {
+        // send change to backend
+        appDispatch(statementsThunkActions.upsertIncomeStatements({}));
+      }
 
-    removeNotifications();
-    history.push(ROUTES.BUSINESS, {
-      activeTabIndex: BusinessTabItems.MONEY,
-    });
-  }, []);
+      removeNotifications();
+      history.push(ROUTES.BUSINESS, {
+        activeTabIndex: BusinessTabItems.MONEY,
+      });
+    },
+    [appDispatch, history, isOnline, removeNotifications]
+  );
 
   const incomeType = (type?: string) => {
     switch (type) {
@@ -241,7 +244,7 @@ export const AddIncome: React.FC = () => {
                 "If you don't see the income type you want to add above, use the “Other” type to add your own."
               }
               list={['For example: business grants.']}
-              className="mt-4 mb-4"
+              className="mb-4 mt-4"
             />
           </>
         </BannerWrapper>

@@ -369,7 +369,7 @@ export const pullRemoteChanges = createAsyncThunk<
           )
         );
       }
-      if (isPrincipal && userSyncStatus.syncAttendance) {
+      if (userSyncStatus.syncAttendance) {
         const endDate = new Date();
         const startDate = new Date();
         startDate.setDate(endDate.getDate() - 30);

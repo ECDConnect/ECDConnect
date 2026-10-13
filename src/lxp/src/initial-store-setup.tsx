@@ -293,17 +293,20 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       const currentDate = new Date();
       const oneYearAgo = new Date();
       oneYearAgo.setMonth(currentDate.getMonth() - 12);
+      const pointsUserId = userAuth?.id;
 
-      promises.push(
-        (async () =>
-          await appDispatch(
-            pointsThunkActions.getPointsSummaryForUser({
-              userId: userData?.id!,
-              startDate: oneYearAgo,
-              endDate: currentDate,
-            })
-          ).unwrap())()
-      );
+      if (pointsUserId) {
+        promises.push(
+          (async () =>
+            await appDispatch(
+              pointsThunkActions.getPointsSummaryForUser({
+                userId: pointsUserId,
+                startDate: oneYearAgo,
+                endDate: currentDate,
+              })
+            ).unwrap())()
+        );
+      }
     }
     await Promise.allSettled(promises);
     setOtherLoading(false);

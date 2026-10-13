@@ -2,7 +2,12 @@ import { useState, useCallback } from 'react';
 import { BannerWrapper, Typography, Button, Alert, Divider } from '@ecdlink/ui';
 import DatePicker from 'react-datepicker';
 import { useSelector } from 'react-redux';
-import { statementsActions, statementsSelectors } from '@/store/statements';
+import {
+  statementsActions,
+  statementsSelectors,
+  statementsThunkActions,
+} from '@/store/statements';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { IncomeItemDto } from '@ecdlink/core';
 import { lastDayOfMonth } from 'date-fns';
 import StatementsWrapper from '@/pages/business/money/submit-income-statements/components/walkthrough-statements-wrapper/StatementsWrapper';
@@ -20,6 +25,7 @@ export const AddPreschoolFees: React.FC<AddPreschoolFeesProps> = ({
 }) => {
   const history = useHistory();
   const appDispatch = useAppDispatch();
+  const { isOnline } = useOnlineStatus();
 
   const [step, setStep] = useState<number>(1);
   const [classroomGroupIds, setClassroomGroupIds] = useState<string[]>([]);
@@ -30,11 +36,15 @@ export const AddPreschoolFees: React.FC<AddPreschoolFeesProps> = ({
       appDispatch(
         statementsActions.addOrUpdateIncomeItems({ statementId, incomeItems })
       );
+      if (isOnline) {
+        // send change to backend
+        appDispatch(statementsThunkActions.upsertIncomeStatements({}));
+      }
       history.push(ROUTES.BUSINESS, {
         activeTabIndex: BusinessTabItems.MONEY,
       });
     },
-    []
+    [appDispatch, history, isOnline]
   );
 
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());

@@ -191,18 +191,19 @@ namespace ECDLink.Core.Services
             exisitingStatement.IncomeItems ??= new List<StatementsIncome>();
             exisitingStatement.ExpenseItems ??= new List<StatementsExpenses>();
 
-            // set downloaded field
-            if (input.Downloaded != exisitingStatement.Downloaded)
+            // A downloaded statement is final. Another device that has not seen the
+            // download yet must not un-download it or change its items.
+            if (exisitingStatement.Downloaded)
             {
-                exisitingStatement.Downloaded = input.Downloaded;
-                _statementsRepo.Update(exisitingStatement);
-                if (input.Downloaded)
-                {
-                    _pointsService.CalculateDownloadIncomeStatement((Guid)exisitingStatement.UserId);
-                }
+                return exisitingStatement;
             }
 
-            // If not downloaded, update income/expenses
+            if (input.Downloaded)
+            {
+                exisitingStatement.Downloaded = true;
+                _statementsRepo.Update(exisitingStatement);
+                _pointsService.CalculateDownloadIncomeStatement((Guid)exisitingStatement.UserId);
+            }
 
             #region Update Income Items
 
@@ -223,60 +224,38 @@ namespace ECDLink.Core.Services
                     continue;
                 }
 
-                var updated = false;
-
-                if (item.Amount != inputItem.Amount)
-                {
-                    item.Amount = inputItem.Amount;
-                    updated = true;
-                }
-                if (item.Notes != inputItem.Notes)
-                {
-                    item.Notes = inputItem.Notes;
-                    updated = true;
-                }
-                if (item.NumberOfChildrenCovered != inputItem.NumberOfChildrenCovered)
-                {
-                    item.NumberOfChildrenCovered = inputItem.NumberOfChildrenCovered;
-                    updated = true;
-                }
-                if (item.PhotoProof != inputItem.PhotoProof)
-                {
-                    item.PhotoProof = inputItem.PhotoProof;
-                    updated = true;
-                }
-                if (item.ChildUserId != inputItem.ChildUserId)
-                {
-                    item.ChildUserId = inputItem.ChildUserId;
-                    updated = true;
-                }
-                if (item.DateReceived != inputItem.DateReceived)
-                {
-                    item.DateReceived = inputItem.DateReceived;
-                    updated = true;
-                }
-                if (item.PayTypeId != inputItem.PayTypeId)
-                {
-                    item.PayTypeId = inputItem.PayTypeId;
-                    updated = true;
-                }
-                if (item.Description != inputItem.Description)
-                {
-                    item.Description = inputItem.Description;
-                    updated = true;
-                }
-
-                if (updated)
+                if (ApplyIncomeItemChanges(item, inputItem))
                 {
                     _statementsIncomeRepo.Update(item);
                 }
             }
 
             // Additions
+            // A child has one preschool fee per statement. Two devices can each create
+            // one with a different id, so a new fee for a child who already has one
+            // updates the existing fee instead of being counted twice.
+            var preschoolFeeTypeId = GetPreschoolFeeTypeId();
+            var feesByChild = exisitingStatement.IncomeItems
+                .Where(x => x.IsActive && x.IncomeTypeId == preschoolFeeTypeId && x.ChildUserId.HasValue)
+                .GroupBy(x => x.ChildUserId.Value)
+                .ToDictionary(x => x.Key, x => x.First());
+
             var newItems = input.IncomeItems.Where(x => !exisitingStatement.IncomeItems.Any(y => y.Id == x.Id)).ToList();
             foreach (var newItem in newItems)
             {
-                _statementsIncomeRepo.Insert(new StatementsIncome
+                var isPreschoolFee = newItem.IsActive && preschoolFeeTypeId != null
+                    && newItem.IncomeTypeId == preschoolFeeTypeId && newItem.ChildUserId.HasValue;
+
+                if (isPreschoolFee && feesByChild.TryGetValue(newItem.ChildUserId.Value, out var existingFee))
+                {
+                    if (ApplyIncomeItemChanges(existingFee, newItem))
+                    {
+                        _statementsIncomeRepo.Update(existingFee);
+                    }
+                    continue;
+                }
+
+                var inserted = _statementsIncomeRepo.Insert(new StatementsIncome
                 {
                     Id = newItem.Id,
                     Amount = newItem.Amount,
@@ -290,6 +269,11 @@ namespace ECDLink.Core.Services
                     StatementsIncomeStatementId = exisitingStatement.Id,
                     TenantId = TenantExecutionContext.Tenant.Id
                 });
+
+                if (isPreschoolFee)
+                {
+                    feesByChild[newItem.ChildUserId.Value] = inserted;
+                }
             }
 
             #endregion
@@ -368,6 +352,68 @@ namespace ECDLink.Core.Services
 
             // Reload so newly inserted items are included in the returned model
             return GetStatement(exisitingStatement.Id) ?? exisitingStatement;
+        }
+
+        /// <summary>
+        /// Copies the editable fields from the input onto the stored income item.
+        /// </summary>
+        /// <returns>True if any field changed</returns>
+        private static bool ApplyIncomeItemChanges(StatementsIncome item, IncomeItemModel inputItem)
+        {
+            var updated = false;
+
+            if (item.Amount != inputItem.Amount)
+            {
+                item.Amount = inputItem.Amount;
+                updated = true;
+            }
+            if (item.Notes != inputItem.Notes)
+            {
+                item.Notes = inputItem.Notes;
+                updated = true;
+            }
+            if (item.NumberOfChildrenCovered != inputItem.NumberOfChildrenCovered)
+            {
+                item.NumberOfChildrenCovered = inputItem.NumberOfChildrenCovered;
+                updated = true;
+            }
+            if (item.PhotoProof != inputItem.PhotoProof)
+            {
+                item.PhotoProof = inputItem.PhotoProof;
+                updated = true;
+            }
+            if (item.ChildUserId != inputItem.ChildUserId)
+            {
+                item.ChildUserId = inputItem.ChildUserId;
+                updated = true;
+            }
+            if (item.DateReceived != inputItem.DateReceived)
+            {
+                item.DateReceived = inputItem.DateReceived;
+                updated = true;
+            }
+            if (item.PayTypeId != inputItem.PayTypeId)
+            {
+                item.PayTypeId = inputItem.PayTypeId;
+                updated = true;
+            }
+            if (item.Description != inputItem.Description)
+            {
+                item.Description = inputItem.Description;
+                updated = true;
+            }
+
+            return updated;
+        }
+
+        private string GetPreschoolFeeTypeId()
+        {
+            return _statementsIncomeTypeRepo.GetAll()
+                .Where(x => x.Description == IncomeExpensePDF.PRESCHOOL_FEE)
+                .Select(x => x.Id)
+                .ToList()
+                .Select(x => x.ToString())
+                .FirstOrDefault();
         }
 
         #region PDF STUFF
