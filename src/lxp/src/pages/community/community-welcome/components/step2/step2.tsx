@@ -11,7 +11,7 @@ import {
   SearchDropDownOption,
   Typography,
 } from '@ecdlink/ui';
-import { ReactComponent as JoinCommunity } from '@/assets/joinCommunity.svg';
+import JoinCommunity from '@/assets/joinCommunity.svg?react';
 import { yesOrNoOptions } from '../../community-welcome.types';
 import { FieldErrors, UseFormSetValue } from 'react-hook-form';
 import { useSelector } from 'react-redux';

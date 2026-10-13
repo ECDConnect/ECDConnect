@@ -10,7 +10,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
-import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
+import Cebisa from '@/assets/icon_cebisa.svg?react';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
@@ -107,7 +107,7 @@ export const InvitePrincipal: React.FC<{
           </div>
         </div>
         <SliderPagination totalItems={2} activeIndex={0} className={'p-4'} />
-        <div className="h-fit mt-4 mb-1">
+        <div className="mb-1 mt-4 h-fit">
           <FormInput
             label={`What is your principal's phone number?`}
             placeholder={'e.g 0123456789'}
@@ -168,7 +168,7 @@ export const InvitePrincipal: React.FC<{
             <Button
               type="filled"
               color="quatenary"
-              className={'mt-1 mb-2 w-full'}
+              className={'mb-2 mt-1 w-full'}
               disabled={!principalPhoneNumber || !allowPermissions}
               isLoading={isLoading}
               onClick={handleInvitePrincipal}
@@ -183,7 +183,7 @@ export const InvitePrincipal: React.FC<{
             <Button
               type="outlined"
               color="quatenary"
-              className={'border-quatenary bottom-12 mt-1 mb-2 w-full border'}
+              className={'border-quatenary bottom-12 mb-2 mt-1 w-full border'}
               onClick={handleSkipAddPractitionerToPrincipal} // Navigate to a different page if it is principle
             >
               {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}

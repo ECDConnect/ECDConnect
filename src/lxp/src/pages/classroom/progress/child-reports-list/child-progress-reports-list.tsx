@@ -4,8 +4,8 @@ import { useHistory, useLocation } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
-import { ReactComponent as NoProgressEmoticon } from '../../../../assets/ECD_Connect_emoji4.svg';
-import { ReactComponent as BlocksIcon } from '../../../../assets/progress-reports/blocks_1.svg';
+import NoProgressEmoticon from '../../../../assets/ECD_Connect_emoji4.svg?react';
+import BlocksIcon from '../../../../assets/progress-reports/blocks_1.svg?react';
 import ROUTES from '@/routes/routes';
 import { useProgressForChild } from '@/hooks/useProgressForChild';
 import { ProgressReportsList } from './reports-list';
@@ -196,7 +196,7 @@ export const ChildProgressReportsList: React.FC = () => {
         {(isWalkthrough || (!!reports && !!reports.length)) && (
           <div className="flex h-full w-full flex-col">
             <Typography
-              className={'mt-4 mb-4'}
+              className={'mb-4 mt-4'}
               type="h2"
               color={'textDark'}
               text={`${child?.user?.firstName}'s reports`}

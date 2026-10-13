@@ -43,7 +43,7 @@ import {
 import ROUTES from '@routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
 import { CaregiverMultipleChildrenModal } from '../components/caregiver-multiple-children-modal';
-import { ReactComponent as Emoji3 } from '@/assets/ECD_Connect_emoji3.svg';
+import Emoji3 from '@/assets/ECD_Connect_emoji3.svg?react';
 import { ClassDashboardRouteState } from '@/pages/business/business.types';
 import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import { classroomsSelectors } from '@/store/classroom';

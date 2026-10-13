@@ -8,8 +8,8 @@ import {
 } from '@ecdlink/ui';
 import { ChildRegistrationDetails } from '../caregiver-child-registration.types';
 import { CustomSuccessCard } from '@/components/custom-success-card/custom-success-card';
-import { ReactComponent as EmojiYellowSmile } from '@/assets/ECD_Connect_emoji3.svg';
-import { ReactComponent as Balloons } from '@/assets/balloons_bg_blue.svg';
+import EmojiYellowSmile from '@/assets/ECD_Connect_emoji3.svg?react';
+import Balloons from '@/assets/balloons_bg_blue.svg?react';
 import TransparentLayer from '../../../../assets/TransparentLayer.png';
 
 interface WelcomeChildRegistrationProps extends ComponentBaseProps {

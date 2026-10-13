@@ -14,8 +14,8 @@ import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { useCallback, useEffect, useState } from 'react';
 import { useDialog, useSnackbar } from '@ecdlink/core';
-import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg';
-import { ReactComponent as EmojiBlueSmile } from '@ecdlink/ui/src/assets/emoji/emoji_blue_smileEyes.svg';
+import EmojiGreenSmile from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg?react';
+import EmojiBlueSmile from '@ecdlink/ui/src/assets/emoji/emoji_blue_smileEyes.svg?react';
 import {
   practitionerSelectors,
   practitionerThunkActions,

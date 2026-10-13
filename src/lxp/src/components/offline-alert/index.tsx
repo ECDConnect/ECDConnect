@@ -1,4 +1,4 @@
-import { ReactComponent as OfflineIcon } from '@/assets/offline.svg';
+import OfflineIcon from '@/assets/offline.svg?react';
 import { Typography } from '@ecdlink/ui';
 
 export const OfflineAlert = () => {
@@ -9,7 +9,7 @@ export const OfflineAlert = () => {
         type="h3"
         text="Information not available when offline"
         color="textDark"
-        className="mt-4 mb-2"
+        className="mb-2 mt-4"
       />
       <Typography
         type="body"

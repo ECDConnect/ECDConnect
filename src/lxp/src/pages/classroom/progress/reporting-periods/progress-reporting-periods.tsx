@@ -19,7 +19,7 @@ import {
 } from '@/store/classroom';
 import { useSelector } from 'react-redux';
 import { useDialog, useSnackbar } from '@ecdlink/core';
-import { ReactComponent as RobotIcon } from '@/assets/iconRobot.svg';
+import RobotIcon from '@/assets/iconRobot.svg?react';
 import { format } from 'date-fns';
 import { ChildProgressReportPeriodDto } from '@/models/classroom/classroom.dto';
 import { newGuid } from '@/utils/common/uuid.utils';

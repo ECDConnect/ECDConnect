@@ -10,7 +10,7 @@ import { DynamicFormProps, SectionQuestions } from '../../dynamic-form';
 import { Step7Map } from './map';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { parseBool, usePrevious, useSessionStorage } from '@ecdlink/core';
-import { ReactComponent as OfflineIcon } from '@/assets/offline.svg';
+import OfflineIcon from '@/assets/offline.svg?react';
 import { practitionerVisitIdKey } from '@/pages/practitioner/practitioner-profile/practitioner-journey/forms';
 import { useSelector } from 'react-redux';
 import { getSectionsQuestionsByStep } from '@/store/pqa/pqa.selectors';
@@ -198,7 +198,7 @@ export const Step7ReAccreditation = ({
         type="h4"
         text={questions[0].question}
         color="textDark"
-        className="mt-4 mb-2"
+        className="mb-2 mt-4"
       />
       <ButtonGroup<boolean>
         color="secondary"
@@ -231,7 +231,7 @@ export const Step7ReAccreditation = ({
                   type="h3"
                   text="Information not available when offline"
                   color="textDark"
-                  className="mt-4 mb-2"
+                  className="mb-2 mt-4"
                 />
                 <Typography
                   type="body"

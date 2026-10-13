@@ -36,9 +36,8 @@ import TransparentLayer from '../../../assets/TransparentLayer.png';
 import ReactGA from 'react-ga4';
 import { triggerBackgroundSync } from '@/store/sync/sync.actions';
 
-var CryptoJS = require('crypto-js');
-const version: string =
-  process.env.REACT_APP_VERSION ?? require('../../../../package.json').version;
+import CryptoJS from 'crypto-js';
+const version: string = import.meta.env.REACT_APP_VERSION;
 
 export const Login: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -88,9 +87,9 @@ export const Login: React.FC = () => {
   const { idField, passportField, password, preferId } = useWatch({ control });
   const checkIdOrPassport = preferId ? idField : passportField;
 
-  const userHash = CryptoJS.AES.encrypt(password, 'user pass').toString();
+  const userHash = CryptoJS.AES.encrypt(password!, 'user pass').toString();
   const userIdHash = CryptoJS.AES.encrypt(
-    checkIdOrPassport,
+    checkIdOrPassport!,
     'user id'
   ).toString();
   const userLocalxpiration = Date.now() + 3600000000;

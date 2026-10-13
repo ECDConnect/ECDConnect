@@ -12,7 +12,7 @@ import {
 import { isSameDay, parseISO, isAfter, isBefore } from 'date-fns';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
-import { ReactComponent as Emoji3 } from '@/assets/ECD_Connect_emoji3.svg';
+import Emoji3 from '@/assets/ECD_Connect_emoji3.svg?react';
 import { useCallback, useEffect, useState } from 'react';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { IconInformationIndicator } from '../programme-planning/components/icon-information-indicator/icon-information-indicator';
