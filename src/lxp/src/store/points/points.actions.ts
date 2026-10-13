@@ -46,9 +46,17 @@ export const getPointsSummaryForUser = createAsyncThunk<
         return rejectWithValue('no access token, profile check required');
       }
 
+      // Startup can dispatch this before the profile slice has rehydrated.
+      // The auth session is already present in that case; never send the
+      // persisted query without a user id (Guid.Parse fails on the server).
+      const resolvedUserId = userId || userAuth.id;
+      if (!resolvedUserId) {
+        return rejectWithValue('no user id, profile check required');
+      }
+
       const pointsSummary = await new PointsService(
         userAuth.auth_token
-      ).getPointsSummaryForUser(userId, startDate, endDate);
+      ).getPointsSummaryForUser(resolvedUserId, startDate, endDate);
 
       return pointsSummary;
     } catch (err) {

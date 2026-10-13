@@ -4,8 +4,10 @@ using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
+using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 
@@ -21,11 +23,25 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Permission(PermissionGroups.POINTS, GraphActionEnum.View)]
         public List<PointsUserSummary> GetPointsSummaryForUser(
             [Service] IPointsEngineService pointsService,
+            [Service] IHttpContextAccessor contextAccessor,
             string userId,
             DateTime startDate,
             DateTime? endDate)
         {
-            return pointsService.GetSummaryUserPoints(Guid.Parse(userId), startDate, endDate);
+            // The installed app can call this during startup before the profile
+            // id is available, and then omit userId. Use the signed-in user.
+            if (!Guid.TryParse(userId, out var parsedUserId))
+            {
+                var currentUserId = contextAccessor.HttpContext?.GetUserId();
+                if (!currentUserId.HasValue)
+                {
+                    throw new GraphQLException("User id is required.");
+                }
+
+                parsedUserId = currentUserId.Value;
+            }
+
+            return pointsService.GetSummaryUserPoints(parsedUserId, startDate, endDate);
         }
 
         [Permission(PermissionGroups.POINTS, GraphActionEnum.View)]

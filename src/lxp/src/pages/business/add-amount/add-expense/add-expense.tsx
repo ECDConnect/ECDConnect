@@ -23,14 +23,12 @@ import LearningMaterials from './components/learning-materials/learning-material
 import AnnualMaintenance from './components/annual-maintenance/annual-maintenance';
 import OtherExpense from './components/other-expense/other';
 import { statementsActions, statementsThunkActions } from '@/store/statements';
-import { authSelectors } from '@/store/auth';
 import { ExpenseItemDto } from '@ecdlink/core';
 import { BusinessTabItems } from '../../business.types';
 import { useRemoveNotifications } from '@/hooks/useRemoveNotifications';
 import { notificationTagConfig } from '@/constants/notifications';
 
 export const AddExpense: React.FC = () => {
-  const userAuth = useSelector(authSelectors.getAuthUser);
   const history = useHistory();
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
@@ -67,13 +65,13 @@ export const AddExpense: React.FC = () => {
       appDispatch(statementsActions.addExpenseItem(expenseItem));
       if (isOnline) {
         // send change to backend
-        appDispatch(statementsThunkActions.upsertIncomeStatements({})).unwrap();
+        appDispatch(statementsThunkActions.upsertIncomeStatements({}));
       }
       history.push(ROUTES.BUSINESS, {
         activeTabIndex: BusinessTabItems.MONEY,
       });
     },
-    [userAuth]
+    [appDispatch, history, isOnline, removeNotifications]
   );
 
   const incomeType = (type?: string) => {

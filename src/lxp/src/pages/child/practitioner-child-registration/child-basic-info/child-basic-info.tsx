@@ -96,6 +96,7 @@ export const ChildBasicInfo: React.FC<
   const allClassroomGroups = useSelector(
     classroomsSelectors.getSelectableClassroomGroups
   );
+  const classroom = useSelector(classroomsSelectors.getClassroom);
 
   const user = useSelector(getUser);
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
@@ -359,12 +360,8 @@ export const ChildBasicInfo: React.FC<
         childDetails.caregiverRegistrationUrl
       );
 
-      const selectedClassroom = allClassroomGroups.find(
-        (x) => x.id === getSelectedClassroomGroupId()
-      );
-
       const whatsapp = () => {
-        const textMessage = `${practitioner?.user?.firstName} has invited you to register your child at their preschool. Tap this link to register ${firstName} for ${selectedClassroom?.name}: ${childDetails.caregiverRegistrationUrl}`;
+        const textMessage = `${practitioner?.user?.firstName} has invited you to register your child at their preschool. Tap this link to register ${firstName} for ${classroom?.name}: ${childDetails.caregiverRegistrationUrl}`;
         const whatsAppLink = `whatsapp://send?text=${textMessage}`;
         window.open(whatsAppLink);
       };
