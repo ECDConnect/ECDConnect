@@ -1,5 +1,5 @@
 import { ChevronRightIcon } from '@heroicons/react/solid';
-import { classNames } from '../../../..';
+import { classNames, isImageSource } from '../../../..';
 import { RoundIcon } from '../../../round-icon/round-icon';
 import StatusChip from '../../../status-chip/status-chip';
 import { TitleListDataItem } from '../../models/TitleListDataItem';
@@ -23,7 +23,7 @@ export function TitleListItem({ item, onClickItem }: TitleListItemProps) {
     >
       <div className={styles.contentWrapper}>
         <div className={stackedListStyles.textRowsWrapper}>
-          {item && item.icon && item.icon.startsWith('data:image/') ? (
+          {isImageSource(item?.icon) ? (
             <img
               src={item.icon}
               alt=""
