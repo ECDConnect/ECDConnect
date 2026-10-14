@@ -1,4 +1,5 @@
 ﻿using ECDLink.DataAccessLayer.Entities.IncomeStatements;
+using HotChocolate.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Statements
         public int Year { get; set; }
         public List<IncomeItemModel> IncomeItems { get; set; }
         public List<ExpenseItemModel> ExpenseItems { get; set; }
+        // Devices that saved a statement before this field existed omit it.
+        // The update does not write this value; only the contact-status mutation does.
+        [DefaultValue(false)]
         public bool ContactedByCoach { get; set; }
         public bool Downloaded { get; set; }
 
