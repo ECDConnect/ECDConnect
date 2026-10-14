@@ -491,11 +491,11 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     let message = 'Waking up the robots';
 
     if (staticDataLoading) {
-      message = 'Loading static data . . .';
+      message = 'Loading static data';
     }
 
     if (otherLoading) {
-      message = 'Loading other data . . .';
+      message = 'Loading other data';
     }
 
     return message;

@@ -29,6 +29,10 @@ export default defineConfig(({ mode }) => {
     build: {
       outDir: 'build',
       assetsDir: 'static',
+      // CRA inlined images under 10KB as data: URLs (Vite's default is 4KB).
+      // Shared components check icon.startsWith('data:image/') and otherwise
+      // treat the icon as a heroicon name, so keep CRA's limit.
+      assetsInlineLimit: 10000,
       sourcemap: env.GENERATE_SOURCEMAP !== 'false',
       target: ['es2020', 'chrome87', 'edge88', 'firefox78', 'safari14'],
     },

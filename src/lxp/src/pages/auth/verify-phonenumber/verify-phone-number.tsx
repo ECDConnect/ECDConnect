@@ -68,7 +68,7 @@ export const VerifyPhoneNumber = () => {
 
   return (
     <>
-      <Loader loadingMessage={'Loading . . .'} />
+      <Loader loadingMessage={'Loading'} />
     </>
   );
 };
