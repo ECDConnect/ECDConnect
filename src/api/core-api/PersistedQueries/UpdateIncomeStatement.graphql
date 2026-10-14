@@ -3,6 +3,7 @@ mutation UpdateIncomeStatement($input: IncomeStatementModelInput) {
     id
     month
     year
+    contactedByCoach
     downloaded
     incomeItems {
       incomeTypeId

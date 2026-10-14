@@ -5608,7 +5608,7 @@ input IncomeStatementModelInput {
   year: Int!
   incomeItems: [IncomeItemModelInput]
   expenseItems: [ExpenseItemModelInput]
-  contactedByCoach: Boolean!
+  contactedByCoach: Boolean! = false
   downloaded: Boolean!
 }
 
