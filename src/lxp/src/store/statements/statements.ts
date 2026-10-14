@@ -447,8 +447,16 @@ const statementsSlice = createSlice({
                 )
             );
 
+          const localContactedByCoach = locals.find(
+            (s) => typeof s.contactedByCoach === 'boolean'
+          )?.contactedByCoach;
+
           return {
             ...item,
+            // A save response that leaves this off must not drop a value the
+            // device already has. The input field is required on the server.
+            contactedByCoach:
+              item.contactedByCoach ?? localContactedByCoach ?? false,
             incomeItems: mergeItemsById(
               item.incomeItems,
               localIncomeItems,
