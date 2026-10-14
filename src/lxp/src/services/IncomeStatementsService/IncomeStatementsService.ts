@@ -83,7 +83,7 @@ class IncomeStatementsService {
           year: input.year,
           incomeItems: input.incomeItems,
           expenseItems: input.expenseItems,
-          contactedByCoach: input.contactedByCoach,
+          contactedByCoach: input.contactedByCoach ?? false,
           downloaded: input.downloaded,
         },
       },
