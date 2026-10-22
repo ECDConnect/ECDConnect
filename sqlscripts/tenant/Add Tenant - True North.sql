@@ -273,6 +273,17 @@ begin
 		from (select userSuperAdmin1Id "UserId" union select userSuperAdmin2Id) u
 		left join "UserHierarchy" uh on uh."UserId" = u."UserId"
 		where uh."Id" is null;
-	
+
+		if not exists (select 1 from "ContentValue" where "TenantId" = tenantId) then
+			if to_regprocedure('copy_tenant_cms_content(uuid,uuid)') is null then
+				raise warning 'CMS content: copy_tenant_cms_content is not installed. Run sqlscripts/tenant/Copy Tenant CMS Content.sql, then copy from %', oaTenantId;
+			else
+				raise notice 'CMS content: copying from OA tenant %', oaTenantId;
+				perform * from copy_tenant_cms_content(oaTenantId, tenantId);
+			end if;
+		else
+			raise notice 'CMS content: tenant already has content, not copying';
+		end if;
+
 	end;
 end $$;
