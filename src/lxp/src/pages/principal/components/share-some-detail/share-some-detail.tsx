@@ -7,7 +7,7 @@ import {
   FormInput,
   SA_ID_REGEX,
 } from '@ecdlink/ui';
-import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
+import Cebisa from '@/assets/icon_cebisa.svg?react';
 import { useTheme } from '@ecdlink/core';
 import { useEffect, useState } from 'react';
 import { FieldError } from 'react-hook-form';
@@ -112,7 +112,7 @@ export const ShareSomeDetails = ({
           </div>
 
           <Alert
-            className="mx-4 mt-2 mb-2 rounded-md"
+            className="mx-4 mb-2 mt-2 rounded-md"
             title={`We use your data responsibly. We will never sell or share your data with commercial entities. `}
             type="info"
           />
@@ -156,7 +156,7 @@ export const ShareSomeDetails = ({
             )}
             {!idFieldVisible && (
               <Button
-                className={'mt-3 mb-2'}
+                className={'mb-2 mt-3'}
                 type="outlined"
                 color="secondary"
                 background={'transparent'}
@@ -172,7 +172,7 @@ export const ShareSomeDetails = ({
             )}
             {idFieldVisible && (
               <Button
-                className={'mt-3 mb-2'}
+                className={'mb-2 mt-3'}
                 type="outlined"
                 color="secondary"
                 size="small"

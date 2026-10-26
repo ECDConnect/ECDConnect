@@ -41,7 +41,7 @@ import { programmeRoutineThunkActions } from '@/store/content/programme-routine'
 import { storyBookThunkActions } from '@/store/content/story-book';
 import { ProgrammeRoutineActions } from '@/store/content/programme-routine/programme-routine.actions';
 
-const { usePDF } = require('react-to-pdf');
+import { usePDF } from 'react-to-pdf';
 export interface iSkills {
   skill: string;
   totalChildren: number;

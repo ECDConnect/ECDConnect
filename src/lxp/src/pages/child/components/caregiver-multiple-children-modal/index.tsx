@@ -1,5 +1,5 @@
 import { ActionModal } from '@ecdlink/ui';
-import { ReactComponent as IconRobot } from '@/assets/iconRobot.svg';
+import IconRobot from '@/assets/iconRobot.svg?react';
 import { useSessionStorage, useSnackbar } from '@ecdlink/core';
 
 interface CaregiverMultipleChildrenModalProps {

@@ -36,7 +36,7 @@ import {
 } from '../../class-dashboard/class-dashboard.types';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { ProgrammeActions } from '@/store/programme/programme.actions';
-import { ReactComponent as Robot } from '@/assets/iconRobot.svg';
+import Robot from '@/assets/iconRobot.svg?react';
 import { useAppContext } from '@/walkthrougContext';
 import { ProgrammeDashboardRouteState } from '../programme-dashboard/programme-dashboard.types';
 

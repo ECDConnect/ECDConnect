@@ -74,7 +74,7 @@ import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { ChildrenActions } from '@/store/children/children.actions';
-import { ReactComponent as RobotIcon } from '@/assets/iconRobot.svg';
+import RobotIcon from '@/assets/iconRobot.svg?react';
 import { ChildListRouteState } from '@/pages/classroom/child-list/child-list.types';
 import { useTenantModules } from '@/hooks/useTenantModules';
 import { ProgressWalkthroughStart } from '@/pages/classroom/progress/walkthrough/progress-walkthrough-start';

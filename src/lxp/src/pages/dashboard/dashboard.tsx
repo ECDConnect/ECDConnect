@@ -39,9 +39,9 @@ import { statementsThunkActions } from '@/store/statements';
 import { programmeThunkActions } from '@/store/programme';
 import { pointsSelectors } from '@/store/points';
 import { pointsConstants } from '@/constants/points';
-import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg';
-import { ReactComponent as EmojiBlueSmile } from '../../assets/neutral_blue_emoticon.svg';
-import { ReactComponent as EmojiOrangeSmile } from '../../assets/mehFace.svg';
+import EmojiGreenSmile from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg?react';
+import EmojiBlueSmile from '../../assets/neutral_blue_emoticon.svg?react';
+import EmojiOrangeSmile from '../../assets/mehFace.svg?react';
 import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
 import {
   TabsItemForPrincipal,
@@ -64,11 +64,10 @@ import { usePointsToDoEmoji } from '@/hooks/usePointsToDoEmoji';
 import { Logout } from '../auth/logout/logout';
 import { useBrowserVersionCheck } from '@/hooks/useBrowserVersionCheck';
 import { triggerBackgroundSync } from '@/store/sync/sync.actions';
-import { ReactComponent as RobotImage } from '../../assets/iconRobot.svg';
+import RobotImage from '../../assets/iconRobot.svg?react';
 import { cloneDeep } from 'lodash';
 
-const version: string =
-  process.env.REACT_APP_VERSION ?? require('../../../package.json').version;
+const version: string = import.meta.env.REACT_APP_VERSION;
 export interface DashboardRouteState {
   isFromLogin?: boolean;
   isFromCompleteProfile?: boolean;

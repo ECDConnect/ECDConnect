@@ -1,6 +1,6 @@
 import ROUTES from '@/routes/routes';
 import { Button, Typography } from '@ecdlink/ui';
-import { ReactComponent as RobotIcon } from '@/assets/iconRobot.svg';
+import RobotIcon from '@/assets/iconRobot.svg?react';
 import { useHistory } from 'react-router';
 
 interface ProgressTabNoReportPeriodAndPrincipalProps {

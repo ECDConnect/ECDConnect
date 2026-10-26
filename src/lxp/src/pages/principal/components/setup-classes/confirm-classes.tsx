@@ -17,7 +17,7 @@ import {
   PractitionerSetupSteps,
 } from '../../setup-principal/setup-principal.types';
 import { UNSURE_CLASS } from '@/constants/classroom';
-import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
+import Cebisa from '@/assets/icon_cebisa.svg?react';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { classroomsSelectors } from '@/store/classroom';
 

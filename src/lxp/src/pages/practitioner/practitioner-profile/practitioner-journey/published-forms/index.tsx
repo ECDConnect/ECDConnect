@@ -26,7 +26,7 @@ import { CompletePublishedForm } from './published-form-complete';
 import { useSnackbar } from '@ecdlink/core/lib/services/snackbar';
 import { useDialog } from '@ecdlink/core';
 import { classroomsSelectors } from '@/store/classroom';
-import { ReactComponent as RobotIcon } from '@/assets/iconRobot.svg';
+import RobotIcon from '@/assets/iconRobot.svg?react';
 import { PublishedFormCertificate } from './published-form-certificate';
 
 interface FormProps {

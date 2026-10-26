@@ -6,7 +6,7 @@ const key = LocalStorageKeys.acquisitionTracking;
 describe('local-storage.utils', () => {
   beforeEach(() => {
     localStorage.clear();
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   test('round trips booleans', () => {
@@ -65,7 +65,7 @@ describe('local-storage.utils', () => {
   });
 
   test('returns false instead of throwing when the quota is exceeded', () => {
-    jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
       throw new Error('QuotaExceededError');
     });
 
@@ -73,7 +73,7 @@ describe('local-storage.utils', () => {
   });
 
   test('returns undefined instead of throwing when storage is unavailable', () => {
-    jest.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
       throw new Error('SecurityError');
     });
 

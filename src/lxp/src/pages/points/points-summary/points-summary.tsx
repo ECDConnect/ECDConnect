@@ -21,10 +21,10 @@ import {
 } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
-import { ReactComponent as EmojiHappyYellow } from '../../../assets/ECD_Connect_emoji3.svg';
-import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg';
-import { ReactComponent as EmojiBlueSmile } from '../../../assets/emoji_blue_smile_eye_open.svg';
-import { ReactComponent as EmojiOrangeSmile } from '../../../assets/mehFace.svg';
+import EmojiHappyYellow from '../../../assets/ECD_Connect_emoji3.svg?react';
+import EmojiGreenSmile from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg?react';
+import EmojiBlueSmile from '../../../assets/emoji_blue_smile_eye_open.svg?react';
+import EmojiOrangeSmile from '../../../assets/mehFace.svg?react';
 import { format, getMonth, getYear } from 'date-fns';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -39,8 +39,8 @@ import { authSelectors } from '@/store/auth';
 import { PointsTodoItem } from './components/points-todo-item/points-todo-item';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useAppDispatch } from '@/store';
-import { ReactComponent as Kindgarden } from '@/assets/icon/kindergarten1.svg';
-import { ReactComponent as Crown } from '@/assets/icon/crown.svg';
+import Kindgarden from '@/assets/icon/kindergarten1.svg?react';
+import Crown from '@/assets/icon/crown.svg?react';
 import { useTenant } from '@/hooks/useTenant';
 import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import { PermissionsNames } from '@/pages/principal/components/add-practitioner/add-practitioner.types';

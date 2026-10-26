@@ -20,7 +20,7 @@ export class NotificationService {
   interval: number;
   validators: NotificationValidator[];
   user?: UserDto;
-  timeout?: NodeJS.Timeout;
+  timeout?: ReturnType<typeof setTimeout>;
   _accessToken?: string;
   onNotificationsReceived?: (notifications: Message[]) => void;
 

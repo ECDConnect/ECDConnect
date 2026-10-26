@@ -28,7 +28,7 @@ import {
   PractitionerSetupSteps,
   RegisterPractitioner,
 } from '../../setup-principal/setup-principal.types';
-import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
+import Cebisa from '@/assets/icon_cebisa.svg?react';
 import { classroomsSelectors } from '@/store/classroom';
 import { useTenant } from '@/hooks/useTenant';
 import { SessionStorageKeys } from '@ecdlink/core';

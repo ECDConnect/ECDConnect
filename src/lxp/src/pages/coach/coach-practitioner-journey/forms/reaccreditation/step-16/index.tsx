@@ -1,7 +1,7 @@
 import { Alert, Divider, FormInput, Typography } from '@ecdlink/ui';
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { Rating, TableProps } from './table';
-import { ReactComponent as RedRating } from '@/assets/red_rating.svg';
+import RedRating from '@/assets/red_rating.svg?react';
 import { DynamicFormProps } from '../../dynamic-form';
 import {
   step15ReAccreditationQuestions,
