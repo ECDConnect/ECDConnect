@@ -16,7 +16,7 @@ const ConfigWrapper: React.FC = () => {
   const tenant = useTenant();
 
   const getTitle = () => {
-    const env = process.env.REACT_APP_RUNENVIRONMENT || '';
+    const env = import.meta.env.REACT_APP_RUNENVIRONMENT || '';
     var title = env;
     if (title !== '') title += ' ';
     title +=

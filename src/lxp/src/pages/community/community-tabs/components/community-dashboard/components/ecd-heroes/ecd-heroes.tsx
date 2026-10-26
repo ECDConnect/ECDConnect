@@ -28,12 +28,12 @@ import {
 } from '@ecdlink/ui';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { ReactComponent as JoinCommunity } from '@/assets/joinCommunity.svg';
+import JoinCommunity from '@/assets/joinCommunity.svg?react';
 import {
   CommunityConnectInputModelInput,
   CommunityProfileInputModelInput,
 } from '@ecdlink/graphql';
-import { ReactComponent as Robot } from '@/assets/iconRobot.svg';
+import Robot from '@/assets/iconRobot.svg?react';
 import { useHistory, useLocation } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { practitionerThunkActions } from '@/store/practitioner';

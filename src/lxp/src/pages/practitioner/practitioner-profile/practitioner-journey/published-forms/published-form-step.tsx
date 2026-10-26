@@ -14,7 +14,7 @@ import {
   ButtonGroup,
   ButtonGroupTypes,
 } from '@ecdlink/ui';
-import { ReactComponent as Emoji3 } from '@/assets/ECD_Connect_emoji3.svg';
+import Emoji3 from '@/assets/ECD_Connect_emoji3.svg?react';
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import {
   classroomsActions,
@@ -269,12 +269,12 @@ export const PublishedFormStep: React.FC<PublishedFormStepProps> = ({
       {/* TODO - remove hardcoded step name once backend is updated to send correct name for this step */}
       {stepData?.name === 'Calculate capacity for each classroom' ? (
         <Typography
-          className="mt-3 mb-4"
+          className="mb-4 mt-3"
           type="h3"
           text={'Calculate classroom capacity'}
         />
       ) : (
-        <Typography className="mt-3 mb-4" type="h3" text={stepData?.name} />
+        <Typography className="mb-4 mt-3" type="h3" text={stepData?.name} />
       )}
       {stepData?.description && (
         <Alert type="info" title={stepData.description} className="mb-4" />
@@ -509,13 +509,13 @@ export const PublishedFormStep: React.FC<PublishedFormStepProps> = ({
                           <Typography
                             type="h4"
                             color="textDark"
-                            className="semi-bold mt-3 mb-1"
+                            className="semi-bold mb-1 mt-3"
                             text="Property address:"
                           />
                           <Typography
                             type="body"
                             color="textMid"
-                            className="mt-3 mb-1"
+                            className="mb-1 mt-3"
                             text={`${address.addressLine1} ${
                               address.addressLine2
                             } ${address.province?.description || ''}`}
@@ -525,7 +525,7 @@ export const PublishedFormStep: React.FC<PublishedFormStepProps> = ({
                         <Typography
                           type="h4"
                           color="textDark"
-                          className="semi-bold mt-3 mb-1"
+                          className="semi-bold mb-1 mt-3"
                           text="Is this address correct?"
                         />
 

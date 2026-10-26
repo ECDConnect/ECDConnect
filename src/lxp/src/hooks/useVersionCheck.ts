@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useOnlineStatus } from './useOnlineStatus';
 
-const currentVersion: string =
-  process.env.REACT_APP_VERSION ?? require('../../package.json').version;
+const currentVersion: string = import.meta.env.REACT_APP_VERSION;
 
 // Compares MAJOR.MINOR.PATCH only — ignores build number and env suffix (e.g. "0.0.15.1234-qa")
 function isVersionBelowMinimum(current: string, minimum: string): boolean {
@@ -27,7 +26,7 @@ export const useVersionCheck = () => {
   // In local dev REACT_APP_REMOTE_CONFIG_URL can be set directly; in production
   // the URL is read at runtime from settings.json (one build, multiple environments)
   const [remoteConfigUrl, setRemoteConfigUrl] = useState<string>(
-    process.env.REACT_APP_REMOTE_CONFIG_URL ?? ''
+    import.meta.env.REACT_APP_REMOTE_CONFIG_URL ?? ''
   );
 
   useEffect(() => {

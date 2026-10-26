@@ -2,7 +2,7 @@ import { pointsConstants } from '@/constants/points';
 import { BannerWrapper, Button, ScoreCard, Typography } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { useHistory, useParams } from 'react-router';
-import { ReactComponent as Balloons } from '@ecdlink/ui/src/assets/emoji/balloons.svg';
+import Balloons from '@ecdlink/ui/src/assets/emoji/balloons.svg?react';
 import { format } from 'date-fns';
 import { useCallback, useState } from 'react';
 import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';

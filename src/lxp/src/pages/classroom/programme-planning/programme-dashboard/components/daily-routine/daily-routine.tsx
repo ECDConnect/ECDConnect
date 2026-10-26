@@ -57,11 +57,11 @@ import {
   nextMonday,
   parseISO,
 } from 'date-fns';
-import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
-import { ReactComponent as BalloonsIcon } from '@/assets/balloons.svg';
+import CelebrateIcon from '@/assets/celebrateIcon.svg?react';
+import BalloonsIcon from '@/assets/balloons.svg?react';
 import { CustomSuccessCard } from '@/components/custom-success-card/custom-success-card';
 import { userSelectors } from '@/store/user';
-import { ReactComponent as NoProgressEmoticon } from '@/assets/ECD_Connect_emoji4.svg';
+import NoProgressEmoticon from '@/assets/ECD_Connect_emoji4.svg?react';
 import { ProgrammeThemeRouteState } from '../../../programme-theme/programme-theme.types';
 import { ProgrammeDashboardRouteParams } from '../../programme-dashboard.types';
 import { useAppContext } from '@/walkthrougContext';
@@ -686,7 +686,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                       )
                     : setSelectedDate && setSelectedDate(nextMonday(new Date()))
                 }
-                className={'w-25 mt-6 mb-4'}
+                className={'w-25 mb-4 mt-6'}
                 icon="ClipboardListIcon"
                 text="Start planning"
                 textColor="secondary"
@@ -832,7 +832,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
               className="mt-4"
             />
             <Typography type={'h4'} text="Add more of these skills:" />
-            <Card className="border-primary mt-2 w-full rounded-xl border-2 bg-white py-4 px-2">
+            <Card className="border-primary mt-2 w-full rounded-xl border-2 bg-white px-2 py-4">
               {recommendedActivities &&
                 recommendedActivities?.map((activityItem) => {
                   if (activityItem?.subCategory) {

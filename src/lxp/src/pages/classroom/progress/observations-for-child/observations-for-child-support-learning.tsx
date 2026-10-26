@@ -1,7 +1,7 @@
 import { Alert, Card, FormInput, Typography } from '@ecdlink/ui';
 import { ChildDto, ProgressTrackingAgeGroupDto } from '@ecdlink/core';
 import { ChildProgressDetailedSkillToWorkOn } from '@/models/progress/child-progress-report';
-import { ReactComponent as EmojiYellowSmile } from '@/assets/ECD_Connect_emoji3.svg';
+import EmojiYellowSmile from '@/assets/ECD_Connect_emoji3.svg?react';
 import { differenceInMonths } from 'date-fns';
 import { useProgressWalkthrough } from '@/hooks/useProgressWalkthrough';
 

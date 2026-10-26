@@ -27,9 +27,8 @@ import ROUTES from '@routes/routes';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
 import { triggerBackgroundSync } from '@/store/sync/sync.actions';
-const CryptoJS = require('crypto-js');
-const version: string =
-  process.env.REACT_APP_VERSION ?? require('../../../../package.json').version;
+import CryptoJS from 'crypto-js';
+const version: string = import.meta.env.REACT_APP_VERSION;
 
 interface LoginModalProps {
   loginSuccessful: () => void;

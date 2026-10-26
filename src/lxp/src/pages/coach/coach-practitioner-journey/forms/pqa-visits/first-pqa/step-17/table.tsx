@@ -1,8 +1,8 @@
 import { Colours, Typography, classNames } from '@ecdlink/ui';
 import { DynamicFormProps, Question } from '../../../dynamic-form';
-import { ReactComponent as Emoji1 } from '@/assets/ECD_Connect_emoji1.svg';
-import { ReactComponent as Emoji11 } from '@/assets/ECD_Connect_emoji11.svg';
-import { ReactComponent as RedRating } from '@/assets/red_rating.svg';
+import Emoji1 from '@/assets/ECD_Connect_emoji1.svg?react';
+import Emoji11 from '@/assets/ECD_Connect_emoji11.svg?react';
+import RedRating from '@/assets/red_rating.svg?react';
 import {
   step16Question2,
   step16Question3,
@@ -228,7 +228,7 @@ export const Rating = ({
         isRedFlagSmartSpaceCheck ||
         isOrangeFlagProgramme ||
         isOrangeFlagManyChildren) && (
-        <ul className="ml-5 mb-4 list-disc">
+        <ul className="mb-4 ml-5 list-disc">
           {isRedFlagSmartSpaceLicence && (
             <li className="text-textMid">SmartSpace certificate withdrawn</li>
           )}
@@ -250,7 +250,7 @@ export const Rating = ({
       <table className="text-textDark mb-6 w-full border border-gray-100">
         <thead>
           <tr className="bg-uiBg border-blue-accent3 border-b text-left">
-            <th className={'w-3/4 py-4 px-6'}>SECTION</th>
+            <th className={'w-3/4 px-6 py-4'}>SECTION</th>
             <th>SCORE</th>
           </tr>
         </thead>
@@ -263,7 +263,7 @@ export const Rating = ({
                 index % 2 === 0 ? '' : 'bg-uiBg'
               )}
             >
-              <td className={'py-4 px-6'}>{item.section}</td>
+              <td className={'px-6 py-4'}>{item.section}</td>
               <td className="mt-5 ">{item.score}</td>
             </tr>
           ))}

@@ -43,15 +43,23 @@ function ThemeProvider({
             caches.open('json-files').then((cache) => {
               cache.put(themeEndPoint, res);
             }),
-            caches.open('images').then((cache) => {
-              cache.addAll([
-                themeData.images.graphicOverlayUrl,
-                themeData.images.logoUrl,
-                themeData.images.faviconUrl,
-                themeData.images.portalLoginLogoUrl,
-                themeData.images.portalLoginBackgroundUrl,
-              ]);
-            }),
+            caches.open('images').then((cache) =>
+              cache
+                .addAll(
+                  [
+                    themeData.images.graphicOverlayUrl,
+                    themeData.images.logoUrl,
+                    themeData.images.faviconUrl,
+                    themeData.images.portalLoginLogoUrl,
+                    themeData.images.portalLoginBackgroundUrl,
+                  ].filter(Boolean)
+                )
+                // Best-effort offline pre-cache; a failed image must not
+                // surface as an unhandled rejection.
+                .catch((err) =>
+                  console.warn('Theme images were not pre-cached', err)
+                )
+            ),
             Storage.set({
               key: 'storageTheme',
               value: JSON.stringify(themeData),
