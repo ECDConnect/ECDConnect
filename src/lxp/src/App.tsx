@@ -13,7 +13,8 @@ import '@ionic/react/css/core.css';
 import '@ionic/react/css/display.css';
 import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/float-elements.css';
-import { default as React, useEffect, useState } from 'react';
+import { default as React, useEffect, useMemo, useRef, useState } from 'react';
+import { unstable_batchedUpdates } from 'react-dom';
 import ReactGA from 'react-ga4';
 import TagManager from 'react-gtm-module';
 import { useDispatch, useSelector } from 'react-redux';
@@ -21,7 +22,10 @@ import { AuthRoutes, PublicRoutes } from '@routes';
 import InitialNotificationSetup from './initial-notifications-setup';
 import InitialStoreSetup from './initial-store-setup';
 import { LoginModal } from './pages/auth/login-modal/login-modal';
+import { PinSetup } from './components/pin-lock/pin-setup';
+import { PinUnlock } from './components/pin-lock/pin-unlock';
 import { authActions, authSelectors } from './store/auth';
+import { useInactivityLock } from './hooks/useInactivityLock';
 import { useVersionCheck } from './hooks/useVersionCheck';
 import { UpdateRequired } from './pages/update-required/update-required';
 import { useTenant } from './hooks/useTenant';
@@ -30,6 +34,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { FacebookProvider } from 'react-facebook';
 import { settingActions, settingSelectors } from './store/settings';
 import { captureAcquisitionTracking } from '@/utils/user/acquisition-tracking.utils';
+import { clearPin, hasPin, touchActivity } from '@/utils/security/pin-lock';
 
 captureAcquisitionTracking();
 
@@ -41,6 +46,15 @@ const App: React.FC = () => {
   const user = useSelector(authSelectors.getAuthUser);
   const userExpired = useSelector(authSelectors.getUserExpired);
   const isAppLocked = useSelector(authSelectors.getIsAppLocked);
+  const [pinVersion, setPinVersion] = useState(0);
+  const [passwordFallback, setPasswordFallback] = useState(false);
+  const [askForPin, setAskForPin] = useState(false);
+  const previousUserId = useRef<string | null | undefined>(undefined);
+  const pinConfigured = useMemo(
+    () => (user?.id ? hasPin(user.id) : false),
+    [user?.id, pinVersion]
+  );
+  useInactivityLock(pinVersion);
   const { updateRequired } = useVersionCheck();
   const [freeMemory, setFreeMemory] = useState(0);
   const [errorMessage, setErrorMessage] = useState(false);
@@ -194,24 +208,68 @@ const App: React.FC = () => {
   }, [userExpired]);
 
   useEffect(() => {
-    if (isAppLocked) {
-      dialog({
-        position: DialogPosition.Middle,
-        blocking: true,
-        render: (onSubmit) => {
-          return (
-            <LoginModal
-              loginSuccessful={() => {
-                dispatch(authActions.unlockApp());
-                onSubmit();
-              }}
-            />
-          );
-        },
-      });
+    const previous = previousUserId.current;
+    const current = user?.id ?? null;
+    previousUserId.current = current;
+
+    if (!current) {
+      setAskForPin(false);
+      setPasswordFallback(false);
+      return;
     }
+
+    const justLoggedIn = previous !== undefined && previous !== current;
+    if (justLoggedIn && user?.isTempUser !== true && !hasPin(current)) {
+      setAskForPin(true);
+    }
+  }, [user?.id, user?.isTempUser, pinVersion]);
+
+  useEffect(() => {
+    if (!isAppLocked || (pinConfigured && !passwordFallback)) return;
+
+    dialog({
+      position: DialogPosition.Middle,
+      blocking: true,
+      render: (onSubmit) => {
+        return (
+          <LoginModal
+            title={
+              passwordFallback
+                ? 'Enter your password'
+                : 'Your session has expired'
+            }
+            detail={
+              passwordFallback
+                ? 'Log in with your password to continue. You can choose a new PIN afterwards.'
+                : 'If you would like to continue, please re-login or reset'
+            }
+            onBack={
+              passwordFallback
+                ? () => {
+                    setPasswordFallback(false);
+                    onSubmit();
+                  }
+                : undefined
+            }
+            loginSuccessful={() => {
+              unstable_batchedUpdates(() => {
+                if (passwordFallback && user?.id) {
+                  clearPin(user.id);
+                  setPinVersion((version) => version + 1);
+                  setAskForPin(true);
+                }
+                touchActivity();
+                setPasswordFallback(false);
+                dispatch(authActions.unlockApp());
+              });
+              onSubmit();
+            }}
+          />
+        );
+      },
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAppLocked]);
+  }, [isAppLocked, pinConfigured, passwordFallback]);
 
   useEffect(() => {
     if (freeMemory !== 0 && freeMemory <= 200) {
@@ -392,7 +450,37 @@ const App: React.FC = () => {
       {updateRequired || updateRegistration || versionMismatch ? (
         <UpdateRequired />
       ) : (
-        routerContent
+        <>
+          {routerContent}
+          {user?.id &&
+            user.isTempUser !== true &&
+            askForPin &&
+            !pinConfigured &&
+            !isAppLocked && (
+              <PinSetup
+                userId={user.id}
+                onComplete={() => {
+                  setAskForPin(false);
+                  setPinVersion((version) => version + 1);
+                }}
+                onSkip={() => setAskForPin(false)}
+              />
+            )}
+          {user?.id &&
+            user.isTempUser !== true &&
+            isAppLocked &&
+            pinConfigured &&
+            !passwordFallback && (
+              <PinUnlock
+                userId={user.id}
+                onUnlock={() => {
+                  touchActivity();
+                  dispatch(authActions.unlockApp());
+                }}
+                onUsePassword={() => setPasswordFallback(true)}
+              />
+            )}
+        </>
       )}
     </IonApp>
   );
