@@ -9,7 +9,7 @@ using ECDLink.EGraphQL.Resolvers;
 using HotChocolate.Execution.Configuration;
 using HotChocolate.Types;
 using HotChocolate.Types.Descriptors;
-using HotChocolate.Types.Descriptors.Definitions;
+using HotChocolate.Types.Descriptors.Configurations;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -39,9 +39,11 @@ namespace ECDLink.EGraphQL.Registration.Modules
             return new ValueTask<IReadOnlyCollection<ITypeSystemMember>>(types);
         }
 
+        // From v16 context.Services is the schema service provider, which holds none of the
+        // application's services; GetRootServiceProvider() is what context.Services was up to v15.
         private void CreateEndpoints(IDescriptorContext context, List<ITypeSystemMember> types)
         {
-            var contentDefinitionService = context.Services.GetService<IDynamicTypeDefinitionService>();
+            var contentDefinitionService = context.Services.GetRootServiceProvider().GetService<IDynamicTypeDefinitionService>();
 
             var definitions = contentDefinitionService.GetObjectTypes();
 
@@ -55,7 +57,7 @@ namespace ECDLink.EGraphQL.Registration.Modules
         private void CreateContentObjects(IDescriptorContext context, List<ITypeSystemMember> types)
         {
 
-            var service = context.Services.GetService<IDynamicTypeDefinitionService>();
+            var service = context.Services.GetRootServiceProvider().GetService<IDynamicTypeDefinitionService>();
 
             var definitions = service.GetObjectTypes();
 
@@ -68,21 +70,21 @@ namespace ECDLink.EGraphQL.Registration.Modules
         {
             foreach (var item in definitions)
             {
-                var typeDefinition = new InputObjectTypeDefinition(new DynamicTypeBuilder(item.ContentName).Input().Build());
+                var typeDefinition = new InputObjectTypeConfiguration(new DynamicTypeBuilder(item.ContentName).Input().Build());
 
                 foreach (var field in item.Fields)
                 {
-                    InputFieldDefinition definition;
+                    InputFieldConfiguration definition;
 
                     if (FieldTypeHelper.IsRelationType(field))
                     {
-                        definition = new InputFieldDefinition(
+                        definition = new InputFieldConfiguration(
                               field.Name,
                               type: TypeReference.Parse("String"));
                     }
                     else
                     {
-                        definition = new InputFieldDefinition(
+                        definition = new InputFieldConfiguration(
                               field.Name,
                               type: TypeReference.Parse(field.GraphDataTypeName));
                     }
@@ -96,26 +98,26 @@ namespace ECDLink.EGraphQL.Registration.Modules
 
         private void CreateObjectType(IDescriptorContext context, IEnumerable<ContentDefinitionModel> definitions, List<ITypeSystemMember> types)
         {
-            var fieldResolver = context.Services.GetService<IDynamicFieldResolverFactory>();
+            var fieldResolver = context.Services.GetRootServiceProvider().GetService<IDynamicFieldResolverFactory>();
 
             foreach (var item in definitions)
             {
-                var typeDefinition = new ObjectTypeDefinition(item.ContentName);
+                var typeDefinition = new ObjectTypeConfiguration(item.ContentName);
 
                 foreach (var field in item.Fields)
                 {
-                    ObjectFieldDefinition definition = null;
+                    ObjectFieldConfiguration definition = null;
                     if (field.DataType == "link")
                     {
                         var fieldType = definitions.FirstOrDefault(x => "[" + x.ContentName + "]" == field.GraphDataTypeName);
-                        definition = new ObjectFieldDefinition(
+                        definition = new ObjectFieldConfiguration(
                             field.Name,
                             type: TypeReference.Parse(field.GraphDataTypeName),
                             pureResolver: ctx => fieldResolver.CreateFieldResolver((FieldTypeEnum)field.FieldTypeId).ResolveField(ctx, field, Convert.ToInt32(fieldType.Identifier)));
                     }
                     else
                     {
-                        definition = new ObjectFieldDefinition(
+                        definition = new ObjectFieldConfiguration(
                             field.Name,
                             type: TypeReference.Parse(field.GraphDataTypeName),
                             pureResolver: ctx => fieldResolver.CreateFieldResolver((FieldTypeEnum)field.FieldTypeId).ResolveField(ctx, field));
@@ -124,7 +126,7 @@ namespace ECDLink.EGraphQL.Registration.Modules
                     typeDefinition.Fields.Add(definition);
                 }
 
-                typeDefinition.Fields.Add(new ObjectFieldDefinition(
+                typeDefinition.Fields.Add(new ObjectFieldConfiguration(
                           ObjectFieldConstants.Identifier,
                           type: TypeReference.Create("Int"),
                           pureResolver: ctx => fieldResolver.CreateFieldResolver(FieldTypeEnum.Text).ResolveField(ctx, new FieldDefinitionModel { Name = ObjectFieldConstants.Identifier })));

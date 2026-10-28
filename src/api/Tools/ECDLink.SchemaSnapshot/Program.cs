@@ -115,8 +115,8 @@ namespace ECDLink.SchemaSnapshot
 
             await using var provider = services.BuildServiceProvider();
             var executor = await provider
-                .GetRequiredService<IRequestExecutorResolver>()
-                .GetRequestExecutorAsync();
+                .GetRequiredService<IRequestExecutorProvider>()
+                .GetExecutorAsync();
 
             return executor.Schema.ToString();
         }

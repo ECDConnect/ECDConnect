@@ -28,7 +28,7 @@ namespace ECDLink.EGraphQL.Authorization
             // nothing in the schema applies @token - but wrong for the same reason.
             var directive = context.Selection.Field.Directives
                 .Where(d => string.Equals(d.Type.Name, DirectiveName, StringComparison.Ordinal))
-                .Select(d => d.AsValue<TokenAccessDirective>())
+                .Select(d => d.ToValue<TokenAccessDirective>())
                 .FirstOrDefault();
 
             if (directive is null)

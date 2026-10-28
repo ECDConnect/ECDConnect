@@ -1,6 +1,7 @@
 ﻿using HotChocolate;
 using HotChocolate.Execution;
 using HotChocolate.Execution.Instrumentation;
+using HotChocolate.Language;
 using HotChocolate.Resolvers;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.AspNetCore.Http;
@@ -21,9 +22,10 @@ namespace ECDLink.EGraphQL.Diagnostic
             _httpContextAccessor = services.GetService<IHttpContextAccessor>();
         }
 
-        public override void RequestError(IRequestContext context, Exception exception)
+        public override void RequestError(RequestContext context, Exception exception)
         {
-            AddErrorTelemetry("Request Error", exception);
+            // v16 removed the SyntaxError event; the parser now reports through RequestError.
+            AddErrorTelemetry(exception is SyntaxException ? "Syntax Error" : "Request Error", exception);
             base.RequestError(context, exception);
         }
 
@@ -33,19 +35,13 @@ namespace ECDLink.EGraphQL.Diagnostic
             base.ResolverError(context, error);
         }
 
-        public override void SyntaxError(IRequestContext context, IError error)
-        {
-            AddErrorTelemetry("Syntax Error", error.Exception);
-            base.SyntaxError(context, error);
-        }
-
         public override void TaskError(IExecutionTask task, IError error)
         {
             AddErrorTelemetry("Task Error", error.Exception);
             base.TaskError(task, error);
         }
 
-        public override void ValidationErrors(IRequestContext context, IReadOnlyList<IError> errors)
+        public override void ValidationErrors(RequestContext context, IReadOnlyList<IError> errors)
         {
             var error = errors.FirstOrDefault();
             AddErrorTelemetry("Validation Errors", error?.Exception);

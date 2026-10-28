@@ -18,7 +18,7 @@ namespace ECDLink.EGraphQL.Registration.ContentTypes
     {
         public static ObjectTypeExtension BuildContentMutation(IDescriptorContext context, IEnumerable<ContentDefinitionModel> definitions)
         {
-            var mutationResolver = context.Services.GetService<IDynamicMutationResolver>();
+            var mutationResolver = context.Services.GetRootServiceProvider().GetService<IDynamicMutationResolver>();
 
             var mutationExtension = new ObjectTypeExtension(config =>
             {
