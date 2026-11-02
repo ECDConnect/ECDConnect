@@ -1,4 +1,5 @@
 ﻿using HotChocolate;
+using HotChocolate.Execution;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
