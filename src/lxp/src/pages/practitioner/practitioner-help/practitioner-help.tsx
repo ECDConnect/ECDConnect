@@ -1,5 +1,7 @@
+import { useDialog } from '@ecdlink/core';
 import {
   BannerWrapper,
+  DialogPosition,
   MenuListDataItem,
   ProfileAvatar,
   StackedList,
@@ -18,6 +20,15 @@ import { VideoCameraIcon, DocumentTextIcon } from '@heroicons/react/solid';
 import { useTenant } from '@/hooks/useTenant';
 import { DownloadAppCard } from '@/components/download-app-card/download-app-card';
 import WhatsAppIcon from '@/assets/logos/whatsapp';
+import {
+  getRemoteConfig,
+  refreshRemoteConfig,
+  shouldOpenWhatsAppHelp,
+} from '@/utils/remote-config';
+import {
+  HELP_EMAIL,
+  WhatsAppUnavailableNotice,
+} from './whatsapp-unavailable-notice';
 
 export const HelpTypes = {
   videos: 'Watch videos',
@@ -31,11 +42,44 @@ export const PractitionerHelp: React.FC = () => {
   const history = useHistory();
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const tenant = useTenant();
+  const dialog = useDialog();
 
-  const whatsapp = () => {
+  const openWhatsApp = () => {
     window.open(
       `https://wa.me/${tenant.tenant?.organisationHelpWhatsAppNumber}`
     );
+  };
+
+  const showWhatsAppNotice = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      blocking: true,
+      color: 'bg-white',
+      render: (onSubmit) => (
+        <WhatsAppUnavailableNotice
+          onSendEmail={() => {
+            window.location.href = `mailto:${HELP_EMAIL}`;
+            onSubmit();
+          }}
+          onClose={onSubmit}
+        />
+      ),
+    });
+  };
+
+  const whatsapp = async () => {
+    if (!tenant.isOpenAccess) {
+      openWhatsApp();
+      return;
+    }
+
+    const config = isOnline ? await refreshRemoteConfig() : getRemoteConfig();
+    if (shouldOpenWhatsAppHelp(true, config)) {
+      openWhatsApp();
+      return;
+    }
+
+    showWhatsAppNotice();
   };
 
   const videos = () => {

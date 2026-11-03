@@ -1,3 +1,4 @@
 {
-  "minimumAppVersion": "1.0.0"
+  "minimumAppVersion": "1.0.0",
+  "whatsAppHelpAvailable": false
 }
