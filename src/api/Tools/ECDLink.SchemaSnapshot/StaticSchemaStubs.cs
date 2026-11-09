@@ -86,7 +86,9 @@ namespace ECDLink.SchemaSnapshot
             public bool? IsSystemValue { get; set; }
         }
 
-        public IEnumerable<ISetting> GetSystemSettings() => new ISetting[]
+        public IEnumerable<ISetting> GetSystemSettings() => GetSystemSettingsForAllTenants();
+
+        public IEnumerable<ISetting> GetSystemSettingsForAllTenants() => new ISetting[]
         {
             new Setting
             {

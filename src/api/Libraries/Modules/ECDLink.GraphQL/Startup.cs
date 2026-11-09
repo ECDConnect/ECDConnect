@@ -10,7 +10,8 @@ using ECDLink.EGraphQL.Registration.Modules;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.AspNetCore;
-using HotChocolate.AspNetCore.Serialization;
+using HotChocolate.AspNetCore.Formatters;
+using HotChocolate.Data;
 using HotChocolate.Execution;
 using HotChocolate.Types;
 using HotChocolate.Types.Descriptors;
@@ -48,25 +49,30 @@ namespace ECDLink.EGraphQL
             services.AddSingleton(contentReloader);
             services.AddHttpContextAccessor();
 
-            // v13 adopts the GraphQL-over-HTTP spec by default, which returns non-2xx status
-            // codes for validation and execution errors. Both clients assume the older
-            // always-200 behaviour - the PWA treats any non-200 as a connection failure in
-            // axios.helper.ts, and axios rejects non-2xx before that check even runs - so errors
-            // would surface to users as lost connectivity on an offline-first app. Legacy keeps
-            // the v12 contract. Adopting the spec belongs in its own change, with the client work.
-            services.AddHttpResponseFormatter(new HttpResponseFormatterOptions
-            {
-                HttpTransportVersion = HttpTransportVersion.Legacy,
-            });
-
             var builder = services
               .AddGraphQLServer(maxAllowedRequestSize: maxRequestSize)
+              // v13 adopts the GraphQL-over-HTTP spec by default, which returns non-2xx status
+              // codes for validation and execution errors. Both clients assume the older
+              // always-200 behaviour - the PWA treats any non-200 as a connection failure in
+              // axios.helper.ts, and axios rejects non-2xx before that check even runs - so errors
+              // would surface to users as lost connectivity on an offline-first app. Legacy keeps
+              // the v12 contract. Adopting the spec belongs in its own change, with the client work.
+              // (v16 moved this from IServiceCollection onto the GraphQL builder.)
+              .AddHttpResponseFormatter(new HttpResponseFormatterOptions
+              {
+                  HttpTransportVersion = HttpTransportVersion.Legacy,
+              })
               // Keeps v12 field casing across Hot Chocolate majors - see LegacyNamingConventions.
               .AddConvention<INamingConventions, LegacyNamingConventions>()
               .AddDataLoader<UserRolesGroupedDataLoader>()
-              .AddErrorFilter<Diagnostic.ErrorFilter>(services => new Diagnostic.ErrorFilter(services))
-              .AddDiagnosticEventListener<Diagnostic.AppServerDiagnosticEventListener>(services => new Diagnostic.AppServerDiagnosticEventListener(services))
-              .AddDiagnosticEventListener<Diagnostic.AppExecutionDiagnosticEventListener>(services => new Diagnostic.AppExecutionDiagnosticEventListener(services))
+              // v16 hands these factories the schema service provider, which does not contain
+              // IHttpContextAccessor, ILogger<> or IWebHostEnvironment. The constructors use
+              // GetService, so they would get nulls and silently stop logging to Application
+              // Insights rather than fail. GetRootServiceProvider() is the application provider
+              // they were given up to v15.
+              .AddErrorFilter<Diagnostic.ErrorFilter>(services => new Diagnostic.ErrorFilter(services.GetRootServiceProvider()))
+              .AddDiagnosticEventListener<Diagnostic.AppServerDiagnosticEventListener>(services => new Diagnostic.AppServerDiagnosticEventListener(services.GetRootServiceProvider()))
+              .AddDiagnosticEventListener<Diagnostic.AppExecutionDiagnosticEventListener>(services => new Diagnostic.AppExecutionDiagnosticEventListener(services.GetRootServiceProvider()))
               //.AddDiagnosticEventListener<Diagnostic.AppDataLoaderDiagnosticEventListener>(services => new Diagnostic.AppDataLoaderDiagnosticEventListener(services))
               .ModifyOptions(o =>
               {
@@ -101,6 +107,9 @@ namespace ECDLink.EGraphQL
               .AddTypeModule(sp => new SettingsModule(contentReloader))
               .AddMutationType<Mutation>()
               .AddType<UploadType>()
+              // Keeps v12-v15 DateTime output across Hot Chocolate majors. Must be a new instance
+              // per schema build, or CMS reloads fail silently - see LegacyDateTime.
+              .ConfigureSchema(b => b.AddType(LegacyDateTime.Create()))
               .AddDirectiveType<TokenAccessDirectiveType>()
               .AddDirectiveType<PermissionDirectiveType>()
               // v14 replaced the complexity analyser with cost analysis, on and enforcing by
@@ -111,10 +120,18 @@ namespace ECDLink.EGraphQL
               // stay; enforcement is off until it can be turned on deliberately, with the limits
               // measured against the 223 persisted operations rather than guessed at.
               .ModifyCostOptions(o => o.EnforceCostLimits = false)
+              // v16 adds two more limits that are on by default and would reject or queue
+              // legitimate traffic: at most 64 executions in flight (the rest wait, and the wait
+              // counts against ExecutionTimeout), and at most 64 operations per filter argument
+              // (error HC0117) - the admin portal builds its filters dynamically. Same reasoning
+              // as cost enforcement above: off for the upgrade, a deliberate decision later.
+              .ModifyServerOptions(o => o.MaxConcurrentExecutions = null)
               .AddProjections()
-              .AddFiltering()
+              .AddFiltering(c => c.AddDefaults().MaxAllowedFilterOperations(null))
               .AddSorting()
-              .AllowIntrospection(isDevelopment)
+              // v16 removed AllowIntrospection from the builder. Note the inverted polarity:
+              // introspection stays allowed in development only, as before.
+              .DisableIntrospection(!isDevelopment)
               .UseExceptions()
               .UseTimeout()
               .UseDocumentCache()
@@ -122,7 +139,7 @@ namespace ECDLink.EGraphQL
               .UseDocumentParser()
               .UseDocumentValidation()
               .UseOperationCache()
-              .UseOperationResolver()
+              .UseOperationCompiler()
               .UseRequest(next => async context => await GraphQLRequestMiddleware(next, context))
               .UseOperationVariableCoercion()
               .UseOperationExecution()
@@ -144,16 +161,13 @@ namespace ECDLink.EGraphQL
             app.UseEndpoints(endpoints =>
              {
                  endpoints.MapGraphQL().RequireRateLimiting("GraphQLPolicy")
-                 .WithOptions(new HotChocolate.AspNetCore.GraphQLServerOptions()
-                 {
-                     Tool = { Enable = graphQLPlaygroundEnabled }
-                 });
+                 .WithOptions(options => options.Tool.Enable = graphQLPlaygroundEnabled);
              });
         }
 
         private static async ValueTask GraphQLRequestMiddleware(
             RequestDelegate next,
-            IRequestContext context)
+            RequestContext context)
         {
             if (graphQLQueryPersistenceEnabled == QUERY_PERSISTENCE.Disabled)
             {
@@ -171,7 +185,7 @@ namespace ECDLink.EGraphQL
             {
                 if (userSupportPersistedQueries)
                 {
-                    if (context.Request.Document is null && (context.IsCachedDocument || context.IsPersistedDocument))
+                    if (IsServedFromPersistedDocument(context))
                     {
                         await next(context);
                         return;
@@ -183,14 +197,21 @@ namespace ECDLink.EGraphQL
                     return;
                 }
             }
-            else if (context.Request.Document is null && (context.IsCachedDocument || context.IsPersistedDocument))
+            else if (IsServedFromPersistedDocument(context))
             {
                 await next(context);
                 return;
             }
             var error = ErrorBuilder.New().SetMessage("Persisted Operations Only").Build();
-            context.Result = OperationResultBuilder.CreateError(error);
+            context.Result = new OperationResult([error]);
         }
+
+        // True when the client sent only an id and the document came from the persisted
+        // store or the document cache, i.e. the client did not supply operation text.
+        // v16 moved IsCachedDocument/IsPersistedDocument onto OperationDocumentInfo.
+        private static bool IsServedFromPersistedDocument(RequestContext context)
+            => context.Request.Document is null
+                && (context.OperationDocumentInfo.IsCached || context.OperationDocumentInfo.IsPersisted);
 
         private static bool GraphQLPlaygroundEnabled(bool defaultValue = false)
         {

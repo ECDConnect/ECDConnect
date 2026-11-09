@@ -93,6 +93,28 @@ tell an accepted change from a regression:
   the 223 persisted operations rather than guessed. `ApplyPolicy` enum values also gained
   descriptions. `@permission` applications were unchanged.
 
+- **v15** — none; the schema was byte-identical.
+- **v16** — the SDL printer now wraps long field definitions over several lines, so the
+  snapshot was regenerated and a line diff against the v15 file is mostly formatting. Compared
+  definition by definition, the real changes are:
+  `KeyValuePairOfInt32AndNullableOfInt32` was renamed `KeyValuePairOfInt32AndNullableInt32`
+  (generic type naming changed; used by two attendance-report fields, named by no persisted
+  operation or hand-written client code, only the generated `packages/graphql` types);
+  `DateTime`, `Decimal` and `UUID` gained new descriptions and `@specifiedBy` URLs; and the
+  built-in `@specifiedBy` declaration is no longer printed. `@permission` applications were
+  unchanged.
+
+  The deployed schema also gained the `Setting_*` types of every tenant. Up to v15 they came from
+  whichever tenant's request built the schema first after a restart; v16 builds the schema at
+  startup with no tenant, so `SettingsModule` now builds the types from all tenants' settings and
+  resolves values per request from the caller's tenant.
+
+  Several v16 changes are invisible to every check in this folder, because they are runtime
+  behaviour rather than schema: DateTime output format (pinned to v15 - see `LegacyDateTime`),
+  which service provider error filters, diagnostic listeners and type modules receive, startup
+  schema construction, and schema rebuilds after a CMS change. Those were verified against a
+  running API.
+
 ### What the snapshot does not cover
 
 The schema is not a pure function of the code: `ContentTypeModule` and `SettingsModule` add types

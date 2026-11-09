@@ -18,7 +18,7 @@ namespace ECDLink.EGraphQL.Authorization
                                   .SetMessage("Not Authorised")
                                   .SetCode(ErrorCodes.Authentication.NotAuthorized)
                                   .SetPath(context.Path)
-                                  .AddLocation(context.Selection.SyntaxNode)
+                                  .AddLocation(context.Selection.SyntaxNodes[0].Node)
                                   .Build();
                     break;
                 case AuthState.NotAuthenticated:
@@ -26,7 +26,7 @@ namespace ECDLink.EGraphQL.Authorization
                                   .SetMessage("Not Authenticated")
                                   .SetCode(ErrorCodes.Authentication.NotAuthenticated)
                                   .SetPath(context.Path)
-                                  .AddLocation(context.Selection.SyntaxNode)
+                                  .AddLocation(context.Selection.SyntaxNodes[0].Node)
                                   .Build();
                     break;
                 default:
@@ -34,7 +34,7 @@ namespace ECDLink.EGraphQL.Authorization
                                   .SetMessage("Unknown Exception")
                                   .SetCode(ErrorCodes.Execution.TaskProcessingError)
                                   .SetPath(context.Path)
-                                  .AddLocation(context.Selection.SyntaxNode)
+                                  .AddLocation(context.Selection.SyntaxNodes[0].Node)
                                   .Build();
                     break;
             }

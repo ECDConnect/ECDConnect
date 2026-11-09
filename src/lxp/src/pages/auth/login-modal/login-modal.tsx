@@ -33,11 +33,17 @@ const version: string = import.meta.env.REACT_APP_VERSION;
 interface LoginModalProps {
   loginSuccessful: () => void;
   isLocalExpiration?: boolean;
+  title?: string;
+  detail?: string;
+  onBack?: () => void;
 }
 
 export const LoginModal: React.FC<LoginModalProps> = ({
   loginSuccessful,
   isLocalExpiration,
+  title = 'Your session has expired',
+  detail = 'If you would like to continue, please re-login or reset',
+  onBack,
 }) => {
   const appDispatch = useAppDispatch();
   const history = useHistory();
@@ -169,10 +175,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           icon="ExclamationCircleIcon"
           iconBorderColor="errorBg"
           iconColor="errorMain"
-          importantText={`Your session has expired`}
-          paragraphs={[
-            'If you would like to continue, please re-login or reset',
-          ]}
+          importantText={title}
+          paragraphs={[detail]}
         />
 
         <form>
@@ -265,6 +269,21 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           >
             <Typography type="help" color="white" text={'Log in'}></Typography>
           </Button>
+
+          {onBack && (
+            <Button
+              className={'mt-3 w-full'}
+              type="outlined"
+              color="primary"
+              onClick={onBack}
+            >
+              <Typography
+                type="help"
+                color="primary"
+                text={'Back to PIN'}
+              ></Typography>
+            </Button>
+          )}
 
           <Button
             className={'mt-3 w-full'}
