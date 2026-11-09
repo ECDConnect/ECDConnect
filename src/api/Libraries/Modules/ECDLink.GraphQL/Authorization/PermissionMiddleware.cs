@@ -56,7 +56,7 @@ namespace ECDLink.EGraphQL.Authorization
         private static IEnumerable<PermissionDirective> GetPermissionDirectives(IMiddlewareContext context)
             => context.Selection.Field.Directives
                 .Where(d => string.Equals(d.Type.Name, DirectiveName, StringComparison.Ordinal))
-                .Select(d => d.AsValue<PermissionDirective>());
+                .Select(d => d.ToValue<PermissionDirective>());
 
         private AuthState ValidateResult(IMiddlewareContext context, PermissionDirective directive)
         {

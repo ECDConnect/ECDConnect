@@ -18,7 +18,7 @@ namespace ECDLink.EGraphQL.Registration.ContentTypes
     {
         public static ObjectTypeExtension BuildContentQueries(IDescriptorContext context, IEnumerable<ContentDefinitionModel> definitions)
         {
-            var queryResolver = context.Services.GetService<IDynamicQueryResolver>();
+            var queryResolver = context.Services.GetRootServiceProvider().GetService<IDynamicQueryResolver>();
 
             var queryExtension = new ObjectTypeExtension(config =>
             {
