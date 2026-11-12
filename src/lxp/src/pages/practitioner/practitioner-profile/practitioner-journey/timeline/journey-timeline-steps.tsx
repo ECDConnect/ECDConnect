@@ -2,11 +2,19 @@ import { JourneyTimeline } from '@ecdlink/graphql';
 import { StepItem } from '@ecdlink/ui';
 import { parseCourseNameFromTimelineItem } from '@/utils/certificate/certificate.constants';
 
+export type JourneyCourseCertificate = {
+  courseName: string;
+  completedDate: string;
+  userTrainingCourseId?: string;
+  /** the name the certificate was last downloaded with, if it has been downloaded before */
+  certificateName?: string;
+};
+
 export interface JourneyTimelineStepsProps {
   timelineItems: JourneyTimeline[];
   isLoading?: boolean;
   onView?: (visitId: string) => void;
-  onCertificate?: (courseName: string, completedDate: string) => void;
+  onCertificate?: (certificate: JourneyCourseCertificate) => void;
   tenantName: string;
   startDate: string;
 }
@@ -68,10 +76,15 @@ export const journeyTimelineSteps = ({
         actionButtonOnClick: showActionButton
           ? () =>
               isCourse
-                ? onCertificate?.(
-                    parseCourseNameFromTimelineItem(timelineItem?.name || ''),
-                    timelineItem?.dateCompleted || ''
-                  )
+                ? onCertificate?.({
+                    courseName: parseCourseNameFromTimelineItem(
+                      timelineItem?.name || ''
+                    ),
+                    completedDate: timelineItem?.dateCompleted || '',
+                    userTrainingCourseId:
+                      timelineItem?.userTrainingCourseId ?? undefined,
+                    certificateName: timelineItem?.certificateName ?? undefined,
+                  })
                 : onView?.(visitId!)
           : undefined,
       });

@@ -17,7 +17,7 @@ Email: [help@ecdconnect.co.za](mailto:help@ecdconnect.co.za)
 
 -   **Frontend PWA**: React, Redux, TypeScript
 -   **Admin Portal Website**: React and Apollo Client
--   **Backend**: .NET 9 Core, GraphQL (Hot Chocolate), Entity Framework, PostgreSQL.
+-   **Backend**: .NET 10, GraphQL (Hot Chocolate), Entity Framework, PostgreSQL.
 
 ## 3rd Party Integrations
 
@@ -63,11 +63,11 @@ Currently there is no integration with any reporting tool, i.e. single sign-on o
 
 ## Backend tech stack
 
--   [.NET 9](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)  using the following to function:
+-   [.NET 10](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)  using the following to function:
 -   [Hot Chocolate](https://github.com/ChilliCream/hotchocolate)  - A open-source GraphQL server
 -   [Banana Cake Pop](https://chillicream.com/)  - This provides a playground and documentation layer for easy reading of the GraphQL end points
 -   [Entity Framework Core](https://learn.microsoft.com/en-us/ef/core/)
--   [ASP.NET Core Identity](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity?view=aspnetcore-9.0&tabs=visual-studio)  for authentication and User management
+-   [ASP.NET Core Identity](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity?view=aspnetcore-10.0&tabs=visual-studio)  for authentication and User management
 -   [PostgreSQL](https://www.postgresql.org/)  for the database
 
 ## Frontend PWA tech stack
@@ -75,12 +75,14 @@ Currently there is no integration with any reporting tool, i.e. single sign-on o
 -   [Ionic React](https://ionicframework.com/docs/react)  using Functional components, to support possible future migration to a native mobile application
 -   [Redux Toolkit](https://redux-toolkit.js.org/)  for state management with persistence
 -   [TypeScript](https://www.typescriptlang.org/)  for improved syntax support
+-   [Vite](https://vite.dev/)  for the dev server, builds and tests (Vitest)
 -   [Tailwind UI](https://tailwindui.com/)  for Form layouts, tables, modal windows for clean & modern look
 -   [heroicons](https://heroicons.com/)  for SVG icons
 
 ## Admin Portal website tech stack
 
 -   React using Functional components
+-   [Vite](https://vite.dev/)  for the dev server, builds and tests (Vitest)
 -   Using  [Apollo Client](https://www.apollographql.com/docs/react/)  GraphQL for declarative data fetching
 -   [Tailwind UI](https://tailwindui.com/)  for Form layouts, tables, modal windows for clean & modern look
 -   [heroicons](https://heroicons.com/)  for SVG icons
@@ -149,7 +151,7 @@ Authorized JavaScript origins need to be set to the various URLs from which the 
     `npm install --global lerna@4.0.0`
 -   [Yarn](https://yarnpkg.com/)  as an optional alternative to NPM,  
     `npm install --global yarn@1.22.22`
--   [.NET 9.0](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
+-   [.NET 10.0](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)
 -   [PostgreSQL Server](https://www.postgresql.org/)  - version 13 or later.
 -   [Visual Studio Code](https://code.visualstudio.com/)  for frontend development.
 -   [Visual Studio 2022 Community Edition](https://visualstudio.microsoft.com/vs/community/)  for backend development.
@@ -159,7 +161,7 @@ Authorized JavaScript origins need to be set to the various URLs from which the 
 ### Frontend
 1.  Install VS Code
 2.  Clone the repo.
-3.  Install node 20.19.2 or later.
+3.  Install node 22.12 or later.
 4.  In the  **root folder**:  
     `npm install --global lerna@4.0.0`  
     `npm install --global yarn@1.22.22`
@@ -310,7 +312,7 @@ To configure the system to allow for the sending of emails, edit the  `Notificat
 -   Create backend App Service (Web App), e.g. api-myapp, in rg-myapp.
     -   Basics:
         -   Publish: Code
-        -   Runtime Stack: .NET 9
+        -   Runtime Stack: .NET 10
         -   Linux Plan: select your app service plan created above, asp-myapp
     -   Deployment:
         -   Select options to suit your requirements

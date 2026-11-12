@@ -1,0 +1,71 @@
+# Persisted operations that already fail validation against schema.graphql.
+#
+# Listed here so validate-persisted-operations.mjs can flag NEW breakage during the Hot
+# Chocolate upgrade without drowning it in pre-existing noise. Two very different groups:
+# the first is a limitation of how the snapshot is taken, the second is real and worth
+# fixing on its own schedule.
+#
+# Regenerate the reasons at any time with: node Tools/validate-persisted-operations.mjs --no-baseline
+
+# ---------------------------------------------------------------------------------------
+# Snapshot artefacts (18). Not broken in production.
+#
+# schema.graphql is generated without a database, so CMS content types and system settings
+# are placeholders (see StaticSchemaStubs.cs). These operations query dynamic types whose
+# real shape lives in the database, so they cannot validate against the snapshot. They will
+# stay in this list until the snapshot can be taken against a real schema.
+# ---------------------------------------------------------------------------------------
+
+# Query fields on placeholder CMS types
+GetAllConnect.graphql
+GetAllConnectItem.graphql
+GetAllConsent.graphql
+GetMoreInformation.graphql
+GetResources.graphql
+openConsent.graphql
+
+# GetAll<Type> fields for CMS types absent from the stub
+GetAllActivity.graphql
+GetAllCalendarEventType.graphql
+GetAllProgrammeRoutine.graphql
+GetAllProgressTrackingAgeGroup.graphql
+GetAllProgressTrackingCategory.graphql
+GetAllProgressTrackingSkill.graphql
+GetAllProgressTrackingSubCategory.graphql
+GetAllStoryBook.graphql
+GetAllTheme.graphql
+GetResourcesLinks.graphql
+
+# Queries a CMS content type the stub does not model
+hasContentTypeBeenTranslated.graphql
+
+# Settings groups exist only as data; the stub supplies one placeholder group
+getSettings.graphql
+
+# ---------------------------------------------------------------------------------------
+# Genuinely broken (17). These fail against the real v12 schema too, so they cannot be
+# served today - they reference fields the schema does not have, or will not parse at all.
+# Nothing to do with the upgrade; found while building the validator. Each is either dead
+# and should be deleted, or a bug and should be fixed.
+# ---------------------------------------------------------------------------------------
+
+# Will not parse
+GetCommunitySkills.graphql
+queryChangesToSync.graphql
+
+# Reference fields that do not exist in the schema
+CalculateChildrenRegistrationRemoval.graphql
+GetClassroomGroupClassroomsForPractitioner.graphql
+GetUserContentChildProgressReport.graphql
+RemoveInvite.graphql
+addChildRegistrationPoints.graphql
+childProgressReport.graphql
+childProgressReportSummary.graphql
+childProgressReports.graphql
+createChildProgressReport.graphql
+generateChildProgressReport.graphql
+inviteByPractitionerIdNum.graphql
+syncChildProgressReport.graphql
+updateCareGiverGrants.graphql
+updateChildProgressReport.graphql
+updateInviteStatus.graphql

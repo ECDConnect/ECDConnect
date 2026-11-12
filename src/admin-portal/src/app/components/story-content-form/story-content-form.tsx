@@ -374,7 +374,7 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
             }
           />
 
-          <div className="mt-4 overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
+          <div className="mt-4">
             {tableData &&
               tableData.map((item: any) => {
                 const maximumItemsChecked = tableData.filter((x) =>
@@ -436,7 +436,7 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
           text={'You must add at least one part.'}
         />
 
-        <div className="mt-4 overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
+        <div className="mt-4">
           <div className="min-w-full divide-gray-200">
             {storyBookPartsValuesFormatted &&
               storyBookPartsValuesFormatted.map((item: any, idx: number) => {
@@ -456,13 +456,13 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
                         <Typography
                           type={'h4'}
                           text={`Part ${idx + 1}`}
-                          className={'text-sm font-normal'}
+                          className={'font-normal'}
                           color={'textDark'}
                         />
                         <Typography
                           type={'small'}
                           text={idx === 0 ? 'Text *' : `Text`}
-                          className={'mt-1 text-sm font-normal'}
+                          className={'mt-1 text-sm'}
                           color={'textDark'}
                           weight="bold"
                         />
@@ -474,7 +474,7 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
                         <Typography
                           type={'h4'}
                           text={`Story text *`}
-                          className={'text-sm font-normal'}
+                          className={'font-normal'}
                           color={'textDark'}
                         />
                       </>
@@ -506,7 +506,7 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
                     <Typography
                       type={'h4'}
                       text={`Question`}
-                      className={'mt-2 text-sm font-normal'}
+                      className={'mt-2 font-normal'}
                       color={'textDark'}
                     />
                     <Typography

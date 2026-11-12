@@ -1,5 +1,5 @@
 import { ActionModal } from '@ecdlink/ui';
-import { ReactComponent as IconRobot } from '@/assets/iconRobot.svg';
+import IconRobot from '@/assets/iconRobot.svg?react';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';

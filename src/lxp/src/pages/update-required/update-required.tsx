@@ -1,8 +1,7 @@
 import { BannerWrapper, Button, Typography, renderIcon } from '@ecdlink/ui';
 import { ExclamationCircleIcon } from '@heroicons/react/solid';
 
-const currentVersion: string =
-  process.env.REACT_APP_VERSION ?? require('../../../package.json').version;
+const currentVersion: string = import.meta.env.REACT_APP_VERSION;
 
 const handleUpdate = () => {
   if ('serviceWorker' in navigator) {

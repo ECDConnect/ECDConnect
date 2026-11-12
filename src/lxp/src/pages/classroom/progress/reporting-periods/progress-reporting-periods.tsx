@@ -19,7 +19,7 @@ import {
 } from '@/store/classroom';
 import { useSelector } from 'react-redux';
 import { useDialog, useSnackbar } from '@ecdlink/core';
-import { ReactComponent as RobotIcon } from '@/assets/iconRobot.svg';
+import RobotIcon from '@/assets/iconRobot.svg?react';
 import { format } from 'date-fns';
 import { ChildProgressReportPeriodDto } from '@/models/classroom/classroom.dto';
 import { newGuid } from '@/utils/common/uuid.utils';
@@ -116,9 +116,11 @@ export const ProgressReportingPeriods: React.FC = () => {
         })
       );
 
+      let keptExistingPeriods = false;
+
       if (isOnline) {
-        appDispatch(
-          await classroomsThunkActions.addChildProgressReportPeriods({
+        const result = await appDispatch(
+          classroomsThunkActions.addChildProgressReportPeriods({
             classroomId: classroom!.id,
             childProgressReportPeriods: reportingPeriods.map((x) => ({
               id: x.id,
@@ -127,8 +129,35 @@ export const ProgressReportingPeriods: React.FC = () => {
             })),
           })
         );
-      } else {
+
+        // The server keeps the first set saved for this classroom. If the same
+        // user already set up periods on another device, it returns that set
+        // (different ids) instead of ours, and those dates are adopted locally.
+        if (
+          classroomsThunkActions.addChildProgressReportPeriods.fulfilled.match(
+            result
+          )
+        ) {
+          const submittedIds = new Set(reportingPeriods.map((x) => x.id));
+          keptExistingPeriods = result.payload.some(
+            (x) => !submittedIds.has(x.id)
+          );
+        }
       }
+
+      showMessage(
+        keptExistingPeriods
+          ? {
+              message:
+                'Reporting periods were already set up on another device. Those dates have been kept.',
+              type: 'info',
+              duration: 8000,
+            }
+          : {
+              message: 'Reporting dates added!',
+              type: 'success',
+            }
+      );
 
       const notificationsToRemove = notifications?.filter(
         (item) => item?.message?.reference === messageReference
@@ -148,9 +177,6 @@ export const ProgressReportingPeriods: React.FC = () => {
       }
     };
     save();
-    showMessage({
-      message: 'Reporting dates added!',
-    });
   };
 
   const handleGoBack = () => {

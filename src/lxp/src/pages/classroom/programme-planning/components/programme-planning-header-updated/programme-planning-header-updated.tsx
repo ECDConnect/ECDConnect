@@ -27,7 +27,6 @@ import { ellipsisDescription, useDialog } from '@ecdlink/core';
 import { ProgrammeTimingRouteState } from '../../programme-timing/programme-timing.types';
 import { ProgrammeThemeRouteState } from '../../programme-theme/programme-theme.types';
 import { useAppContext } from '@/walkthrougContext';
-import axios from 'axios';
 import { useHolidays } from '@/hooks/useHolidays';
 import { staticDataThunkActions } from '@/store/static-data';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
@@ -72,7 +71,6 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
     return isSameDay(new Date(item?.dayDate), new Date(selectedDate!));
   });
   const [month, setMonth] = useState<string | undefined>();
-  const [svgImageBase64, setSvgImageBase64] = useState<string | undefined>();
 
   const classroomGroup = useSelector(
     classroomsSelectors.getClassroomGroupById(classroomGroupId)
@@ -293,34 +291,6 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
     ]
   );
 
-  const setBase64String = async (imageUrl: string) => {
-    const response = await axios
-      .get(imageUrl, { responseType: 'arraybuffer' })
-      .then((response) =>
-        new Buffer(response.data, 'binary').toString('base64')
-      );
-    if (imageUrl.indexOf('.svg') !== -1) {
-      setSvgImageBase64('data:image/svg+xml;base64,' + response);
-    } else if (
-      imageUrl.indexOf('.jpg') !== -1 ||
-      imageUrl.indexOf('.jpeg') !== -1
-    ) {
-      setSvgImageBase64('data:image/jpg;base64,' + response);
-    } else {
-      setSvgImageBase64('data:image/png;base64,' + response);
-    }
-  };
-
-  useEffect(() => {
-    if (
-      chosedTheme &&
-      chosedTheme.imageUrl !== undefined &&
-      chosedTheme.imageUrl !== ''
-    ) {
-      setBase64String(chosedTheme.imageUrl);
-    }
-  }, [chosedTheme]);
-
   return (
     <div>
       <div className="flex items-center justify-between">
@@ -354,7 +324,7 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
           </div>
         )}
       </div>
-      <div className="border-primaryAccent1 my-4 flex w-full items-center justify-between border-t border-b border-dashed py-4">
+      <div className="border-primaryAccent1 my-4 flex w-full items-center justify-between border-b border-t border-dashed py-4">
         {!weekSummary && (
           <Button
             size="small"
@@ -391,8 +361,12 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
             disabled={isWalkthrough || !hasPermissionToEdit}
             onClick={onClickTheme}
           >
-            {chosedTheme && (
-              <img src={svgImageBase64} alt="theme" className="ml-4 h-8 w-8" />
+            {chosedTheme?.imageUrl && (
+              <img
+                src={chosedTheme.imageUrl}
+                alt="theme"
+                className="ml-4 h-8 w-8"
+              />
             )}
             {dailyProgramme && theme?.dailyProgrammes?.length ? (
               <Typography

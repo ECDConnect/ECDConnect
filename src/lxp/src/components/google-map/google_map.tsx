@@ -46,7 +46,7 @@ const CustomGoogleMapComponent: FC<CustomGoogleMapComponentProps> = (props) => {
 
   const getCoordData = useCallback((lat: number, lng: number) => {
     fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=
-        ${lat},${lng}&key=${process.env.REACT_APP_MAP_API_KEY}`)
+        ${lat},${lng}&key=${import.meta.env.REACT_APP_MAP_API_KEY}`)
       .then((response) => response.json())
       .then((data: GoogleMapGeoCodeResponse) => {
         if (data.results.length) {
@@ -70,7 +70,7 @@ const CustomGoogleMapComponent: FC<CustomGoogleMapComponentProps> = (props) => {
     let newMap: GoogleMap = await GoogleMap.create({
       id: 'google-map',
       element: mapRef.current as HTMLElement,
-      apiKey: process.env.REACT_APP_MAP_API_KEY || '',
+      apiKey: import.meta.env.REACT_APP_MAP_API_KEY || '',
       config: {
         center: {
           lat: latitude,

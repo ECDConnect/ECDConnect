@@ -1,10 +1,4 @@
-import {
-  LocalStorageKeys,
-  CoachDto,
-  UserDto,
-  useTheme,
-  useDialog,
-} from '@ecdlink/core';
+import { CoachDto, UserDto, useTheme, useDialog } from '@ecdlink/core';
 import { FileTypeEnum } from '@ecdlink/graphql';
 import {
   ActionListDataItem,
@@ -29,7 +23,6 @@ import { cloneDeep } from 'lodash';
 
 import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
 import { DialogFormInput } from '@models/practitioner/DialogFormInput';
-import { setStorageItem } from '@utils/common/local-storage.utils';
 import { practitionerForCoachSelectors } from '@/store/practitionerForCoach';
 import { coachActions, coachSelectors, coachThunkActions } from '@store/coach';
 import { userActions, userSelectors, userThunkActions } from '@/store/user';
@@ -76,8 +69,6 @@ export const CoachAbout: React.FC = () => {
   const location = useLocation<CoachAboutRouteState>();
   const isFromCommunityWelcome = location?.state?.isFromCommunityWelcome;
   const wasFromCommunityWelcome = usePrevious(isFromCommunityWelcome);
-
-  const pictureStorageKey = LocalStorageKeys.coachProfilePicture;
 
   const [oldUserNumber, setOldUserNumber] = useState('');
 
@@ -317,8 +308,6 @@ export const CoachAbout: React.FC = () => {
   };
 
   const picturePromptOnAction = async (imageBaseString: string) => {
-    setStorageItem(imageBaseString, pictureStorageKey);
-
     if (!isFromCommunityWelcome) {
       setEditProfilePictureVisible(!editProfilePictureVisible);
     }

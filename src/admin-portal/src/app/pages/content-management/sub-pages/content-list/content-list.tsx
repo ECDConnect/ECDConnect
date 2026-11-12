@@ -681,12 +681,12 @@ export default function ContentList({
               </span>
               <input
                 id="search-input"
-                className="text-textMid focus:outline-none w-full rounded-md bg-transparent py-2 pl-11 focus:ring-2 focus:ring-offset-2"
+                className="text-textMid w-full rounded-md bg-transparent py-2 pl-11 focus:outline-none focus:ring-2 focus:ring-offset-2"
                 placeholder={searchText}
                 onChange={onSearch}
               />
             </div>
-            <div className="mt-0  flex w-10/12 justify-between sm:mt-0  sm:ml-4">
+            <div className="mt-0  flex w-10/12 justify-between sm:ml-4  sm:mt-0">
               {(selectedTab === 2 || selectedTab === 3) && (
                 <div className="pr-2 ">
                   <span className=" text-lg font-medium leading-6 text-gray-900">
@@ -697,7 +697,7 @@ export default function ContentList({
                         numberOfFilters
                           ? ' bg-secondary'
                           : 'border-secondary border-2 bg-white'
-                      } focus:border-secondary focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg px-4 py-2.5 text-center text-sm font-medium ${
+                      } focus:border-secondary focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg px-4 py-2.5 text-center text-sm font-medium focus:outline-none ${
                         numberOfFilters ? 'text-white' : 'text-textMid'
                       } hover:bg-gray-300 focus:ring-2`}
                       type="button"
@@ -744,7 +744,7 @@ export default function ContentList({
                         viewSelectedRow();
                     }}
                     type="button"
-                    className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2 lg:w-auto"
+                    className="bg-secondary hover:bg-uiMid inline-flex w-full items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 lg:w-auto"
                   >
                     <PlusIcon width="22px" className="pl-1" />
                     Add {camelCaseToSentanceCase(buttonText)}
@@ -885,9 +885,7 @@ export default function ContentList({
           )}
           <div className=" -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-              <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
-                {renderTables}
-              </div>
+              <div>{renderTables}</div>
             </div>
           </div>
         </div>

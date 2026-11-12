@@ -18,7 +18,11 @@ export const Card: React.FC<CardProps> = ({
   return (
     <div
       className={classNames(
-        styles.getCardStyles(borderRaduis, shadowSize),
+        styles.getCardStyles(
+          borderRaduis,
+          shadowSize,
+          styles.cardSuppliesBackground(className)
+        ),
         className
       )}
       onClick={onClick}

@@ -45,6 +45,13 @@ namespace ECDLink.EGraphQL.Resolvers
             repository.SetUserContext(httpContextAccessor.HttpContext.GetUser().Id);
             input.TenantId = _tenantId;
 
+            var inputProperties = input?.GetType().GetProperties().Where(p => p.PropertyType == typeof(Guid?));
+            foreach (var property in inputProperties)
+            {
+                if (property.GetValue(input) as Guid? == Guid.Empty)
+                    property.SetValue(input, null);
+            }
+
             return repository.Insert(input);
         }
 

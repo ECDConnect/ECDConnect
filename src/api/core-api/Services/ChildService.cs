@@ -178,6 +178,11 @@ namespace EcdLink.Api.CoreApi.Services
             child.OtherHealthConditions = input.OtherHealthConditions;
             child.WorkflowStatusId      = input.WorkflowStatusId;
             child.OtherLanguages        = input.OtherLanguages;
+            // Offline children are inserted here, and the client does not send InsertedBy.
+            if (isNew && _applicationUserId.HasValue)
+            {
+                child.InsertedBy = _applicationUserId.Value.ToString();
+            }
 
             if (input.ReasonForLeavingId != null)     child.ReasonForLeavingId   = input.ReasonForLeavingId;
             if (input.InactiveDate != null)           child.InactiveDate         = input.InactiveDate;

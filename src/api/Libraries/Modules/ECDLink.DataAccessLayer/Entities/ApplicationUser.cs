@@ -62,6 +62,10 @@ namespace ECDLink.DataAccessLayer.Entities
         public string ReasonForLeaving { get; set; }
         public string ReasonForLeavingComments { get; set; }
         public string RegisterType { get; set; }
+        public string AcquisitionUrl { get; set; }
+        public string UtmSource { get; set; }
+        public string UtmMedium { get; set; }
+        public string UtmCampaign { get; set; }
         public bool? ShareInfoPartners { get; set; }
 
         public bool? WhatsAppConsent { get; set; }

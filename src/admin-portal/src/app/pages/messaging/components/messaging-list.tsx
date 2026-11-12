@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react';
-import { LocalStorageKeys, AuthUser, MessageLogDto } from '@ecdlink/core';
+import {
+  LocalStorageKeys,
+  AuthUser,
+  MessageLogDto,
+  SessionStorageKeys,
+} from '@ecdlink/core';
+import { setSessionItem } from '../../../utils/session-storage.utils';
 import { MailIcon, SearchIcon } from '@heroicons/react/solid';
 import debounce from 'lodash.debounce';
 import { format, subDays } from 'date-fns';
@@ -20,7 +26,7 @@ export default function MessageList() {
   const [tableData, setTableData] = useState<any[]>([]);
   const [authenticatedUser, setAuthenticatedUser] = useState<AuthUser>();
   const [searchValue, setSearchValue] = useState('');
-  const [roleData] = useState<MessageRoleDto[]>([]);
+  const [roleData] = useState<MessageRoleDto[]>(ssRoles);
   const [showFilter, setShowFilter] = useState(false);
   const [statusFilter, setStatusFilter] = useState('');
   const [selectedRoles, setSelectedRoles] = useState<MessageRoleDto[]>(ssRoles);
@@ -99,7 +105,7 @@ export default function MessageList() {
   }, [tenant, messages]);
 
   const displayMessagePanel = (message: MessageLogDto) => {
-    localStorage.setItem('selectedMessage', JSON.stringify(message));
+    setSessionItem(message, SessionStorageKeys.selectedMessage);
 
     history.push({
       pathname: '/messaging/view-message',
@@ -143,7 +149,7 @@ export default function MessageList() {
                   )}
                 </span>
                 <input
-                  className="bg-uiBg focus:outline-none sm:text-md block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
+                  className="bg-uiBg sm:text-md block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
                   placeholder="      Search by message text..."
                   onChange={search}
                 />
@@ -151,7 +157,7 @@ export default function MessageList() {
             </div>
           </div>
 
-          <div className="mt-0  flex w-10/12 flex-row sm:mt-0  sm:ml-4">
+          <div className="mt-0  flex w-10/12 flex-row sm:ml-4  sm:mt-0">
             <div className="pr-2 ">
               <span className=" text-lg font-medium leading-6 text-gray-900">
                 <button
@@ -270,7 +276,7 @@ export default function MessageList() {
 
         <div className="-my-2 mb-5 overflow-x-auto sm:-mx-6 lg:-mx-8">
           <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-            <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
+            <div>
               <NavigationTable
                 columns={[
                   { field: 'subject', use: 'Message title' },

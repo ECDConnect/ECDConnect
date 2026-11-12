@@ -88,7 +88,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             usersQuery = AddDefaultUserSearch(search, usersQuery);
 
             var pageSize = Math.Min(pagingInput?.PageSize ?? DefaultPageSize, MaxPageSize);
-            var rowOffset = pagingInput?.RowOffset ?? 0;
+            // PagedQueryInput.RowOffset does not multiply by page size (it just returns the
+            // zero-indexed page number), so compute the real row offset ourselves here.
+            var rowOffset = (pagingInput?.PageNumber ?? 0) * pageSize;
             usersQuery = PaginationHelper.AddPaging(rowOffset, pageSize, usersQuery);
 
             return usersQuery;
@@ -454,6 +456,85 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             bool syncLearners = learnerCount >= 1;
 
+            var practitionerCount = 0;
+            if (isPrincipal)
+            {
+                // Practitioners linked to this principal, including people who joined since lastSync.
+                practitionerCount = await dbContext.Practitioners.FromSql($@"
+                SELECT p.""Id""
+                FROM ""Practitioner"" p
+                WHERE p.""PrincipalHierarchy"" = {userId}::uuid
+                AND (
+                    p.""UpdatedDate"" > {lastSyncLocal}
+                    OR p.""InsertedDate"" > {lastSyncLocal}
+                )
+                ").CountAsync();
+            }
+
+            // Leave logged for this principal's practitioners, including leave
+            // the same principal saved on another device. Absentees are not part
+            // of the Practitioner row, so a practitioner-only check would miss them.
+            var absenteeCount = 0;
+            if (isPrincipal)
+            {
+                var userIdText = userId.ToString();
+                absenteeCount = await dbContext.Database.SqlQuery<int>($@"
+                SELECT COUNT(*)::int AS ""Value""
+                FROM ""Absentees"" a
+                WHERE (
+                    a.""UserId"" = {userId}::uuid
+                    OR a.""LoggedBy"" = {userIdText}
+                    OR EXISTS (
+                        SELECT 1
+                        FROM ""Practitioner"" p
+                        WHERE p.""UserId"" = a.""UserId""
+                        AND p.""PrincipalHierarchy"" = {userId}::uuid
+                    )
+                )
+                AND (
+                    a.""UpdatedDate"" > {lastSyncLocal}
+                    OR a.""InsertedDate"" > {lastSyncLocal}
+                )
+                ").SingleAsync();
+            }
+
+            // Registers this user can see, including one they saved on another device.
+            // A principal sees the whole school. A practitioner sees their own groups.
+            // Open-access practitioners who have not accepted an invite have no groups,
+            // so their pull would come back empty and wipe the register on the device.
+            var attendanceCount = 0;
+            if (practitioner != null)
+            {
+                var hideUnacceptedOpenAccessGroups =
+                    TenantExecutionContext.Tenant.TenantType == ECDLink.Tenancy.Enums.TenantType.OpenAccess;
+
+                attendanceCount = await dbContext.Database.SqlQuery<int>($@"
+                SELECT COUNT(*)::int AS ""Value""
+                FROM ""Attendance"" a
+                INNER JOIN ""ClassProgramme"" cp ON a.""ClassroomProgrammeId"" = cp.""Id""
+                INNER JOIN ""ClassroomGroup"" cg ON cp.""ClassroomGroupId"" = cg.""Id""
+                INNER JOIN ""Classroom"" c ON cg.""ClassroomId"" = c.""Id""
+                LEFT JOIN ""Practitioner"" p ON p.""UserId"" = {userId}::uuid
+                WHERE
+                    (
+                        cg.""UserId"" = {userId}::uuid
+                        OR (p.""IsPrincipal"" = true AND c.""UserId"" = {userId}::uuid)
+                    )
+                    AND cg.""IsActive"" IS TRUE
+                    AND c.""IsActive"" IS TRUE
+                    AND (
+                        {hideUnacceptedOpenAccessGroups} = false
+                        OR p.""DateAccepted"" IS NOT NULL
+                        OR p.""IsPrincipal"" IS TRUE
+                        OR p.""PrincipalHierarchy"" IS NULL
+                    )
+                    AND (
+                        a.""UpdatedDate"" > {lastSyncLocal}
+                        OR a.""InsertedDate"" > {lastSyncLocal}
+                    )
+                ").SingleAsync();
+            }
+
             return new UserSyncStatus
             {
                 SyncChildren = childrenCount >= 1 || syncLearners,
@@ -462,6 +543,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 SyncPoints = pointsCount >= 1,
                 SyncPermissions = permissionsCount >= 1,
                 SyncLearners = syncLearners,
+                SyncPractitioners = practitionerCount >= 1 || absenteeCount >= 1,
+                SyncAttendance = attendanceCount >= 1,
             };
         }
     }

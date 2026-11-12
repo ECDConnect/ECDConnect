@@ -63,10 +63,16 @@ registerRoute(({ request, url }) => {
   if (url.pathname.startsWith('/_')) return false;
   if (url.pathname.match(fileExtensionRegexp)) return false;
   return true;
-}, createHandlerBoundToURL(process.env.PUBLIC_URL + '/index.html'));
+}, createHandlerBoundToURL(import.meta.env.BASE_URL + 'index.html'));
 
 registerRoute(
   ({ url, request }) => {
+    // Cross-origin CORS requests (fetch, cache.addAll, <img crossorigin>) must
+    // not get the opaque no-cors response below: the browser rejects it as a
+    // network error. Let them go to the network; blob storage allows CORS.
+    if (request.mode === 'cors' && url.origin !== self.location.origin) {
+      return false;
+    }
     return (
       url.pathname.endsWith('.png') ||
       url.pathname.endsWith('.ico') ||
@@ -77,7 +83,7 @@ registerRoute(
   new CacheFirst({
     cacheName: 'images',
     fetchOptions: {
-      mode: 'no-cors', // ← crucial for cross-origin blobs
+      mode: 'no-cors', // lets <img> loads of blobs be cached offline
     },
     plugins: [
       new ExpirationPlugin({
@@ -197,9 +203,49 @@ self.addEventListener('fetch', (event) => {
 });
 */
 
+const broadcastOnlineStatus = async (isOnline: boolean) => {
+  const allClients = await self.clients.matchAll({
+    type: 'window',
+    includeUncontrolled: true,
+  });
+  allClients.forEach((client) => {
+    client.postMessage({ type: 'SW_ONLINE_STATUS', isOnline });
+  });
+};
+
+self.addEventListener('online', () => {
+  log('online');
+  broadcastOnlineStatus(true);
+});
+
+self.addEventListener('offline', () => {
+  log('offline');
+  broadcastOnlineStatus(false);
+});
+
 self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
+  if (event.data?.type === 'SKIP_WAITING') {
     self.skipWaiting();
+  }
+  if (event.data?.type === 'GET_ONLINE_STATUS' && event.source) {
+    const client = event.source as Client;
+    const probeUrl = (event.data?.pollUrl as string) || '/favicon.ico';
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    // fetch() from within the SW bypasses its own routing — goes to real network
+    fetch(probeUrl, {
+      method: 'HEAD',
+      cache: 'no-store',
+      signal: controller.signal,
+    })
+      .then(() => {
+        clearTimeout(timeoutId);
+        client.postMessage({ type: 'SW_ONLINE_STATUS', isOnline: true });
+      })
+      .catch(() => {
+        clearTimeout(timeoutId);
+        client.postMessage({ type: 'SW_ONLINE_STATUS', isOnline: false });
+      });
   }
 });
 

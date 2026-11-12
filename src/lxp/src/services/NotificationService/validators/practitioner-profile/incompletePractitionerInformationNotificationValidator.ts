@@ -6,7 +6,7 @@ import {
   NotificationValidator,
 } from '../../NotificationService.types';
 import ROUTES from '@/routes/routes';
-import { LocalStorageKeys, TenantType } from '@ecdlink/core';
+import { TenantType } from '@ecdlink/core';
 import { differenceInDays } from 'date-fns';
 
 export class IncompletePractitionerInformationNotificationValidator
@@ -30,9 +30,7 @@ export class IncompletePractitionerInformationNotificationValidator
       tenant: tenantState,
     } = this.store.getState();
 
-    const principalClassroom = localStorage?.getItem(
-      LocalStorageKeys?.classroomForInvitedUser
-    );
+    const principalClassroom = classroomState?.invitedUserClassroomName;
 
     if (!classroomState || !userState) return [];
 

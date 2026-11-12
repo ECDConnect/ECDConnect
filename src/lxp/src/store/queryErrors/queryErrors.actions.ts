@@ -3,7 +3,7 @@ import axios from 'axios';
 import { RootState, ThunkApiType } from '../types';
 import { api } from '@/services/axios.helper';
 import { Config } from '@ecdlink/core';
-const version = process.env.REACT_APP_VERSION ?? '';
+const version = import.meta.env.REACT_APP_VERSION ?? '';
 
 export const upsertQueryErrors = createAsyncThunk<
   boolean,

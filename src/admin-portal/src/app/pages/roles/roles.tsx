@@ -117,12 +117,12 @@ export default function Roles() {
         <div className="flex flex-col">
           <div className="pb-5 sm:flex sm:items-center sm:justify-between">
             <span className="flex items-center justify-center text-lg font-medium leading-6 text-gray-900"></span>
-            <div className="mt-3 sm:mt-0 sm:ml-4">
+            <div className="mt-3 sm:ml-4 sm:mt-0">
               {hasPermission(PermissionEnum.create_system) && (
                 <button
                   onClick={displayRolePanel}
                   type="button"
-                  className="bg-secondary hover:bg-uiLight focus:outline-none focus:ring-secondary-500 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                  className="bg-secondary hover:bg-uiLight focus:ring-secondary-500 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
                 >
                   Create Role
                 </button>
@@ -132,7 +132,7 @@ export default function Roles() {
 
           <div className=" -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-              <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
+              <div>
                 <UiTable
                   columns={[{ field: 'name', use: 'name' }]}
                   rows={tableData}

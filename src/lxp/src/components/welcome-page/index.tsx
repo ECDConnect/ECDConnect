@@ -1,5 +1,5 @@
 import { Typography, Card, Button } from '@ecdlink/ui';
-import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
+import Cebisa from '@/assets/icon_cebisa.svg?react';
 import { useTenant } from '@/hooks/useTenant';
 
 export const WelcomePage = ({ onNext }: { onNext: () => void }) => {

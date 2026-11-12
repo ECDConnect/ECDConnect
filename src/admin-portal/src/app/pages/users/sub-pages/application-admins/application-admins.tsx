@@ -1,6 +1,12 @@
 import { useQuery } from '@apollo/client';
 import debounce from 'lodash.debounce';
-import { PermissionEnum, usePanel, UserDto } from '@ecdlink/core';
+import {
+  PermissionEnum,
+  SessionStorageKeys,
+  usePanel,
+  UserDto,
+} from '@ecdlink/core';
+import { setSessionItem } from '../../../../utils/session-storage.utils';
 import { UserList } from '@ecdlink/graphql';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
@@ -191,9 +197,9 @@ export default function ApplicationAdmins() {
   const viewSelectedRow = (selectedRow: any) => {
     const role = selectedRow?.roles;
 
-    localStorage.setItem(
-      'selectedUser',
-      selectedRow?.userId ?? selectedRow?.id
+    setSessionItem(
+      selectedRow?.userId ?? selectedRow?.id,
+      SessionStorageKeys.selectedUser
     );
     history.push({
       pathname: '/users/view-user',
@@ -246,7 +252,7 @@ export default function ApplicationAdmins() {
                     )}
                   </span>
                   <input
-                    className="focus:outline-none sm:text-md bg-adminPortalBg block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
+                    className="sm:text-md bg-adminPortalBg block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
                     placeholder="      Search by email or name..."
                     onChange={search}
                   />
@@ -354,7 +360,7 @@ export default function ApplicationAdmins() {
               </div>
             </div>
 
-            <div className="mt-3 justify-end sm:mt-0 sm:ml-4">
+            <div className="mt-3 justify-end sm:ml-4 sm:mt-0">
               {hasPermission(PermissionEnum.create_user) && isSuperAdmin && (
                 <button
                   onClick={displayUserPanel}
@@ -370,7 +376,7 @@ export default function ApplicationAdmins() {
 
           <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-              <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
+              <div>
                 <UiTable
                   columns={[
                     {

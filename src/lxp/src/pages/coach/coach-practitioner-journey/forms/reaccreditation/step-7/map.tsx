@@ -3,6 +3,7 @@ import {
   Typography,
   CustomGoogleMap,
   GoogleMapGeoCodeAddressType,
+  GoogleMapGeoCodeResponse,
 } from '@ecdlink/ui';
 import { useCallback, useState } from 'react';
 
@@ -28,22 +29,33 @@ export const Step7Map: React.FC<Step7MapProps> = ({ onClose, onSubmit }) => {
     onClose();
   };
 
-  const getAddress = useCallback((address?: GoogleMapGeoCodeAddressType[]) => {
-    const number = getInfo(address, 'street_number');
-    const street = getInfo(address, 'route');
-    const city = getInfo(address, 'administrative_area_level_2');
+  const onChangeMapData = useCallback((mapData?: GoogleMapGeoCodeResponse) => {
+    if (!mapData?.results?.length) {
+      return;
+    }
 
-    setFormattedAddress(
-      `${number ? number : ''} ${street ? street + ', ' : ''}${
-        city ? city : ''
-      }`
+    const components = mapData.results.flatMap(
+      (result) => result.address_components
     );
+    const number = getInfo(components, 'street_number');
+    const street = getInfo(components, 'route');
+    const city =
+      getInfo(components, 'administrative_area_level_2') ||
+      getInfo(components, 'locality');
+    const built = `${number ? number : ''} ${street ? street + ', ' : ''}${
+      city ? city : ''
+    }`.trim();
+
+    setFormattedAddress(built || mapData.results[0].formatted_address || '');
   }, []);
 
   return (
     <div>
-      <CustomGoogleMap height={window.screen.height - COMPONENT_HEIGHT} />
-      <div className="min-h-64 absolute bottom-0 w-full flex-1 rounded-t-2xl bg-white px-5">
+      <CustomGoogleMap
+        height={window.screen.height - COMPONENT_HEIGHT}
+        onChangeMapData={onChangeMapData}
+      />
+      <div className="absolute bottom-0 min-h-64 w-full flex-1 rounded-t-2xl bg-white px-5">
         <Typography
           type="h2"
           color={'textDark'}

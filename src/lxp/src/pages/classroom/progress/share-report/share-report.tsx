@@ -10,7 +10,7 @@ import {
 import { useHistory, useLocation } from 'react-router';
 import { useRef, useState } from 'react';
 import LanguageSelector from '@/components/language-selector/language-selector';
-import { ReactComponent as EmojiYellowSmile } from '@/assets/ECD_Connect_emoji3.svg';
+import EmojiYellowSmile from '@/assets/ECD_Connect_emoji3.svg?react';
 import { ProgressCaregiverReportPdf } from '../caregiver-report-pdf/caregiver-report-pdf';
 import { useProgressGenerateSummaryPdfReport as usePdfFromHtml } from '@/hooks/useProgressGenerateSummaryPdfReport';
 import { useProgressForChild } from '@/hooks/useProgressForChild';

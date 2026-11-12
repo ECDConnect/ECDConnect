@@ -7,7 +7,7 @@ import {
 } from '@ecdlink/ui';
 import { ContactPerson } from '../../../../components/contact-person/contact-person';
 import { ChildRegistrationDetails } from '../caregiver-child-registration.types';
-import { ReactComponent as Balloons } from '@/assets/balloons_bg_blue.svg';
+import Balloons from '@/assets/balloons_bg_blue.svg?react';
 import TransparentLayer from '../../../../assets/TransparentLayer.png';
 
 export interface CompletedCaregiverChildRegistrationProps

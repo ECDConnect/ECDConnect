@@ -9,6 +9,7 @@ import {
 } from '@/../../../packages/core/lib';
 import { OverrideCache } from '@/models/sync/override-cache';
 import { differenceInMonths } from '@/utils/common/date.utils';
+import { LocalIncomeStatement } from './statements.types';
 
 export const StatementsActions = {
   GET_STATEMENTS: 'getIncomeStatements',
@@ -155,11 +156,10 @@ export const getIncomeStatements = createAsyncThunk<
     let oneDayAgo = new Date();
     oneDayAgo.setDate(oneDayAgo.getDate() - 1);
 
-    const statementsInRange = cache.filter(
-      (x) =>
-        new Date(x.year, x.month, 20) > startDate &&
-        (!endDate || new Date(x.year, x.month, 20) < endDate)
-    );
+    const statementsInRange = cache.filter((x) => {
+      const statementDate = new Date(x.year, x.month - 1, 20);
+      return statementDate > startDate && (!endDate || statementDate < endDate);
+    });
 
     const anyStale = statementsInRange.some(
       (x) => !x.dateRefreshed || new Date(x.dateRefreshed) < oneDayAgo
@@ -232,8 +232,38 @@ export const updateIncomeStatement = createAsyncThunk<
   }
 );
 
+/**
+ * Strips items that have not changed on this device, so a stale copy of an
+ * item cannot overwrite a newer edit made on another device.
+ */
+const withOnlyUnsyncedItems = (
+  statement: LocalIncomeStatement
+): IncomeStatementDto => {
+  const { unsyncedIncomeItemIds, unsyncedExpenseItemIds } = statement;
+  return {
+    ...statement,
+    incomeItems: unsyncedIncomeItemIds
+      ? statement.incomeItems.filter((x) =>
+          unsyncedIncomeItemIds.includes(x.id)
+        )
+      : statement.incomeItems,
+    expenseItems: unsyncedExpenseItemIds
+      ? statement.expenseItems.filter((x) =>
+          unsyncedExpenseItemIds.includes(x.id)
+        )
+      : statement.expenseItems,
+  };
+};
+
+export type UpsertIncomeStatementsResult = {
+  /** Local statements as they were when the request was sent */
+  sent: IncomeStatementDto[];
+  /** Statements returned by the server */
+  returned: IncomeStatementDto[];
+};
+
 export const upsertIncomeStatements = createAsyncThunk<
-  IncomeStatementDto[],
+  UpsertIncomeStatementsResult,
   // eslint-disable-next-line @typescript-eslint/ban-types
   {},
   ThunkApiType<RootState>
@@ -246,17 +276,24 @@ export const upsertIncomeStatements = createAsyncThunk<
       statements: { incomeStatements },
     } = getState();
 
-    try {
-      if (!userAuth?.auth_token) return [];
+    if (!userAuth?.auth_token) {
+      return rejectWithValue('no access token, profile check required');
+    }
 
-      const promises = incomeStatements
-        .filter((statement) => !statement.synced)
-        .map((statement) =>
+    const sent = incomeStatements.filter((statement) => !statement.synced);
+    if (!sent.length) {
+      return { sent: [], returned: [] };
+    }
+
+    try {
+      const returned = await Promise.all(
+        sent.map((statement) =>
           new IncomeStatementsService(userAuth.auth_token).updateStatement(
-            statement as IncomeStatementDto
+            withOnlyUnsyncedItems(statement)
           )
-        );
-      return await Promise.all(promises);
+        )
+      );
+      return { sent, returned: returned.filter(Boolean) };
     } catch (err) {
       return rejectWithValue(err);
     }

@@ -26,23 +26,26 @@ export const UpdateIncome: React.FC = () => {
   const statementId = location.state.statementId;
   const incomeItem = location.state.incomeItem;
 
-  const onSubmit = useCallback((updatedItem: IncomeItemDto) => {
-    // update redux
-    appDispatch(
-      statementsActions.addOrUpdateIncomeItems({
-        statementId,
-        incomeItems: [updatedItem],
-      })
-    );
-    if (isOnline) {
-      // send change to backend
-      appDispatch(statementsThunkActions.upsertIncomeStatements({})).unwrap();
-    }
+  const onSubmit = useCallback(
+    (updatedItem: IncomeItemDto) => {
+      // update redux
+      appDispatch(
+        statementsActions.addOrUpdateIncomeItems({
+          statementId,
+          incomeItems: [updatedItem],
+        })
+      );
+      if (isOnline) {
+        // send change to backend
+        appDispatch(statementsThunkActions.upsertIncomeStatements({}));
+      }
 
-    history.push(ROUTES.BUSINESS, {
-      activeTabIndex: BusinessTabItems.MONEY,
-    });
-  }, []);
+      history.push(ROUTES.BUSINESS, {
+        activeTabIndex: BusinessTabItems.MONEY,
+      });
+    },
+    [appDispatch, history, isOnline, statementId]
+  );
 
   return (
     <div className={styles.container}>

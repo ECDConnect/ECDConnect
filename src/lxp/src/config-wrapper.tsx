@@ -16,9 +16,7 @@ const ConfigWrapper: React.FC = () => {
   const [loader, setLoader] = useState(true);
 
   const isDevelopmentMode =
-    !process.env.NODE_ENV ||
-    process.env.NODE_ENV === 'development' ||
-    window.location.hostname === 'localhost';
+    import.meta.env.DEV || window.location.hostname === 'localhost';
 
   useEffect(() => {
     // minimum loading effect

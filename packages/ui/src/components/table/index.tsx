@@ -346,7 +346,7 @@ export const Table = forwardRef<TableRefMethods, TableProps>(
           )}
         </div>
         {!!selectedRows?.length && (
-          <div className="bg-infoMain flex w-full flex-row items-center justify-between py-2 px-4">
+          <div className="bg-infoMain flex w-full flex-row items-center justify-between px-4 py-2">
             <p className="text-md w-4/12 text-white">
               {selectedRows?.length} Selected
             </p>
@@ -374,10 +374,13 @@ export const Table = forwardRef<TableRefMethods, TableProps>(
             striped={false}
             show_search={false}
             should_export={false}
-            bordered
             columns={mergedColumns}
             rows={mergedRows}
-            styling={getStyles({ rows, rowsPerPage })}
+            styling={getStyles({
+              rows,
+              rowsPerPage,
+              hasSelectColumn: !!(bulkActions?.length || multiSelect),
+            })}
             per_page={rowsPerPage}
             row_render={customRowElements}
             no_content_text={noContentText}

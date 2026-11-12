@@ -10,7 +10,7 @@ import { step6TotalScore, step6VisitSection } from '../step-6';
 import { step7TotalScore, step7VisitSection } from '../step-7';
 import { step8TotalScore, step8VisitSection } from '../step-8';
 import { step16Question1, step16VisitSection } from '../step-16';
-import { ReactComponent as RedRating } from '@/assets/red_rating.svg';
+import RedRating from '@/assets/red_rating.svg?react';
 import { useParams } from 'react-router';
 import {
   PractitionerJourneyParams,

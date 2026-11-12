@@ -310,15 +310,17 @@ where mu.id = @userId
                     return;
                 }
 
+                await BackfillExternalCourseIdsAsync();
+
                 var userMap = new ConcurrentDictionary<string, Guid?>();
 
-                var fromCompletedDate = await GetLastCompletedDateAsync();
-                _logger.LogInformation("Fetching Moodle completed courses since {FromCompletedDate}", fromCompletedDate);
+                var fromActivityDate = await GetLastActivityDateAsync();
+                _logger.LogInformation("Fetching Moodle course progress since {FromActivityDate}", fromActivityDate);
 
-                var records = await FetchCompletedCoursesAsync(cohorts, fromCompletedDate);
+                var records = await FetchCourseProgressAsync(cohorts, fromActivityDate);
                 long rows = await ProcessCourseRecordsAsync(records, userMap);
 
-                _logger.LogInformation("Inserted {Rows} user training course records.", rows);
+                _logger.LogInformation("Upserted {Rows} user training course records.", rows);
 
                 var pointsCalculated = 0;
                 foreach (var userId in userMap.Values)
@@ -345,27 +347,133 @@ where mu.id = @userId
             return list;
         }
 
-        private async Task<DateTime> GetLastCompletedDateAsync()
+        // Repairs records inserted before ExternalCourseId existed by matching them to their Moodle course
+        // by CourseName, so the upsert below (keyed on UserId + ExternalCourseId) finds them instead of
+        // inserting a duplicate row the first time that course has new activity. Runs on every sync; once a
+        // tenant's legacy rows are all backfilled it's a single no-op query.
+        private async Task<long> BackfillExternalCourseIdsAsync()
         {
-            var lastCompleted = await _dbContext.UserTrainingCourses
-                .Where(x => x.TenantId == TenantExecutionContext.Tenant.Id && x.IsActive)
-                .OrderByDescending(x => x.CompletedDate)
-                .Select(x => x.CompletedDate)
-                .FirstOrDefaultAsync();
+            if (!Enabled)
+            {
+                _logger.LogInformation("Moodle course sync disabled; skipping ExternalCourseId backfill.");
+                return 0;
+            }
 
-            return lastCompleted == DateTime.MinValue
-                ? new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Utc)
-                : lastCompleted;
+            var legacyRecords = await _dbContext.UserTrainingCourses
+                .Where(x => x.TenantId == TenantExecutionContext.Tenant.Id && x.IsActive && x.ExternalCourseId == null)
+                .ToListAsync();
+
+            if (legacyRecords.Count == 0)
+            {
+                _logger.LogInformation("No UserTrainingCourse records require an ExternalCourseId backfill for {Tenant}.", TenantExecutionContext.Tenant.Id);
+                return 0;
+            }
+
+            var courseNames = legacyRecords.Select(x => x.CourseName).Distinct().ToArray();
+
+            var courseIdsByName = new Dictionary<string, string>();
+            await using (var conn = new NpgsqlConnection(GetConnectionString()))
+            {
+                await conn.OpenAsync();
+                await using var cmd = new NpgsqlCommand(
+                    "SELECT id, fullname FROM public.mdl_course WHERE fullname = ANY(@names)", conn)
+                {
+                    Parameters = { new NpgsqlParameter("names", courseNames) }
+                };
+                await using var reader = await cmd.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                {
+                    var id = reader.GetInt64(0).ToString();
+                    var fullname = reader.GetString(1);
+                    if (!courseIdsByName.TryAdd(fullname, id))
+                    {
+                        _logger.LogWarning("Multiple Moodle courses share the fullname '{CourseName}'; using the first match ({CourseId}) for the backfill.", fullname, courseIdsByName[fullname]);
+                    }
+                }
+            }
+
+            var unmatched = courseNames.Except(courseIdsByName.Keys).ToList();
+            if (unmatched.Count > 0)
+            {
+                _logger.LogWarning("No matching Moodle course found for {Count} course name(s), left un-backfilled: {CourseNames}", unmatched.Count, string.Join(", ", unmatched));
+            }
+
+            // Rows already touched by the new upsert logic (e.g. a re-sync that ran before this backfill) so we
+            // don't collide with them and blow up the (UserId, ExternalCourseId) uniqueness the sync relies on.
+            var alreadyBackfilled = await _dbContext.UserTrainingCourses
+                .Where(x => x.TenantId == TenantExecutionContext.Tenant.Id && x.IsActive && x.ExternalCourseId != null)
+                .Select(x => new { x.UserId, x.ExternalCourseId })
+                .ToListAsync();
+            var takenKeys = alreadyBackfilled.Select(x => (x.UserId, x.ExternalCourseId)).ToHashSet();
+
+            long updated = 0;
+            long skippedCollisions = 0;
+            foreach (var record in legacyRecords)
+            {
+                if (!courseIdsByName.TryGetValue(record.CourseName, out var externalCourseId))
+                    continue;
+
+                if (!takenKeys.Add((record.UserId, externalCourseId)))
+                {
+                    skippedCollisions++;
+                    _logger.LogWarning(
+                        "Skipping ExternalCourseId backfill for UserTrainingCourse {Id}: user {UserId} already has an active record for Moodle course {ExternalCourseId} ('{CourseName}'). Resolve this pair manually.",
+                        record.Id, record.UserId, externalCourseId, record.CourseName);
+                    continue;
+                }
+
+                record.ExternalCourseId = externalCourseId;
+                record.UpdatedBy = _adminUserId.ToString();
+                record.UpdatedDate = DateTime.Now;
+                updated++;
+            }
+
+            if (updated > 0)
+            {
+                await _dbContext.SaveChangesAsync();
+            }
+
+            _logger.LogInformation(
+                "Backfilled ExternalCourseId for {Updated} of {Total} UserTrainingCourse records for {Tenant} ({Skipped} skipped due to collisions, {Unmatched} unmatched course names).",
+                updated, legacyRecords.Count, TenantExecutionContext.Tenant.Id, skippedCollisions, unmatched.Count);
+
+            return updated;
         }
 
-        private async Task<List<(string Username, string Course, DateTime CompletedDate)>> FetchCompletedCoursesAsync(string[] cohorts, DateTime fromCompleted)
+        private readonly record struct CourseProgressRecord(
+            string Username,
+            string Course,
+            string ExternalCourseId,
+            DateTime? StartedDate,
+            DateTime? LastActivityDate,
+            DateTime? CompletedDate,
+            decimal ProgressPercentage,
+            string Status);
+
+        private async Task<DateTime> GetLastActivityDateAsync()
         {
-            var records = new List<(string, string, DateTime)>();
+            var lastActivity = await _dbContext.UserTrainingCourses
+                .Where(x => x.TenantId == TenantExecutionContext.Tenant.Id && x.IsActive)
+                .OrderByDescending(x => x.LastActivityDate)
+                .Select(x => x.LastActivityDate)
+                .FirstOrDefaultAsync();
+
+            return lastActivity == null || lastActivity == DateTime.MinValue
+                ? new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+                : lastActivity.Value;
+        }
+
+        // Pulls per-user course progress (not just completions) so in-progress courses are tracked too.
+        // A user/course only appears once they have some module completion activity or a course completion record,
+        // to avoid creating rows for courses a user is merely enrolled in but hasn't touched.
+        private async Task<List<CourseProgressRecord>> FetchCourseProgressAsync(string[] cohorts, DateTime fromDate)
+        {
+            var records = new List<CourseProgressRecord>();
             await using var conn = new NpgsqlConnection(GetConnectionString());
             await conn.OpenAsync();
 
             string query = @"
-;WITH courses AS 
+;WITH courses AS
 (
 	SELECT c.id, c.fullname, COALESCE(COUNT(DISTINCT mcm.id),0) modules
 	FROM mdl_course c
@@ -376,111 +484,169 @@ where mu.id = @userId
         AND mc.idnumber NOT ILIKE '%-ui'
 	GROUP BY c.id, c.fullname
 )
-, completions1 AS 
+, module_activity AS
 (
-	SELECT mcc.userid, mcc.course, to_timestamp(timecompleted) ""timecompleted"" 
-	FROM mdl_course_completions mcc 
-	JOIN courses c ON mcc.course = c.id
-	WHERE mcc.timecompleted IS NOT NULL 
-        AND to_timestamp(mcc.timecompleted) > @fromCompleted
+	SELECT mcmc.userid, c.id ""course"",
+		COUNT(DISTINCT mcmc.id) FILTER (WHERE mcmc.completionstate <> 0) modules_touched,
+		MIN(to_timestamp(mcmc.timemodified)) FILTER (WHERE mcmc.completionstate <> 0) first_activity,
+		MAX(to_timestamp(mcmc.timemodified)) last_activity
+	FROM courses c
+	JOIN mdl_course_modules mcm ON c.id = mcm.course
+	JOIN mdl_course_modules_completion mcmc ON mcm.id = mcmc.coursemoduleid
+	WHERE mcmc.timemodified > 0
+	GROUP BY mcmc.userid, c.id
 )
-, completions2 AS
+, full_completions AS
 (
-	SELECT mcmc.userid, c.id ""course"", c.modules, to_timestamp(max(mcmc.timemodified)) ""timecompleted"" 
+	SELECT mcmc.userid, c.id ""course"", MAX(to_timestamp(mcmc.timemodified)) completed_at
 	FROM courses c
 	JOIN mdl_course_modules mcm ON c.id = mcm.course
 	JOIN mdl_course_modules_completion mcmc ON mcm.id = mcmc.coursemoduleid
 	WHERE mcmc.completionstate = 1
-        AND to_timestamp(mcmc.timemodified) > @fromCompleted
 	GROUP BY mcmc.userid, c.id, c.modules
 	HAVING c.modules = COUNT(DISTINCT mcmc.id)
 )
 , completions AS
 (
-	SELECT c1.userid, c1.course, c1.timecompleted, 'real' completion_type
-	FROM completions1 c1
+	SELECT mcc.userid, mcc.course, to_timestamp(mcc.timecompleted) completed_at
+	FROM mdl_course_completions mcc
+	JOIN courses c ON mcc.course = c.id
+	WHERE mcc.timecompleted IS NOT NULL
 	UNION
-	SELECT c2.userid, c2.course, c2.timecompleted, 'calc' completion_type
-	FROM completions2 c2
-	LEFT JOIN completions1 c1 ON c2.userid = c1.userid AND c2.course = c1.course
-	WHERE c1.userid IS NULL
+	SELECT fc.userid, fc.course, fc.completed_at
+	FROM full_completions fc
+	LEFT JOIN mdl_course_completions mcc ON mcc.userid = fc.userid AND mcc.course = fc.course AND mcc.timecompleted IS NOT NULL
+	WHERE mcc.userid IS NULL
 )
-SELECT mu.username, mc.fullname AS course, MAX(c.timecompleted) timecompleted, MAX(c.completion_type) completion_type
-FROM completions c
-JOIN mdl_user mu ON c.userid = mu.id 
-JOIN mdl_course mc ON c.course = mc.id
-GROUP BY mu.username, mc.fullname 
-ORDER BY ""username"", ""course"";
+, activity_or_completion AS
+(
+	SELECT userid, course FROM module_activity
+	UNION
+	SELECT userid, course FROM completions
+)
+SELECT
+	mu.username,
+	c.fullname AS course,
+	c.id::text AS external_course_id,
+	COALESCE(ma.first_activity, comp.completed_at) AS started_date,
+	GREATEST(ma.last_activity, comp.completed_at) AS last_activity_date,
+	comp.completed_at AS completed_date,
+	CASE
+		WHEN c.modules > 0 THEN ROUND(LEAST(COALESCE(ma.modules_touched, 0), c.modules)::numeric / c.modules * 100, 2)
+		WHEN comp.completed_at IS NOT NULL THEN 100
+		ELSE 0
+	END AS progress_percentage,
+	CASE WHEN comp.completed_at IS NOT NULL THEN 'Completed' ELSE 'InProgress' END AS status
+FROM activity_or_completion aoc
+JOIN courses c ON c.id = aoc.course
+JOIN mdl_user mu ON mu.id = aoc.userid
+LEFT JOIN module_activity ma ON ma.userid = aoc.userid AND ma.course = aoc.course
+LEFT JOIN completions comp ON comp.userid = aoc.userid AND comp.course = aoc.course
+WHERE GREATEST(ma.last_activity, comp.completed_at) > @fromDate
+ORDER BY mu.username, c.fullname;
     ";
 
             await using var cmd = new NpgsqlCommand(query, conn)
             {
                 Parameters = {
                 new NpgsqlParameter("cohorts", cohorts),
-                new NpgsqlParameter("fromCompleted", fromCompleted)
+                new NpgsqlParameter("fromDate", fromDate)
             }
             };
 
             await using var reader = await cmd.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
-                var username = reader.GetString(0);
-                var course = reader.GetString(1);
-                var timeCompleted = reader.GetDateTime(2);
-                records.Add((username, course, timeCompleted));
+                records.Add(new CourseProgressRecord(
+                    Username: reader.GetString(0),
+                    Course: reader.GetString(1),
+                    ExternalCourseId: reader.IsDBNull(2) ? null : reader.GetString(2),
+                    StartedDate: reader.IsDBNull(3) ? null : reader.GetDateTime(3),
+                    LastActivityDate: reader.IsDBNull(4) ? null : reader.GetDateTime(4),
+                    CompletedDate: reader.IsDBNull(5) ? null : reader.GetDateTime(5),
+                    ProgressPercentage: reader.GetDecimal(6),
+                    Status: reader.GetString(7)));
             }
 
             return records;
         }
 
         private async Task<long> ProcessCourseRecordsAsync(
-               List<(string Username, string Course, DateTime CompletedDate)> records,
+               List<CourseProgressRecord> records,
                ConcurrentDictionary<string, Guid?> userMap)
         {
-            long rows = 0;
-            var batch = new List<UserTrainingCourse>();
-
-            foreach (var (username, course, completedDate) in records)
+            var resolved = new List<(Guid UserId, CourseProgressRecord Record)>();
+            foreach (var record in records)
             {
-                var userId = await GetUserIdAsync(username, userMap);
+                var userId = await GetUserIdAsync(record.Username, userMap);
                 if (!userId.HasValue)
                 {
-                    _logger.LogWarning("No user ID found for username {Username}. Skipping record.", username);
+                    _logger.LogWarning("No user ID found for username {Username}. Skipping record.", record.Username);
                     continue;
                 }
+                resolved.Add((userId.Value, record));
+            }
 
-                var userTrainingCourse = new UserTrainingCourse
+            if (resolved.Count == 0)
+                return 0;
+
+            var userIds = resolved.Select(x => x.UserId).Distinct().ToList();
+            var externalCourseIds = resolved.Select(x => x.Record.ExternalCourseId).Distinct().ToList();
+
+            var existing = await _dbContext.UserTrainingCourses
+                .Where(x => x.TenantId == TenantExecutionContext.Tenant.Id
+                    && x.IsActive
+                    && userIds.Contains(x.UserId)
+                    && externalCourseIds.Contains(x.ExternalCourseId))
+                .ToListAsync();
+
+            var existingLookup = existing.ToDictionary(x => (x.UserId, x.ExternalCourseId));
+
+            long rows = 0;
+            var newlyCompleted = new List<UserTrainingCourse>();
+
+            foreach (var (userId, record) in resolved)
+            {
+                var key = (userId, record.ExternalCourseId);
+                if (!existingLookup.TryGetValue(key, out var course))
                 {
-                    Id = Guid.NewGuid(),
-                    UserId = userId.Value,
-                    CourseName = course,
-                    CompletedDate = completedDate,
-                    UpdatedBy = _adminUserId.ToString(),
-                    TenantId = TenantExecutionContext.Tenant.Id,
-                    InsertedDate = DateTime.Now,
-                    UpdatedDate = DateTime.Now,
-                    IsActive = true
-                };
+                    course = new UserTrainingCourse
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = userId,
+                        TenantId = TenantExecutionContext.Tenant.Id,
+                        InsertedDate = DateTime.Now,
+                        IsActive = true
+                    };
+                    _dbContext.UserTrainingCourses.Add(course);
+                    existingLookup[key] = course;
+                }
 
-                batch.Add(userTrainingCourse);
+                var wasCompleted = course.CompletedDate.HasValue;
+
+                course.CourseName = record.Course;
+                course.ExternalCourseId = record.ExternalCourseId;
+                course.StartedDate ??= record.StartedDate;
+                course.ProgressPercentage = record.ProgressPercentage;
+                course.LastActivityDate = record.LastActivityDate;
+                course.Status = record.Status;
+                course.CompletedDate = record.CompletedDate;
+                course.UpdatedBy = _adminUserId.ToString();
+                course.UpdatedDate = DateTime.Now;
+
                 rows++;
 
-                // Batch insert every 100 records to balance memory and performance
-                if (batch.Count >= 100)
+                if (!wasCompleted && course.CompletedDate.HasValue)
                 {
-                    _dbContext.UserTrainingCourses.AddRange(batch);
-                    await _dbContext.SaveChangesAsync();
-                    await SendCourseCompletedNotificationsAsync(batch);
-                    batch.Clear();
+                    newlyCompleted.Add(course);
                 }
             }
 
-            // Insert remaining records
-            if (batch.Count > 0)
+            await _dbContext.SaveChangesAsync();
+
+            if (newlyCompleted.Count > 0)
             {
-                _dbContext.UserTrainingCourses.AddRange(batch);
-                await _dbContext.SaveChangesAsync();
-                await SendCourseCompletedNotificationsAsync(batch);
+                await SendCourseCompletedNotificationsAsync(newlyCompleted);
             }
 
             return rows;
@@ -496,7 +662,7 @@ ORDER BY ""username"", ""course"";
                     await _trainingNotificationService.SendCourseCompletedNotificationAsync(
                         completedCourse.UserId,
                         completedCourse.CourseName,
-                        completedCourse.CompletedDate);
+                        completedCourse.CompletedDate.Value);
                 }
                 catch (Exception ex)
                 {

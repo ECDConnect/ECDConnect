@@ -18,7 +18,7 @@ import {
   PractitionerSetupSteps,
 } from '../../setup-principal/setup-principal.types';
 import { ClassroomDto } from '@/models/classroom/classroom.dto';
-import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
+import Cebisa from '@/assets/icon_cebisa.svg?react';
 
 export const AddProgrammeForm: React.FC<{
   onNext: OnNext;
@@ -93,7 +93,7 @@ export const AddProgrammeForm: React.FC<{
       for (const classroomGroup of classroomGroups) {
         const classroomGroupInput = {
           ...classroomGroup,
-          classroomId: classroom?.id!,
+          classroomId,
         };
         appDispatch(
           classroomsActions.updateClassroomGroup(classroomGroupInput)
@@ -132,7 +132,7 @@ export const AddProgrammeForm: React.FC<{
       for (const classroomGroup of classroomGroups) {
         const classroomGroupInput = {
           ...classroomGroup,
-          classroomId: classroom?.id!,
+          classroomId,
         };
         appDispatch(
           classroomsActions.updateClassroomGroup(classroomGroupInput)

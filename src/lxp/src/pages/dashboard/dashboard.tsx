@@ -37,14 +37,11 @@ import * as styles from './dashboard.styles';
 import ROUTES from '@routes/routes';
 import { statementsThunkActions } from '@/store/statements';
 import { programmeThunkActions } from '@/store/programme';
-import offlineStatments from '../../assets/statements-offline.png';
-import { setStorageItem } from '@/utils/common/local-storage.utils';
-import { convertImageToBase64 } from '@/utils/common/convert-image-to-64.utils';
 import { pointsSelectors } from '@/store/points';
 import { pointsConstants } from '@/constants/points';
-import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg';
-import { ReactComponent as EmojiBlueSmile } from '../../assets/neutral_blue_emoticon.svg';
-import { ReactComponent as EmojiOrangeSmile } from '../../assets/mehFace.svg';
+import EmojiGreenSmile from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg?react';
+import EmojiBlueSmile from '../../assets/neutral_blue_emoticon.svg?react';
+import EmojiOrangeSmile from '../../assets/mehFace.svg?react';
 import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
 import {
   TabsItemForPrincipal,
@@ -67,11 +64,10 @@ import { usePointsToDoEmoji } from '@/hooks/usePointsToDoEmoji';
 import { Logout } from '../auth/logout/logout';
 import { useBrowserVersionCheck } from '@/hooks/useBrowserVersionCheck';
 import { triggerBackgroundSync } from '@/store/sync/sync.actions';
-import { ReactComponent as RobotImage } from '../../assets/iconRobot.svg';
+import RobotImage from '../../assets/iconRobot.svg?react';
 import { cloneDeep } from 'lodash';
 
-const version: string =
-  process.env.REACT_APP_VERSION ?? require('../../../package.json').version;
+const version: string = import.meta.env.REACT_APP_VERSION;
 export interface DashboardRouteState {
   isFromLogin?: boolean;
   isFromCompleteProfile?: boolean;
@@ -516,10 +512,6 @@ export const Dashboard: React.FC = () => {
 
     Promise.allSettled(promises);
   };
-
-  useEffect(() => {
-    convertImageToBase64(offlineStatments, setStorageItem);
-  }, []);
 
   useEffect(() => {
     if (isOnline) {
@@ -1288,7 +1280,7 @@ export const Dashboard: React.FC = () => {
           !isCoach &&
           !!pointsScoreProps ? (
             <ScoreCard
-              className="mt-4 mb-1 h-20 w-full"
+              className="mb-1 mt-4 h-20 w-full"
               progressBarClassName="flex pt-2"
               mainText={pointsScoreProps?.mainText!}
               hint={pointsScoreProps?.hint}

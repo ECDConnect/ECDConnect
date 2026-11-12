@@ -28,5 +28,15 @@ namespace ECDLink.DataAccessLayer.Services
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             return _context.SystemSettings.Where(e => e.TenantId == null || e.TenantId == tenantId).ToList();
         }
+
+        public IEnumerable<ISetting> GetSystemSettingsForAllTenants()
+        {
+            if (!_context.Database.CanConnect())
+            {
+                return new List<ISetting>();
+            }
+
+            return _context.SystemSettings.ToList();
+        }
     }
 }

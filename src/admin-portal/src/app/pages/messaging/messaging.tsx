@@ -1,4 +1,6 @@
 import { useHistory } from 'react-router';
+import { SessionStorageKeys } from '@ecdlink/core';
+import { removeSessionItem } from '../../utils/session-storage.utils';
 import { MessageRoutes } from '../../routes/app.routes';
 import { useEffect } from 'react';
 
@@ -6,7 +8,7 @@ export default function Messaging() {
   const history = useHistory();
 
   useEffect(() => {
-    localStorage.removeItem('selectedMessage');
+    removeSessionItem(SessionStorageKeys.selectedMessage);
 
     async function init() {
       history.push({

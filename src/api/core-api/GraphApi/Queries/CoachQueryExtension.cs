@@ -17,8 +17,10 @@ using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Reports;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Helpers;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
+using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
@@ -226,12 +228,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             CancellationToken cancellationToken,
             PagedQueryInput pagingInput = null,
             string search = null,
-            List<string> connectUsageSearch = null
+            List<string> connectUsageSearch = null,
+            List<string> statusSearch = null,
+            DateTime? insertedDateFrom = null,
+            DateTime? insertedDateTo = null
             )
         {
             var uId = contextAccessor.HttpContext.GetUser()?.Id;
             var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
-            var shortenUrlEntityRepo = repoFactory.CreateGenericRepository<ShortenUrlEntity>(userContext: uId);
             var sixMonthsAgo = DateTime.Now.AddMonths(-6).GetStartOfMonth().Date;
 
             if (cancellationToken.IsCancellationRequested)
@@ -239,7 +243,76 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 return null;
             }
 
-            var coachQuery = coachRepo.GetAll(pagingInput);
+            var coachQuery = BuildCoachFilterQuery(coachRepo, search, statusSearch, insertedDateFrom, insertedDateTo);
+
+            var pageSize = pagingInput?.PageSize;
+            var pageNumber = pagingInput?.PageNumber ?? 0;
+            var hasConnectUsageFilter = connectUsageSearch != null && connectUsageSearch.Any();
+
+            // No in-memory-only filter active: order and page at the database level so we
+            // only ever materialize/fetch the rows for the requested page.
+            if (!hasConnectUsageFilter)
+            {
+                coachQuery = coachQuery.OrderByDescending(x => x.InsertedDate);
+                if (pageSize is not null)
+                {
+                    coachQuery = PaginationHelper.AddPaging(pageNumber * pageSize.Value, pageSize.Value, coachQuery);
+                }
+
+                return BuildCoachModels(coachQuery, repoFactory, uId);
+            }
+
+            // connectUsage is a computed value (based on invitations/last-seen), not a DB column,
+            // so it can only be filtered in memory once the candidate rows have been materialized.
+            var allMatching = BuildCoachModels(coachQuery, repoFactory, uId);
+            var filteredUsers = ApplyConnectUsageFilter(allMatching, connectUsageSearch, sixMonthsAgo)
+                .OrderByDescending(x => x.InsertedDate)
+                .ToList();
+
+            if (pageSize is not null)
+            {
+                filteredUsers = filteredUsers.Skip(pageNumber * pageSize.Value).Take(pageSize.Value).ToList();
+            }
+
+            return filteredUsers;
+        }
+
+        [Permission(PermissionGroups.COACH, GraphActionEnum.View)]
+        public int GetAllPortalCoachesCount(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            CancellationToken cancellationToken,
+            string search = null,
+            List<string> connectUsageSearch = null,
+            List<string> statusSearch = null,
+            DateTime? insertedDateFrom = null,
+            DateTime? insertedDateTo = null
+            )
+        {
+            var uId = contextAccessor.HttpContext.GetUser()?.Id;
+            var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
+            var sixMonthsAgo = DateTime.Now.AddMonths(-6).GetStartOfMonth().Date;
+
+            var coachQuery = BuildCoachFilterQuery(coachRepo, search, statusSearch, insertedDateFrom, insertedDateTo);
+
+            if (connectUsageSearch != null && connectUsageSearch.Any())
+            {
+                var allMatching = BuildCoachModels(coachQuery, repoFactory, uId);
+                return ApplyConnectUsageFilter(allMatching, connectUsageSearch, sixMonthsAgo).Count;
+            }
+
+            return coachQuery.Count();
+        }
+
+        private static IQueryable<Coach> BuildCoachFilterQuery(
+            IGenericRepository<Coach, Guid> coachRepo,
+            string search,
+            List<string> statusSearch,
+            DateTime? insertedDateFrom,
+            DateTime? insertedDateTo)
+        {
+            var coachQuery = coachRepo.GetAll();
+
             // General search term
             if (!string.IsNullOrWhiteSpace(search))
             {
@@ -250,7 +323,34 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                         || EF.Functions.ILike(h.User.PhoneNumber, $"%{search}%")
                         || EF.Functions.ILike(h.User.Email, $"%{search}%"));
             }
-            
+
+            // Status search — mirrors the frontend's "exactly one selected = filter, otherwise show all" behaviour
+            if (statusSearch != null && statusSearch.Count == 1)
+            {
+                var wantActive = statusSearch[0] == "Active";
+                coachQuery = coachQuery.Where(x => x.User.IsActive == wantActive);
+            }
+
+            // Date added range — matches on the User's InsertedDate, same field the table displays/sorts by
+            if (insertedDateFrom.HasValue && insertedDateTo.HasValue)
+            {
+                var from = insertedDateFrom.Value.Date;
+                var to = insertedDateTo.Value.Date;
+                coachQuery = coachQuery.Where(x =>
+                    x.User.InsertedDate.HasValue &&
+                    x.User.InsertedDate.Value.Date >= from &&
+                    x.User.InsertedDate.Value.Date <= to);
+            }
+
+            return coachQuery;
+        }
+
+        private static List<PortalCoachModel> BuildCoachModels(
+            IQueryable<Coach> coachQuery,
+            IGenericRepositoryFactory repoFactory,
+            Guid? uId)
+        {
+            var shortenUrlEntityRepo = repoFactory.CreateGenericRepository<ShortenUrlEntity>(userContext: uId);
             var userIds = coachQuery.Select(x => x.UserId.Value).ToList();
             var invitations = shortenUrlEntityRepo.GetAll()
                 .Where(x =>
@@ -266,7 +366,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var invitationDates = invitations.ToDictionary(x => x.Key, x => x.Last().InsertedDate);
             var invitationNotifications = invitations.ToDictionary(x => x.Key, x => x.Last().NotificationResult);
 
-            var coachModels = coachQuery
+            return coachQuery
                 .Select(item => new PortalCoachModel
                 {
                     Id = item.Id,
@@ -279,7 +379,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                                                     invitationNotifications.ContainsKey(item.UserId) ? invitationNotifications[item.UserId] : null)
                 })
                 .ToList();
+        }
 
+        private static List<PortalCoachModel> ApplyConnectUsageFilter(
+            List<PortalCoachModel> coachModels,
+            List<string> connectUsageSearch,
+            DateTime sixMonthsAgo)
+        {
             List<PortalCoachModel> filteredUsers = new List<PortalCoachModel>();
             if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.usage_invitation_active))
             {
@@ -323,7 +429,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             {
                 filteredUsers.AddRange(coachModels.Where(x => connectUsageSearch.Contains(x.User.ConnectUsage)).ToList());
             }
-            return connectUsageSearch.Any() ? filteredUsers.DistinctBy(x => x.Id).ToList() : coachModels;
+
+            return filteredUsers.DistinctBy(x => x.Id).ToList();
         }
 
         [Permission(PermissionGroups.COACH, GraphActionEnum.View)]

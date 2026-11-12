@@ -182,7 +182,7 @@ export const Steps = ({ items, typeColor }: StepsProps) => {
               <div className="z-10">
                 <div
                   className={classNames(
-                    'min-h-8 min-w-8 flex h-8 w-8 items-center justify-center rounded-full',
+                    'flex h-8 min-h-8 w-8 min-w-8 items-center justify-center rounded-full',
                     getStatus(item.type, {}, item?.color)?.style
                   )}
                 >
@@ -208,7 +208,7 @@ export const Steps = ({ items, typeColor }: StepsProps) => {
                 />
                 {item.subTitle && (
                   <Typography
-                    className="col-span-2 row-span-2 text-sm"
+                    className="col-span-2 row-span-2"
                     type="body"
                     align="left"
                     weight="skinny"

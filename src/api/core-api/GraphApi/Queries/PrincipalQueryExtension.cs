@@ -36,7 +36,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var callerIsAdmin = userManager.IsInRoleAsync(new ApplicationUser { Id = uId }, Roles.ADMINISTRATOR).Result;
             if (!callerIsAdmin)
-                throw new HotChocolate.Execution.QueryException("You are not authorized to retrieve principal data.");
+                throw new HotChocolate.GraphQLException("You are not authorized to retrieve principal data.");
 
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();

@@ -2,6 +2,7 @@ using ECDLink.Security.Enums;
 using ECDLink.Security.JwtSecurity.Managers;
 using ECDLink.Security.Managers;
 using HotChocolate.Resolvers;
+using HotChocolate.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,24 +27,38 @@ namespace ECDLink.EGraphQL.Authorization
             _jwtTokenManager = tokenManager;
         }
 
-        public override async Task InvokeAsync(IDirectiveContext context)
+        /// The directive name as declared in PermissionDirectiveType.
+        private const string DirectiveName = "permission";
+
+        public override async Task InvokeAsync(IMiddlewareContext context)
         {
-            PermissionDirective directive = context.Directive
-                .ToObject<PermissionDirective>();
-
-            var state = ValidateResult(context, directive);
-
-            if (state == AuthState.Allowed)
+            // v12 read this off IDirectiveContext, which handed over the directive belonging to
+            // the field being executed. v13 removed that type, and taking a Directive by
+            // constructor injection instead binds ONE directive for the middleware's lifetime -
+            // so every field ended up authorised against some other field's permission
+            // (userById was checking view_registration). Read them from the executing field
+            // instead, and require all of them, which is what v12 achieved by running this
+            // middleware once per directive application.
+            foreach (var directive in GetPermissionDirectives(context))
             {
-                await _next(context).ConfigureAwait(false);
+                var state = ValidateResult(context, directive);
+
+                if (state != AuthState.Allowed)
+                {
+                    SetError(context, state);
+                    return;
+                }
             }
-            else
-            {
-                SetError(context, state);
-            }
+
+            await _next(context).ConfigureAwait(false);
         }
 
-        private AuthState ValidateResult(IDirectiveContext context, PermissionDirective directive)
+        private static IEnumerable<PermissionDirective> GetPermissionDirectives(IMiddlewareContext context)
+            => context.Selection.Field.Directives
+                .Where(d => string.Equals(d.Type.Name, DirectiveName, StringComparison.Ordinal))
+                .Select(d => d.ToValue<PermissionDirective>());
+
+        private AuthState ValidateResult(IMiddlewareContext context, PermissionDirective directive)
         {
             // If no directive is set, assume end point is completely open
             if (directive == default(PermissionDirective))
@@ -72,7 +87,7 @@ namespace ECDLink.EGraphQL.Authorization
             return AuthState.Allowed;
         }
 
-        private List<string> GetClaimRoles(IDirectiveContext context)
+        private List<string> GetClaimRoles(IMiddlewareContext context)
         {
             ClaimsPrincipal principal;
 

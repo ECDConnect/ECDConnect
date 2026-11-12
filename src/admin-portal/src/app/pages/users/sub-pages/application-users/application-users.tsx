@@ -1,7 +1,7 @@
 import { useQuery } from '@apollo/client';
 import { UserDto } from '@ecdlink/core';
 import debounce from 'lodash.debounce';
-import { UserList } from '@ecdlink/graphql';
+import { UserList, getUserCount } from '@ecdlink/graphql';
 import { SearchDropDownOption, Table } from '@ecdlink/ui';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Status } from '../application-admins/applications-admins.types';
@@ -10,6 +10,12 @@ import { format } from 'date-fns';
 import { TableRefMethods } from '@ecdlink/ui/lib/components/table/types';
 import { columnColor } from '../../../../utils/app-usage/app-usage-utils';
 import { ColumnNames, UserSearch } from './application-user.types';
+import {
+  TablePagination,
+  TABLE_ROWS_PER_PAGE,
+} from '../../components/table-pagination/table-pagination';
+
+const PAGE_SIZE = 20;
 
 export const sortByClientStatusOptions: SearchDropDownOption<string>[] = [
   Status?.ACTIVE,
@@ -26,6 +32,7 @@ export default function ApplicationUsers() {
 
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const tableRef = useRef<TableRefMethods>(null);
 
   const onChange = (dates) => {
@@ -38,7 +45,8 @@ export default function ApplicationUsers() {
     SearchDropDownOption<string>[]
   >([sortByClientStatusOptions[0]]);
 
-  const queryVariables = useMemo(() => {
+  // Filters shared between the table's paged query and the total-count query.
+  const filterVariables = useMemo(() => {
     const filterBy: {
       fieldName: string;
       filterType: string;
@@ -69,25 +77,51 @@ export default function ApplicationUsers() {
       });
     }
 
-    return {
-      search: searchValue,
+    return { search: searchValue, filterBy };
+  }, [endDate, searchValue, startDate, statusFilter]);
+
+  // Whenever a filter or the search term changes, jump back to page 1.
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterVariables]);
+
+  const queryVariables = useMemo(
+    () => ({
+      search: filterVariables.search,
       pagingInput: {
-        pageNumber: 1,
-        pageSize: 100,
-        filterBy,
+        pageNumber: currentPage,
+        pageSize: PAGE_SIZE,
+        filterBy: filterVariables.filterBy,
       },
       order: [
         {
           insertedDate: 'DESC',
         },
       ],
-    };
-  }, [endDate, searchValue, startDate, statusFilter]);
+    }),
+    [filterVariables, currentPage]
+  );
 
   const { data, loading } = useQuery(UserList, {
     variables: queryVariables,
     fetchPolicy: 'network-only',
   });
+
+  const { data: countData, loading: countLoading } = useQuery(getUserCount, {
+    variables: {
+      search: filterVariables.search,
+      pagingInput: { filterBy: filterVariables.filterBy },
+    },
+    fetchPolicy: 'network-only',
+  });
+
+  const totalCount = countData?.countUsers ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+
+  const goToPage = (page: number) => {
+    setCurrentPage(Math.min(Math.max(1, page), totalPages));
+    tableRef?.current?.resetSelectedRows();
+  };
 
   const isLoading = loading;
   const isFilterActive = !!startDate || !!endDate || !!statusFilter?.length;
@@ -203,12 +237,13 @@ export default function ApplicationUsers() {
 
   return (
     <div className="bg-adminPortalBg h-full rounded-2xl p-4 ">
-      <div className="rounded-xl bg-white p-12">
+      <div className="rounded-xl bg-white p-12 [&_tbody_td]:py-2">
         <Table
           watchMode
           ref={tableRef}
           rows={rows}
           columns={columns}
+          rowsPerPage={TABLE_ROWS_PER_PAGE}
           onClearFilters={clearFilters}
           noContentText={noContentText}
           loading={{
@@ -255,6 +290,16 @@ export default function ApplicationUsers() {
             },
           ]}
         />
+        {rows.length > 0 && (
+          <TablePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalCount={totalCount}
+            countLoading={countLoading}
+            isLoading={isLoading}
+            onPageChange={goToPage}
+          />
+        )}
       </div>
     </div>
   );

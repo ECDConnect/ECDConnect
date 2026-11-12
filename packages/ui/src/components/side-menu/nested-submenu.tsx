@@ -1,5 +1,5 @@
 import { useState, Fragment } from 'react';
-import { classNames, renderIcon } from '../../utils';
+import { classNames, isImageSource, renderIcon } from '../../utils';
 import { Badge } from '../badge/badge';
 import Divider from '../divider/divider';
 import Typography from '../typography/typography';
@@ -29,7 +29,7 @@ export default function NestedSubMenu({ item, onNavigation }) {
               'flex h-full cursor-pointer flex-row items-center rounded-lg p-2.5 text-base font-medium'
             )}
           >
-            {item && item.icon && item.icon.startsWith('data:image/') ? (
+            {isImageSource(item?.icon) ? (
               <img
                 src={item.icon}
                 alt=""
