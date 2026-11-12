@@ -137,7 +137,7 @@ have, so they can never pass against it.
 
 ```bash
 # a deployed environment
-./Tools/capture-deployed-schema.sh https://ecd-connect-develop-api.azurewebsites.net
+./Tools/capture-deployed-schema.sh https://<your-api-host>
 
 # running locally - the HTTPS endpoint needs --insecure for the dev certificate
 ./Tools/capture-deployed-schema.sh https://localhost:5001 --insecure
