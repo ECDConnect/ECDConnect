@@ -170,10 +170,14 @@ Authorized JavaScript origins need to be set to the various URLs from which the 
 7.  Run  `yarn bootstrap`. This will install all packages for the sub packages and src projects. After that it will build the packages for use and add them to the node modules of the projects have them as dependencies.
 
 ### Backend
-1.  Install PostgreSQL and create a database, e.g. ecdconnect. Run the  **sqlscripts/database.sql**  to create the initial database.
+1.  Install PostgreSQL (17 or later) and create the database from **sqlscripts/database.sql**, a plain-SQL dump that needs `psql` (pgAdmin's Restore cannot load it; use its PSQL Tool instead):  
+    `createdb ecdconnect`  
+    `psql -d ecdconnect -f sqlscripts/database.sql`  
+    **sqlscripts/schema.sql** is the same structure without data, for reviewing schema changes. Do not restore it on its own.
 2.  Install VS 2022 Community Edition.
 3.  VS solution file can be found in src/api.
-4.  Update src/api/core-api/appsettings.json with the correct values for the database connection string.
+4.  Set the database connection string with user secrets, so it is not committed. From `src/api/core-api`:  
+    `dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=ecdconnect;Username=postgres;Password=<password>"`
 
 ## Run
 
@@ -303,7 +307,7 @@ To configure the system to allow for the sending of emails, edit the  `Notificat
 
 -   Create a PostgreSQL Flexible Server resource, e.g. sql-myapp, in rg-myapp.
     -   Add a database.
-    -   Use pgAdmin or another tool to restore the database using your own backup or sqlscripts/database.sql.
+    -   Load sqlscripts/database.sql with `psql` (or restore your own backup).
 
 -   Create an App Service Plan, e.g. asp-myapp, in rg-myapp.
     -   Operating System: Linux
