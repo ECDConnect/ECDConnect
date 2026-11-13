@@ -9,6 +9,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState, ThunkApiType } from '../types';
 import { CommunityService } from '@/services/CommunityService';
 import { OverrideCache } from '@/models/sync/override-cache';
+import { notificationActions } from '../notifications';
 
 export interface CommunityConnectDataForGGWithLocale {
   locale: string;
@@ -96,26 +97,45 @@ export const getCommunityProfile = createAsyncThunk<
   ThunkApiType<RootState>
 >(
   CommunityActions.GET_COMMUNITY_PROFILE,
-  async ({ overrideCache = false }, { getState, rejectWithValue }) => {
+  async (
+    { overrideCache = false },
+    { getState, dispatch, rejectWithValue }
+  ) => {
     const {
       auth: { userAuth },
       community: { communityProfile: cache },
     } = getState();
 
-    // === CACHE CHECK ===
-    if (!overrideCache && cache) {
+    const cacheBelongsToCurrentUser =
+      !!cache && !!userAuth?.id && cache.userId === userAuth.id;
+
+    if (!overrideCache && cacheBelongsToCurrentUser) {
+      dispatch(
+        notificationActions.removeNotificationsByReference(
+          'practitioner-no-community-profile'
+        )
+      );
       return cache;
     }
 
-    // === FETCH FROM API ===
     try {
       if (!userAuth?.auth_token) {
         return rejectWithValue('no access token, profile check required');
       }
 
-      return await new CommunityService(
+      const profile = await new CommunityService(
         userAuth?.auth_token ?? ''
       ).getCommunityProfile();
+
+      if (profile) {
+        dispatch(
+          notificationActions.removeNotificationsByReference(
+            'practitioner-no-community-profile'
+          )
+        );
+      }
+
+      return profile;
     } catch (err) {
       return rejectWithValue(err);
     }

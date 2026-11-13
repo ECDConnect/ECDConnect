@@ -23,9 +23,11 @@ import {
   MessageLogDto,
   NOTIFICATION,
   WardDto,
+  SessionStorageKeys,
   useNotifications,
 } from '@ecdlink/core';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { getSessionItem } from '../../../utils/session-storage.utils';
 import { format } from 'date-fns';
 import { XIcon } from '@heroicons/react/solid';
 import MessageForm from './message-form';
@@ -101,7 +103,17 @@ export default function MessagePanel() {
 
   const history = useHistory();
   const user = localStorage.getItem(LocalStorageKeys.user);
-  const message = localStorage.getItem('selectedMessage');
+  // What is stored is the table row the operator clicked, which carries a
+  // client-derived status on top of the DTO.
+  // Read once: getSessionItem parses a new object on every call, which would
+  // otherwise re-trigger every effect that depends on it.
+  const message = useMemo(
+    () =>
+      getSessionItem<MessageLogDto & { status?: string }>(
+        SessionStorageKeys.selectedMessage
+      ),
+    []
+  );
   const [displayFormIsDirty, setDisplayFormIsDirty] = useState(false);
   const [showSavingDialog, setShowSavingDialog] = useState(false);
   const [showLoadingDialog, setShowLoadingDialog] = useState(false);
@@ -242,24 +254,23 @@ export default function MessagePanel() {
   }, [totalUsers]);
 
   useEffect(() => {
-    if (message !== 'null') {
-      const parsedMessage = JSON.parse(message);
-      const messageDate = new Date(parsedMessage.messageDate);
+    if (message) {
+      const messageDate = new Date(message.messageDate);
       setMessageStatus(
-        parsedMessage.status === 'Scheduled'
+        message.status === 'Scheduled'
           ? 'pending'
           : messageDate < new Date()
           ? 'completed'
           : 'pending'
       );
       setIsView(
-        parsedMessage.status === 'Scheduled'
+        message.status === 'Scheduled'
           ? false
           : messageDate < new Date()
           ? true
           : false
       );
-      setCurrentMessage(parsedMessage);
+      setCurrentMessage(message);
     }
   }, [message]);
 
@@ -432,9 +443,9 @@ export default function MessagePanel() {
                 color="textMid"
                 weight="bold"
                 text={getTitle()}
-                className={'mt-4 mb-4 w-full'}
+                className={'mb-4 mt-4 w-full'}
               />
-              <div className="absolute top-20 right-20 ">
+              <div className="absolute right-20 top-20 ">
                 <button
                   className={styles.cancelButton}
                   // className="focus:outline-none focus:ring-primary rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2"
@@ -449,7 +460,7 @@ export default function MessagePanel() {
             <hr className="border-b border-dashed border-gray-500 px-2" />
             {messageStatus === 'completed' ? (
               <Alert
-                className="mt-2 mb-2 rounded-md"
+                className="mb-2 mt-2 rounded-md"
                 message={`You can view the sent message but you cannot edit.`}
                 title={
                   `This message was last sent on ` + currentMessage.messageDate
@@ -458,7 +469,7 @@ export default function MessagePanel() {
               />
             ) : (
               <Alert
-                className="mt-2 mb-2 rounded-md"
+                className="mb-2 mt-2 rounded-md"
                 message={`Messages will only be sent to active users.`}
                 type="info"
               />
@@ -480,7 +491,7 @@ export default function MessagePanel() {
           />
 
           <Button
-            className="mt-3 mr-6 w-full rounded"
+            className="mr-6 mt-3 w-full rounded"
             type="filled"
             color="secondary"
             onClick={onShowDialog}

@@ -2,6 +2,12 @@ import Fuse from 'fuse.js';
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import Table from 'react-tailwind-table';
 
+// A leading checkbox column is always the first column - squeeze that first
+// header/body cell down to just wide enough for the checkbox.
+const SELECT_COLUMN_CLASSES =
+  '[&_thead_th:first-child]:w-px [&_thead_th:first-child]:pl-4 [&_thead_th:first-child]:pr-2 ' +
+  '[&_tbody_td:first-child]:w-px [&_tbody_td:first-child]:pl-4 [&_tbody_td:first-child]:pr-2';
+
 export default function NavigationTable({
   columns = [],
   rows = [],
@@ -51,7 +57,7 @@ export default function NavigationTable({
     if (showSelect) {
       const selectColumn = {
         field: 'select',
-        use: '',
+        use: selectAllCheckbox,
         Header: 'Select',
         accessor: '', // Set the accessor value based on your data structure
         Cell: null,
@@ -79,6 +85,31 @@ export default function NavigationTable({
       }
     });
   };
+
+  const selectableRows: any[] = searchRows ?? [];
+  const allRowsSelected =
+    selectableRows.length > 0 && selectedRows.length === selectableRows.length;
+
+  const handleSelectAll = (event: ChangeEvent<HTMLInputElement>) => {
+    setSelectedRows(
+      event.target.checked ? selectableRows.map((row) => row.id) : []
+    );
+  };
+
+  const selectAllCheckbox = (
+    <input
+      type="checkbox"
+      aria-label="Select all rows"
+      className="form-checkbox text-primary border-gray-30 focus:border-secondary h-5 w-5 rounded focus:outline"
+      checked={allRowsSelected}
+      ref={(el) => {
+        if (el) {
+          el.indeterminate = selectedRows.length > 0 && !allRowsSelected;
+        }
+      }}
+      onChange={handleSelectAll}
+    />
+  );
 
   const makeRows = () => {
     if ((!searchRows?.length && searchValue) || !rows.length) {
@@ -119,7 +150,7 @@ export default function NavigationTable({
     const checkboxCell = (
       <input
         type="checkbox"
-        className="form-checkbox text-primary border-gray-30 focus:border-secondary focus:outline h-5 w-5 rounded "
+        className="form-checkbox text-primary border-gray-30 focus:border-secondary h-5 w-5 rounded focus:outline "
         checked={selectedRows.includes(row.id)}
         onChange={(event) => handleRowSelect(event, row)}
       />
@@ -153,11 +184,11 @@ export default function NavigationTable({
     } else if (column.type === 'messageStatus') {
       rowValue =
         display_value === 'Scheduled' ? (
-          <div className="text-infoDark text-sm font-medium font-bold">
+          <div className="text-infoDark text-sm font-bold font-medium">
             {display_value}
           </div>
         ) : (
-          <div className="text-successMain text-sm font-medium font-bold">
+          <div className="text-successMain text-sm font-bold font-medium">
             {display_value}
           </div>
         );
@@ -238,33 +269,32 @@ export default function NavigationTable({
               main: 'hidden',
             },
           },
-          main: 'rounded-lg',
+          main: showSelect ? SELECT_COLUMN_CLASSES : '',
           table_head: {
-            table_row: `md:w-auto md:flex-row mb-10 border-b-2 border-secondary bg-blue-50`,
-            table_data: `truncate px-6 py-8 pt-4 pb-4 text-left text-xs font-medium text-gray-500 tracking-wider leading-none bg-quatenaryBg`,
+            table_row: `md:w-auto md:flex-row border-b-2 border-quatenary bg-adminPortalBg`,
+            table_data: `truncate px-6 py-4 text-left text-sm font-semibold normal-case tracking-normal text-textMid leading-none`,
           },
           table_body: {
             main: ``,
-            table_row: 'border-none py-6',
+            table_row:
+              'border-none bg-white transition-colors hover:bg-adminPortalBg',
             table_data:
-              'truncate w-20 px-6 pt-2 pb-2 text-sm font-medium text-gray-900 border-b border-gray-100',
+              'truncate px-6 py-1 text-sm font-medium text-textMid border-b border-uiLight align-middle',
           },
           footer: options.footer || {
-            main: `mt-8 mx-5 table-footer`,
+            main: `mt-6 mx-5 table-footer`,
             statistics: {
-              main: `text-gray-600 table-stats md:w-auto md:flex-row`,
-              bold_numbers: `text-gray-900 font-bold`,
+              main: `text-textMid table-stats md:w-auto md:flex-row`,
+              bold_numbers: `text-textDark font-bold`,
             },
-            page_numbers: ` text-secondary page-numbers z-10 relative inline-flex items-center px-4 py-2 text-sm font-medium w-4`,
+            page_numbers: ` text-quatenary page-numbers z-10 relative inline-flex items-center px-4 py-2 text-sm font-medium w-4`,
           },
         }}
         columns={makeColumns()}
         rows={makeRows()}
         per_page={options.per_page || 10}
         no_content_text="-"
-        striped
-        bordered
-        hovered={true}
+        striped={false}
       />
     </div>
   );

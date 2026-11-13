@@ -10,6 +10,7 @@ import { notesThunkActions } from '../notes';
 import { programmeThunkActions } from '../programme';
 import { RootState, ThunkApiType } from '../types';
 import { userThunkActions } from '../user';
+import { userFlagsThunkActions } from '../user-flags';
 import { queryErrorsActions, queryErrorsThunkActions } from '../queryErrors';
 import { pqaThunkActions } from '../pqa';
 import { calendarThunkActions } from '../calendar';
@@ -50,6 +51,7 @@ const SHARED_SYNC_STEPS: SyncStep[] = [
     title: 'Walkthrough status: business',
     action: practitionerThunkActions.updatePractitionerBusinessWalkThrough,
   },
+  { title: 'User flags', action: userFlagsThunkActions.syncUserFlags },
 ];
 
 /** Steps specifically for Principals */
@@ -343,6 +345,41 @@ export const pullRemoteChanges = createAsyncThunk<
             dispatch(
               practitionerThunkActions.getPractitionerPermissions({
                 userId,
+                overrideCache: true,
+              })
+            ).unwrap()
+          )
+        );
+      }
+      if (isPrincipal && userSyncStatus.syncPractitioners) {
+        otherPromises.push(
+          retryWithExponentialBackoff(() =>
+            dispatch(
+              practitionerThunkActions.getAllPractitioners({
+                overrideCache: true,
+              })
+            ).unwrap()
+          ),
+          retryWithExponentialBackoff(() =>
+            dispatch(
+              classroomsThunkActions.getClassroomGroups({
+                overrideCache: true,
+              })
+            ).unwrap()
+          )
+        );
+      }
+      if (userSyncStatus.syncAttendance) {
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(endDate.getDate() - 30);
+
+        otherPromises.push(
+          retryWithExponentialBackoff(() =>
+            dispatch(
+              attendanceThunkActions.getAttendance({
+                startDate,
+                endDate,
                 overrideCache: true,
               })
             ).unwrap()

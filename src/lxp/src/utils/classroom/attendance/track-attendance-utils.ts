@@ -292,6 +292,16 @@ export const isPractitionerAttendanceMissingForLearner = (
     : false;
 };
 
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export const isUuid = (value?: string): value is string =>
+  !!value && UUID_PATTERN.test(value);
+
+export const resolveProgrammeOwnerId = (
+  ...candidates: (string | undefined)[]
+): string | undefined => candidates.find(isUuid);
+
 export const mapTrackAttendance = (
   programmeOwnerId: string,
   attendees: ChildAttendance[],

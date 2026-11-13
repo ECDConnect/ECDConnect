@@ -5,7 +5,7 @@ import {
   DialogPosition,
   Typography,
 } from '@ecdlink/ui';
-import { ReactComponent as EmojiYellowHappy } from '../../../../../../assets/iconRobot.svg';
+import EmojiYellowHappy from '../../../../../../assets/iconRobot.svg?react';
 import TransparentLayer from '../../../../../../assets/TransparentLayer.png';
 import { useHistory } from 'react-router-dom';
 import { JoinOrAddPreschoolModal } from '../trial-period/join-or-add-preschool-modal';
@@ -76,7 +76,7 @@ export const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
           <Typography
             type={'h1'}
             text={`What is ECD registration?`}
-            className={'mb-4 text-sm'}
+            className={'mb-4'}
             color={'textDark'}
           />
           <Typography
@@ -84,15 +84,16 @@ export const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
             text={
               'Registration means your programme is officially recognised by the Department of Basic Education (DBE). It is the first step to getting the ECD subsidy.'
             }
-            className={'mb-4 text-sm font-normal'}
+            className={'mb-4 font-normal'}
             color={'textMid'}
           />
           <Typography
             type={'body'}
+            weight={'bold'}
             text={
               'This app shows you the steps. You will need to submit your information to the DBE.'
             }
-            className={'mb-2 font-bold'}
+            className={'mb-2'}
             color={'textMid'}
           />
         </div>

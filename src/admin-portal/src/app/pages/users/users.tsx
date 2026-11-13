@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
+import { SessionStorageKeys } from '@ecdlink/core';
+import { removeSessionItem } from '../../utils/session-storage.utils';
 import { UserRoutes } from '../../routes/app.routes';
 import SubNavigationLink from '../../components/sub-navigation-link/sub-navigation-link';
 import ROUTES from '../../routes/app.routes-constants';
@@ -43,7 +45,7 @@ export function Users() {
 
   const history = useHistory();
   useEffect(() => {
-    localStorage.removeItem('selectedUser');
+    removeSessionItem(SessionStorageKeys.selectedUser);
 
     // GO TO DEFAULT ROUTE
     async function init() {
@@ -79,7 +81,7 @@ export function Users() {
       </div>
 
       <div className=" bg-adminPortalBg rounded-xl rounded-t-none lg:min-w-0 lg:flex-1">
-        <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
+        <div className="h-full px-4 py-6 sm:px-6 lg:px-8">
           <UserRoutes />
         </div>
       </div>

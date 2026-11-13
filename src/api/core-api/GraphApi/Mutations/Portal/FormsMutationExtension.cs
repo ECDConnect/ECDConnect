@@ -38,33 +38,65 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Portal
             return true;
         }
         [Permission(PermissionGroups.JOURNEY, GraphActionEnum.Update)]
-        public async Task<bool> SaveHealthCertificateDetails(
+        public async Task<string> SaveCertificateDetails(
             [Service] IHttpContextAccessor contextAccessor,
             AuthenticationDbContext dbContext,
-            Guid visitId,
             string certificateName,
-            string certificateRegNr)
+            string certificateRegNr,
+            Guid? visitId = null,
+            Guid? userTrainingCourseId = null)
         {
             var applicationUserId = contextAccessor.HttpContext.GetUser()?.Id;
-            var visit = dbContext.Visits.FirstOrDefault(x => x.Id == visitId);
-            if (visit == null)
-                return false;
-            
-            // add new certificate entry
-            dbContext.UserCertificate.Add(new UserCertificate
+            if (applicationUserId == null)
+                return null;
+
+            // a certificate is always issued for either a visit or a completed course
+            if (visitId == null && userTrainingCourseId == null)
+                return null;
+
+            if (visitId != null && !dbContext.Visits.Any(x => x.Id == visitId.Value))
+                return null;
+
+            if (userTrainingCourseId != null &&
+                !dbContext.UserTrainingCourses.Any(x => x.Id == userTrainingCourseId.Value &&
+                                                        x.UserId == applicationUserId.Value))
+                return null;
+
+            // the visit or the course identifies the certificate, so this finds the one already
+            // on record however it was downloaded before
+            var certificatesOnRecord = visitId != null
+                ? dbContext.UserCertificate.Where(x => x.VisitId == visitId.Value)
+                : dbContext.UserCertificate.Where(x => x.UserTrainingCourseId == userTrainingCourseId.Value);
+
+            var existingCertificate = certificatesOnRecord
+                .OrderByDescending(x => x.InsertedDate)
+                .FirstOrDefault();
+
+            if (existingCertificate != null)
             {
-                Id = Guid.NewGuid(),
-                VisitId = visitId,
-                CertificateName = certificateName,
-                CertificateRegNr = certificateRegNr,
-                UserId = applicationUserId.Value,
-                UpdatedBy = applicationUserId.ToString(),
-                TenantId = TenantExecutionContext.Tenant.Id
-            });
+                // keep the number this certificate was first issued with, the name may have changed
+                existingCertificate.CertificateName = certificateName;
+                existingCertificate.UpdatedDate = DateTime.Now;
+                existingCertificate.UpdatedBy = applicationUserId.ToString();
+            }
+            else
+            {
+                dbContext.UserCertificate.Add(new UserCertificate
+                {
+                    Id = Guid.NewGuid(),
+                    VisitId = visitId,
+                    UserTrainingCourseId = userTrainingCourseId,
+                    CertificateName = certificateName,
+                    CertificateRegNr = certificateRegNr,
+                    UserId = applicationUserId.Value,
+                    UpdatedBy = applicationUserId.ToString(),
+                    TenantId = TenantExecutionContext.Tenant.Id
+                });
+            }
 
             await dbContext.SaveChangesAsync();
 
-            return true;
+            return existingCertificate?.CertificateRegNr ?? certificateRegNr;
         }
 
         [Permission(PermissionGroups.JOURNEY, GraphActionEnum.Create)]

@@ -10,7 +10,7 @@ import {
   SliderPagination,
   Typography,
 } from '@ecdlink/ui';
-import { ReactComponent as Robot } from '../../../../../assets/iconRobot.svg';
+import Robot from '../../../../../assets/iconRobot.svg?react';
 import { useAppContext } from '@/walkthrougContext';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';

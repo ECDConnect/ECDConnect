@@ -45,6 +45,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ECDLink.Core.UnitTest", "EC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECDLink.FileStorage", "ECDLink.FileStorage\ECDLink.FileStorage.csproj", "{0BC0D44A-6F84-4767-80E2-FCAD775DECE5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{07C2787E-EAC7-C090-1BA3-A61EC2A24D84}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ECDLink.SchemaSnapshot", "Tools\ECDLink.SchemaSnapshot\ECDLink.SchemaSnapshot.csproj", "{83973AC7-62CD-4177-A39C-93F219988385}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -123,11 +127,16 @@ Global
 		{0BC0D44A-6F84-4767-80E2-FCAD775DECE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0BC0D44A-6F84-4767-80E2-FCAD775DECE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0BC0D44A-6F84-4767-80E2-FCAD775DECE5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{83973AC7-62CD-4177-A39C-93F219988385}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{83973AC7-62CD-4177-A39C-93F219988385}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{83973AC7-62CD-4177-A39C-93F219988385}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{83973AC7-62CD-4177-A39C-93F219988385}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{83973AC7-62CD-4177-A39C-93F219988385} = {07C2787E-EAC7-C090-1BA3-A61EC2A24D84}
 		{14BD4336-F4AC-4343-896A-1CADB873A8D9} = {AA2AC848-AEDA-47C2-A796-EF2087772909}
 		{B2613598-0603-4775-9F02-981DBF95CD0A} = {14BD4336-F4AC-4343-896A-1CADB873A8D9}
 		{419EB23C-25F9-43FC-B4AA-B75B2076A46F} = {14BD4336-F4AC-4343-896A-1CADB873A8D9}

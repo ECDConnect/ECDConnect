@@ -185,20 +185,20 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
 
           {choosedSectionTitle === ActivitiesTitles.StoryActivities && (
             <Alert
-              className="mt-2 mb-4 rounded-md"
+              className="mb-4 mt-2 rounded-md"
               message={`Editing the connected story types here will update the connected story types for all translations of this page.`}
               type="warning"
             />
           )}
           {choosedSectionTitle !== ActivitiesTitles.StoryActivities && (
             <Alert
-              className="mt-2 mb-4 rounded-md"
+              className="mb-4 mt-2 rounded-md"
               message={`Editing the skills here will update the skills for all translations of this page.`}
               type="warning"
             />
           )}
 
-          <div className="mt-4 overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
+          <div className="mt-4">
             {tableData &&
               tableData.map((item: any) => {
                 const maximumItemsChecked = tableData.filter((x) =>
@@ -256,12 +256,12 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
           )}
 
           <Alert
-            className="mt-2 mb-4 rounded-md"
+            className="mb-4 mt-2 rounded-md"
             message={`Editing the themes here will update the themes for all translations of this page.`}
             type="warning"
           />
 
-          <div className="mt-4 overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
+          <div className="mt-4">
             {tableData &&
               tableData.map((item: any, index: number) => {
                 const maximumItemsChecked = tableData.filter((x) =>
@@ -322,26 +322,26 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
           />
         )}
 
-        <div className="mt-4 overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+        <div className="mt-4">
+          <table className="min-w-full">
+            <thead className="bg-adminPortalBg border-quatenary border-b-2">
               <tr>
                 <th
                   scope="col"
-                  className=" w-full px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
+                  className=" text-textMid w-full px-6 py-3 text-left text-sm font-semibold normal-case"
                 >
                   Name
                 </th>
               </tr>
             </thead>
-            <tbody className="z-10 divide-y divide-gray-200 bg-white">
+            <tbody className="divide-uiLight z-10 divide-y bg-white">
               {tableData &&
                 tableData.map((item: any) => (
                   <tr key={item.id}>
                     <td className="whitespace-nowrap px-2 py-4">
                       <div className="flex items-center">
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-textMid text-sm font-medium">
                             {item.name}
                           </div>
                         </div>
@@ -349,7 +349,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
                     </td>
                     <td className="whitespace-nowrap px-6 py-4">
                       <div className="flex items-center">
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-textMid text-sm font-medium">
                           <input
                             disabled={isReview}
                             defaultChecked={currentIds?.some(

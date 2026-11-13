@@ -30,7 +30,6 @@ namespace ECDLink.EGraphQL.Registration.AutoGenerateTypes.Queries
             descriptor.Field(GraphFieldNamingHelper.GetFieldName(GraphFieldTypeEnum.GetAll, typeof(T).Name))
               .Type<ListType<ObjectType<T>>>()
               .Directive(metadata)
-              .UseDbContext<AuthenticationDbContext>()
               .Argument(ArgumentConstants.PagingInput, a => a.Type<PagedQueryInputType>())
               .ResolveWith<GenericQueryResolvers<T>>(r => r.GetAll(default, default, default))
               .UseFiltering()
@@ -39,7 +38,6 @@ namespace ECDLink.EGraphQL.Registration.AutoGenerateTypes.Queries
             descriptor.Field(GraphFieldNamingHelper.GetFieldName(GraphFieldTypeEnum.Count, typeof(T).Name))
               .Type<IntType>()
               .Directive(metadata)
-              .UseDbContext<AuthenticationDbContext>()
               .Argument(ArgumentConstants.PagingInput, a => a.Type<PagedQueryInputType>())
               .ResolveWith<GenericQueryResolvers<T>>(r => r.Count(default, default, default))
               .UseFiltering();

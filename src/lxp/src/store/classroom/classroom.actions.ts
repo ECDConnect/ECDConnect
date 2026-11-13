@@ -169,12 +169,17 @@ export const upsertClassroom = createAsyncThunk<
   async ({}, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      classroomData: { classroom },
+      classroomData: { classroom, classroomGroupData },
     } = getState();
 
     const token = userAuth?.auth_token;
+    const hasUnsyncedGroups = classroomGroupData.classroomGroups.some(
+      (group) => group.synced !== true
+    );
     const shouldSyncClassroom = Boolean(
-      token && classroom && !classroom.synced
+      token &&
+        classroom &&
+        (!classroom.synced || (classroom.isDummySchool && hasUnsyncedGroups))
     );
 
     if (!shouldSyncClassroom) {
@@ -192,6 +197,7 @@ export const upsertClassroom = createAsyncThunk<
           Name: classroom.name,
           ClassroomImageUrl: classroom.classroomImageUrl,
           IsActive: true, // All classrooms/groups on FE will be active
+          IsDummySchool: classroom.isDummySchool ?? false,
           SiteAddress: classroom?.siteAddress?.addressLine1
             ? mapSiteAddress(classroom.siteAddress as any)
             : null,
@@ -377,6 +383,7 @@ export const upsertClassroomGroups = createAsyncThunk<
               Name: x.name,
               IsActive: true,
               UserId: x.userId,
+              ProgrammeTypeId: null,
             };
 
             return await new ClassroomGroupService(
@@ -881,7 +888,7 @@ const mapClassroomGroupInput = (
   UserId: x.userId,
   ClassroomId: x.classroomId,
   Name: x.name,
-  ProgrammeTypeId: x.programmeTypeId,
+  ProgrammeTypeId: x.programmeTypeId || null,
   IsActive: Boolean(x.isActive),
   Id: x?.id,
 });

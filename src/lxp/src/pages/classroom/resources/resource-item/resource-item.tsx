@@ -157,7 +157,7 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
     if (resourceItem?.dataFree === 'true' || resourceItem?.dataFree === true) {
       return (
         <Alert
-          className="mt-2 mb-4 rounded-md"
+          className="mb-4 mt-2 rounded-md"
           title={`This resource is data free!`}
           type="success"
           titleType="h4"
@@ -166,7 +166,7 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
     } else {
       return (
         <Alert
-          className="mt-2 mb-4 rounded-md"
+          className="mb-4 mt-2 rounded-md"
           title={`This resource is not data free. Going to this link will use your data.`}
           type="warning"
           titleType="h4"
@@ -289,8 +289,15 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
             appDispatch(
               analyticsActions.createEventTracking({
                 category: 'Resources',
-                action: 'See resource click',
+                // Title case to match the name react-ga4 used to send
+                action: 'See Resource Click',
                 label: String(resourceId),
+                params: {
+                  link_url: resourceItem?.link,
+                  resource_title: resourceItem?.title,
+                  // Events are sent on sync, so capture the page at click time
+                  page_location: window.location.href,
+                },
               })
             );
             window.open(resourceItem?.link, '_blank');

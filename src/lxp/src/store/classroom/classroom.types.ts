@@ -11,4 +11,7 @@ export type ClassroomState = {
   } & OfflineCache;
   // use this during setup process to store practitioners and their permissions
   classroomPractitioners: UpdateUserPermissionInputModelInput[];
+  // name of the principal's classroom, for a practitioner they invited who has
+  // no classroom of their own yet
+  invitedUserClassroomName: string | undefined;
 };

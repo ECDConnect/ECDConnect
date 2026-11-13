@@ -13,7 +13,7 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import { options } from './options';
-import { ReactComponent as Emoji3 } from '@/assets/ECD_Connect_emoji3.svg';
+import Emoji3 from '@/assets/ECD_Connect_emoji3.svg?react';
 import { usePrevious, useSessionStorage } from '@ecdlink/core';
 import { practitionerVisitIdKey } from '@/pages/practitioner/practitioner-profile/practitioner-journey/forms';
 import { getSectionsQuestionsByStep } from '@/store/pqa/pqa.selectors';

@@ -7,8 +7,8 @@ import {
   ClipboardCheckIcon,
   FireIcon,
 } from '@heroicons/react/solid';
-import { ReactComponent as Kindgarden } from '@/assets/icon/kindergarten1.svg';
-import { ReactComponent as Crown } from '@/assets/icon/crown.svg';
+import Kindgarden from '@/assets/icon/kindergarten1.svg?react';
+import Crown from '@/assets/icon/crown.svg?react';
 import { PermissionsNames } from '@/pages/principal/components/add-practitioner/add-practitioner.types';
 import { useTenant } from './useTenant';
 

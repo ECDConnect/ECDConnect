@@ -6,7 +6,7 @@ import {
   Card,
   Typography,
 } from '@ecdlink/ui';
-import { ReactComponent as JoinCommunity } from '@/assets/joinCommunity.svg';
+import JoinCommunity from '@/assets/joinCommunity.svg?react';
 import { yesOrNoOptions } from '../../community-welcome.types';
 import { UseFormSetValue } from 'react-hook-form';
 import { useAppDispatch } from '@/store';
@@ -88,7 +88,7 @@ export const Step1: React.FC<Step1Props> = ({
           <Typography
             type={'h4'}
             text={`Would you like to share your information with other ECD Heroes and join the ${appName} community?`}
-            className={'text-sm font-normal'}
+            className={'font-normal'}
             color={'textDark'}
           />
           <Typography
@@ -109,7 +109,7 @@ export const Step1: React.FC<Step1Props> = ({
             textColor="secondary"
           />
         </div>
-        <div className="mt-32 mb-20 max-h-20 w-full p-4 align-bottom">
+        <div className="mb-20 mt-32 max-h-20 w-full p-4 align-bottom">
           <Button
             size="normal"
             className="w-full"

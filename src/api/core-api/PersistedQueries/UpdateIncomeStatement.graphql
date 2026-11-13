@@ -3,6 +3,7 @@ mutation UpdateIncomeStatement($input: IncomeStatementModelInput) {
     id
     month
     year
+    contactedByCoach
     downloaded
     incomeItems {
       incomeTypeId
@@ -14,6 +15,8 @@ mutation UpdateIncomeStatement($input: IncomeStatementModelInput) {
       numberOfChildrenCovered
       payTypeId
       photoProof
+      description
+      isActive
     }
     expenseItems {
       expenseTypeId
@@ -22,6 +25,7 @@ mutation UpdateIncomeStatement($input: IncomeStatementModelInput) {
       amount
       notes
       photoProof
+      isActive
     }
   }
 }

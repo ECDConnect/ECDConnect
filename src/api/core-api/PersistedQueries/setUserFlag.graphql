@@ -1,0 +1,3 @@
+mutation setUserFlag($key: String!, $value: String) {
+  setUserFlag(key: $key, value: $value)
+}

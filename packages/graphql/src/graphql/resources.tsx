@@ -40,6 +40,31 @@ export const GetResources = gql`
   }
 `;
 
+export const GetResourceLinkHealthChecks = gql`
+  query GetResourceLinkHealthChecks(
+    $contentType: String
+    $sectionType: String
+  ) {
+    resourceLinkHealthChecks(
+      contentType: $contentType
+      sectionType: $sectionType
+    ) {
+      contentId
+      contentType
+      sectionType
+      title
+      url
+      status
+      lastCheckStatus
+      lastStatusCode
+      lastError
+      consecutiveFailureCount
+      lastCheckedDate
+      __typename
+    }
+  }
+`;
+
 export const UpdateResourceTypesAndDataFree = gql`
   mutation UpdateResourceTypesAndDataFree(
     $contentId: Int!

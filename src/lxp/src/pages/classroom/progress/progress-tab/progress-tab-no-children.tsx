@@ -1,7 +1,7 @@
 import ROUTES from '@/routes/routes';
 import { Button, Dialog, DialogPosition, Typography } from '@ecdlink/ui';
 import { useHistory } from 'react-router';
-import { ReactComponent as Emoji4Icon } from '@/assets/ECD_Connect_emoji4.svg';
+import Emoji4Icon from '@/assets/ECD_Connect_emoji4.svg?react';
 import { ContactDialog } from '@/components/contact-dialog/contact-dialog';
 import { useSelector } from 'react-redux';
 import { classroomsSelectors } from '@/store/classroom';

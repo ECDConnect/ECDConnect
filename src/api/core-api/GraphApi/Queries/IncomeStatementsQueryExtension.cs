@@ -53,10 +53,25 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         public string GetIncomeStatementPdf(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] IIncomeExpenseService incomeExpenseService,
+            [Service] HierarchyEngine engine,
             Guid statementId)
         {
             var userId = contextAccessor.HttpContext.GetUser().Id;
             var statement = incomeExpenseService.GetStatement(statementId);
+
+            if (statement == null)
+            {
+                throw new GraphQLException(
+                    ErrorBuilder.New()
+                        .SetMessage("Unable to download statement.")
+                        .SetCode("USER_ERROR")
+                        .Build());
+            }
+
+            if (statement.UserId != userId || !engine.UserInHierarchy(userId, statement.UserId.Value, true))
+            {
+                throw new UnauthorizedAccessException("You do not have permission to download this statement.");
+            }
 
             var document = incomeExpenseService.CreateIncomeStatementPDFDocument(userId.ToString(), statement);
 

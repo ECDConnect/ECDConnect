@@ -2,8 +2,8 @@ import { ActionModal, Dialog, DialogPosition, Typography } from '@ecdlink/ui';
 import { useCallback, useState } from 'react';
 import IconRobot from '@/assets/svg-components/iconRobot';
 import EcdConnectRobot from '@/assets/svg-components/ecdConnectRobot';
-import { LocalStorageKeys } from '@ecdlink/core';
-import { setStorageItem } from '@/utils/common/local-storage.utils';
+import { UserFlagKeys } from '@ecdlink/core';
+import { useUserFlag } from '@/hooks/useUserFlag';
 import { useAppContext } from '@/walkthrougContext';
 import { useHistory, useParams } from 'react-router';
 import ROUTES from '@/routes/routes';
@@ -17,6 +17,9 @@ export const ProgrammeWalkthroughStart = ({
 }) => {
   const [isSkipped, setIsSkipped] = useState(false);
   const [isLanguageModalOpen, setIsLanguageModalOpen] = useState(false);
+  const [, completeProgrammeWalkthrough] = useUserFlag(
+    UserFlagKeys.programmeWalkthroughComplete
+  );
 
   const { classroomGroupId } = useParams<ProgrammeDashboardRouteParams>();
 
@@ -40,7 +43,7 @@ export const ProgrammeWalkthroughStart = ({
       <Dialog visible position={DialogPosition.Middle} className="p-4">
         <WalkthroughModal
           onStart={() => {
-            setStorageItem(true, LocalStorageKeys.programmeWalkthroughComplete);
+            completeProgrammeWalkthrough();
             setState({ run: true, tourActive: true, stepIndex: 0 });
             onClose();
           }}
@@ -72,10 +75,7 @@ export const ProgrammeWalkthroughStart = ({
               colour: 'quatenary',
               type: 'filled',
               onClick: () => {
-                setStorageItem(
-                  true,
-                  LocalStorageKeys.programmeWalkthroughComplete
-                );
+                completeProgrammeWalkthrough();
                 onClose();
               },
               leadingIcon: 'XIcon',

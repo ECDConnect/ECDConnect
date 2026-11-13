@@ -1,10 +1,10 @@
 import { PointsSummaryDto } from '@ecdlink/core';
 import { PointsDetailsCard, Typography, renderIcon } from '@ecdlink/ui';
 import { format } from 'date-fns';
-import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
-import { ReactComponent as Star } from '../../../assets/star.svg';
-import { ReactComponent as Trophy } from '../../../assets/trophy.svg';
-import { ReactComponent as EmojiLightBulb } from '@ecdlink/ui/src/assets/emoji/emoji_lightbulb.svg';
+import Badge from '@ecdlink/ui/src/assets/badge/badge_neutral.svg?react';
+import Star from '../../../assets/star.svg?react';
+import Trophy from '../../../assets/trophy.svg?react';
+import EmojiLightBulb from '@ecdlink/ui/src/assets/emoji/emoji_lightbulb.svg?react';
 import { useTenant } from '@/hooks/useTenant';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';

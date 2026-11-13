@@ -12,7 +12,7 @@ namespace ECDLink.ContentManagement.GraphQL.Resolvers.FieldResolvers.Base
 {
     public abstract class FieldResolverBase
     {
-        protected object GetFieldValue(IPureResolverContext ctx, string fieldName)
+        protected object GetFieldValue(IResolverContext ctx, string fieldName)
         {
             var model = ctx.Parent<IDictionary<string, object>>();
 
@@ -58,7 +58,7 @@ namespace ECDLink.ContentManagement.GraphQL.Resolvers.FieldResolvers.Base
             }
         }
 
-        protected Guid GetContextLocale(IPureResolverContext ctx)
+        protected Guid GetContextLocale(IResolverContext ctx)
         {
             var localeId = ArgumentHelper.GetArgument(ctx, ArgumentConstants.LocaleId);
 

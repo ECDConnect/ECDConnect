@@ -155,6 +155,8 @@ namespace ECDLink.DataAccessLayer.Context
 
         public DbSet<UserResourceLikes> UserResourceLikes { get; set; }
         public DbSet<UserResourceProblemReport> UserResourceProblemReports { get; set; }
+        public DbSet<UserFlag> UserFlags { get; set; }
+        public DbSet<ResourceLinkHealthCheck> ResourceLinkHealthChecks { get; set; }
 
         public DbSet<Holiday> Holidays { get; set; }
         public DbSet<Invite> Invite { get; set; }

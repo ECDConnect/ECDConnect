@@ -28,10 +28,11 @@ import {
   PractitionerSetupSteps,
   RegisterPractitioner,
 } from '../../setup-principal/setup-principal.types';
-import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
+import Cebisa from '@/assets/icon_cebisa.svg?react';
 import { classroomsSelectors } from '@/store/classroom';
 import { useTenant } from '@/hooks/useTenant';
-import { LocalStorageKeys } from '@ecdlink/core';
+import { SessionStorageKeys } from '@ecdlink/core';
+import { getSessionItem } from '@/utils/common/session-storage.utils';
 import { AddNewPractitionerModel } from '../add-practitioner/add-practitioner.types';
 
 export interface StackListItems extends ActionListDataItem {
@@ -66,9 +67,9 @@ export default function ConfirmPractitioners({
   const [listItems, setListItems] = useState<StackListItems[]>([]);
   const [invitingPractitioner, setInvitingPractitioner] =
     useState<AddNewPractitionerModel>();
-  const inviTePractitionerIdNumber = localStorage
-    .getItem(LocalStorageKeys.practitionerInvitedPrincipalIdNumber)
-    ?.replace(/['"]+/g, '');
+  const inviTePractitionerIdNumber = getSessionItem<string>(
+    SessionStorageKeys.practitionerInvitedPrincipalIdNumber
+  );
   const hasInvitingPractitioner = useMemo(
     () =>
       listItems?.find((item) => item?.idNumber === inviTePractitionerIdNumber),

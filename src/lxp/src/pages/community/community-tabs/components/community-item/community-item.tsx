@@ -8,7 +8,8 @@ import { CommunityDashboard } from '../community-dashboard/community-dashboard';
 import { practitionerSelectors } from '@/store/practitioner';
 import CommunityWrapper from './community-wrapper/CommunityWrapper';
 import { useAppContext } from '@/walkthrougContext';
-import { LocalStorageKeys } from '@ecdlink/core';
+import { UserFlagKeys } from '@ecdlink/core';
+import { useUserFlag } from '@/hooks/useUserFlag';
 
 export const CommunityItem = ({
   setJoinCommunity,
@@ -24,18 +25,15 @@ export const CommunityItem = ({
   const isFirstTimeInCommunity = !practitioner?.clickedCommunityTab;
   const { setState } = useAppContext();
   const screenHeight = window.innerHeight;
-  const hasClickedOnCommunityWalkThrough =
-    localStorage.getItem(LocalStorageKeys.hasClickedOnCommunityWalkThrough) ||
-    false;
+  const [hasSeenCommunityWalkthrough, completeCommunityWalkthrough] =
+    useUserFlag(UserFlagKeys.communityWalkthroughComplete);
 
   useEffect(() => {
-    if (!hasClickedOnCommunityWalkThrough) {
+    if (!hasSeenCommunityWalkthrough) {
       setState({ run: true, tourActive: true, stepIndex: 0 });
-      localStorage.setItem(
-        LocalStorageKeys.hasClickedOnCommunityWalkThrough,
-        'true'
-      );
+      completeCommunityWalkthrough();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [notJoining, isFirstTimeInCommunity, setState]);
 
   const renderCommunityItemScreen = useMemo(() => {

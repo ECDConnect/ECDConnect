@@ -28,6 +28,20 @@ export const pushAnalytics = createAsyncThunk<
 
       if (eventTracking) {
         for (const eventTrackingItem of eventTracking) {
+          if (eventTrackingItem.params) {
+            // The object form of ReactGA.event drops custom params, so use the
+            // name + params form to send them through to GA4
+            ReactGA.event(eventTrackingItem.action, {
+              event_category: eventTrackingItem.category,
+              event_label: eventTrackingItem.label,
+              value: eventTrackingItem.value
+                ? Number(eventTrackingItem.value)
+                : undefined,
+              ...eventTrackingItem.params,
+            });
+            continue;
+          }
+
           ReactGA.event({
             action: eventTrackingItem.action,
             category: eventTrackingItem.category,

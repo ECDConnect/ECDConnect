@@ -1,4 +1,6 @@
-import { useMutation, useQuery } from '@apollo/client';
+import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
+import { SessionStorageKeys } from '@ecdlink/core';
+import { setSessionItem } from '../../../../utils/session-storage.utils';
 import {
   NOTIFICATION,
   PermissionEnum,
@@ -14,6 +16,7 @@ import {
   sentInviteToMultipleUsers,
   deleteMultipleUsers,
   GetAllPortalPractitioners,
+  GetAllPortalPractitionersCount,
 } from '@ecdlink/graphql';
 import {
   ActionModal,
@@ -34,7 +37,6 @@ import { useUser } from '../../../../hooks/useUser';
 import { useHistory, useLocation } from 'react-router';
 import { format } from 'date-fns';
 
-import { filterByValue } from '../../../../utils/string-utils/string-utils';
 import ROUTES from '../../../../routes/app.routes-constants';
 import { TableRefMethods } from '@ecdlink/ui/lib/components/table/types';
 import {
@@ -48,6 +50,12 @@ import PractitionerPanelCreate from './components/practitioner-panel-create/prac
 import { columnColor } from '../../../../utils/app-usage/app-usage-utils';
 import { useTenant } from '../../../../hooks/useTenant';
 import { UsersRouteRedirectTypeEnum } from '../../../view-user/view-user.types';
+import {
+  TablePagination,
+  TABLE_ROWS_PER_PAGE,
+} from '../../components/table-pagination/table-pagination';
+
+const PAGE_SIZE = 20;
 
 export const oaSortByConnectUsage: SearchDropDownOption<string>[] = [
   ConnectUsage?.LastOnlineOver6Months,
@@ -110,6 +118,7 @@ export default function Practitioners() {
   const [handleAddUser, setHandleAddUser] = useState(false);
   const location = useLocation<PractionerRouteState>();
   const [selectedUsers, setSelectedUsers] = useState<Irow[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const isAllInactive = selectedUsers.every((obj) => obj?.isActive === false);
 
@@ -199,9 +208,9 @@ export default function Practitioners() {
     const user = tableData?.find(
       (item) => item?.userId === selectedRow?.userId
     );
-    localStorage.setItem(
-      'selectedUser',
-      selectedRow?.userId ?? selectedRow?.id
+    setSessionItem(
+      selectedRow?.userId ?? selectedRow?.id,
+      SessionStorageKeys.selectedUser
     );
     history.push({
       pathname: ROUTES.USERS.VIEW_USER,
@@ -219,12 +228,84 @@ export default function Practitioners() {
     });
   };
 
-  const queryVariables = useMemo(
+  const statusSearch = useMemo(
+    () => statusFilter?.map((item) => item?.value),
+    [statusFilter]
+  );
+
+  // Filters shared between the table's paged query and the total-count query.
+  const filterVariables = useMemo(
     () => ({
-      search: '',
+      search: searchValue,
       provinceSearch: filteredProvinces,
       connectUsageSearch: filteredConnectUsage,
       practitionerTypeSearch: filteredPractitionerTypes,
+      statusSearch,
+      insertedDateFrom: startDate && endDate ? startDate : null,
+      insertedDateTo: startDate && endDate ? endDate : null,
+    }),
+    [
+      searchValue,
+      filteredProvinces,
+      filteredConnectUsage,
+      filteredPractitionerTypes,
+      statusSearch,
+      startDate,
+      endDate,
+    ]
+  );
+
+  // Whenever a filter or the search term changes, jump back to page 1.
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterVariables]);
+
+  const queryVariables = useMemo(
+    () => ({
+      ...filterVariables,
+      pagingInput: {
+        pageNumber: currentPage,
+        pageSize: PAGE_SIZE,
+      },
+      order: [
+        {
+          insertedDate: 'DESC',
+        },
+      ],
+    }),
+    [filterVariables, currentPage]
+  );
+
+  const { data, refetch, loading } = useQuery(GetAllPortalPractitioners, {
+    variables: queryVariables,
+    fetchPolicy: 'network-only',
+  });
+
+  const { data: countData, loading: countLoading } = useQuery(
+    GetAllPortalPractitionersCount,
+    {
+      variables: filterVariables,
+      fetchPolicy: 'network-only',
+    }
+  );
+
+  const totalCount = countData?.allPortalPractitionersCount ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+
+  // Full, unpaged practitioner list used only to check for ID/username duplicates
+  // when adding a new practitioner — kept separate from the paged table query.
+  const [
+    fetchAllPractitionersForDuplicateCheck,
+    { data: allPractitionersData },
+  ] = useLazyQuery(GetAllPortalPractitioners, {
+    variables: {
+      search: '',
+      provinceSearch: [],
+      connectUsageSearch: [],
+      practitionerTypeSearch: [],
+      statusSearch: [],
+      insertedDateFrom: null,
+      insertedDateTo: null,
       pagingInput: {
         pageNumber: 1,
         pageSize: null,
@@ -234,12 +315,7 @@ export default function Practitioners() {
           insertedDate: 'DESC',
         },
       ],
-    }),
-    [filteredConnectUsage, filteredPractitionerTypes, filteredProvinces]
-  );
-
-  const { data, refetch, loading } = useQuery(GetAllPortalPractitioners, {
-    variables: queryVariables,
+    },
     fetchPolicy: 'network-only',
   });
 
@@ -297,57 +373,9 @@ export default function Practitioners() {
       const copyItems = data.allPortalPractitioners.map(
         (item: PractitionerDto) => mapUserTableItem(item)
       );
-
-      const filteredByDateData = copyItems?.filter((d) => {
-        return (
-          new Date(d?.user.insertedDate).getTime() >=
-            new Date(startDate)?.getTime() &&
-          new Date(d?.user.insertedDate).getTime() <=
-            new Date(endDate)?.getTime()
-        );
-      });
-
-      if (startDate && endDate) {
-        if (statusFilter?.length === 1) {
-          if (statusFilter.some((e) => e.value === Status?.ACTIVE)) {
-            const filterByStatusActive = filteredByDateData?.filter(
-              (item) => item?.isActive
-            );
-            setTableData(filterByStatusActive);
-            return;
-          } else {
-            const filterByStatusInactive = filteredByDateData?.filter(
-              (item) => !item?.isActive
-            );
-            setTableData(filterByStatusInactive);
-            return;
-          }
-        }
-        setTableData(filteredByDateData);
-        return;
-      }
-
-      if (statusFilter) {
-        if (statusFilter?.length === 1) {
-          if (statusFilter.some((e) => e.value === Status?.ACTIVE)) {
-            const filterByStatusActive = copyItems?.filter(
-              (item) => item?.isActive
-            );
-            setTableData(filterByStatusActive);
-            return;
-          } else {
-            const filterByStatusInactive = copyItems?.filter(
-              (item) => !item?.isActive
-            );
-            setTableData(filterByStatusInactive);
-            return;
-          }
-        }
-      }
-
       setTableData(copyItems);
     }
-  }, [data, endDate, startDate, statusFilter]);
+  }, [data]);
 
   // const sendInvite = async (practitioner: PractitionerDto) => {
   //   dialog({
@@ -383,7 +411,7 @@ export default function Practitioners() {
       overlay: true,
       render: (onSubmit: any) => (
         <PractitionerPanelCreate
-          practitioners={data?.allPortalPractitioners}
+          practitioners={allPractitionersData?.allPortalPractitioners}
           key={`userPanelCreate`}
           closeDialog={(userCreated: boolean) => {
             onSubmit();
@@ -435,6 +463,12 @@ export default function Practitioners() {
     tableRef?.current?.resetSelectedRows();
   };
 
+  const goToPage = (page: number) => {
+    setCurrentPage(Math.min(Math.max(1, page), totalPages));
+    setSelectedUsers([]);
+    handleResetSelectedRows();
+  };
+
   const columns: Icolumn[] = [
     {
       field: 'displayColumnIdPassportEmail',
@@ -459,30 +493,28 @@ export default function Practitioners() {
   ];
 
   const rows: Irow[] =
-    (!!searchValue ? filterByValue(tableData, searchValue) : tableData)?.map(
-      (item) => ({
-        ...item,
-        key: item?.id,
-        displayColumnIdPassportEmail:
-          item?.user?.userName ?? item?.idNumber ?? '-',
-        fullName: `${item?.user?.firstName} ${item?.user?.surname}`,
-        connectUsageComponent: item?.user?.connectUsage
-          ? columnColor(item.user.connectUsage, item.user.connectUsageColor)
-          : '-',
-        insertedDateFormatted: item?.user?.insertedDate
-          ? format(new Date(item?.user?.insertedDate), 'dd/MM/yyyy')
-          : '-',
-        isActiveComponent: (
-          <p
-            className={
-              item?.user?.isActive ? 'text-successMain' : 'text-errorMain'
-            }
-          >
-            {item?.user?.isActive ? 'Active' : 'Inactive'}
-          </p>
-        ),
-      })
-    ) ?? [];
+    tableData?.map((item) => ({
+      ...item,
+      key: item?.id,
+      displayColumnIdPassportEmail:
+        item?.user?.userName ?? item?.idNumber ?? '-',
+      fullName: `${item?.user?.firstName} ${item?.user?.surname}`,
+      connectUsageComponent: item?.user?.connectUsage
+        ? columnColor(item.user.connectUsage, item.user.connectUsageColor)
+        : '-',
+      insertedDateFormatted: item?.user?.insertedDate
+        ? format(new Date(item?.user?.insertedDate), 'dd/MM/yyyy')
+        : '-',
+      isActiveComponent: (
+        <p
+          className={
+            item?.user?.isActive ? 'text-successMain' : 'text-errorMain'
+          }
+        >
+          {item?.user?.isActive ? 'Active' : 'Inactive'}
+        </p>
+      ),
+    })) ?? [];
 
   const inviteUsers = useCallback(() => {
     sendInvitations({
@@ -620,12 +652,13 @@ export default function Practitioners() {
   return (
     <>
       <div className="bg-adminPortalBg h-full rounded-2xl p-4 ">
-        <div className="rounded-xl bg-white p-12">
+        <div className="rounded-xl bg-white p-12 [&_tbody_td]:py-2">
           <Table
             watchMode={true}
             ref={tableRef}
             rows={rows}
             columns={columns}
+            rowsPerPage={TABLE_ROWS_PER_PAGE}
             onClearFilters={clearFilters}
             onChangeSelectedRows={setSelectedUsers}
             onClickRow={viewSelectedRow}
@@ -640,7 +673,10 @@ export default function Practitioners() {
               hasPermission(PermissionEnum.create_user) && !tenant.isOpenAccess
                 ? {
                     text: 'Add Practitioners',
-                    onClick: () => setHandleAddUser(true),
+                    onClick: () => {
+                      setHandleAddUser(true);
+                      fetchAllPractitionersForDuplicateCheck();
+                    },
                     icon: 'PlusIcon',
                   }
                 : undefined
@@ -752,10 +788,20 @@ export default function Practitioners() {
               },
             ]}
           />
+          {rows.length > 0 && (
+            <TablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalCount={totalCount}
+              countLoading={countLoading}
+              isLoading={isLoading}
+              onPageChange={goToPage}
+            />
+          )}
         </div>
       </div>
       <Dialog
-        className="absolute left-56 bottom-96 h-96 w-6/12"
+        className="absolute bottom-96 left-56 h-96 w-6/12"
         stretch
         visible={handleAddUser}
         position={DialogPosition.Middle}

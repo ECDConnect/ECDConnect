@@ -10,11 +10,11 @@ import {
   Typography,
   renderIcon,
 } from '@ecdlink/ui';
-import { ReactComponent as VeryHappy } from '@/assets/emoji_yellow_bigsmile.svg';
-import { ReactComponent as Happy } from '@/assets/ECD_Connect_emoji1.svg';
-import { ReactComponent as Neutral } from '@/assets/ECD_Connect_emoji_neutral.svg';
-import { ReactComponent as Unhappy } from '@/assets/ECD_Connect_emoji_unhappy.svg';
-import { ReactComponent as VeryUnhappy } from '@/assets/red_rating.svg';
+import VeryHappy from '@/assets/emoji_yellow_bigsmile.svg?react';
+import Happy from '@/assets/ECD_Connect_emoji1.svg?react';
+import Neutral from '@/assets/ECD_Connect_emoji_neutral.svg?react';
+import Unhappy from '@/assets/ECD_Connect_emoji_unhappy.svg?react';
+import VeryUnhappy from '@/assets/red_rating.svg?react';
 import { useCallback, useEffect, useState } from 'react';
 import { useSnackbar } from '@ecdlink/core';
 import { useTenant } from '@/hooks/useTenant';

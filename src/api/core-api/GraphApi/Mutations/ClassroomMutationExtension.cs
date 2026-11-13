@@ -47,19 +47,44 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var pracRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             ClassroomGroup classRoomGroup = classRepo.GetAll().Where(x => x.Id == id).Include(x => x.Classroom).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
 
+            // Hot Chocolate binds omitted optional UUIDs as Guid.Empty.
+            // ProgrammeType is optional on OA class setup, so Empty must become null.
+            if (input.ProgrammeTypeId == Guid.Empty)
+            {
+                input.ProgrammeTypeId = null;
+            }
+
+            // UserId is required. If the client omitted it, use the caller, then the hierarchy row.
+            if (!input.UserId.HasValue || input.UserId.Value == Guid.Empty)
+            {
+                var callerHierarchy = engine.GetUserHierarchy(uId);
+                input.UserId = engine.GetUserIdByHierarchy(callerHierarchy) ?? uId;
+            }
+
+            if (!input.UserId.HasValue || input.UserId.Value == Guid.Empty)
+            {
+                throw new GraphQLException("Cannot create or update class: UserId is required.");
+            }
+
             Guid? programmeType = input.ProgrammeTypeId;
 
-            var hierarchy = engine.GetUserHierarchy(input.UserId.HasValue ? input.UserId : uId);
+            var hierarchy = engine.GetUserHierarchy(input.UserId);
 
             if (classRoomGroup == null)
             {
                 if (!string.IsNullOrEmpty(hierarchy))
                 {
+                    var classroomExists = schoolRepo.GetAll().Any(x => x.Id == input.ClassroomId);
+                    if (!classroomExists)
+                    {
+                        throw new GraphQLException($"Cannot create class '{input.Name}': classroom {input.ClassroomId} was not found. Save the preschool before adding classes.");
+                    }
+
                     //create new classroomgroup
                     ClassroomGroup classRoomCreate = new ClassroomGroup()
                     {
                         Id = input.Id,
-                        UserId = input.UserId != null ? input.UserId : null,
+                        UserId = input.UserId,
                         ProgrammeTypeId = programmeType,
                         IsActive = true,
                         UpdatedBy = uId.ToString(),
@@ -68,7 +93,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         ClassroomId = input.ClassroomId
                     };
 
-                    var newClassRoomGroup = classRepo.Insert(classRoomCreate);
+                    ClassroomGroup newClassRoomGroup;
+                    try
+                    {
+                        newClassRoomGroup = classRepo.Insert(classRoomCreate);
+                    }
+                    catch (DbUpdateException ex)
+                    {
+                        throw new GraphQLException(ex.InnerException?.Message ?? ex.Message);
+                    }
                     UpdateClassProgrammeForPractitioner(contextAccessor, repoFactory, input.ClassroomId, hierarchy);
 
                     // EC-3508 - as soon as a class is created, we set the progress to 2

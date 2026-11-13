@@ -7,6 +7,10 @@ import {
   UpdateUsernameModel,
   VerifySignupCellPhoneNumberModel,
 } from '@ecdlink/core';
+import {
+  clearAcquisitionTracking,
+  getAcquisitionTracking,
+} from '@/utils/user/acquisition-tracking.utils';
 
 export enum CreateUserResult {
   Success = 'SUCCESS',
@@ -66,6 +70,7 @@ export const updateUsername = async (
     token,
     shareInfo,
     registerType,
+    ...getAcquisitionTracking(),
   };
 
   const result = await new AuthService()
@@ -73,6 +78,10 @@ export const updateUsername = async (
     .catch((error) => {
       return false;
     });
+
+  if (result) {
+    clearAcquisitionTracking();
+  }
 
   return !!result;
 };
@@ -108,6 +117,7 @@ export const updateOpenAccessPractitioner = async (
     shareInfoPartners,
     googleToken,
     facebookToken,
+    ...getAcquisitionTracking(),
   };
 
   const userUpdated = await new AuthService()
@@ -141,6 +151,7 @@ export const registerOpenAccessUser = async (
     shareInfoPartners,
     googleToken,
     facebookToken,
+    ...getAcquisitionTracking(),
   };
 
   const userCreated = await new AuthService()
@@ -155,8 +166,10 @@ export const registerOpenAccessUser = async (
   if (userCreated === CreateUserResult.FailedCreateUsername)
     return CreateUserResult.FailedCreateUsername;
 
-  if (userCreated === CreateUserResult.SuccessRegistered)
+  if (userCreated === CreateUserResult.SuccessRegistered) {
+    clearAcquisitionTracking();
     return CreateUserResult.SuccessLogin;
+  }
 
   return CreateUserResult.RegistrationFailed;
 };

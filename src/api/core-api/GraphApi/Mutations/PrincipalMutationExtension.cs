@@ -72,7 +72,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         if (practitioner.PrincipalHierarchy.HasValue
                             && practitioner.PrincipalHierarchy != principalUser.UserId)
                         {
-                            throw new QueryException(
+                            throw new GraphQLException(
                                 "This practitioner is already linked to a different programme.");
                         }
 
@@ -234,7 +234,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             var currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id;
 
             if (user is null || currentUserId is null)
-                throw new QueryException("User not found.");
+                throw new GraphQLException("User not found.");
 
             if (phoneNumber != user.PhoneNumber && !string.IsNullOrWhiteSpace(phoneNumber))
             {

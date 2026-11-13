@@ -1,0 +1,3 @@
+mutation SaveCertificateDetails($certificateName: String!, $certificateRegNr: String!, $visitId: UUID, $userTrainingCourseId: UUID) {
+  saveCertificateDetails(certificateName: $certificateName, certificateRegNr: $certificateRegNr, visitId: $visitId, userTrainingCourseId: $userTrainingCourseId)
+}

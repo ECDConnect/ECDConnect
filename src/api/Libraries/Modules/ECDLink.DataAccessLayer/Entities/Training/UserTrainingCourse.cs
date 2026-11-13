@@ -20,7 +20,17 @@ namespace ECDLink.DataAccessLayer.Entities.Training
 
         public string CourseName { get; set; }
 
-        public DateTime CompletedDate { get; set; }
+        public DateTime? CompletedDate { get; set; }
+
+        public DateTime? StartedDate { get; set; }
+
+        public decimal ProgressPercentage { get; set; }
+
+        public DateTime? LastActivityDate { get; set; }
+
+        public string ExternalCourseId { get; set; }
+
+        public string Status { get; set; }
     }
 
     public interface UserTrainingCourseJoin<TKey>

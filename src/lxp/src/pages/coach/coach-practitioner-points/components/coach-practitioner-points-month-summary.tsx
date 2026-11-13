@@ -1,7 +1,7 @@
 import { Divider, PointsDetailsCard, Typography } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { format } from 'date-fns';
-import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
+import Badge from '@ecdlink/ui/src/assets/badge/badge_neutral.svg?react';
 import { practitionerForCoachSelectors } from '@/store/practitionerForCoach';
 
 export type PointsMonthSummaryProps = {
@@ -27,7 +27,7 @@ export const CoachPractitionerPointsMonthSummary: React.FC<
 
   return (
     <>
-      <Divider dividerType="dashed" className="mt-3 mb-3" />
+      <Divider dividerType="dashed" className="mb-3 mt-3" />
       <Typography type={'h1'} color="black" text={format(date, 'MMMM')} />
       <Typography type={'h2'} color="black" text={`${pointsTotal} points`} />
       {pointsEarnedForMonth?.map((pointsLibraryScore) => {

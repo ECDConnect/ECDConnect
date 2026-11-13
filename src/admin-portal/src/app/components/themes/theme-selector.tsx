@@ -143,12 +143,12 @@ const ThemeSelector: React.FC<ThemeSelectorProps> = ({
         />
         <Typography type="help" color="textMid" text={`Optional`} />
         <Alert
-          className="mt-2 mb-4 rounded-md"
+          className="mb-4 mt-2 rounded-md"
           message={`Editing the theme here will update the theme for all translations of this page.`}
           type="warning"
         />
 
-        <div className="mt-4 overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
+        <div className="mt-4">
           {tableData &&
             tableData.map((item: any, index: number) => {
               const maximumItemsChecked = tableData.filter((x) =>

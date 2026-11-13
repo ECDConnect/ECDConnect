@@ -87,7 +87,7 @@ namespace EcdLink.Api.CoreApi.Storage.Api
             var fileType = _fileService.GetFileTypeEnumFromContainer(container);
             
             // anonymous access allowed
-            if (fileType == FileTypeEnum.Theme) return;
+            if (fileType == FileTypeEnum.Theme || fileType == FileTypeEnum.Config) return;
 
             // authorized only.
             var user = _contextAccessor.HttpContext.GetUser();

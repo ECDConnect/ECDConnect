@@ -6,8 +6,6 @@ import Joyride, {
 import { Button, Card, SliderPagination, Typography } from '@ecdlink/ui';
 import WalktroughImage from '../../../../../assets/walktroughImage.png';
 import { useAppContext } from '@/walkthrougContext';
-import { LocalStorageKeys } from '@ecdlink/core';
-import { setStorageItem } from '@/utils/common/local-storage.utils';
 
 export default function ChildWrapper() {
   const {
@@ -140,7 +138,6 @@ export default function ChildWrapper() {
       lifecycle === 'complete' ||
       type === 'tour:end'
     ) {
-      setStorageItem(true, LocalStorageKeys.childProfileTutorialComplete);
       setState({ run: false, stepIndex: 0, tourActive: false });
     }
   };

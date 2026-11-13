@@ -1,0 +1,7 @@
+query userFlags {
+  userFlags {
+    id
+    flagKey
+    flagValue
+  }
+}

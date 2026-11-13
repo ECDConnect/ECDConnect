@@ -1,4 +1,4 @@
-import { LoginRequestModel } from '@ecdlink/core';
+import { LocalStorageKeys, LoginRequestModel } from '@ecdlink/core';
 import {
   ActionModal,
   Alert,
@@ -27,18 +27,23 @@ import ROUTES from '@routes/routes';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
 import { triggerBackgroundSync } from '@/store/sync/sync.actions';
-const CryptoJS = require('crypto-js');
-const version: string =
-  process.env.REACT_APP_VERSION ?? require('../../../../package.json').version;
+import CryptoJS from 'crypto-js';
+const version: string = import.meta.env.REACT_APP_VERSION;
 
 interface LoginModalProps {
   loginSuccessful: () => void;
   isLocalExpiration?: boolean;
+  title?: string;
+  detail?: string;
+  onBack?: () => void;
 }
 
 export const LoginModal: React.FC<LoginModalProps> = ({
   loginSuccessful,
   isLocalExpiration,
+  title = 'Your session has expired',
+  detail = 'If you would like to continue, please re-login or reset',
+  onBack,
 }) => {
   const appDispatch = useAppDispatch();
   const history = useHistory();
@@ -83,7 +88,16 @@ export const LoginModal: React.FC<LoginModalProps> = ({
       await resetAppStore();
       await resetAuth();
       await resetUser();
+      const acquisitionTracking = localStorage.getItem(
+        LocalStorageKeys.acquisitionTracking
+      );
       localStorage?.clear();
+      if (acquisitionTracking) {
+        localStorage.setItem(
+          LocalStorageKeys.acquisitionTracking,
+          acquisitionTracking
+        );
+      }
       history.push(ROUTES.LOGIN);
     }
     setDisplayError(false);
@@ -161,10 +175,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           icon="ExclamationCircleIcon"
           iconBorderColor="errorBg"
           iconColor="errorMain"
-          importantText={`Your session has expired`}
-          paragraphs={[
-            'If you would like to continue, please re-login or reset',
-          ]}
+          importantText={title}
+          paragraphs={[detail]}
         />
 
         <form>
@@ -188,7 +200,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             )}
             {!idFieldVisible && (
               <Button
-                className={'mt-3 mb-2'}
+                className={'mb-2 mt-3'}
                 type="outlined"
                 color="primary"
                 background={'transparent'}
@@ -204,7 +216,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             )}
             {idFieldVisible && (
               <Button
-                className={'mt-3 mb-2'}
+                className={'mb-2 mt-3'}
                 type="outlined"
                 color="primary"
                 size="small"
@@ -220,7 +232,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             )}
             <PasswordInput<LoginModel>
               label={'Password'}
-              className={'mt-1 mb-2'}
+              className={'mb-2 mt-1'}
               nameProp={'password'}
               sufficIconColor={'uiMidDark'}
               value={loginFormGetValues().password}
@@ -229,7 +241,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             <Divider></Divider>
             {displayError && (
               <Alert
-                className={'mt-5 mb-3'}
+                className={'mb-3 mt-5'}
                 message={'Password or username incorrect. Please try again'}
                 type={'error'}
               />
@@ -237,7 +249,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           </div>
           {!isOnline && (
             <Alert
-              className={'mt-5 mb-3'}
+              className={'mb-3 mt-5'}
               title="Your internet connection is unstable."
               type={'warning'}
             />
@@ -257,6 +269,21 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           >
             <Typography type="help" color="white" text={'Log in'}></Typography>
           </Button>
+
+          {onBack && (
+            <Button
+              className={'mt-3 w-full'}
+              type="outlined"
+              color="primary"
+              onClick={onBack}
+            >
+              <Typography
+                type="help"
+                color="primary"
+                text={'Back to PIN'}
+              ></Typography>
+            </Button>
+          )}
 
           <Button
             className={'mt-3 w-full'}

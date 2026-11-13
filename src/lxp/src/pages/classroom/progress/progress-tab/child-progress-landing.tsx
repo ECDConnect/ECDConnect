@@ -25,15 +25,17 @@ import { ProgressTabReportSummary } from './progress-tab-report-summary';
 import { ProgressTabObservationsSummary } from './progress-tab-observations-summary';
 import { format } from 'date-fns';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ReactComponent as RobotIcon } from '@/assets/iconRobot.svg';
+import RobotIcon from '@/assets/iconRobot.svg?react';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router';
 import { useProgressForChildren } from '@/hooks/useProgressForChildren';
 import { ProgressCaregiverReportPdf } from '../caregiver-report-pdf/caregiver-report-pdf';
-import { ReactComponent as CompleteImage } from '@/assets/celebrateIcon.svg';
+import CompleteImage from '@/assets/celebrateIcon.svg?react';
 import { ProgressTabReportPeriodsCompleted } from './progress-tab-report-periods-completed';
 import { progressTrackingActions } from '@/store/progress-tracking';
 import { useAppDispatch } from '@/store';
+import { JoinOrAddPreschoolModal } from '@/pages/business/registration/welcome-registration/components/trial-period/join-or-add-preschool-modal';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 
 export type ChildProgressLandingRouteState = {
   childId: string;
@@ -49,6 +51,9 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
   const history = useHistory();
   const dialog = useDialog();
   const appDispatch = useAppDispatch();
+  // isTrialPeriod is only true for an open access user who is still within the
+  // 30 day trial and has not yet joined or added a preschool.
+  const isTrialPeriod = useIsTrialPeriod();
   const { isOnline } = useOnlineStatus();
   const [isReportReady, setIsReportReady] = useState(false);
 
@@ -201,6 +206,35 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
   };
 
   useEffect(() => {
+    // `isTrialPeriod` is `undefined` until the practitioner has finished
+    // (re)loading - e.g. straight after an in-app logout/login, where redux is
+    // wiped and repopulated asynchronously. Only act once it has resolved so we
+    // don't bail out permanently before the trial state is known.
+    if (isTrialPeriod !== true) return;
+
+    // Defer so this isn't overwritten by other dialogs opened during the
+    // post-login bootstrap (the dialog service only holds one dialog at a time).
+    const timeout = setTimeout(() => {
+      dialog({
+        blocking: true,
+        position: DialogPosition.Middle,
+        render: (onSubmit) => (
+          <JoinOrAddPreschoolModal
+            onSubmit={onSubmit}
+            detailText={`To use this part, please share some details about yourself and your preschool.`}
+            setupIcon="HomeIcon"
+            cancelIcon="ClockIcon"
+            // Return to the dashboard instead of navigating to the business view.
+            onCancel={() => history.push(ROUTES.DASHBOARD)}
+          />
+        ),
+      });
+    }, 0);
+
+    return () => clearTimeout(timeout);
+  }, [dialog, isTrialPeriod, history]);
+
+  useEffect(() => {
     const allReportsGenerated = Object.values(generatedReports).every((x) => x);
     if (allReportsGenerated) {
       setGeneratingReports(false);
@@ -237,6 +271,8 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
     ? (isWithinReportPeriod && percentageReportsCompleted === 100) ||
       (!isWithinReportPeriod && percentageObservationsCompleted === 100)
     : percentageObservationsCompleted === 100;
+
+  const showProgressTabReportPeriodsCompleted = isAfterLastReport;
 
   return (
     <>

@@ -12,6 +12,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public DateTime? DateValue { get; set; }
         public string Type { get; set; }
         public Guid? VisitId { get; set; }
+        public Guid? UserTrainingCourseId { get; set; }
+        public string CertificateName { get; set; }
         public string SecondaryText { get; set; }
     }
 

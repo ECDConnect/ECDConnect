@@ -10,5 +10,7 @@ namespace ECDLink.DataAccessLayer.Entities
         public bool SyncPoints { get; set; }
         public bool SyncPermissions { get; set; }
         public bool SyncLearners { get; set; }
+        public bool SyncPractitioners { get; set; }
+        public bool SyncAttendance { get; set; }
     }
 }

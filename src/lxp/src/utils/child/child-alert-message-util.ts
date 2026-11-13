@@ -57,8 +57,6 @@ export const getChildAlertModel = ({
     attendanceLastWeek ?? []
   );
 
-  const isLessThan75Percent = percentage < 0.75;
-
   if (isChildRegistrationIncomplete) {
     return {
       status: 'error',
@@ -78,6 +76,7 @@ export const getChildAlertModel = ({
   }
 
   if (attendanceLastWeek?.length) {
+    const isLessThan75Percent = percentage < 0.75;
     return {
       status: isLessThan75Percent ? 'warning' : 'success',
       message: `Attended ${attendedDays} of ${totalDays} days last week`,

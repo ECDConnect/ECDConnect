@@ -1,5 +1,10 @@
 import * as heroIconsSolid from '@heroicons/react/solid';
 
+// An imported image is a data: URI when the bundler inlines it, otherwise a
+// URL (always the case on the Vite dev server). Heroicon names are neither.
+const isImageSource = (icon?: string) =>
+  !!icon && (icon.startsWith('data:image/') || /[/.]/.test(icon));
+
 const renderIcon = (
   iconName: string,
   className: string = '',
@@ -18,4 +23,4 @@ const renderIcon = (
   return <SelectedIcon className={className} />;
 };
 
-export { renderIcon };
+export { isImageSource, renderIcon };

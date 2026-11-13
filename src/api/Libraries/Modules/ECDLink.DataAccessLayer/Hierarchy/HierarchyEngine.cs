@@ -266,6 +266,22 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             return entity?.Hierarchy;
         }
 
+        public Guid? GetUserIdByHierarchy(string hierarchy)
+        {
+            if (string.IsNullOrEmpty(hierarchy))
+            {
+                return null;
+            }
+
+            var userHierarchyRepo = _repoFactory.CreateRepository<UserHierarchyEntity>();
+
+            return userHierarchyRepo.GetAll()
+                .Where(x => x.Hierarchy == hierarchy)
+                .OrderBy(x => x.Id)
+                .Select(x => x.UserId)
+                .FirstOrDefault();
+        }
+
         public Guid? GetUserParentUserId(Guid? userId)
         {
             if (!userId.HasValue)

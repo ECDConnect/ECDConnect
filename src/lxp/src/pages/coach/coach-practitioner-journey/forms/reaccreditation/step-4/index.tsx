@@ -10,7 +10,7 @@ import { step3ReAccreditationVisitSection } from '../step-3';
 import { options as step3Options } from '../step-3/options';
 import { step2ReAccreditationVisitSection } from '../step-2';
 import { options } from '../step-2/options';
-import { ReactComponent as Emoji3 } from '@/assets/ECD_Connect_emoji3.svg';
+import Emoji3 from '@/assets/ECD_Connect_emoji3.svg?react';
 
 export const Step4ReAccreditation = ({
   smartStarter,

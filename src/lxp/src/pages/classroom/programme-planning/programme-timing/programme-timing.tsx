@@ -36,7 +36,7 @@ import {
 } from '../../class-dashboard/class-dashboard.types';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { ProgrammeActions } from '@/store/programme/programme.actions';
-import { ReactComponent as Robot } from '@/assets/iconRobot.svg';
+import Robot from '@/assets/iconRobot.svg?react';
 import { useAppContext } from '@/walkthrougContext';
 import { ProgrammeDashboardRouteState } from '../programme-dashboard/programme-dashboard.types';
 
@@ -307,22 +307,26 @@ const ProgrammeTiming: React.FC = () => {
       />
       <>
         <div className="mt-3 flex items-center gap-2">
-          <img
-            src={selectedTheme?.imageUrl}
-            alt="Theme icon"
-            className="w-9 rounded-full"
-          />
+          {selectedTheme?.imageUrl && (
+            <img
+              src={selectedTheme.imageUrl}
+              alt="Theme icon"
+              className="w-9 rounded-full"
+            />
+          )}
           <Typography
             type="h4"
             text={selectedTheme?.name || 'No theme'}
             color="textDark"
             className="w-full"
           />
-          <img
-            src={selectedTheme?.themeLogo}
-            alt="Theme icon"
-            className="w-9 rounded-full"
-          />
+          {selectedTheme?.themeLogo && (
+            <img
+              src={selectedTheme.themeLogo}
+              alt="Theme logo"
+              className="w-36 flex-shrink-0 object-contain"
+            />
+          )}
         </div>
         {!selectedTheme && (
           <Alert

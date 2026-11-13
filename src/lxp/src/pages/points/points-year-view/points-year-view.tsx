@@ -14,10 +14,10 @@ import {
 } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
-import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg';
-import { ReactComponent as EmojiBlueSmile } from '@ecdlink/ui/src/assets/emoji/emoji_blue_smileEyes.svg';
-import { ReactComponent as EmojiOrangeSmile } from '@ecdlink/ui/src/assets/emoji/emoji_orange_smile.svg';
-import { ReactComponent as EmojiYellowHappy } from '../../../assets/ECD_Connect_emoji3.svg';
+import EmojiGreenSmile from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg?react';
+import EmojiBlueSmile from '@ecdlink/ui/src/assets/emoji/emoji_blue_smileEyes.svg?react';
+import EmojiOrangeSmile from '@ecdlink/ui/src/assets/emoji/emoji_orange_smile.svg?react';
+import EmojiYellowHappy from '../../../assets/ECD_Connect_emoji3.svg?react';
 import happyOverlay from '../../../assets/happy_overlay.svg';
 import { format } from 'date-fns';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -26,7 +26,7 @@ import { captureAndDownloadComponent } from '@ecdlink/core';
 import { PointsInfoPage } from '../info/points-info-page';
 import { useAppDispatch } from '@/store';
 import { PointsUserYearMonthSummary } from '@ecdlink/graphql';
-import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
+import Badge from '@ecdlink/ui/src/assets/badge/badge_neutral.svg?react';
 
 export interface PointsYearViewRouteState {
   userRankingData?: any;
@@ -174,7 +174,7 @@ export const PointsYearView: React.FC = () => {
             maxPoints={pointsMax}
             image={
               percentageScore >= 80 ? (
-                <EmojiYellowHappy className="mr-2 mb-12 h-16 w-16" />
+                <EmojiYellowHappy className="mb-12 mr-2 h-16 w-16" />
               ) : undefined
             }
             barBgColour="white"
@@ -216,7 +216,7 @@ export const PointsYearView: React.FC = () => {
             ?.map((item) => {
               return (
                 <div>
-                  <Divider dividerType="dashed" className="mt-3 mb-3" />
+                  <Divider dividerType="dashed" className="mb-3 mt-3" />
                   <Typography
                     type={'h4'}
                     color="black"

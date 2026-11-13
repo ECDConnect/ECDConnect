@@ -74,12 +74,13 @@ import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { ChildrenActions } from '@/store/children/children.actions';
-import { ReactComponent as RobotIcon } from '@/assets/iconRobot.svg';
+import RobotIcon from '@/assets/iconRobot.svg?react';
 import { ChildListRouteState } from '@/pages/classroom/child-list/child-list.types';
 import { useTenantModules } from '@/hooks/useTenantModules';
 import { ProgressWalkthroughStart } from '@/pages/classroom/progress/walkthrough/progress-walkthrough-start';
 import TransparentLayer from '../../../assets/TransparentLayer.png';
 import { statementsSelectors } from '@/store/statements';
+import { JoinOrAddPreschoolModal } from '@/pages/business/registration/welcome-registration/components/trial-period/join-or-add-preschool-modal';
 
 const baseNotificationListItem: ListItemProps = {
   key: 'message-caregiver',
@@ -460,6 +461,23 @@ export const ChildProfile: React.FC = () => {
     history.push(ROUTES.CHILD_CAREGIVERS, { childId: child?.id });
   };
 
+  const showJoinOrAddPreschoolModal = () => {
+    dialog({
+      blocking: true,
+      position: DialogPosition.Middle,
+      render: (onSubmit) => (
+        <JoinOrAddPreschoolModal
+          onSubmit={onSubmit}
+          detailText={`To use this part, please share some details about yourself and your preschool.`}
+          setupIcon="HomeIcon"
+          cancelIcon="ClockIcon"
+          // Return to the dashboard instead of navigating to the business view.
+          onCancel={() => history.push(ROUTES.DASHBOARD)}
+        />
+      ),
+    });
+  };
+
   const showNoReportingPeriodsDialog = () => {
     dialog({
       position: DialogPosition.Middle,
@@ -585,6 +603,8 @@ export const ChildProfile: React.FC = () => {
           if (!practitioner?.progressWalkthroughComplete) {
             // Show dialog to initialise walkthrough
             setShowProgressWalkthroughStart(true);
+          } else if (!isReportWindowSet && isTrialPeriod) {
+            showJoinOrAddPreschoolModal();
           } else if (!isReportWindowSet) {
             showNoReportingPeriodsDialog();
           } else {

@@ -11,7 +11,7 @@ import {
   SearchDropDownOption,
   Typography,
 } from '@ecdlink/ui';
-import { ReactComponent as JoinCommunity } from '@/assets/joinCommunity.svg';
+import JoinCommunity from '@/assets/joinCommunity.svg?react';
 import { yesOrNoOptions } from '../../community-welcome.types';
 import { FieldErrors, UseFormSetValue } from 'react-hook-form';
 import { useSelector } from 'react-redux';
@@ -133,7 +133,7 @@ export const Step2: React.FC<Step1Props> = ({
           <Typography
             type={'h4'}
             text={`Would you like to share your profile photo with other ${appName} users?`}
-            className={'text-sm font-normal'}
+            className={'font-normal'}
             color={'textDark'}
           />
           <ButtonGroup<boolean>
@@ -149,7 +149,7 @@ export const Step2: React.FC<Step1Props> = ({
           <Typography
             type={'h4'}
             text={`Would you like to share your province with other ${appName} users?`}
-            className={'text-sm font-normal'}
+            className={'font-normal'}
             color={'textDark'}
           />
           <ButtonGroup<boolean>
