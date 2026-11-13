@@ -168,9 +168,9 @@ export default function RolePanel(props: RolePanelProps) {
   return (
     <div>
       {isDirty && (
-        <div className="focus:outline-none focus:ring-primary absolute right-5 -top-20 z-10 mt-6 flex h-7 items-center rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2">
+        <div className="focus:ring-primary absolute -top-20 right-5 z-10 mt-6 flex h-7 items-center rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2">
           <button
-            className="focus:outline-none focus:ring-primary rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2"
+            className="focus:ring-primary rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2"
             onClick={() => setDisplayFormIsDirty(true)}
           >
             <span className="sr-only">Close panel</span>
@@ -192,13 +192,13 @@ export default function RolePanel(props: RolePanelProps) {
                 <button
                   onClick={() => emitCloseDialog(false)}
                   type="button"
-                  className="focus:outline-none focus:ring-primary rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-offset-2"
+                  className="focus:ring-primary rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="bg-primary hover:bg-uiLight focus:outline-none focus:ring-primary ml-3 inline-flex justify-center rounded-md border border-transparent py-2 px-4 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                  className="bg-primary hover:bg-uiLight focus:ring-primary ml-3 inline-flex justify-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
                 >
                   {!isEdit ? (
                     <span> Save & Continue </span>
@@ -208,7 +208,7 @@ export default function RolePanel(props: RolePanelProps) {
                 </button>
               </div>
             </div>
-            <div className="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+            <div className="mt-6 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-6">
               <div className="sm:col-span-3">
                 <label
                   htmlFor="name"
@@ -259,15 +259,15 @@ export default function RolePanel(props: RolePanelProps) {
 
         {isEdit ? (
           <div className="inline-block min-w-full py-8 align-middle">
-            <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
+            <div>
               {dataPermissionGroups && dataPermissionGroups.permissionGroups ? (
                 <>
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                  <table className="min-w-full">
+                    <thead className="bg-adminPortalBg border-quatenary border-b-2">
                       <tr>
                         <th
                           scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
+                          className="text-textMid px-6 py-3 text-left text-sm font-semibold normal-case"
                         >
                           Content
                         </th>
@@ -276,7 +276,7 @@ export default function RolePanel(props: RolePanelProps) {
                           <th
                             key={permission.id}
                             scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
+                            className="text-textMid px-6 py-3 text-left text-sm font-semibold normal-case"
                           >
                             {permission.name}
                           </th>
@@ -287,14 +287,14 @@ export default function RolePanel(props: RolePanelProps) {
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="z-10 divide-y divide-gray-200 bg-white">
+                    <tbody className="divide-uiLight z-10 divide-y bg-white">
                       {tableData &&
                         tableData.map((permissionGroup: any) => (
                           <tr key={permissionGroup.groupName}>
                             <td className="whitespace-nowrap px-6 py-4">
                               <div className="flex items-center">
                                 <div className="ml-4">
-                                  <div className="text-sm font-medium text-gray-900">
+                                  <div className="text-textMid text-sm font-medium">
                                     {permissionGroup.groupName}
                                   </div>
                                 </div>
@@ -316,7 +316,7 @@ export default function RolePanel(props: RolePanelProps) {
                                       className="whitespace-nowrap px-6 py-4"
                                     >
                                       <div className="flex items-center">
-                                        <div className="text-sm font-medium text-gray-900">
+                                        <div className="text-textMid text-sm font-medium">
                                           <input
                                             defaultChecked={checked}
                                             type="checkbox"

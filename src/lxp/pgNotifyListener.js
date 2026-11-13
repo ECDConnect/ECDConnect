@@ -1,8 +1,21 @@
 const { Client } = require('pg');
 const axios = require('axios');
 
-const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL;
-const CHANNEL = process.env.SLACK_CHANNEL || 'errors_ecdconnect';
+// One entry per pg_notify channel this listener handles: which webhook to post
+// to, and how to turn that channel's payload shape into a Slack message.
+const CHANNELS = [
+  {
+    name: process.env.SLACK_CHANNEL || 'errors_ecdconnect',
+    webhookUrl: process.env.SLACK_WEBHOOK_URL,
+    buildMessage: buildErrorMessage,
+    shouldSkip: payload => payload.type === '',
+  },
+  {
+    name: process.env.SLACK_CHANNEL_RESOURCES || 'user_resource_problem_report',
+    webhookUrl: process.env.SLACK_WEBHOOK_URL_RESOURCES,
+    buildMessage: buildResourceProblemMessage,
+  },
+];
 
 let client;
 let reconnectDelay = 1000; // starts at 1s, backs off up to 30s
@@ -19,18 +32,24 @@ function startListener() {
       console.error('pg-notify: connection failed', err);
       return scheduleReconnect();
     }
-    console.log('pg-notify: connected, listening on', CHANNEL);
     reconnectDelay = 1000; // reset backoff on success
-    client.query(`LISTEN ${CHANNEL}`);
+    CHANNELS.forEach(({ name }) => {
+      console.log('pg-notify: connected, listening on', name);
+      client.query(`LISTEN ${name}`);
+    });
   });
 
   client.on('notification', async msg => {
     try {
-      const payload = JSON.parse(msg.payload);
-      if (payload.type === '') {
+      const channel = CHANNELS.find(c => c.name === msg.channel);
+      if (!channel) {
         return;
       }
-      await sendToSlack(payload);
+      const payload = JSON.parse(msg.payload);
+      if (channel.shouldSkip && channel.shouldSkip(payload)) {
+        return;
+      }
+      await sendToSlack(channel.webhookUrl, channel.buildMessage(payload));
     } catch (err) {
       console.error('pg-notify: failed to handle notification', err);
     }
@@ -55,13 +74,13 @@ function scheduleReconnect() {
   }, reconnectDelay);
 }
 
-async function sendToSlack(payload) {
+function buildErrorMessage(payload) {
   const emoji = payload.severity === 'HIGH' && payload.message !== '' && payload.message !== 'Not Authorised' ? '🔴' : '🟠';
-  const onlineStatus = payload.is_online === true ? '🟢 Online' 
-    : payload.is_online === false ? '🔌 Offline' 
+  const onlineStatus = payload.is_online === true ? '🟢 Online'
+    : payload.is_online === false ? '🔌 Offline'
     : null;
 
-  const message = {
+  return {
     blocks: [
       {
         type: 'section',
@@ -87,8 +106,43 @@ async function sendToSlack(payload) {
       },
     ],
   };
+}
 
-  await axios.post(SLACK_WEBHOOK_URL, message, { timeout: 5000 });
+function buildResourceProblemMessage(payload) {
+  return {
+    blocks: [
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `🚩 *Resource Problem Report* — \`${payload.problemType}\`${payload.contentId ? ` — \`${payload.contentId}\`` : ''}${payload.additionalDetails ? `\n${payload.additionalDetails}` : ''}`,
+        },
+      },
+      {
+        type: 'context',
+        elements: [
+          {
+            type: 'mrkdwn',
+            text: [
+              payload.userId ? `*User:* ${payload.userId}` : null,
+              payload.tenantId ? `*Tenant:* ${payload.tenantId}` : null,
+              payload.dataFreeAtReport !== null && payload.dataFreeAtReport !== undefined ? `*Data Free:* ${payload.dataFreeAtReport}` : null,
+              payload.linkAtReport ? `*Link:* ${payload.linkAtReport}` : null,
+              `*Time:* ${payload.insertedDate}`,
+            ].filter(Boolean).join('  •  '),
+          },
+        ],
+      },
+    ],
+  };
+}
+
+async function sendToSlack(webhookUrl, message) {
+  if (!webhookUrl) {
+    console.warn('pg-notify: no webhook URL configured for this channel, skipping send');
+    return;
+  }
+  await axios.post(webhookUrl, message, { timeout: 5000 });
 }
 
 

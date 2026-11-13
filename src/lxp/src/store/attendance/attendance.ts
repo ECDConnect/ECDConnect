@@ -1,3 +1,4 @@
+import { AttendanceDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { getWeek, getYear } from 'date-fns';
 import localForage from 'localforage';
@@ -12,6 +13,76 @@ import {
 import { AttendanceState, TrackAttendanceModelInput } from './attendance.types';
 import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 import { ToUtcDateString } from '@/utils/common/date.utils';
+
+function calendarDay(attendanceDate?: Date | string): string | undefined {
+  if (attendanceDate == null || attendanceDate === '') {
+    return undefined;
+  }
+
+  if (typeof attendanceDate === 'string') {
+    const day = attendanceDate.slice(0, 10);
+    const isCalendarDay =
+      /^\d{4}-\d{2}-\d{2}$/.test(day) &&
+      (attendanceDate.length === 10 ||
+        attendanceDate.startsWith(`${day}T00:00:00`));
+
+    if (isCalendarDay) {
+      return day;
+    }
+  }
+
+  const parsed = new Date(attendanceDate);
+  if (Number.isNaN(parsed.getTime())) {
+    return undefined;
+  }
+
+  return ToUtcDateString(parsed).slice(0, 10);
+}
+
+function registerDayKey(
+  classroomProgrammeId?: string,
+  attendanceDate?: Date | string
+): string | undefined {
+  if (!classroomProgrammeId) {
+    return undefined;
+  }
+
+  const day = calendarDay(attendanceDate);
+  if (!day) {
+    return undefined;
+  }
+
+  return `${classroomProgrammeId.toLowerCase()}|${day}`;
+}
+
+// A register saved here and not yet uploaded stays. Fetched rows replace
+// registers that have already been uploaded, and are not queued for upload.
+function mergeFetchedAttendance(
+  current: AttendanceDto[] | undefined,
+  tracked: AttendanceState['attendanceTracked'],
+  fetched: AttendanceDto[]
+): AttendanceDto[] {
+  const pendingKeys = new Set(
+    (tracked ?? [])
+      .filter((item) => item.synced !== true)
+      .map((item) =>
+        registerDayKey(item.classroomProgrammeId, item.attendanceDate)
+      )
+      .filter((key): key is string => !!key)
+  );
+
+  const pendingRows = (current ?? []).filter((row) => {
+    const key = registerDayKey(row.classroomProgrammeId, row.attendanceDate);
+    return !!key && pendingKeys.has(key);
+  });
+
+  const serverRows = fetched.filter((row) => {
+    const key = registerDayKey(row.classroomProgrammeId, row.attendanceDate);
+    return !key || !pendingKeys.has(key);
+  });
+
+  return [...serverRows, ...pendingRows];
+}
 
 const initialState: AttendanceState = {
   attendance: undefined,
@@ -177,7 +248,11 @@ const attendanceSlice = createSlice({
       }
     });
     builder.addCase(getAttendance.fulfilled, (state, action) => {
-      state.attendance = action.payload;
+      state.attendance = mergeFetchedAttendance(
+        state.attendance,
+        state.attendanceTracked,
+        action.payload ?? []
+      );
     });
     builder.addCase(getChildAttendanceRecords.fulfilled, (state, action) => {
       const { userId } = action.meta.arg;

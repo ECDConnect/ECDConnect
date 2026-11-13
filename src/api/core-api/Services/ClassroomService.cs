@@ -43,7 +43,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             var practitioner = _practiGenericRepo.GetByUserId(userId);
             if (practitioner == null)
             {
-                throw new QueryException("Practitioner not found.");
+                throw new GraphQLException("Practitioner not found.");
             }
 
             if (TenantExecutionContext.Tenant.TenantType == ECDLink.Tenancy.Enums.TenantType.WhiteLabel
@@ -94,7 +94,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             if (principalUserId == null)
             {
-                 throw new QueryException("Principal not found.");
+                 throw new GraphQLException("Principal not found.");
             }
 
             return _classroomRepo.GetAll()
@@ -112,7 +112,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             if (practitioner == null)
             {
-               throw new QueryException("Practitioner not found.");
+               throw new GraphQLException("Practitioner not found.");
             }
 
             // Principal can see all classroom groups for classroom (school)

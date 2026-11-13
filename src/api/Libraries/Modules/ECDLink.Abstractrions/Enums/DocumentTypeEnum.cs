@@ -56,5 +56,7 @@ namespace ECDLink.Abstractrions.Enums
         ProofOfAccount,
         [Description("calendar-event-type")]
         CalendarEventType,
+        [Description("config")]
+        Config,
     }
 }

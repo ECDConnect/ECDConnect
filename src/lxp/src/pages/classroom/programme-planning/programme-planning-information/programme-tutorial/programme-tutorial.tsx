@@ -32,7 +32,7 @@ import { WalkthroughModal } from '@/components/walkthrough/modal';
 import { MoreInformationTypeEnum, useDialog } from '@ecdlink/core';
 import { ProgrammeThemeRouteState } from '../../programme-theme/programme-theme.types';
 import { informationThunkActions } from '@/store/content/information';
-const { usePDF } = require('react-to-pdf');
+import { usePDF } from 'react-to-pdf';
 
 interface ProgrammeTutorialProps extends ComponentBaseProps {
   listItems: StackedListItemType[];

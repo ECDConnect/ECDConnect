@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ActionModal, Dropdown } from '@ecdlink/ui';
 
-import { ReactComponent as PollyInformational } from '@/assets/iconRobot.svg';
+import PollyInformational from '@/assets/iconRobot.svg?react';
 import { useSelector } from 'react-redux';
 import { staticDataSelectors } from '@/store/static-data';
 import { WalkthroughModalProps } from './types';

@@ -5,6 +5,7 @@
 	<!-- Nullable filters through to Entity Framework 7 and makes DB field FKs required -->
 	<Nullable>disable</Nullable>
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+    <UserSecretsId>c2df7eec-ad4f-4e73-bd13-249155343824</UserSecretsId>
   </PropertyGroup>
   
   <ItemGroup>
@@ -37,7 +38,7 @@
     
     <PackageReference Include="Google.Apis.Auth" Version="1.74.0" />
     
-    <PackageReference Include="HotChocolate.Data.EntityFramework" Version="12.12.1" />
+    <PackageReference Include="HotChocolate.Data.EntityFramework" Version="16.7.3" />
     
     <PackageReference Include="HtmlToPdfConverter.Core" Version="2.0.0" />
     

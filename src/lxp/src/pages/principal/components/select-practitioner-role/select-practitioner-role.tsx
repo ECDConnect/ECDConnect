@@ -6,7 +6,7 @@ import {
   Dialog,
   DialogPosition,
 } from '@ecdlink/ui';
-import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
+import Cebisa from '@/assets/icon_cebisa.svg?react';
 import { useTenant } from '@/hooks/useTenant';
 import { useState } from 'react';
 import { ShareSomeDetails } from '../share-some-detail/share-some-detail';
@@ -19,8 +19,8 @@ import {
   practitionerSelectors,
 } from '@/store/practitioner';
 import { useAppDispatch } from '@/store';
-import { ReactComponent as Kindgarden } from '@/assets//icon/kindergarten1.svg';
-import { ReactComponent as BookAndApple } from '@/assets//icon/book_and_apple_1.svg';
+import Kindgarden from '@/assets//icon/kindergarten1.svg?react';
+import BookAndApple from '@/assets//icon/book_and_apple_1.svg?react';
 
 export const SelectPractitionerRole = ({
   onNext,

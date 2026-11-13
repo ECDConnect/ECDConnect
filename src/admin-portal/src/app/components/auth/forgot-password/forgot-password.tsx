@@ -2,9 +2,11 @@ import {
   Config,
   initialForgotPasswordValues,
   resetSchema,
+  SessionStorageKeys,
   useTheme,
 } from '@ecdlink/core';
 import { Alert, Button, Typography } from '@ecdlink/ui';
+import { setSessionItem } from '../../../utils/session-storage.utils';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -42,7 +44,7 @@ export default function ForgotPassword() {
 
       if (isLinkSent) {
         setIsLoading(false);
-        localStorage.setItem('email', email);
+        setSessionItem(email, SessionStorageKeys.passwordResetEmail);
       } else {
         setIsLoading(false);
         setDisplayError(true);
@@ -128,7 +130,7 @@ export default function ForgotPassword() {
               </div>
               {displayError && (
                 <Alert
-                  className={'mt-5 mb-3'}
+                  className={'mb-3 mt-5'}
                   message={'Reset password link notsent!. Please try again'}
                   type={'error'}
                 />

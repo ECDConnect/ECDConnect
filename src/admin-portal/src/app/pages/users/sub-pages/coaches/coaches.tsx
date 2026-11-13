@@ -1,4 +1,6 @@
 import { useMutation, useQuery } from '@apollo/client';
+import { SessionStorageKeys } from '@ecdlink/core';
+import { setSessionItem } from '../../../../utils/session-storage.utils';
 import {
   CoachDto,
   NOTIFICATION,
@@ -13,6 +15,7 @@ import {
   sentInviteToMultipleUsers,
   deleteMultipleUsers,
   GetAllPortalCoaches,
+  GetAllPortalCoachesCount,
 } from '@ecdlink/graphql';
 import {
   ActionModal,
@@ -32,7 +35,6 @@ import AlertModal from '../../../../components/dialog-alert/dialog-alert';
 import { useUser } from '../../../../hooks/useUser';
 import { useHistory, useLocation } from 'react-router';
 import { format } from 'date-fns';
-import { filterByValue } from '../../../../utils/string-utils/string-utils';
 import ROUTES from '../../../../routes/app.routes-constants';
 import { TableRefMethods } from '@ecdlink/ui/lib/components/table/types';
 
@@ -47,6 +49,12 @@ import {
   UserSearch,
 } from './coaches.types';
 import CoachPanelCreate from './coach-panel-create/coach-panel-create';
+import {
+  TablePagination,
+  TABLE_ROWS_PER_PAGE,
+} from '../../components/table-pagination/table-pagination';
+
+const PAGE_SIZE = 20;
 
 export const SortByConnectUsage: SearchDropDownOption<string>[] = [
   ConnectUsage?.InvitationActive,
@@ -92,6 +100,7 @@ export default function Coaches() {
   const [handleAddUser, setHandleAddUser] = useState(false);
   const location = useLocation<CoachRouteState>();
   const [selectedUsers, setSelectedUsers] = useState<Irow[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const isAllInactive = selectedUsers.every((obj) => obj?.isActive === false);
 
@@ -162,9 +171,9 @@ export default function Coaches() {
       (item) => item?.userId === selectedRow?.userId
     );
 
-    localStorage.setItem(
-      'selectedUser',
-      selectedRow?.userId ?? selectedRow?.id
+    setSessionItem(
+      selectedRow?.userId ?? selectedRow?.id,
+      SessionStorageKeys.selectedUser
     );
     history.push({
       pathname: ROUTES.USERS.VIEW_USER,
@@ -180,13 +189,34 @@ export default function Coaches() {
     });
   };
 
+  const statusSearch = useMemo(
+    () => statusFilter?.map((item) => item?.value),
+    [statusFilter]
+  );
+
+  // Filters shared between the table's paged query and the total-count query.
+  const filterVariables = useMemo(
+    () => ({
+      search: searchValue,
+      connectUsageSearch: filteredConnectUsage,
+      statusSearch,
+      insertedDateFrom: startDate && endDate ? startDate : null,
+      insertedDateTo: startDate && endDate ? endDate : null,
+    }),
+    [searchValue, filteredConnectUsage, statusSearch, startDate, endDate]
+  );
+
+  // Whenever a filter or the search term changes, jump back to page 1.
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterVariables]);
+
   const queryVariables = useMemo(
     () => ({
-      search: '',
-      connectUsageSearch: filteredConnectUsage,
+      ...filterVariables,
       pagingInput: {
-        pageNumber: 1,
-        pageSize: null,
+        pageNumber: currentPage,
+        pageSize: PAGE_SIZE,
       },
       order: [
         {
@@ -194,13 +224,24 @@ export default function Coaches() {
         },
       ],
     }),
-    [filteredConnectUsage]
+    [filterVariables, currentPage]
   );
 
   const { data, refetch, loading } = useQuery(GetAllPortalCoaches, {
     variables: queryVariables,
     fetchPolicy: 'network-only',
   });
+
+  const { data: countData, loading: countLoading } = useQuery(
+    GetAllPortalCoachesCount,
+    {
+      variables: filterVariables,
+      fetchPolicy: 'network-only',
+    }
+  );
+
+  const totalCount = countData?.allPortalCoachesCount ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
   useEffect(() => {
     history.replace({
@@ -247,56 +288,9 @@ export default function Coaches() {
       const copyItems = data.allPortalCoaches.map((item: CoachDto) =>
         mapUserTableItem(item)
       );
-
-      const filteredByDateData = copyItems?.filter((d) => {
-        return (
-          new Date(d.user?.insertedDate).getTime() >=
-            new Date(startDate)?.getTime() &&
-          new Date(d?.user.insertedDate).getTime() <=
-            new Date(endDate)?.getTime()
-        );
-      });
-
-      if (startDate && endDate) {
-        if (statusFilter?.length === 1) {
-          if (statusFilter.some((e) => e.value === Status?.ACTIVE)) {
-            const filterByStatusActive = filteredByDateData?.filter(
-              (item) => item?.isActive
-            );
-            setTableData(filterByStatusActive);
-            return;
-          } else {
-            const filterByStatusInactive = filteredByDateData?.filter(
-              (item) => !item?.isActive
-            );
-            setTableData(filterByStatusInactive);
-            return;
-          }
-        }
-        setTableData(filteredByDateData);
-        return;
-      }
-
-      if (statusFilter) {
-        if (statusFilter?.length === 1) {
-          if (statusFilter.some((e) => e.value === Status?.ACTIVE)) {
-            const filterByStatusActive = copyItems?.filter(
-              (item) => item?.isActive
-            );
-            setTableData(filterByStatusActive);
-            return;
-          } else {
-            const filterByStatusInactive = copyItems?.filter(
-              (item) => !item?.isActive
-            );
-            setTableData(filterByStatusInactive);
-            return;
-          }
-        }
-      }
       setTableData(copyItems);
     }
-  }, [data, endDate, startDate, statusFilter]);
+  }, [data]);
 
   // const sendInvite = async (coachSingleName: PractitionerDto) => {
   //   dialog({
@@ -356,6 +350,12 @@ export default function Coaches() {
     tableRef?.current?.resetSelectedRows();
   };
 
+  const goToPage = (page: number) => {
+    setCurrentPage(Math.min(Math.max(1, page), totalPages));
+    setSelectedUsers([]);
+    handleResetSelectedRows();
+  };
+
   const columns: Icolumn[] = [
     {
       field: 'displayColumnIdPassportEmail',
@@ -380,30 +380,28 @@ export default function Coaches() {
   ];
 
   const rows: Irow[] =
-    (!!searchValue ? filterByValue(tableData, searchValue) : tableData)?.map(
-      (item) => ({
-        ...item,
-        key: item?.id,
-        displayColumnIdPassportEmail:
-          item?.user?.userName ?? item?.idNumber ?? '-',
-        fullName: `${item?.user?.firstName} ${item?.user?.surname}`,
-        connectUsageComponent: item?.user?.connectUsage
-          ? columnColor(item.user.connectUsage, item.user.connectUsageColor)
-          : '-',
-        insertedDateFormatted: item?.user?.insertedDate
-          ? format(new Date(item?.user?.insertedDate), 'dd/MM/yyyy')
-          : '-',
-        isActiveComponent: (
-          <p
-            className={
-              item?.user?.isActive ? 'text-successMain' : 'text-errorMain'
-            }
-          >
-            {item?.user?.isActive ? 'Active' : 'Inactive'}
-          </p>
-        ),
-      })
-    ) ?? [];
+    tableData?.map((item) => ({
+      ...item,
+      key: item?.id,
+      displayColumnIdPassportEmail:
+        item?.user?.userName ?? item?.idNumber ?? '-',
+      fullName: `${item?.user?.firstName} ${item?.user?.surname}`,
+      connectUsageComponent: item?.user?.connectUsage
+        ? columnColor(item.user.connectUsage, item.user.connectUsageColor)
+        : '-',
+      insertedDateFormatted: item?.user?.insertedDate
+        ? format(new Date(item?.user?.insertedDate), 'dd/MM/yyyy')
+        : '-',
+      isActiveComponent: (
+        <p
+          className={
+            item?.user?.isActive ? 'text-successMain' : 'text-errorMain'
+          }
+        >
+          {item?.user?.isActive ? 'Active' : 'Inactive'}
+        </p>
+      ),
+    })) ?? [];
 
   const inviteUsers = useCallback(() => {
     sendInvitations({
@@ -561,12 +559,13 @@ export default function Coaches() {
   return (
     <>
       <div className="bg-adminPortalBg h-full rounded-2xl p-4 ">
-        <div className="rounded-xl bg-white p-12">
+        <div className="rounded-xl bg-white p-12 [&_tbody_td]:py-2">
           <Table
             watchMode={true}
             ref={tableRef}
             rows={rows}
             columns={columns}
+            rowsPerPage={TABLE_ROWS_PER_PAGE}
             onClearFilters={clearFilters}
             onChangeSelectedRows={setSelectedUsers}
             onClickRow={viewSelectedRow}
@@ -658,10 +657,20 @@ export default function Coaches() {
               },
             ]}
           />
+          {rows.length > 0 && (
+            <TablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalCount={totalCount}
+              countLoading={countLoading}
+              isLoading={isLoading}
+              onPageChange={goToPage}
+            />
+          )}
         </div>
       </div>
       <Dialog
-        className="absolute left-56 bottom-96 h-96 w-6/12"
+        className="absolute bottom-96 left-56 h-96 w-6/12"
         stretch
         visible={handleAddUser}
         position={DialogPosition.Middle}

@@ -26,19 +26,22 @@ import { useAppContext } from '@/walkthrougContext';
 import PositiveBonusEmoticon from '../../../../assets/positive-bonus-emoticon.png';
 import {
   IncomeStatementDto,
-  LocalStorageKeys,
   MoreInformationTypeEnum,
+  UserFlagKeys,
   getPreviousMonth,
 } from '@ecdlink/core';
-import { ReactComponent as MoneyIcon } from '@/assets/moneyIcon.svg';
+import MoneyIcon from '@/assets/moneyIcon.svg?react';
 import { InfoPage } from './components/info-page';
-import { getStorageItem } from '@/utils/common/local-storage.utils';
+import { useUserFlag } from '@/hooks/useUserFlag';
 import { StatementsWalkthroughStart } from './components/walkthrough-statements-wrapper/walkthrough-start';
 import { practitionerSelectors } from '@/store/practitioner';
 import { useAppDispatch } from '@/store';
 
 export const SubmitIncomeStatements: React.FC = () => {
   const [showInitialWalkthrough, setShowInitialWalkthrough] = useState(false);
+  const [isStatementsWalkthroughComplete] = useUserFlag(
+    UserFlagKeys.incomeStatementsWalkthroughComplete
+  );
   const appDispatch = useAppDispatch();
 
   const [isLearnMore, setIsLearnMore] = useState(false);
@@ -164,12 +167,15 @@ export const SubmitIncomeStatements: React.FC = () => {
 
   const checkIfToShowInitialWalkthrough = useCallback(() => {
     if (
-      !getStorageItem(LocalStorageKeys.incomeStatementsWalkthroughComplete) &&
+      !isStatementsWalkthroughComplete &&
       !practitioner?.isCompletedBusinessWalkThrough
     ) {
       setShowInitialWalkthrough(true);
     }
-  }, [practitioner?.isCompletedBusinessWalkThrough]);
+  }, [
+    isStatementsWalkthroughComplete,
+    practitioner?.isCompletedBusinessWalkThrough,
+  ]);
 
   useEffect(() => {
     checkIfToShowInitialWalkthrough();
@@ -449,7 +455,7 @@ export const SubmitIncomeStatements: React.FC = () => {
               onClick={() =>
                 history.push(ROUTES.BUSINESS_PREVIOUS_STATEMENTS_LIST)
               }
-              className={`mt-6 mb-8 w-full rounded-2xl ${
+              className={`mb-8 mt-6 w-full rounded-2xl ${
                 stepIndex === 7 || stepIndex === 8 ? 'pointer-events-none' : ''
               }`}
               id="seeAllStatements"

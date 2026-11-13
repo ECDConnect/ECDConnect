@@ -30,5 +30,6 @@ namespace ECDLink.Abstractrions.Enums
         TwoWeekNotLoggedOn = 26,
         CoachRemovePractitioner = 27,
         ForgotPasswordGoogleFacebook = 28,
+        NotifyAdminBrokenResourceLinks = 29,
     }
 }

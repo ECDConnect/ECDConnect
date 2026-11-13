@@ -13,10 +13,10 @@ import {
 import { getJourneyAssessmentReportByIdSelector } from '@/store/pqa/pqa.selectors';
 import { userSelectors } from '@/store/user';
 import { PractitionerProfileRouteState } from '../../practitioner-profile.types';
-import { ReactComponent as PositiveEmoticon } from '@/assets/positive-green-emoticon.svg';
-import { ReactComponent as NeutralEmoticon } from '@/assets/neutral_blue_emoticon.svg';
-import { ReactComponent as VeryUnhappy } from '@/assets/ECD_Connect_emoji_unhappy.svg';
-import { ReactComponent as MehEmoticon } from '@/assets/mehFace.svg';
+import PositiveEmoticon from '@/assets/positive-green-emoticon.svg?react';
+import NeutralEmoticon from '@/assets/neutral_blue_emoticon.svg?react';
+import VeryUnhappy from '@/assets/ECD_Connect_emoji_unhappy.svg?react';
+import MehEmoticon from '@/assets/mehFace.svg?react';
 import { Score } from './score';
 import { useState } from 'react';
 import { PublishedFormCertificate } from './published-form-certificate';
@@ -291,7 +291,7 @@ export const ViewPublishedForm: React.FC<ViewPublishedFormProps> = ({
               text={timelineReport.textQuestion}
             />
             <Typography
-              className="mt-3 mb-4"
+              className="mb-4 mt-3"
               type="body"
               color="textMid"
               text={timelineReport.textAnswer}
@@ -340,7 +340,7 @@ export const ViewPublishedForm: React.FC<ViewPublishedFormProps> = ({
         {(timelineReport?.dailyActivities?.length ?? 0) > 0 && (
           <>
             <Typography
-              className="mt-3 mb-4"
+              className="mb-4 mt-3"
               type="h3"
               text="You do these activities every day - great! Keep it up!"
             />
@@ -363,7 +363,7 @@ export const ViewPublishedForm: React.FC<ViewPublishedFormProps> = ({
         {(timelineReport?.skippedActivities?.length ?? 0) > 0 && (
           <>
             <Typography
-              className="mt-3 mb-4"
+              className="mb-4 mt-3"
               type="h3"
               text="You don't do these activities every day - try to include them more!"
             />
@@ -381,7 +381,7 @@ export const ViewPublishedForm: React.FC<ViewPublishedFormProps> = ({
             <Divider dividerType="dashed" className="my-2" />
           </>
         )}
-        <div className="mt-auto mb-4 mt-4">
+        <div className="mb-4 mt-4 mt-auto">
           {/* only applicable on health and safety check */}
           {timelineReport.name === 'Health and safety check' ? (
             <>

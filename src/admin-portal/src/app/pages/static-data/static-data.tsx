@@ -8,15 +8,15 @@ import debounce from 'lodash.debounce';
 import { useTenant } from '../../hooks/useTenant';
 
 export declare enum SiteDataSections {
-  Sex = 'Sex',
-  Race = 'Race',
-  ChildAttendingReasons = 'Child Attending Reasons',
+  //Sex = 'Sex',
+  //Race = 'Race',
+  //ChildAttendingReasons = 'Child Attending Reasons',
   Languages = 'Languages',
-  Provinces = 'Provinces',
-  Grants = 'Grants',
-  EducationLevels = 'Education Levels',
-  RelationshipToChild = 'Relationship to child',
-  ReasonsForLeaving = 'Reasons for leaving',
+  //Provinces = 'Provinces',
+  //Grants = 'Grants',
+  //EducationLevels = 'Education Levels',
+  //RelationshipToChild = 'Relationship to child',
+  //ReasonsForLeaving = 'Reasons for leaving',
 }
 
 const navigation = [
@@ -26,18 +26,18 @@ const navigation = [
   //   href: '/data/sex',
   //   query: 'GetAllGender',
   // },
-  {
-    name: 'Race',
-    section: 'Child registration',
-    href: '/data/race',
-    query: 'GetAllRace',
-  },
-  {
-    name: 'Older child attending reasons',
-    section: 'Child registration',
-    href: '/data/attending-reasons',
-    query: 'GetAllProgrammeAttendanceReason',
-  },
+  // {
+  //   name: 'Race',
+  //   section: 'Child registration',
+  //   href: '/data/race',
+  //   query: 'GetAllRace',
+  // },
+  // {
+  //   name: 'Older child attending reasons',
+  //   section: 'Child registration',
+  //   href: '/data/attending-reasons',
+  //   query: 'GetAllProgrammeAttendanceReason',
+  // },
   {
     name: 'Languages',
     section: 'Child registration',
@@ -49,30 +49,30 @@ const navigation = [
   //   href: '/data/provinces',
   //   query: 'GetAllProvince',
   // },
-  {
-    name: 'Grants',
-    section: 'Child registration',
-    href: '/data/grants',
-    query: 'GetAllGrant',
-  },
-  {
-    name: 'Education levels',
-    section: 'Child registration',
-    href: '/data/education-levels',
-    query: 'GetAllEducation',
-  },
-  {
-    name: 'Relationship to child',
-    section: 'Child registration',
-    href: '/data/relations',
-    query: 'GetAllRelation',
-  },
-  {
-    name: 'Child reasons for leaving',
-    section: 'Remove child',
-    href: '/data/reasons-for-leaving',
-    query: 'GetAllReasonForLeaving',
-  },
+  // {
+  //   name: 'Grants',
+  //   section: 'Child registration',
+  //   href: '/data/grants',
+  //   query: 'GetAllGrant',
+  // },
+  // {
+  //   name: 'Education levels',
+  //   section: 'Child registration',
+  //   href: '/data/education-levels',
+  //   query: 'GetAllEducation',
+  // },
+  // {
+  //   name: 'Relationship to child',
+  //   section: 'Child registration',
+  //   href: '/data/relations',
+  //   query: 'GetAllRelation',
+  // },
+  // {
+  //   name: 'Child reasons for leaving',
+  //   section: 'Remove child',
+  //   href: '/data/reasons-for-leaving',
+  //   query: 'GetAllReasonForLeaving',
+  // },
 ];
 
 export function StaticData() {
@@ -128,12 +128,12 @@ export function StaticData() {
               </span>
             )}
             <input
-              className="bg-adminPortalBg focus:outline-none sm:text-md block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
+              className="bg-adminPortalBg sm:text-md block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
               placeholder="      Search by field or app section..."
               onChange={search}
             />
           </div>
-          <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
+          <div>
             <UiTable
               columns={[
                 { field: 'name', use: 'Field' },

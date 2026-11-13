@@ -2,8 +2,8 @@ import { ActionModal, Dialog, DialogPosition, Typography } from '@ecdlink/ui';
 import { useState } from 'react';
 import IconRobot from '@/assets/svg-components/iconRobot';
 import IconRobotBlue from '@/assets/svg-components/iconRobotBlue';
-import { LocalStorageKeys } from '@ecdlink/core';
-import { setStorageItem } from '@/utils/common/local-storage.utils';
+import { UserFlagKeys } from '@ecdlink/core';
+import { useUserFlag } from '@/hooks/useUserFlag';
 import { useAppContext } from '@/walkthrougContext';
 import { WalkthroughModal } from '@/components/walkthrough/modal';
 
@@ -14,6 +14,9 @@ export const StatementsWalkthroughStart = ({
 }) => {
   const [isSkipped, setIsSkipped] = useState(false);
   const [isLanguageModalOpen, setIsLanguageModalOpen] = useState(false);
+  const [, completeStatementsWalkthrough] = useUserFlag(
+    UserFlagKeys.incomeStatementsWalkthroughComplete
+  );
 
   const { setState } = useAppContext();
 
@@ -22,10 +25,7 @@ export const StatementsWalkthroughStart = ({
       <Dialog visible position={DialogPosition.Middle} className="p-4">
         <WalkthroughModal
           onStart={() => {
-            setStorageItem(
-              true,
-              LocalStorageKeys.incomeStatementsWalkthroughComplete
-            );
+            completeStatementsWalkthrough();
             setState({ run: true, tourActive: true, stepIndex: 0 });
             onClose();
           }}
@@ -57,10 +57,7 @@ export const StatementsWalkthroughStart = ({
               colour: 'quatenary',
               type: 'filled',
               onClick: () => {
-                setStorageItem(
-                  true,
-                  LocalStorageKeys.incomeStatementsWalkthroughComplete
-                );
+                completeStatementsWalkthrough();
                 onClose();
               },
               leadingIcon: 'XIcon',

@@ -67,10 +67,29 @@ const userSlice = createSlice({
       }));
     });
     builder.addCase(upsertUserConsents.fulfilled, (state, action) => {
-      state.userConsent = state.userConsent?.map((consent) => ({
-        ...consent,
-        synced: true,
-      }));
+      const payload = action.payload;
+      const results = Array.isArray(payload)
+        ? payload
+        : payload
+        ? [payload]
+        : [];
+
+      state.userConsent = state.userConsent?.map((consent) => {
+        const server = results.find(
+          (result) =>
+            result?.id &&
+            (result.id === consent.id ||
+              (result.userId === consent.userId &&
+                result.consentId === consent.consentId))
+        );
+
+        return {
+          ...consent,
+          ...(server?.id ? { id: server.id } : {}),
+          ...(server?.consentType ? { consentType: server.consentType } : {}),
+          synced: true,
+        };
+      });
     });
   },
 });

@@ -1,5 +1,5 @@
 import { ActionModal } from '@ecdlink/ui';
-import { ReactComponent as Robot } from '@/assets/iconRobot.svg';
+import Robot from '@/assets/iconRobot.svg?react';
 
 interface AddPhotoDialogProps {
   onSubmit: () => void;

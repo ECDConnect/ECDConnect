@@ -10,6 +10,8 @@ import {
   upsertChildren,
   getChildrenForClassroom,
   getChildById,
+  generateCaregiverChildToken,
+  refreshCaregiverChildToken,
 } from './children.actions';
 import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 import { CaregiverContactHistory, ChildrenState } from './children.types';
@@ -73,8 +75,16 @@ const childrenSlice = createSlice({
   extraReducers: (builder) => {
     setThunkActionStatus(builder, updateChild);
     setThunkActionStatus(builder, findCreatedChild);
+    setThunkActionStatus(builder, generateCaregiverChildToken);
+    setThunkActionStatus(builder, refreshCaregiverChildToken);
     setThunkActionStatus(builder, openAccessAddChildDetail);
     setThunkActionStatus(builder, openAccessAddChild);
+    builder.addCase(generateCaregiverChildToken.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(refreshCaregiverChildToken.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+    });
     builder.addCase(openAccessAddChild.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
     });

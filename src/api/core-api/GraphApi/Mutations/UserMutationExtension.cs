@@ -47,16 +47,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             if (input is null)
             {
-                throw new QueryException("Invalid User input.");
+                throw new GraphQLException("Invalid User input.");
             }
             if (!string.IsNullOrEmpty(input.ProfileImageUrl))
             {
                 var parts = input.ProfileImageUrl.Split(';');
                 if (parts.Length > 1)
                 {
-                    if (parts.Length != 2) throw new QueryException("Invalid profile image data.");
-                    if (!parts[1].StartsWith("base64,")) throw new QueryException("Invalid profile image data.");
-                    if (!fileService.IsImageFileType(parts[1].Substring(7))) throw new QueryException("Invalid profile image file type.");
+                    if (parts.Length != 2) throw new GraphQLException("Invalid profile image data.");
+                    if (!parts[1].StartsWith("base64,")) throw new GraphQLException("Invalid profile image data.");
+                    if (!fileService.IsImageFileType(parts[1].Substring(7))) throw new GraphQLException("Invalid profile image file type.");
                 }
             }
 
@@ -66,7 +66,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                 if (!currentUserIsAdmin)
                 {
-                    throw new QueryException("You may not create an admin user.");
+                    throw new GraphQLException("You may not create an admin user.");
                 }
             }
 
@@ -77,7 +77,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             // use dbcontext because usernames need to be distinct in table
             var userExists = dbContext.Users.Where(x => x.UserName == newUsername).FirstOrDefault();
             if (userExists is not null)
-                throw new QueryException("A user with the same username already exists.");
+                throw new GraphQLException("A user with the same username already exists.");
 
             // Create new user.
             var id = string.IsNullOrEmpty(input.Id) ? Guid.NewGuid() : Guid.Parse(input.Id);
@@ -113,13 +113,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             catch (Exception ex)
             {
                 _logger.LogError("Could not add user: {0}\nException:{1}", userCreatedResult?.Errors?.FirstOrDefault()?.Description, ex?.InnerException?.Message ?? ex.Message);
-                throw new QueryException("Could not add user.");
+                throw new GraphQLException("Could not add user.");
             }
 
             if (!(userCreatedResult?.Succeeded ?? false))
             {
                 _logger.LogError("Could not add user: {0}", userCreatedResult?.Errors?.FirstOrDefault()?.Description);
-                throw new QueryException("Could not add user.");
+                throw new GraphQLException("Could not add user.");
             }
 
             // If requested, and allowed, add the admin role to the new user
@@ -133,7 +133,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     {
                         _logger.LogError(adminRoleResult?.Errors?.FirstOrDefault()?.Description ??
                             "Could not add user to admin role.");
-                        throw new QueryException();
+                        throw new GraphQLException();
                     }
                 }
             }
@@ -145,7 +145,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 if (!passwordCreatedResult.Succeeded)
                 {
                     _logger.LogError(passwordCreatedResult.Errors.First().Description);
-                    throw new QueryException("Could not set user password.");
+                    throw new GraphQLException("Could not set user password.");
                 }
             }
 
@@ -185,16 +185,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var currentUserIsSuperAdmin = await userManager.IsInRoleAsync(currentUser, Roles.SUPER_ADMINISTRATOR);
 
             if (input is null)
-                throw new QueryException("Input cannot be null.");
+                throw new GraphQLException("Input cannot be null.");
 
             if (!string.IsNullOrEmpty(input.ProfileImageUrl))
             {
                 var parts = input.ProfileImageUrl.Split(';');
                 if (parts.Length > 1)
                 {
-                    if (parts.Length != 2) throw new QueryException("Invalid profile image data.");
-                    if (!parts[1].StartsWith("base64,")) throw new QueryException("Invalid profile image data.");
-                    if (!fileService.IsImageFileType(parts[1].Substring(7))) throw new QueryException("Invalid profile image file type.");
+                    if (parts.Length != 2) throw new GraphQLException("Invalid profile image data.");
+                    if (!parts[1].StartsWith("base64,")) throw new GraphQLException("Invalid profile image data.");
+                    if (!fileService.IsImageFileType(parts[1].Substring(7))) throw new GraphQLException("Invalid profile image file type.");
                 }
             }
 
@@ -208,7 +208,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             // Cross tenant, but allow admin user which has no tenant...
             if (user.TenantId != tenantId && user.TenantId != null)
             {
-                throw new QueryException("Cross tenant access denied.");
+                throw new GraphQLException("Cross tenant access denied.");
             }
 
             // Caller must be the user themselves, an admin/super-admin, or have hierarchy authority
@@ -448,14 +448,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var isAdmin = await userManager.IsInRoleAsync(user, Roles.ADMINISTRATOR);
             if (isAdmin && !currentUserIsAdmin)
             {
-                throw new QueryException("You may not disable an administrator.");
+                throw new GraphQLException("You may not disable an administrator.");
             }
 
             // Caller must be the user themselves, an admin, or have hierarchy authority
             if (user.Id != currentUserId && !currentUserIsAdmin
                 && !engine.IsCallerAuthorizedForUser(currentUserId, user.Id))
             {
-                throw new QueryException("You are not authorized to disable this user.");
+                throw new GraphQLException("You are not authorized to disable this user.");
             }
 
             user.LockoutEnabled = true;
@@ -621,14 +621,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var isAdmin = await userManager.IsInRoleAsync(user, Roles.ADMINISTRATOR);
             if (isAdmin && !currentUserIsAdmin)
             {
-                throw new QueryException("You are not authorized to reset an administrator's password.");
+                throw new GraphQLException("You are not authorized to reset an administrator's password.");
             }
 
             // Caller must be the user themselves, an admin, or have hierarchy authority
             if (user.Id != currentUserId && !currentUserIsAdmin
                 && !engine.IsCallerAuthorizedForUser(currentUserId, user.Id))
             {
-                throw new QueryException("You are not authorized to reset this user's password.");
+                throw new GraphQLException("You are not authorized to reset this user's password.");
             }
 
             var passwordToken = await userManager.GeneratePasswordResetTokenAsync(user);

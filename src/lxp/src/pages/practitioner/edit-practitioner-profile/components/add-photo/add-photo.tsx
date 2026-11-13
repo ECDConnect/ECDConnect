@@ -18,7 +18,7 @@ import { useAppDispatch } from '@store';
 import { userActions, userSelectors, userThunkActions } from '@/store/user';
 import { AddPhotoProps } from './add-photo.types';
 import { cloneDeep } from 'lodash';
-import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
+import Cebisa from '@/assets/icon_cebisa.svg?react';
 
 export const AddPhoto: React.FC<AddPhotoProps> = ({
   onSubmit,
@@ -100,7 +100,7 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({
           className={'p-4'}
         />
       )}
-      <div className={'inline-flex w-full justify-center pt-16 pb-12'}>
+      <div className={'inline-flex w-full justify-center pb-12 pt-16'}>
         <ProfileAvatar
           dataUrl={userProfilePicture?.file ?? user?.profileImageUrl ?? ''}
           size={'header'}

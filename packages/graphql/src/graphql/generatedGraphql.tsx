@@ -359,6 +359,10 @@ export type ApplicationUser = {
   reasonForLeaving?: Maybe<Scalars['String']>;
   reasonForLeavingComments?: Maybe<Scalars['String']>;
   registerType?: Maybe<Scalars['String']>;
+  acquisitionUrl?: Maybe<Scalars['String']>;
+  utmSource?: Maybe<Scalars['String']>;
+  utmMedium?: Maybe<Scalars['String']>;
+  utmCampaign?: Maybe<Scalars['String']>;
   resetData?: Maybe<Scalars['Boolean']>;
   roles?: Maybe<Array<Maybe<ApplicationIdentityRole>>>;
   shareInfoPartners?: Maybe<Scalars['Boolean']>;
@@ -425,6 +429,10 @@ export type ApplicationUserFilterInput = {
   reasonForLeaving?: InputMaybe<StringOperationFilterInput>;
   reasonForLeavingComments?: InputMaybe<StringOperationFilterInput>;
   registerType?: InputMaybe<StringOperationFilterInput>;
+  acquisitionUrl?: InputMaybe<StringOperationFilterInput>;
+  utmSource?: InputMaybe<StringOperationFilterInput>;
+  utmMedium?: InputMaybe<StringOperationFilterInput>;
+  utmCampaign?: InputMaybe<StringOperationFilterInput>;
   resetData?: InputMaybe<BooleanOperationFilterInput>;
   shareInfoPartners?: InputMaybe<BooleanOperationFilterInput>;
   surname?: InputMaybe<StringOperationFilterInput>;
@@ -488,6 +496,10 @@ export type ApplicationUserInput = {
   reasonForLeaving?: InputMaybe<Scalars['String']>;
   reasonForLeavingComments?: InputMaybe<Scalars['String']>;
   registerType?: InputMaybe<Scalars['String']>;
+  acquisitionUrl?: InputMaybe<Scalars['String']>;
+  utmSource?: InputMaybe<Scalars['String']>;
+  utmMedium?: InputMaybe<Scalars['String']>;
+  utmCampaign?: InputMaybe<Scalars['String']>;
   resetData?: InputMaybe<Scalars['Boolean']>;
   shareInfoPartners?: InputMaybe<Scalars['Boolean']>;
   surname?: InputMaybe<Scalars['String']>;
@@ -549,6 +561,10 @@ export type ApplicationUserSortInput = {
   reasonForLeaving?: InputMaybe<SortEnumType>;
   reasonForLeavingComments?: InputMaybe<SortEnumType>;
   registerType?: InputMaybe<SortEnumType>;
+  acquisitionUrl?: InputMaybe<SortEnumType>;
+  utmSource?: InputMaybe<SortEnumType>;
+  utmMedium?: InputMaybe<SortEnumType>;
+  utmCampaign?: InputMaybe<SortEnumType>;
   resetData?: InputMaybe<SortEnumType>;
   shareInfoPartners?: InputMaybe<SortEnumType>;
   surname?: InputMaybe<SortEnumType>;
@@ -4083,12 +4099,14 @@ export type InviteSortInput = {
 
 export type JourneyTimeline = {
   __typename?: 'JourneyTimeline';
+  certificateName?: Maybe<Scalars['String']>;
   dateCompleted?: Maybe<Scalars['String']>;
   dateValue?: Maybe<Scalars['DateTime']>;
   iconName?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
   secondaryText?: Maybe<Scalars['String']>;
   type?: Maybe<Scalars['String']>;
+  userTrainingCourseId?: Maybe<Scalars['UUID']>;
   visitId?: Maybe<Scalars['UUID']>;
 };
 
@@ -4909,6 +4927,7 @@ export type Mutation = {
   createReasonForPractitionerLeavingProgramme?: Maybe<ReasonForPractitionerLeavingProgramme>;
   createRelation?: Maybe<Relation>;
   createResourceLink?: Maybe<Scalars['String']>;
+  createResourceLinkHealthCheck?: Maybe<ResourceLinkHealthCheck>;
   createShortenUrlEntity?: Maybe<ShortenUrlEntity>;
   createSiteAddress?: Maybe<SiteAddress>;
   createStatementsContributionType?: Maybe<StatementsContributionType>;
@@ -5036,6 +5055,7 @@ export type Mutation = {
   deleteReasonForPractitionerLeavingProgramme?: Maybe<Scalars['Boolean']>;
   deleteRelation?: Maybe<Scalars['Boolean']>;
   deleteResourceLink?: Maybe<Scalars['Boolean']>;
+  deleteResourceLinkHealthCheck?: Maybe<Scalars['Boolean']>;
   deleteRole: Scalars['Boolean'];
   deleteShortenUrlEntity?: Maybe<Scalars['Boolean']>;
   deleteSiteAddress?: Maybe<Scalars['Boolean']>;
@@ -5098,13 +5118,13 @@ export type Mutation = {
   restartVisit?: Maybe<BasicVisitModel>;
   revertTenantSettingsToDefault?: Maybe<TenantInternalModel>;
   saveBulkMessagesForAdmin: Scalars['Boolean'];
+  saveCertificateDetails?: Maybe<Scalars['String']>;
   saveCoachContact: Scalars['Boolean'];
   saveCoachFeedback?: Maybe<CoachFeedback>;
   saveCommunityProfile?: Maybe<CommunityProfileModel>;
   saveCommunityProfileConnections?: Maybe<
     Array<Maybe<CommunityProfileConnection>>
   >;
-  saveHealthCertificateDetails: Scalars['Boolean'];
   sendBulkInviteToPortal?: Maybe<BulkInvitationResult>;
   sendCoachInviteToApplication: Scalars['Boolean'];
   sendInviteToApplication: Scalars['Boolean'];
@@ -5222,6 +5242,7 @@ export type Mutation = {
   updateResourceConnectItem: Scalars['Boolean'];
   updateResourceLikes: Scalars['Boolean'];
   updateResourceLink?: Maybe<ResourceLink>;
+  updateResourceLinkHealthCheck?: Maybe<ResourceLinkHealthCheck>;
   updateResourceTypesAndDataFree: Scalars['Boolean'];
   updateRole?: Maybe<ApplicationIdentityRole>;
   updateShortenUrlEntity?: Maybe<ShortenUrlEntity>;
@@ -5858,6 +5879,10 @@ export type MutationCreateResourceLinkArgs = {
   localeId?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationCreateResourceLinkHealthCheckArgs = {
+  input?: InputMaybe<ResourceLinkHealthCheckInput>;
+};
+
 export type MutationCreateShortenUrlEntityArgs = {
   input?: InputMaybe<ShortenUrlEntityInput>;
 };
@@ -6433,6 +6458,10 @@ export type MutationDeleteResourceLinkArgs = {
   localeId?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationDeleteResourceLinkHealthCheckArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+};
+
 export type MutationDeleteRoleArgs = {
   id?: InputMaybe<Scalars['String']>;
 };
@@ -6728,6 +6757,13 @@ export type MutationSaveBulkMessagesForAdminArgs = {
   input?: InputMaybe<MessageLogModelInput>;
 };
 
+export type MutationSaveCertificateDetailsArgs = {
+  certificateName?: InputMaybe<Scalars['String']>;
+  certificateRegNr?: InputMaybe<Scalars['String']>;
+  userTrainingCourseId?: InputMaybe<Scalars['UUID']>;
+  visitId?: InputMaybe<Scalars['UUID']>;
+};
+
 export type MutationSaveCoachContactArgs = {
   actionItemType: Scalars['Int'];
   period: Scalars['DateTime'];
@@ -6744,12 +6780,6 @@ export type MutationSaveCommunityProfileArgs = {
 
 export type MutationSaveCommunityProfileConnectionsArgs = {
   input?: InputMaybe<Array<InputMaybe<CommunityConnectInputModelInput>>>;
-};
-
-export type MutationSaveHealthCertificateDetailsArgs = {
-  certificateName?: InputMaybe<Scalars['String']>;
-  certificateRegNr?: InputMaybe<Scalars['String']>;
-  visitId: Scalars['UUID'];
 };
 
 export type MutationSendBulkInviteToPortalArgs = {
@@ -7376,6 +7406,11 @@ export type MutationUpdateResourceLinkArgs = {
   input: ResourceLinkInput;
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationUpdateResourceLinkHealthCheckArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  input?: InputMaybe<ResourceLinkHealthCheckInput>;
 };
 
 export type MutationUpdateResourceTypesAndDataFreeArgs = {
@@ -9668,6 +9703,7 @@ export type Query = {
   >;
   GetAllRelation?: Maybe<Array<Maybe<Relation>>>;
   GetAllResourceLink: Array<Maybe<ResourceLink>>;
+  GetAllResourceLinkHealthCheck?: Maybe<Array<Maybe<ResourceLinkHealthCheck>>>;
   GetAllShortenUrlEntity?: Maybe<Array<Maybe<ShortenUrlEntity>>>;
   GetAllSiteAddress?: Maybe<Array<Maybe<SiteAddress>>>;
   GetAllStatementsContributionType?: Maybe<
@@ -9794,6 +9830,7 @@ export type Query = {
   GetReasonForPractitionerLeavingProgrammeById?: Maybe<ReasonForPractitionerLeavingProgramme>;
   GetRelationById?: Maybe<Relation>;
   GetResourceLinkById: Array<Maybe<ResourceLink>>;
+  GetResourceLinkHealthCheckById?: Maybe<ResourceLinkHealthCheck>;
   GetShortenUrlEntityById?: Maybe<ShortenUrlEntity>;
   GetSiteAddressById?: Maybe<SiteAddress>;
   GetStatementsContributionTypeById?: Maybe<StatementsContributionType>;
@@ -9852,7 +9889,9 @@ export type Query = {
   allMessageLogsForAdmin?: Maybe<Array<Maybe<MessageLogModel>>>;
   allNotifications?: Maybe<Array<Maybe<Notification>>>;
   allPortalCoaches?: Maybe<Array<Maybe<PortalCoachModel>>>;
+  allPortalCoachesCount: Scalars['Int'];
   allPortalPractitioners?: Maybe<Array<Maybe<PortalPractitionerModel>>>;
+  allPortalPractitionersCount: Scalars['Int'];
   allPractitionerInvites?: Maybe<Array<Scalars['DateTime']>>;
   allPractitioners?: Maybe<Array<Maybe<PractitionerModel>>>;
   allPractitionersForCoach?: Maybe<Array<Maybe<CoachPractitioner>>>;
@@ -9951,6 +9990,7 @@ export type Query = {
   countReasonForPractitionerLeaving?: Maybe<Scalars['Int']>;
   countReasonForPractitionerLeavingProgramme?: Maybe<Scalars['Int']>;
   countRelation?: Maybe<Scalars['Int']>;
+  countResourceLinkHealthCheck?: Maybe<Scalars['Int']>;
   countShortenUrlEntity?: Maybe<Scalars['Int']>;
   countSiteAddress?: Maybe<Scalars['Int']>;
   countStatementsContributionType?: Maybe<Scalars['Int']>;
@@ -10043,6 +10083,7 @@ export type Query = {
   removeWeekendDays?: Maybe<Array<Scalars['DateTime']>>;
   resourceByLanguage?: Maybe<ResourceModel>;
   resourceLikedStatusForUser: Scalars['Boolean'];
+  resourceLinkHealthChecks?: Maybe<Array<Maybe<ResourceLinkHealthCheckModel>>>;
   resources: Array<Maybe<ClassroomBusinessResource>>;
   roleForUser?: Maybe<Scalars['String']>;
   roles?: Maybe<Array<Maybe<ApplicationIdentityRole>>>;
@@ -10560,6 +10601,12 @@ export type QueryGetAllRelationArgs = {
 export type QueryGetAllResourceLinkArgs = {
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryGetAllResourceLinkHealthCheckArgs = {
+  order?: InputMaybe<Array<ResourceLinkHealthCheckSortInput>>;
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ResourceLinkHealthCheckFilterInput>;
 };
 
 export type QueryGetAllShortenUrlEntityArgs = {
@@ -11205,6 +11252,11 @@ export type QueryGetResourceLinkByIdArgs = {
   localeId?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryGetResourceLinkHealthCheckByIdArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  where?: InputMaybe<ResourceLinkHealthCheckFilterInput>;
+};
+
 export type QueryGetShortenUrlEntityByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<ShortenUrlEntityFilterInput>;
@@ -11484,20 +11536,44 @@ export type QueryAllNotificationsArgs = {
 
 export type QueryAllPortalCoachesArgs = {
   connectUsageSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  insertedDateFrom?: InputMaybe<Scalars['DateTime']>;
+  insertedDateTo?: InputMaybe<Scalars['DateTime']>;
   order?: InputMaybe<Array<PortalCoachModelSortInput>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
   search?: InputMaybe<Scalars['String']>;
+  statusSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   where?: InputMaybe<PortalCoachModelFilterInput>;
+};
+
+export type QueryAllPortalCoachesCountArgs = {
+  connectUsageSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  insertedDateFrom?: InputMaybe<Scalars['DateTime']>;
+  insertedDateTo?: InputMaybe<Scalars['DateTime']>;
+  search?: InputMaybe<Scalars['String']>;
+  statusSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 export type QueryAllPortalPractitionersArgs = {
   connectUsageSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  insertedDateFrom?: InputMaybe<Scalars['DateTime']>;
+  insertedDateTo?: InputMaybe<Scalars['DateTime']>;
   order?: InputMaybe<Array<PortalPractitionerModelSortInput>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
   practitionerTypeSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   provinceSearch?: InputMaybe<Array<InputMaybe<Scalars['UUID']>>>;
   search?: InputMaybe<Scalars['String']>;
+  statusSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   where?: InputMaybe<PortalPractitionerModelFilterInput>;
+};
+
+export type QueryAllPortalPractitionersCountArgs = {
+  connectUsageSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  insertedDateFrom?: InputMaybe<Scalars['DateTime']>;
+  insertedDateTo?: InputMaybe<Scalars['DateTime']>;
+  practitionerTypeSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  provinceSearch?: InputMaybe<Array<InputMaybe<Scalars['UUID']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  statusSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 export type QueryAllPractitionerInvitesArgs = {
@@ -11940,6 +12016,11 @@ export type QueryCountRelationArgs = {
   where?: InputMaybe<ComparableInt32OperationFilterInput>;
 };
 
+export type QueryCountResourceLinkHealthCheckArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
 export type QueryCountShortenUrlEntityArgs = {
   pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ComparableInt32OperationFilterInput>;
@@ -12295,6 +12376,11 @@ export type QueryResourceLikedStatusForUserArgs = {
   contentId: Scalars['Int'];
 };
 
+export type QueryResourceLinkHealthChecksArgs = {
+  contentType?: InputMaybe<Scalars['String']>;
+  sectionType?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryResourcesArgs = {
   dataFreeSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   endDate?: InputMaybe<Scalars['DateTime']>;
@@ -12626,6 +12712,106 @@ export type ResourceLink = {
   id?: Maybe<Scalars['Int']>;
   link?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
+};
+
+export type ResourceLinkHealthCheck = {
+  __typename?: 'ResourceLinkHealthCheck';
+  consecutiveFailureCount: Scalars['Int'];
+  contentId: Scalars['Int'];
+  contentType?: Maybe<Scalars['String']>;
+  id: Scalars['UUID'];
+  insertedDate: Scalars['DateTime'];
+  isActive: Scalars['Boolean'];
+  lastCheckStatus?: Maybe<Scalars['String']>;
+  lastCheckedDate: Scalars['DateTime'];
+  lastError?: Maybe<Scalars['String']>;
+  lastNotifiedDate?: Maybe<Scalars['DateTime']>;
+  lastStatusCode?: Maybe<Scalars['Int']>;
+  localeId: Scalars['UUID'];
+  sectionType?: Maybe<Scalars['String']>;
+  status?: Maybe<Scalars['String']>;
+  title?: Maybe<Scalars['String']>;
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+  url?: Maybe<Scalars['String']>;
+};
+
+export type ResourceLinkHealthCheckFilterInput = {
+  and?: InputMaybe<Array<ResourceLinkHealthCheckFilterInput>>;
+  consecutiveFailureCount?: InputMaybe<ComparableInt32OperationFilterInput>;
+  contentId?: InputMaybe<ComparableInt32OperationFilterInput>;
+  contentType?: InputMaybe<StringOperationFilterInput>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  lastCheckStatus?: InputMaybe<StringOperationFilterInput>;
+  lastCheckedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  lastError?: InputMaybe<StringOperationFilterInput>;
+  lastNotifiedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  lastStatusCode?: InputMaybe<ComparableNullableOfInt32OperationFilterInput>;
+  localeId?: InputMaybe<ComparableGuidOperationFilterInput>;
+  or?: InputMaybe<Array<ResourceLinkHealthCheckFilterInput>>;
+  sectionType?: InputMaybe<StringOperationFilterInput>;
+  status?: InputMaybe<StringOperationFilterInput>;
+  title?: InputMaybe<StringOperationFilterInput>;
+  updatedBy?: InputMaybe<StringOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  url?: InputMaybe<StringOperationFilterInput>;
+};
+
+export type ResourceLinkHealthCheckInput = {
+  ConsecutiveFailureCount: Scalars['Int'];
+  ContentId: Scalars['Int'];
+  ContentType?: InputMaybe<Scalars['String']>;
+  Id?: InputMaybe<Scalars['UUID']>;
+  IsActive: Scalars['Boolean'];
+  LastCheckStatus?: InputMaybe<Scalars['String']>;
+  LastCheckedDate: Scalars['DateTime'];
+  LastError?: InputMaybe<Scalars['String']>;
+  LastNotifiedDate?: InputMaybe<Scalars['DateTime']>;
+  LastStatusCode?: InputMaybe<Scalars['Int']>;
+  LocaleId: Scalars['UUID'];
+  SectionType?: InputMaybe<Scalars['String']>;
+  Status?: InputMaybe<Scalars['String']>;
+  Title?: InputMaybe<Scalars['String']>;
+  UpdatedBy?: InputMaybe<Scalars['String']>;
+  Url?: InputMaybe<Scalars['String']>;
+};
+
+export type ResourceLinkHealthCheckModel = {
+  __typename?: 'ResourceLinkHealthCheckModel';
+  consecutiveFailureCount: Scalars['Int'];
+  contentId: Scalars['Int'];
+  contentType?: Maybe<Scalars['String']>;
+  lastCheckStatus?: Maybe<Scalars['String']>;
+  lastCheckedDate?: Maybe<Scalars['DateTime']>;
+  lastError?: Maybe<Scalars['String']>;
+  lastStatusCode?: Maybe<Scalars['Int']>;
+  sectionType?: Maybe<Scalars['String']>;
+  status?: Maybe<Scalars['String']>;
+  title?: Maybe<Scalars['String']>;
+  url?: Maybe<Scalars['String']>;
+};
+
+export type ResourceLinkHealthCheckSortInput = {
+  consecutiveFailureCount?: InputMaybe<SortEnumType>;
+  contentId?: InputMaybe<SortEnumType>;
+  contentType?: InputMaybe<SortEnumType>;
+  id?: InputMaybe<SortEnumType>;
+  insertedDate?: InputMaybe<SortEnumType>;
+  isActive?: InputMaybe<SortEnumType>;
+  lastCheckStatus?: InputMaybe<SortEnumType>;
+  lastCheckedDate?: InputMaybe<SortEnumType>;
+  lastError?: InputMaybe<SortEnumType>;
+  lastNotifiedDate?: InputMaybe<SortEnumType>;
+  lastStatusCode?: InputMaybe<SortEnumType>;
+  localeId?: InputMaybe<SortEnumType>;
+  sectionType?: InputMaybe<SortEnumType>;
+  status?: InputMaybe<SortEnumType>;
+  title?: InputMaybe<SortEnumType>;
+  updatedBy?: InputMaybe<SortEnumType>;
+  updatedDate?: InputMaybe<SortEnumType>;
+  url?: InputMaybe<SortEnumType>;
 };
 
 export type ResourceLinkInput = {
@@ -13754,6 +13940,7 @@ export type TenantInternalModel = {
   googleTagManager?: Maybe<Scalars['String']>;
   host?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
+  isActive: Scalars['Boolean'];
   isHost: Scalars['Boolean'];
   modules?: Maybe<TenantModuleModel>;
   moodleConfig?: Maybe<Scalars['String']>;
@@ -13778,6 +13965,7 @@ export type TenantModel = {
   googleAnalyticsTag?: Maybe<Scalars['String']>;
   googleTagManager?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
+  isActive: Scalars['Boolean'];
   modules?: Maybe<TenantModuleModel>;
   moodleUrl?: Maybe<Scalars['String']>;
   organisationEmail?: Maybe<Scalars['String']>;
@@ -14577,8 +14765,10 @@ export type UserSyncStatus = {
   syncChildren: Scalars['Boolean'];
   syncClassroom: Scalars['Boolean'];
   syncLearners: Scalars['Boolean'];
+  syncAttendance: Scalars['Boolean'];
   syncPermissions: Scalars['Boolean'];
   syncPoints: Scalars['Boolean'];
+  syncPractitioners: Scalars['Boolean'];
   syncReportingPeriods: Scalars['Boolean'];
 };
 

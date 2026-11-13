@@ -15,7 +15,7 @@ import {
   OnNext,
   PractitionerSetupSteps,
 } from '../../setup-principal/setup-principal.types';
-import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
+import Cebisa from '@/assets/icon_cebisa.svg?react';
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import Article from '@/components/article/article';
@@ -102,7 +102,7 @@ export const PreschoolCodeCheck: React.FC<{
     if (isValidPreschool && searched) {
       return (
         <Alert
-          className={'mt-5 mb-3'}
+          className={'mb-3 mt-5'}
           title={`Preschool found: ${isValidPreschool?.name}`}
           type={'success'}
         />
@@ -112,7 +112,7 @@ export const PreschoolCodeCheck: React.FC<{
     if (!isValidPreschool && searched) {
       return (
         <Alert
-          className={'mt-5 mb-3'}
+          className={'mb-3 mt-5'}
           title={`Oops, preschool not found!`}
           list={[
             'Ask your principal to check the code.',
@@ -154,7 +154,7 @@ export const PreschoolCodeCheck: React.FC<{
         color="textDark"
         text={`If your principal has already signed up for ${appName}, ask them for the preschool code. If they haven't signed up yet, tap “Skip”.`}
         type={'h4'}
-        className="mt-4 mb-2"
+        className="mb-2 mt-4"
       />
       <Button
         color={'secondaryAccent2'}
@@ -184,7 +184,7 @@ export const PreschoolCodeCheck: React.FC<{
           <Button
             type="filled"
             color="quatenary"
-            className={'mt-1 mb-2 w-full'}
+            className={'mb-2 mt-1 w-full'}
             disabled={!preschoolCode && !isLoading}
             isLoading={isLoading}
             onClick={handleSearchPreschool} // Navigate to a different page if it is principle
@@ -238,7 +238,7 @@ export const PreschoolCodeCheck: React.FC<{
         <Button
           type="filled"
           color="quatenary"
-          className={'bottom-12 mt-1 mb-2 w-full'}
+          className={'bottom-12 mb-2 mt-1 w-full'}
           disabled={!isValidPreschool?.name || !allowPermissions}
           isLoading={isLoadingPractitionerInvite}
           onClick={getPractitionerResponse} // Navigate to a different page if it is principle
@@ -249,7 +249,7 @@ export const PreschoolCodeCheck: React.FC<{
         <Button
           type="outlined"
           color="quatenary"
-          className={'border-quatenary bottom-12 mt-1 mb-2 w-full border'}
+          className={'border-quatenary bottom-12 mb-2 mt-1 w-full border'}
           onClick={() =>
             isOpenAccess
               ? setInvitePrincipal(true)

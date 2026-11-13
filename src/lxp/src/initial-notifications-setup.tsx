@@ -121,7 +121,7 @@ const InitialNotificationSetup: React.FC = ({ children }) => {
   return (
     <IntialNotificationSetupContext.Provider value={values}>
       {!isLoading && children}
-      {isLoading && <Loader loadingMessage="Loading notifications ..." />}
+      {isLoading && <Loader loadingMessage="Loading notifications" />}
     </IntialNotificationSetupContext.Provider>
   );
 };

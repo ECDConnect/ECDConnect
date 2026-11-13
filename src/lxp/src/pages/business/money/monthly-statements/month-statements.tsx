@@ -89,8 +89,10 @@ export const MonthStatements: React.FC = () => {
 
       // Clean up to avoid memory leaks
       URL.revokeObjectURL(blobUrl);
+      return true;
     } catch (err) {
       console.error(err);
+      return false;
     }
   }, [appDispatch, isOnline, statementId, monthName]);
 
@@ -144,12 +146,14 @@ export const MonthStatements: React.FC = () => {
                   colour: 'quatenary',
                   type: 'filled',
                   onClick: () => {
-                    downloadPdf().then(() => {
-                      appDispatch(
-                        statementsActions.markStatementAsDownloaded({
-                          statementId,
-                        })
-                      );
+                    downloadPdf().then((downloaded) => {
+                      if (downloaded) {
+                        appDispatch(
+                          statementsActions.markStatementAsDownloaded({
+                            statementId,
+                          })
+                        );
+                      }
                     });
                     setShowConfirmDialog(false);
                   },

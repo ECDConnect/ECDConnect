@@ -1,10 +1,11 @@
 import {
   LoginRequestModel,
-  LocalStorageKeys,
+  SessionStorageKeys,
   useDialog,
   LoginType,
   Config,
 } from '@ecdlink/core';
+import { setSessionItem } from '@/utils/common/session-storage.utils';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
   Alert,
@@ -54,9 +55,8 @@ import { Login as FacebookLogin } from 'react-facebook';
 import { LoginResponse } from '@/types/facebook';
 import { triggerBackgroundSync } from '@/store/sync/sync.actions';
 
-const CryptoJS = require('crypto-js');
-const version: string =
-  process.env.REACT_APP_VERSION ?? require('../../../../package.json').version;
+import CryptoJS from 'crypto-js';
+const version: string = import.meta.env.REACT_APP_VERSION;
 
 enum LoginErrorEnum {
   None,
@@ -268,11 +268,7 @@ export const OaLogin: React.FC = () => {
     appDispatch(settingActions.setLoginDate());
     console.log('login - 4');
     const user = await appDispatch(userThunkActions.getUser({})).unwrap();
-    console.log('login - 5');
-    localStorage.setItem(
-      LocalStorageKeys.firstTimeOnCommunityDashboard,
-      'true'
-    );
+    setSessionItem(true, SessionStorageKeys.firstTimeOnCommunityDashboard);
     setIsLoading(false);
     setLoginAttempts(0);
     // Set userId for google
@@ -282,19 +278,24 @@ export const OaLogin: React.FC = () => {
   };
 
   const checkSyncData = async (username: string) => {
-    if (
-      username !== decryptCurrentUserId() &&
-      !!practitioner /* &&
-      isOnline*/
-    ) {
-      await appDispatch(
-        triggerBackgroundSync({ includeOfflineSyncData: true })
-      );
-
-      resetAppStore && (await resetAppStore());
-      resetAuth && (await resetAuth());
-      resetUser && (await resetUser());
+    const previousUsername = decryptCurrentUserId();
+    if (username === previousUsername) {
+      return;
     }
+
+    try {
+      if (previousUsername && practitioner) {
+        await appDispatch(
+          triggerBackgroundSync({ includeOfflineSyncData: true })
+        );
+      }
+    } catch (error) {
+      console.error('Failed to sync previous user data before login', error);
+    }
+
+    resetAppStore && (await resetAppStore());
+    resetAuth && (await resetAuth());
+    resetUser && (await resetUser());
   };
 
   const loginOffline = async (loginRequest: LoginRequestModel) => {
@@ -360,11 +361,11 @@ export const OaLogin: React.FC = () => {
         ) {
           console.log('preLogin - authenticated');
           const userHash = CryptoJS.AES.encrypt(
-            loginRequest.password,
+            loginRequest.password!,
             'user pass'
           ).toString();
           const userIdHash = CryptoJS.AES.encrypt(
-            loginRequest.username,
+            loginRequest.username!,
             'user id'
           ).toString();
 
@@ -652,7 +653,10 @@ export const OaLogin: React.FC = () => {
                 </FacebookLogin>
               </div>
             )}
-            <Divider title="OR" />
+            {(!!Config.googleClientId ||
+              (!!Config.facebookAppId && isSslEnabled)) && (
+              <Divider title="OR" />
+            )}
           </div>
         )}
         <form>
@@ -669,7 +673,7 @@ export const OaLogin: React.FC = () => {
             />
             <PasswordInput<OaLoginModel>
               label={'Password'}
-              className={'mt-1 mb-2'}
+              className={'mb-2 mt-1'}
               nameProp={'password'}
               sufficIconColor={'uiMidDark'}
               value={loginFormGetValues().password}
@@ -678,7 +682,7 @@ export const OaLogin: React.FC = () => {
             />
             <div>
               <Button
-                className={'mt-1 mb-3'}
+                className={'mb-3 mt-1'}
                 type="outlined"
                 color="secondary"
                 background={'transparent'}
@@ -696,7 +700,7 @@ export const OaLogin: React.FC = () => {
             <Divider></Divider>
             {!!displayError && (
               <Alert
-                className={'mt-5 mb-3'}
+                className={'mb-3 mt-5'}
                 title={displayError}
                 type={'error'}
                 button={
@@ -722,14 +726,14 @@ export const OaLogin: React.FC = () => {
           </div>
           {!isOnline && (
             <Alert
-              className={'mt-5 mb-3'}
+              className={'mb-3 mt-5'}
               title="Your internet connection is unstable."
               type={'warning'}
             />
           )}
           <Button
             id="gtm-login"
-            className={'mt-3 mb-8 w-full'}
+            className={'mb-8 mt-3 w-full'}
             type="filled"
             isLoading={isLoading}
             color="quatenary"

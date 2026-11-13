@@ -1,5 +1,5 @@
 import { Typography } from '@ecdlink/ui';
-import { ReactComponent as Emoji4Icon } from '@/assets/ECD_Connect_emoji4.svg';
+import Emoji4Icon from '@/assets/ECD_Connect_emoji4.svg?react';
 
 export const ProgressTabNoReportPeriodAndPractitioner: React.FC<{
   principalName: string;

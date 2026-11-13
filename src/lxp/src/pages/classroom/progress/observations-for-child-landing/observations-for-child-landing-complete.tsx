@@ -17,7 +17,7 @@ import {
   ProgressTrackingAgeGroupDto,
   useDialog,
 } from '@ecdlink/core';
-import { ReactComponent as EmojiYellowSmile } from '@/assets/ECD_Connect_emoji3.svg';
+import EmojiYellowSmile from '@/assets/ECD_Connect_emoji3.svg?react';
 import { format, isBefore } from 'date-fns';
 import { ProgressReportPeriod } from '@/models/progress/progress-report-period';
 import { useMemo, useState } from 'react';
@@ -260,7 +260,7 @@ export const ObservationsForChildLandingComplete: React.FC<
                 childId: childId,
               })
             }
-            className="mt-auto mb-4 w-full"
+            className="mb-4 mt-auto w-full"
             size="normal"
             color="quatenary"
             type="filled"
@@ -286,7 +286,7 @@ export const ObservationsForChildLandingComplete: React.FC<
                   });
                 }
               }}
-              className="mt-auto mb-4 w-full"
+              className="mb-4 mt-auto w-full"
               size="normal"
               color="quatenary"
               type="filled"
@@ -343,7 +343,7 @@ export const ObservationsForChildLandingComplete: React.FC<
                   text={`Wonderful! ${childFirstName} is ${ageInMonths} months old and can do everything in the ${currentAgeGroup?.description} progress tracker!`}
                 />
               </div>
-              <Divider dividerType="dashed" className="mt-2 mb-2" />
+              <Divider dividerType="dashed" className="mb-2 mt-2" />
               <Typography
                 type="body"
                 color="textDark"
@@ -398,7 +398,7 @@ export const ObservationsForChildLandingComplete: React.FC<
                   </div>
                   {category.subCategories.map((subCategory) => (
                     <div key={subCategory.id}>
-                      <Divider dividerType="dashed" className="mt-2 mb-2" />
+                      <Divider dividerType="dashed" className="mb-2 mt-2" />
                       <div className="flex flex-row items-center">
                         <ImageWithFallback
                           src={subCategory.imageUrl}
@@ -524,7 +524,7 @@ export const ObservationsForChildLandingComplete: React.FC<
                     </div>
                     {category.subCategories.map((subCategory) => (
                       <div key={subCategory.id}>
-                        <Divider dividerType="dashed" className="mt-2 mb-2" />
+                        <Divider dividerType="dashed" className="mb-2 mt-2" />
                         <div className="flex flex-row items-center">
                           <ImageWithFallback
                             src={subCategory.imageUrl}

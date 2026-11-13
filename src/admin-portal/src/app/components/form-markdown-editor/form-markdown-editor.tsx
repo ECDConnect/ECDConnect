@@ -20,11 +20,18 @@ export default function Editor({
   const { CKEditor, ClassicEditor } = editorRef.current;
 
   useEffect(() => {
-    editorRef.current = {
-      CKEditor: require('@ckeditor/ckeditor5-react').CKEditor,
-      ClassicEditor: require('@ckeditor/ckeditor5-build-classic'),
+    let cancelled = false;
+    Promise.all([
+      import('@ckeditor/ckeditor5-react'),
+      import('@ckeditor/ckeditor5-build-classic'),
+    ]).then(([{ CKEditor }, { default: ClassicEditor }]) => {
+      if (cancelled) return;
+      editorRef.current = { CKEditor, ClassicEditor };
+      setEditorLoaded(true);
+    });
+    return () => {
+      cancelled = true;
     };
-    setEditorLoaded(true);
   }, []);
 
   const handleChange = (event, editor) => {
@@ -48,7 +55,7 @@ export default function Editor({
           <div className="text-textDark text-h4 mb-2 font-bold font-medium">
             {label}
           </div>
-          <div className="text-slate-700 mb-2 text-sm font-medium">
+          <div className="mb-2 text-sm font-medium text-slate-700">
             {subLabel}
           </div>
           <CKEditor

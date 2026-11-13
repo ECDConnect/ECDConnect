@@ -1048,7 +1048,7 @@ namespace EcdLink.Api.CoreApi.Services
             if (TenantExecutionContext.Tenant.Modules != null && TenantExecutionContext.Tenant.Modules.TrainingEnabled)
             {
                 var today = DateTime.Now;
-                var trainingCoursesCount = await _userTrainingCourseRepo.GetAll().Where(x => x.IsActive && x.UserId == userId && x.CompletedDate.Year == today.Year)
+                var trainingCoursesCount = await _userTrainingCourseRepo.GetAll().Where(x => x.IsActive && x.UserId == userId && x.CompletedDate != null && x.CompletedDate.Value.Year == today.Year)
                                                                     .Select(x => x.CourseName).Distinct().CountAsync();
                                                                     
                 if (trainingCoursesCount > 0)

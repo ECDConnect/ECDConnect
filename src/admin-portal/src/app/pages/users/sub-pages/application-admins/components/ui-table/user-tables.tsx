@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
+import { SessionStorageKeys } from '@ecdlink/core';
+import { setSessionItem } from '../../../../../../utils/session-storage.utils';
 
 export default function UserTable({ rows = [], urlRow, component }) {
   const history = useHistory();
@@ -33,9 +35,9 @@ export default function UserTable({ rows = [], urlRow, component }) {
   };
 
   const viewSelectedRow = (selectedRow) => {
-    localStorage.setItem(
-      'selectedUser',
-      selectedRow?.userId ?? selectedRow?.id
+    setSessionItem(
+      selectedRow?.userId ?? selectedRow?.id,
+      SessionStorageKeys.selectedUser
     );
 
     history.push({
@@ -48,7 +50,7 @@ export default function UserTable({ rows = [], urlRow, component }) {
   };
 
   return (
-    <div className="container mx-auto p-2 dark:text-gray-100 sm:p-4">
+    <div className="container mx-auto p-2 sm:p-4 dark:text-gray-100">
       <h2 className="leadi mb-4 text-2xl font-semibold">Emails</h2>
       <div className="flex flex-col overflow-x-auto text-xs">
         <div className="flex text-left dark:bg-gray-700">
@@ -56,7 +58,7 @@ export default function UserTable({ rows = [], urlRow, component }) {
             <input
               type="checkbox"
               name="All"
-              className="accent-violet-400 h-3 w-3 rounded-sm"
+              className="h-3 w-3 rounded-sm accent-violet-400"
             />
           </div>
           <div className="w-32 px-2 py-3 sm:p-3">Sender</div>
@@ -73,7 +75,7 @@ export default function UserTable({ rows = [], urlRow, component }) {
             <div className="flex w-8 items-center justify-center px-2 py-3 sm:p-3">
               <input
                 type="checkbox"
-                className="accent-violet-400 h-3 w-3 rounded-sm"
+                className="h-3 w-3 rounded-sm accent-violet-400"
                 name={`Box${index}`}
                 checked={selectedRows.includes(row)}
                 onChange={() => handleRowSelect(row)}
@@ -85,7 +87,7 @@ export default function UserTable({ rows = [], urlRow, component }) {
             <div className="block flex-1 truncate px-2 py-3 sm:w-auto sm:p-3">
               {row.message}
             </div>
-            <div className="hidden w-24 px-2 py-3 text-right dark:text-gray-400 sm:block sm:p-3">
+            <div className="hidden w-24 px-2 py-3 text-right sm:block sm:p-3 dark:text-gray-400">
               <p>{formatDate(row.received)}</p>
             </div>
           </div>

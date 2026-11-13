@@ -1,4 +1,4 @@
-import { LocalStorageKeys, RoleSystemNameEnum, useDialog } from '@ecdlink/core';
+import { RoleSystemNameEnum, UserFlagKeys, useDialog } from '@ecdlink/core';
 import {
   ActionModal,
   BannerWrapper,
@@ -15,10 +15,7 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
-import {
-  getStorageItem,
-  setStorageItem,
-} from '@utils/common/local-storage.utils';
+import { useUserFlag } from '@hooks/useUserFlag';
 import { AttendanceComponent } from '../attendance/attendance';
 import AttendanceTutorial from '../attendance/components/attendance-tutorial/attendance-tutorial';
 import * as styles from './class-dashboard.styles';
@@ -52,8 +49,9 @@ export const ClassDashboard: React.FC = () => {
   const date = format(new Date(), 'EEEE, d LLLL');
   const [attendanceTutorialActive, setAttendanceTutorialActive] =
     useState<boolean>(false);
-  const [attendanceTutorialComplete, setAttendanceTutorialComplete] =
-    useState<boolean>(false);
+  const [attendanceTutorialComplete, completeAttendanceTutorial] = useUserFlag(
+    UserFlagKeys.attendanceTutorialComplete
+  );
 
   const [showAttendanceWalkthrough, setShowAttendanceWalkthrough] =
     useState(false);
@@ -96,16 +94,6 @@ export const ClassDashboard: React.FC = () => {
   const backToDashboard = () => {
     history.push('/');
   };
-
-  useEffect(() => {
-    const isTutorialComplete = getStorageItem<boolean>(
-      LocalStorageKeys.attendanceTutorialComplete
-    );
-    if (isTutorialComplete !== undefined) {
-      setAttendanceTutorialComplete(isTutorialComplete);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   useEffect(() => {
     if (location.state?.activeTabIndex !== undefined) {
@@ -196,8 +184,7 @@ export const ClassDashboard: React.FC = () => {
   }, [attendanceTutorialComplete, previousTabIndex]);
 
   const completeTutorial = () => {
-    setStorageItem(true, LocalStorageKeys.attendanceTutorialComplete);
-    setAttendanceTutorialComplete(true);
+    completeAttendanceTutorial();
     setAttendanceTutorialActive(false);
   };
 
@@ -229,10 +216,7 @@ export const ClassDashboard: React.FC = () => {
               type: 'filled',
               onClick: () => {
                 submit();
-                setStorageItem(
-                  true,
-                  LocalStorageKeys.attendanceTutorialComplete
-                );
+                completeAttendanceTutorial();
               },
               leadingIcon: 'XIcon',
             },
@@ -240,7 +224,7 @@ export const ClassDashboard: React.FC = () => {
         />
       ),
     });
-  }, [dialog]);
+  }, [completeAttendanceTutorial, dialog]);
 
   const handleWalkthroughStart = useCallback(() => {
     setState({ run: true, tourActive: true, stepIndex: 0 });

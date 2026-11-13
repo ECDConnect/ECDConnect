@@ -1,6 +1,6 @@
 import { classNames, Typography } from '@ecdlink/ui';
 import { EmprtActivitiesProps } from './empty-activity-filter-result.types';
-import { ReactComponent as Emoji4 } from '@/assets/ECD_Connect_emoji4.svg';
+import Emoji4 from '@/assets/ECD_Connect_emoji4.svg?react';
 
 export const EmptyActivities: React.FC<EmprtActivitiesProps> = ({
   title,

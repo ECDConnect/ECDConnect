@@ -12,7 +12,7 @@ namespace ECDLink.EGraphQL.Interceptors
 {
     public class UserContextInterceptor : DefaultHttpRequestInterceptor
     {
-        public override ValueTask OnCreateAsync(HttpContext context, IRequestExecutor requestExecutor, IQueryRequestBuilder requestBuilder, CancellationToken cancellationToken)
+        public override ValueTask OnCreateAsync(HttpContext context, IRequestExecutor requestExecutor, OperationRequestBuilder requestBuilder, CancellationToken cancellationToken)
         {
             var contextManager = context.RequestServices.GetService<IClaimsManager>();
             var contextHandler = context.RequestServices.GetService<IUserInterceptHandler>();

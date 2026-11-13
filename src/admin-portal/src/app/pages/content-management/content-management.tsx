@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import debounce from 'lodash.debounce';
+import { SessionStorageKeys } from '@ecdlink/core';
+import { removeSessionItem } from '../../utils/session-storage.utils';
 import { useQuery } from '@apollo/client/react/hooks/useQuery';
 import {
   GetAllLanguage,
@@ -190,7 +192,7 @@ export function ContentManagement() {
 
   const history = useHistory();
   useEffect(() => {
-    localStorage.removeItem('selectedUser');
+    removeSessionItem(SessionStorageKeys.selectedUser);
 
     // GO TO DEFAULT ROUTE
     async function init() {
@@ -500,7 +502,7 @@ export function ContentManagement() {
   );
 
   return (
-    <div className="">
+    <div>
       {allContentTypes && !isLoadingSelectedRow ? (
         <>
           {!selectedContent && (
@@ -561,7 +563,7 @@ export function ContentManagement() {
                         );
                       }}
                       type="button"
-                      className="text-secondary outline-none text-14 inline-flex w-full cursor-pointer items-center border border-transparent px-4 py-2 font-medium "
+                      className="text-secondary text-14 inline-flex w-full cursor-pointer items-center border border-transparent px-4 py-2 font-medium outline-none "
                     >
                       Content Management
                       <ArrowRightIcon className="text-secondary ml-1 mr-1 h-4 w-4" />
@@ -574,7 +576,12 @@ export function ContentManagement() {
                   </div>
                 )}
                 <div
-                  className="relative h-full rounded-xl bg-white p-12"
+                  className={classNames(
+                    'relative h-full rounded-xl p-12',
+                    !!subTabs?.length && !!specialType
+                      ? 'bg-adminPortalBg'
+                      : 'bg-white'
+                  )}
                   style={{ minHeight: '36rem' }}
                 >
                   {selectedType &&
@@ -732,7 +739,17 @@ export function ContentManagement() {
                   {!!subTabs?.length && !!specialType && (
                     <div className="flex">
                       <StackedList
-                        className="-mt-0.5 flex w-full flex-col gap-1 rounded-2xl"
+                        isFullHeight={false}
+                        className={classNames(
+                          'flex w-full flex-col overflow-hidden rounded-2xl bg-white shadow-sm',
+                          // One grouped list (Figma): rows sit flush with no gap,
+                          // separated only by a bottom divider; last row has none.
+                          '[&>div]:border-uiLight [&>div:last-child]:border-b-0 [&>div]:cursor-pointer [&>div]:rounded-none [&>div]:border-b',
+                          '[&>div:hover]:bg-uiBg [&>div]:transition-colors [&>div]:duration-150',
+                          // Shrink the description below the title (shared style
+                          // ships a dead `text-md` class, so it renders at 16px).
+                          '[&_h4]:mt-1 [&_h4]:text-sm [&_h4]:leading-snug'
+                        )}
                         type="TitleList"
                         listItems={subTabs}
                       />

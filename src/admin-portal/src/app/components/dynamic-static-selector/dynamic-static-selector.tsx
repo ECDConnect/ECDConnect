@@ -91,13 +91,13 @@ const DynamicStaticSelector: React.FC<DynamicStaticSelectorProps> = ({
           text={camelCaseToSentanceCase(title ?? '')}
         />
 
-        <div className="mt-4 shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+        <div className="mt-4">
+          <table className="min-w-full">
+            <thead className="bg-adminPortalBg border-quatenary border-b-2">
               <tr>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  className="text-textMid px-6 py-3 text-left text-sm font-semibold normal-case"
                 >
                   Name
                 </th>
@@ -107,29 +107,29 @@ const DynamicStaticSelector: React.FC<DynamicStaticSelectorProps> = ({
                 </th>
               </tr>
             </thead>
-            <tbody className="z-10 bg-white divide-y divide-gray-200">
+            <tbody className="divide-uiLight z-10 divide-y bg-white">
               {tableData &&
                 tableData.map((item: any) => (
                   <tr key={item.id}>
-                    <td className="px-2 py-4 whitespace-nowrap">
+                    <td className="whitespace-nowrap px-2 py-4">
                       <div className="flex items-center">
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-textMid text-sm font-medium">
                             {item.description}
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="whitespace-nowrap px-6 py-4">
                       <div className="flex items-center">
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-textMid text-sm font-medium">
                           <input
                             disabled={isReview}
                             defaultChecked={currentIds?.some(
                               (x) => x === item.id.toString()
                             )}
                             type="checkbox"
-                            className="focus:ring-primary h-4 w-4 text-primary border-gray-300 rounded"
+                            className="focus:ring-primary text-primary h-4 w-4 rounded border-gray-300"
                             onChange={() => selectItem(item.id)}
                           />
                         </div>
