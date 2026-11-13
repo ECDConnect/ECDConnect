@@ -5,6 +5,7 @@
 	<!-- Nullable filters through to Entity Framework 7 and makes DB field FKs required -->
 	<Nullable>disable</Nullable>
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+    <UserSecretsId>c2df7eec-ad4f-4e73-bd13-249155343824</UserSecretsId>
   </PropertyGroup>
   
   <ItemGroup>
